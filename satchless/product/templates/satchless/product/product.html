@@ -1,0 +1,16 @@
+{% extends 'satchless/product/base.html' %}
+{% load i18n %}
+{% block title %}{{ product.name }} | {{ block.super }}{% endblock %}
+{% block meta-description %}{% if product.meta_description %}{{ product.meta_description }}{% else %}{{ block.super }}{% endif %}{% endblock %}
+{% block breadcrumbs %}
+    {% for cat in path %}
+    <li>{{ cat }}</li>
+    {% endfor %}
+    <li>{{ product.name }}</li>
+{% endblock %}
+{% block content %}
+    <h1>{{ product.name }}</h1>
+    <div class="productDescription">
+        {{ product.description }}
+    </div>
+{% endblock %}

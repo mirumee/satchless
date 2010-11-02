@@ -1,0 +1,6 @@
+{% extends 'satchless/base.html' %}
+{% load i18n %}
+{% block breadcrumbs %}
+    {{ block.super }}
+    <li><a href="{% url satchless.contact.views.my_contact %}">{% trans "My contact data" %}</a></li>
+{% endblock %}

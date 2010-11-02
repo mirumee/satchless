@@ -1,2 +1,3 @@
 django              http://www.djangoproject.com/download/
 django-mptt         http://github.com/django-mptt/django-mptt
+django-countries    http://code.google.com/p/django-countries/

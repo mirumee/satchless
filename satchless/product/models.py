@@ -56,7 +56,7 @@ class Product(models.Model):
     """The base Product to rule them all. Provides slug, a powerful item to
     identify member of each tribe."""
     slug = models.SlugField(max_length=80)
-    content_type = models.ForeignKey(ContentType)
+    content_type = models.ForeignKey(ContentType, editable=False)
     categories = models.ManyToManyField(Category, related_name='products')
 
     @models.permalink

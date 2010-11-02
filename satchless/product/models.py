@@ -23,7 +23,7 @@ class Category(MPTTModel, DescribedModel):
     parent = models.ForeignKey('self', null=True, blank=True, related_name='children')
 
     def _parents_slug_path(self):
-        parents = '/'.join(map(lambda c: c.slug, self.get_ancestors()))
+        parents = '/'.join(c.slug for c in self.get_ancestors())
         return '%s/' % parents if parents else ''
 
     @staticmethod
@@ -37,7 +37,7 @@ class Category(MPTTModel, DescribedModel):
             path = leaf.get_ancestors()
             if len(path) + 1 != len(slugs):
                 continue
-            if map(lambda c: c.slug, path) != slugs[:-1]:
+            if [c.slug for c in path] != slugs[:-1]:
                 continue
             return list(path) + [leaf]
         raise Category.DoesNotExist
@@ -47,8 +47,8 @@ class Category(MPTTModel, DescribedModel):
         return ('satchless.product.views.category', (self._parents_slug_path(), self.slug))
 
     class Meta:
-        verbose_name = _("Category")
-        verbose_name_plural = _("Categories")
+        verbose_name = _("category")
+        verbose_name_plural = _("categories")
 
 class Product(models.Model):
     """The base Product to rule them all. Provides slug, a powerful item to
@@ -59,7 +59,7 @@ class Product(models.Model):
     @models.permalink
     def get_absolute_url(self, category=None):
         if category:
-            if self.categories.filter(pk=category.pk).count():
+            if self.categories.filter(pk=category.pk).exists():
                 return ('satchless.product.views.product', (
                     '%s%s/' % (category._parents_slug_path(), category.slug),
                     self.slug))
@@ -71,7 +71,7 @@ class Product(models.Model):
         return self.slug
 
 
-class ProductAbstract(Product, DescribedModel):
+class ProductAbstract(DescribedModel, Product):
     """Base class for every product to inherit from."""
 
     class Meta:

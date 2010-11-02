@@ -24,7 +24,7 @@ def product(request, category_slugs='', product_slug=''):
     products = models.Product.objects.filter(slug=product_slug)
     if len(path):
         products = products.filter(categories=path[-1])
-    if products.count() == 0:
+    if not products.exists():
         return HttpResponseNotFound()
     product = products[0]
     return direct_to_template(request,

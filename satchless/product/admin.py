@@ -6,4 +6,7 @@ from . import models
 class CategoryAdmin(MPTTModelAdmin):
     prepopulated_fields = {'slug': ('name',)}
 
+class ProductAdmin(admin.ModelAdmin):
+    prepopulated_fields = {'slug': ('name',)}
+
 admin.site.register(models.Category, CategoryAdmin)

@@ -7,8 +7,9 @@ class CategoryMixin:
         level = getattr(obj, obj._mptt_meta.level_attr)
         indent = max(0, level - 1) * u'│'
         if obj.parent:
-            last = obj.parent.get_children().order_by('-rght')[0]
-            if last == obj and not obj.get_children().exists():
+            last = (obj.parent.rght - obj.rght == 1) \
+                    and (obj.rght - obj.lft == 1)
+            if last:
                 indent += u'└ '
             else:
                 indent += u'├ '

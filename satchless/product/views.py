@@ -1,5 +1,6 @@
 from django.http import HttpResponse, HttpResponseNotFound
 from django.views.generic.simple import direct_to_template
+from django.contrib.contenttypes.models import ContentType
 from . import models
 
 def index(request, *args, **kwargs):
@@ -27,6 +28,8 @@ def product(request, category_slugs='', product_slug=''):
     if not products.exists():
         return HttpResponseNotFound()
     product = products[0]
+    # XXX: can i haz it without another SELECT?
+    product = product.content_type.get_object_for_this_type(pk=product.pk)
     return direct_to_template(request,
             'satchless/product/product.html',
             {'product': product, 'path': path})

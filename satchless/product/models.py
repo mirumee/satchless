@@ -1,4 +1,5 @@
 from django.db import models
+from django.contrib.contenttypes.models import ContentType
 from django.utils.translation import ugettext_lazy as _
 
 from mptt.models import MPTTModel
@@ -50,10 +51,12 @@ class Category(MPTTModel, DescribedModel):
         verbose_name = _("category")
         verbose_name_plural = _("categories")
 
+
 class Product(models.Model):
     """The base Product to rule them all. Provides slug, a powerful item to
     identify member of each tribe."""
     slug = models.SlugField(max_length=80)
+    content_type = models.ForeignKey(ContentType)
     categories = models.ManyToManyField(Category, related_name='products')
 
     @models.permalink
@@ -77,6 +80,10 @@ class ProductAbstract(DescribedModel, Product):
     class Meta:
         abstract = True
 
+def _store_content_type(sender, instance, **kwargs):
+    if issubclass(instance.__class__, ProductAbstract):
+        instance.content_type = ContentType.objects.get_for_model(sender)
+models.signals.pre_save.connect(_store_content_type)
 
 class Variant(models.Model):
     """A base class for variants. It identifies a concrete product instance,

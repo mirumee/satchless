@@ -32,9 +32,6 @@ class ParrotTest(TestCase):
         self.client_test = Client()
 
     def test_paths(self):
-        self.assertEqual('birds/', self.birds.slug_path())
-        self.assertEqual('birds/parrots/', self.parrots.slug_path())
-        self.assertEqual('birds/storks/', self.storks.slug_path())
         self.assertRaises(ValueError,
                 self.macaw.get_absolute_url,
                 category=self.storks)

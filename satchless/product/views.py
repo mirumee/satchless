@@ -3,7 +3,11 @@ from django.views.generic.simple import direct_to_template
 from . import models
 
 def index(request, *args, **kwargs):
-    return HttpResponse("<p>%s</p><p>%s</p>" % (args, kwargs))
+    """Show root categories"""
+    categories = models.Category.objects.filter(parent__isnull=True)
+    return direct_to_template(request,
+            'satchless/product/index.html',
+            {'categories': categories})
 
 def category(request, parent_slugs, category_slug):
     try:

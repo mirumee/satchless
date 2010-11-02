@@ -26,9 +26,6 @@ class Category(MPTTModel, DescribedModel):
         parents = '/'.join(map(lambda c: c.slug, self.get_ancestors()))
         return '%s/' % parents if parents else ''
 
-    def slug_path(self):
-        return '%s%s/' % (self._parents_slug_path(), self.slug)
-
     @staticmethod
     def path_from_slugs(slugs):
         if len(slugs) == 0:
@@ -49,6 +46,10 @@ class Category(MPTTModel, DescribedModel):
     def get_absolute_url(self):
         return ('satchless.product.views.category', (self._parents_slug_path(), self.slug))
 
+    class Meta:
+        verbose_name = _("Category")
+        verbose_name_plural = _("Categories")
+
 class Product(models.Model):
     """The base Product to rule them all. Provides slug, a powerful item to
     identify member of each tribe."""
@@ -59,7 +60,9 @@ class Product(models.Model):
     def get_absolute_url(self, category=None):
         if category:
             if self.categories.filter(pk=category.pk).count():
-                return ('satchless.product.views.product', (category.slug_path(), self.slug))
+                return ('satchless.product.views.product', (
+                    '%s%s/' % (category._parents_slug_path(), category.slug),
+                    self.slug))
             else:
                 raise ValueError, _("Product %s not in category %s") % (self, category)
         return ('satchless.product.views.product', (self.slug,))

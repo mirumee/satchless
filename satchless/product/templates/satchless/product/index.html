@@ -1,0 +1,16 @@
+{% extends 'satchless/product/base.html' %}
+{% load i18n %}
+{% block title %}{{ category.name }} | {{ block.super }}{% endblock %}
+{% block breadcrumbs %}
+    {{ block.super }}
+    <li><a href="{% url satchless.product.views.index %}">{% trans "Products" %}</a></li>
+{% endblock %}
+{% block content %}
+    <div id="subcategories">
+        <ul>
+            {% for cat in categories %}
+            <li><a href="{{ cat.get_absolute_url }}">{{ cat }}</a></li>
+            {% endfor %}
+        </ul>
+    </div>
+{% endblock %}

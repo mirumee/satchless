@@ -3,29 +3,30 @@
 {% block title %}{{ category.name }} | {{ block.super }}{% endblock %}
 {% block meta-description %}{% if category.meta_description %}{{ category.meta_description }}{% else %}{{ block.super }}{% endif %}{% endblock %}
 {% block breadcrumbs %}
+    {{ block.super }}
+    <li><a href="{% url satchless.product.views.index %}">{% trans "Products" %}</a></li>
     {% for cat in path %}
-    <li>{{ cat.name }}</li>
+    <li><a href="{{ cat.get_absolute_url }}">{{ cat }}</a></li>
     {% endfor %}
-    <li>{{ category.name }}</li>
 {% endblock %}
 {% block content %}
     <h1>{{ category.name }}</h1>
     {% if category.get_children %}
     <div id="subcategories">
-        <h2>{% trans "Subcategories" %}
+        <h2>{% trans "Subcategories" %}</h2>
         <ul>
             {% for subcat in category.get_children %}
-            <li>{{ subcat }}</li>
+            <li><a href="{{ subcat.get_absolute_url }}">{{ subcat }}</a></li>
             {% endfor %}
         </ul>
     </div>
     {% endif %}
     {% if category.products.count %}
     <div class="products">
-        <h2>{% trans "Products" %}
+        <h2>{% trans "Products" %}</h2>
         <ul>
             {% for product in category.products.all %}
-            <li>{{ product }}</li>
+            <li><a href="{{ product.get_absolute_url }}">{{ product }}</a></li>
             {% endfor %}
         </ul>
     </div>

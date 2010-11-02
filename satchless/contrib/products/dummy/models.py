@@ -18,6 +18,9 @@ class DummyVariant(Variant):
     color = models.CharField(_("color"), max_length=10, choices=COLOR_CHOICES)
     size = models.PositiveIntegerField(_("size"))
 
+    def __unicode__(self):
+        return u"%s %s size %s" % (self.get_color_display(), self.product, self.size)
+
     class Meta:
         unique_together = ('product', 'color', 'size')
         app_label = 'product'

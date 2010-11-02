@@ -70,6 +70,9 @@ class Product(models.Model):
                 raise ValueError, _("Product %s not in category %s") % (self, category)
         return ('satchless.product.views.product', (self.slug,))
 
+    def get_subtype_instance(self):
+        return self.content_type.get_object_for_this_type(pk=self.pk)
+
     def __unicode__(self):
         return self.slug
 

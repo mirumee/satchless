@@ -14,4 +14,12 @@
     <div class="productDescription">
         {{ product.description }}
     </div>
+    {% if product.variants.count %}
+    <h2>{% trans "Variants" %}</h2>
+    <ul>
+        {% for variant in product.variants.all %}
+            <li>{{ variant }}</li>
+        {% endfor %}
+    </ul>
+    {% endif %}
 {% endblock %}

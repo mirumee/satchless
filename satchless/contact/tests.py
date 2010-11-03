@@ -41,6 +41,7 @@ class ContactTest(TestCase):
                 full_name="Test User", street_address_1="pl. Solny 13/42",
                 city=u"Wrocław", postal_code="50-061", country=poland)
         self.assertEqual(a1.customer.user, self.user1)
+        self.assertEqual(a1.alias, unicode(a1))
 
     def test_views(self):
         c1 = Customer.objects.get_or_create_for_user(self.user1)
@@ -57,17 +58,26 @@ class ContactTest(TestCase):
         self._test_status(reverse('satchless.contact.views.my_contact'),
                 client_instance=cli_user2, status_code=200)
 
-        c1 = Customer.objects.get_or_create_for_user(self.user1)
-        poland = Country.objects.get(iso='PL')
-        a1 = c1.address_set.create(alias="Mirumee",
-                full_name="Test User", street_address_1="pl. Solny 13/42",
-                city=u"Wrocław", postal_code="50-061", country=poland)
 
-        self._test_status(reverse('satchless.contact.views.address_edit', kwargs={'address_pk': a1.pk}),
-                client_instance=cli_anon, status_code=302)
-        self._test_status(reverse('satchless.contact.views.address_edit', kwargs={'address_pk': a1.pk}),
+        self._test_status(reverse('satchless.contact.views.address_new'),
                 client_instance=cli_user1, status_code=200)
-        self._test_status(reverse('satchless.contact.views.address_edit', kwargs={'address_pk': a1.pk}),
-                client_instance=cli_user2, status_code=404)
+        self._test_status(reverse('satchless.contact.views.address_new'),
+                client_instance=cli_user1, method='post', status_code=302,
+                data={'alias': "Mirumee", 'full_name': "Test User",
+                    'street_address_1': "pl. Solny 13/42",
+                    'city': u"Wrocław", 'postal_code': "50-061", 'country': 'PL'})
+
+        c2 = Customer.objects.get_or_create_for_user(self.user2)
+        a2 = c2.address_set.create(alias="Biuro",
+                full_name=u"Józef Tkaczuk", company_name="Sejm RP",
+                street_address_1=u"ul. Wiejska 4/6/8", city="Warszawa",
+                postal_code="00-902", country=Country.objects.get(iso='PL'))
+
+        self._test_status(reverse('satchless.contact.views.address_edit', kwargs={'address_pk': a2.pk}),
+                client_instance=cli_anon, status_code=302)
+        self._test_status(reverse('satchless.contact.views.address_edit', kwargs={'address_pk': a2.pk}),
+                client_instance=cli_user1, status_code=404)
+        self._test_status(reverse('satchless.contact.views.address_edit', kwargs={'address_pk': a2.pk}),
+                client_instance=cli_user2, status_code=200)
 
 

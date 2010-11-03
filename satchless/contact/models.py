@@ -18,7 +18,7 @@ class Address(models.Model):
     phone = models.CharField(_("phone number"), max_length=30, blank=True)
 
     def __unicode__(self):
-        return self.full_name
+        return self.alias
 
 
 class CustomerManager(models.Manager):

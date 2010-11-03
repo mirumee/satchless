@@ -1,10 +1,10 @@
 {% extends 'satchless/product/base.html' %}
-{% load i18n %}
+{% load i18n product_url %}
 {% block title %}{{ category }} | {{ block.super }}{% endblock %}
 {% block meta-description %}{% if category.meta_description %}{{ category.meta_description }}{% else %}{{ block.super }}{% endif %}{% endblock %}
 {% block breadcrumbs %}
     {{ block.super }}
-    <li><a href="{% url satchless.product.views.index %}">{% trans "Products" %}</a></li>
+    <li><a href="{% url satchless-product-index %}">{% trans "Products" %}</a></li>
     {% for cat in path %}
     <li><a href="{{ cat.get_absolute_url }}">{{ cat }}</a></li>
     {% endfor %}
@@ -26,7 +26,7 @@
         <h2>{% trans "Products" %}</h2>
         <ul>
             {% for product in category.products.all %}
-            <li><a href="{{ product.get_absolute_url }}">{{ product }}</a></li>
+            <li><a href="{{ product|product_in_category_url:category }}">{{ product }}</a></li>
             {% endfor %}
         </ul>
     </div>

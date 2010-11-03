@@ -25,7 +25,7 @@ def address_edit(request, address_pk=None, formclass=forms.AddressFormWithDefaul
         if form.is_valid():
             form.instance.customer = models.Customer.objects.get_or_create_for_user(request.user)
             form.save()
-            return HttpResponseRedirect(reverse('satchless.contact.views.my_contact'))
+            return HttpResponseRedirect(reverse('satchless-contact-my_contact'))
     else:
         form = formclass(instance=address)
     return direct_to_template(request,

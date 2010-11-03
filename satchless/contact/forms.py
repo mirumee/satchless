@@ -8,8 +8,8 @@ class AddressForm(forms.ModelForm):
         exclude = ('customer',)
 
 class AddressFormWithDefaultCheckboxes(AddressForm):
-    set_as_default_billing = forms.BooleanField(label=_("set as default billing"), required=False)
-    set_as_default_shipping = forms.BooleanField(label=_("set as default billing"), required=False)
+    set_as_default_billing = forms.BooleanField(label=_("Set as default billing"), required=False)
+    set_as_default_shipping = forms.BooleanField(label=_("Set as default shipping"), required=False)
 
     def __init__(self, *args, **kwargs):
         super(AddressFormWithDefaultCheckboxes, self).__init__(*args, **kwargs)

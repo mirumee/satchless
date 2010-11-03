@@ -1,6 +1,7 @@
 from django.db import models
 from django.utils.translation import ugettext_lazy as _
 
+from satchless.image.models import Image
 from satchless.product.models import ProductAbstract, Variant
 
 class Dummy(ProductAbstract):
@@ -12,9 +13,14 @@ class Dummy(ProductAbstract):
         verbose_name_plural = _("dummies")
 
 
+class DummyImage(Image):
+    product = models.ForeignKey(Dummy, related_name='images')
+
+
 class DummyVariant(Variant):
-    product = models.ForeignKey(Dummy, related_name='variants')
     COLOR_CHOICES = (('red', _("red")), ('green', _("green")), ('blue', _("blue")))
+
+    product = models.ForeignKey(Dummy, related_name='variants')
     color = models.CharField(_("color"), max_length=10, choices=COLOR_CHOICES)
     size = models.PositiveIntegerField(_("size"))
 

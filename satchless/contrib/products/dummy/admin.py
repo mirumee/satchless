@@ -6,7 +6,13 @@ from . import models
 class DummyVariantInline(admin.TabularInline):
     model = models.DummyVariant
 
+class DummyImageInline(admin.TabularInline):
+    model = models.DummyImage
+
 class DummyAdmin(ProductAdmin):
-    inlines = [DummyVariantInline]
+    inlines = [
+        DummyImageInline,
+        DummyVariantInline,
+    ]
 
 admin.site.register(models.Dummy, DummyAdmin)

@@ -65,7 +65,8 @@ class ContactTest(TestCase):
                 client_instance=cli_user1, method='post', status_code=302,
                 data={'alias': "Mirumee", 'full_name': "Test User",
                     'street_address_1': "pl. Solny 13/42",
-                    'city': u"Wrocław", 'postal_code': "50-061", 'country': 'PL'})
+                    'city': u"Wrocław", 'postal_code': "50-061", 'country': 'PL',
+                    'set_as_default_billing': '1', 'set_as_default_shipping': '1'})
 
         c2 = Customer.objects.get_or_create_for_user(self.user2)
         a2 = c2.address_set.create(alias="Biuro",

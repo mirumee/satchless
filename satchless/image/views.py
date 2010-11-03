@@ -61,12 +61,11 @@ def thumbnail(request, image_id, size):
         thumbnail = image.get_by_size(size)
     except models.Thumbnail.DoesNotExist:
         img = scale_and_crop(image.image, **IMAGE_SIZES[size])
-        thumbnail = image.thumbnail_set.create(size=size)
         # save to memory
         buf = StringIO()
         img.save(buf, 'JPEG')
         # and save to storage
         original_dir, original_file = os.path.split(image.image.name)
         thumb_file = InMemoryUploadedFile(buf, "image", original_file, None, buf.tell(), None)
-        thumbnail.image.save(thumb_file.name, thumb_file)
+        thumbnail = image.thumbnail_set.create(size=size, image=thumb_file)
     return HttpResponseRedirect(thumbnail.image.url)

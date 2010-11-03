@@ -10,11 +10,12 @@ def hashed_upload_to(prefix, instance, filename):
         hasher.update(chunk)
     hash = hasher.hexdigest()
     base, ext = os.path.splitext(filename)
-    return '%(prefix)s%(first)s/%(second)s/%(hash)s%(ext)s' % {
+    return '%(prefix)s%(first)s/%(second)s/%(hash)s/%(base)s%(ext)s' % {
         'prefix': prefix,
         'first': hash[0],
         'second': hash[1],
         'hash': hash,
+        'base': base,
         'ext': ext,
     }
 

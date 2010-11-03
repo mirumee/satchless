@@ -8,6 +8,7 @@ class DummyVariantInline(admin.TabularInline):
 
 class DummyImageInline(admin.TabularInline):
     model = models.DummyImage
+    sortable_field_name = 'sort'
 
 class DummyAdmin(ProductAdmin):
     inlines = [

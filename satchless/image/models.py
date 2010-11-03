@@ -52,3 +52,8 @@ class Thumbnail(models.Model):
 
     class Meta:
         unique_together = ('image', 'size')
+
+def original_changed(sender, instance, created, **kwargs):
+    instance.thumbnail_set.all().delete()
+
+models.signals.post_save.connect(original_changed, sender=Image)

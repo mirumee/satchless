@@ -15,6 +15,10 @@ class Dummy(ProductAbstract):
 
 class DummyImage(Image):
     product = models.ForeignKey(Dummy, related_name='images')
+    sort = models.PositiveIntegerField()
+
+    class Meta:
+        ordering = ['sort', 'id']
 
 
 class DummyVariant(Variant):

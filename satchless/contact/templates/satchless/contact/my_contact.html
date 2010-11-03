@@ -9,6 +9,8 @@
         <ul>
             {% for address in customer.address_set.all %}
             <li>
+            <h3>{{ address.alias }}</h3>
+            <p>
             {{ address.full_name }}{% if address.company_name %}, {{ address.company_name }}{% endif %}<br />
             {{ address.street_address_1 }}<br />
             {% if address.street_address_2 %}{{ address.street_address_2 }}<br />{% endif %}
@@ -17,14 +19,21 @@
             {% if address.tax_id %}<br />{{ address.tax_id }}{% endif %}
 
             {% if address == address.customer.billing_address %}
-            ({% trans "default billing address" %})
+            ({% trans "is default billing address" %})
             {% endif %}
             {% if address == address.customer.shipping_address %}
-            ({% trans "default shipping address" %})
+            ({% trans "is default shipping address" %})
             {% endif %}
+            </p>
+            <p>
+                <a href="{% url satchless.contact.views.address_edit address.pk %}">{% trans "edit" %}</a>
+            </p>
             </li>
             {% endfor %}
         </ul>
+        <p>
+        <a href="{% url satchless.contact.views.address_new %}">{% trans "Add new address" %}</a>
+        </p>
     {% else %}
         <p>
         {% trans "You have no address defined." %}

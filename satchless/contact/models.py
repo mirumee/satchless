@@ -5,6 +5,8 @@ from countries.models import Country
 
 class Address(models.Model):
     customer = models.ForeignKey('Customer')
+    alias = models.CharField(_("short alias"), max_length=30,
+            help_text=_("User-defined alias which identifies this address"))
     full_name = models.CharField(_("full person name"), max_length=256)
     company_name = models.CharField(_("company name"), max_length=256, blank=True)
     street_address_1 = models.CharField(_("street address 1"), max_length=256)
@@ -12,7 +14,8 @@ class Address(models.Model):
     city = models.CharField(_("city"), max_length=256)
     postal_code = models.CharField(_("postal code"), max_length=20)
     country = models.ForeignKey(Country)
-    tax_id = models.CharField(_("tax ID"), max_length=40)
+    tax_id = models.CharField(_("tax ID"), max_length=40, blank=True)
+    phone = models.CharField(_("phone number"), max_length=30, blank=True)
 
     def __unicode__(self):
         return self.full_name

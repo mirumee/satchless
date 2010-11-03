@@ -1,5 +1,6 @@
 import hashlib
 
+from django.core.urlresolvers import reverse
 from django.db import models
 from . import storage
 
@@ -14,6 +15,13 @@ class Image(models.Model):
     def get_by_size(self, size):
         return self.thumbnail_set.get(size=size)
 
+    def get_absolute_url(self, size=None):
+        if not size:
+            return self.image.url
+        try:
+            return self.get_by_size(size).image.url
+        except Thumbnail.DoesNotExist:
+            return reverse('satchless-image-thumbnail', args=(self.id, size))
 
 class Thumbnail(models.Model):
     original = models.ForeignKey(Image)

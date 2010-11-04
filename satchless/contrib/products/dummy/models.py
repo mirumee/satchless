@@ -7,6 +7,11 @@ from satchless.product.models import ProductAbstract, Variant
 class Dummy(ProductAbstract):
     dummy_attribute = models.CharField(_("dummy attribute"), max_length=30)
 
+    def get_variant_formclass(self):
+        # XXX
+        from . import forms
+        return forms.DummyVariantForm
+
     class Meta:
         app_label = 'product'
         verbose_name = _("dummy")

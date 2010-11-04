@@ -7,13 +7,10 @@ urlpatterns = patterns('',
         # After http://code.djangoproject.com/ticket/13154 has been fixed, uncomment
         # the following lines:
         #
-        #url(r'^view/$', views.cart, {'typ': 'satchless.cart'}, name='satchless-cart-view'),
-        #url(r'^add/$', views.add_to_cart, {'typ': 'satchless.cart'}, name='satchless-cart-add'),
+        #url(r'^view/$', views.cart, {'typ': 'satchless_cart'}, name='satchless-cart-view'),
         #
         # ...and remove these:
-        url(r'^view/(?P<typ>satchless\.cart)/$', views.cart, name='satchless-cart-view'),
-        url(r'^view/$', views.cart, {'typ': 'satchless.cart'}, name='satchless-cart-view'),
-        url(r'^add/(?P<typ>satchless\.cart)/$', views.add_to_cart, name='satchless-cart-add'),
-        url(r'^add/$', views.add_to_cart, {'typ': 'satchless.cart'},  name='satchless-cart-add'),
+        url(r'^view/(?P<typ>satchless_cart)/$', views.cart, name='satchless-cart-view'),
+        url(r'^view/$', views.cart, {'typ': 'satchless_cart'}, name='satchless-cart-view'),
         # ...stop removing here.
         )

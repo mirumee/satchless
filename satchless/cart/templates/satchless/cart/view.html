@@ -1,0 +1,28 @@
+{% extends 'satchless/cart/base.html' %}
+{% load i18n %}
+{% block title %}{% trans "My cart" %}{% endblock %}
+{% block breadcrumbs %}
+    {{ block.super }}
+    <li><a href="">{% trans "My cart" %}</a></li>
+{% endblock %}
+{% block content %}
+    <h1>{% trans "My cart" %}</h1>
+    <table>
+        <thead>
+            <tr>
+                <th>{% trans "No." %}</th>
+                <th>{% trans "Item" %}</th>
+                <th>{% trans "Quantity" %}</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in cart.items.all %}
+            <tr>
+                <td>{{ forloop.counter }}</td>
+                <td>{{ item.variant }}</td>
+                <td>{{ item.quantity }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% endblock %}

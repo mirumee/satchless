@@ -42,6 +42,7 @@ class ParrotTest(TestCase):
         cart.set_quantity(self.cockatoo_white_d, 0) # throw out
         cart.set_quantity(self.cockatoo_blue_a, Decimal('0')) # throw out
         cart.set_quantity(self.cockatoo_white_a, 0.0) # throw out
+
         self.assertEqual(cart.get_quantity(self.macaw_blue), Decimal('1'))
         self.assertEqual(cart.get_quantity(self.macaw_blue_fake), Decimal('2.45'))
         self.assertEqual(cart.get_quantity(self.cockatoo_white_a), 0) # throw out
@@ -51,3 +52,17 @@ class ParrotTest(TestCase):
         self.assertEqual(cart.get_quantity(self.cockatoo_blue_a), 0.0) # throw out
         self.assertRaises(CartItem.DoesNotExist, cart.items.get, variant=self.cockatoo_blue_a)
         self.assertEqual(cart.get_quantity(self.cockatoo_blue_d), Decimal('2'))
+
+        cart.add_quantity(self.macaw_blue, 100)
+        cart.add_quantity(self.macaw_blue_fake, 100)
+        cart.add_quantity(self.cockatoo_white_a, 100)
+        cart.add_quantity(self.cockatoo_white_d, 100)
+        cart.add_quantity(self.cockatoo_blue_a, 100)
+        cart.add_quantity(self.cockatoo_blue_d, 100)
+
+        self.assertEqual(cart.get_quantity(self.macaw_blue), Decimal('101'))
+        self.assertEqual(cart.get_quantity(self.macaw_blue_fake), Decimal('102.45'))
+        self.assertEqual(cart.get_quantity(self.cockatoo_white_a), Decimal('100'))
+        self.assertEqual(cart.get_quantity(self.cockatoo_white_d), Decimal('100'))
+        self.assertEqual(cart.get_quantity(self.cockatoo_blue_a), Decimal('100'))
+        self.assertEqual(cart.get_quantity(self.cockatoo_blue_d), Decimal('102'))

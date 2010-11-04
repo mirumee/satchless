@@ -8,10 +8,10 @@ from decimal import Decimal
 CART_SESSION_KEY = '_satchless_cart-%s' # takes typ
 
 class CartManager(models.Manager):
-    def get_or_create_from_request(request, typ):
+    def get_or_create_from_request(self, request, typ):
         try:
             return self.get(typ=typ, pk=request.session[CART_SESSION_KEY % typ])
-        except Cart.DoesNotExist:
+        except (Cart.DoesNotExist, KeyError):
             owner = request.user if request.user.is_authenticated() else None
             cart = self.create(typ=typ, owner=owner)
             request.session[CART_SESSION_KEY % typ] = cart.pk
@@ -23,6 +23,15 @@ class Cart(models.Model):
     typ = models.CharField(_("type"), max_length=100)
 
     objects = CartManager()
+
+    def add_quantity(self, variant, quantity):
+        try:
+            item = self.items.get(variant=variant)
+            item.quantity += quantity
+            item.save()
+        except CartItem.DoesNotExist:
+            item = self.items.create(variant=variant, quantity=quantity)
+        return item.quantity
 
     def set_quantity(self, variant, quantity):
         try:

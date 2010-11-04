@@ -83,6 +83,19 @@ class ProductAbstract(DescribedModel, Product):
     class Meta:
         abstract = True
 
+class NonConfigurableProductAbstract(ProductAbstract):
+    """
+    Base class for non-configurable products.
+    Automatically creates a variant when created.
+    """
+
+    class Meta:
+        abstract = True
+
+    def save(*args, **kwargs):
+        super(NonConfigurableProductAbstract, self).save(*args, **kwargs)
+        self.variants.get_or_create()
+
 def _store_content_type(sender, instance, **kwargs):
     if issubclass(instance.__class__, ProductAbstract):
         instance.content_type = ContentType.objects.get_for_model(sender)

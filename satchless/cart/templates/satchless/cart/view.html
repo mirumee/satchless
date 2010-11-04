@@ -7,22 +7,36 @@
 {% endblock %}
 {% block content %}
     <h1>{% trans "My cart" %}</h1>
+    <form method="post">
+    {% csrf_token %}
+    {{ formset.management_form }}
     <table>
         <thead>
             <tr>
                 <th>{% trans "No." %}</th>
                 <th>{% trans "Item" %}</th>
                 <th>{% trans "Quantity" %}</th>
+                <th>{% trans "Delete" %}</th>
             </tr>
         </thead>
         <tbody>
-            {% for item in cart.items.all %}
+            {% for form in formset.forms %}
+            {{ form.id }}
             <tr>
                 <td>{{ forloop.counter }}</td>
-                <td>{{ item.variant }}</td>
-                <td>{{ item.quantity }}</td>
+                <td>{{ form.instance.variant }}</td>
+                <td>{{ form.quantity }}</td>
+                <td>{{ form.DELETE }}</td>
             </tr>
             {% endfor %}
         </tbody>
+        <tfoot>
+            <tr>
+                <td colspan="2">
+                    <button type="submit">{% trans "Save" %}</button>
+                </td>
+            </tr>
+        </tfoot>
     </table>
+    </form>
 {% endblock %}

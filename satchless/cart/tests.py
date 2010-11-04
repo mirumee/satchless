@@ -88,6 +88,7 @@ class ParrotTest(TestCase):
         cli_anon = Client()
         cli_user1 = Client()
         self.assert_(cli_user1.login(username="testuser", password=u"pasło"))
+        # We also test different ways of URL resolving here
         self._test_status(reverse('satchless-cart-view', kwargs={'typ': 'satchless.cart'}),
                 client_instance=cli_anon, status_code=200)
         self._test_status(reverse('satchless-cart-view'), client_instance=cli_anon, status_code=200)

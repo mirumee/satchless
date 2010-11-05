@@ -1,5 +1,5 @@
 {% extends 'satchless/product/base.html' %}
-{% load i18n %}
+{% load i18n promote %}
 {% block title %}{{ product.name }} | {{ block.super }}{% endblock %}
 {% block meta-description %}{% if product.meta_description %}{{ product.meta_description }}{% else %}{{ block.super }}{% endif %}{% endblock %}
 {% block breadcrumbs %}
@@ -11,9 +11,11 @@
 {% endblock %}
 {% block content %}
     <h1>{{ product.name }}</h1>
+    {% if product.description %}
     <div class="productDescription">
         {{ product.description }}
     </div>
+    {% endif %}
     {% if product.variants.count %}
     <h2>{% trans "Variants" %}</h2>
     <ul>

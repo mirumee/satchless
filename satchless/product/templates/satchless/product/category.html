@@ -1,5 +1,5 @@
 {% extends 'satchless/product/base.html' %}
-{% load i18n product_url %}
+{% load i18n product_url promote %}
 {% block title %}{{ category }} | {{ block.super }}{% endblock %}
 {% block meta-description %}{% if category.meta_description %}{{ category.meta_description }}{% else %}{{ block.super }}{% endif %}{% endblock %}
 {% block breadcrumbs %}
@@ -11,6 +11,11 @@
 {% endblock %}
 {% block content %}
     <h1>{{ category.name }}</h1>
+    {% if category.description %}
+    <div class="categoryDescription">
+        {{ category.description }}
+    </div>
+    {% endif %}
     {% if category.get_children %}
     <div id="subcategories">
         <h2>{% trans "Subcategories" %}</h2>
@@ -25,7 +30,8 @@
     <div class="products">
         <h2>{% trans "Products" %}</h2>
         <ul>
-            {% for product in category.products.all %}
+            {% promote category.products.all as products %}
+            {% for product in products %}
             <li><a href="{{ product|product_in_category_url:category }}">{{ product }}</a></li>
             {% endfor %}
         </ul>

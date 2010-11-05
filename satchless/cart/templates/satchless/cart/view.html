@@ -1,5 +1,5 @@
 {% extends 'satchless/cart/base.html' %}
-{% load i18n %}
+{% load i18n promote %}
 {% block title %}{% trans "My cart" %}{% endblock %}
 {% block breadcrumbs %}
     {{ block.super }}
@@ -24,7 +24,7 @@
             {{ form.id }}
             <tr>
                 <td>{{ forloop.counter }}</td>
-                <td>{{ form.instance.variant }}</td>
+                <td>{% promote form.instance.variant as variant %}{{ variant }}</td>
                 <td>{{ form.quantity }}</td>
                 <td>{{ form.DELETE }}</td>
             </tr>

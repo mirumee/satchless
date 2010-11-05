@@ -67,7 +67,7 @@ class Product(models.Model):
                     '%s%s/' % (category._parents_slug_path(), category.slug),
                     self.slug))
             else:
-                raise ValueError, _("Product %s not in category %s") % (self, category)
+                raise ValueError("Product %s not in category %s" % (self, category))
         return ('satchless.product.views.product', (self.slug,))
 
     def get_subtype_instance(self):

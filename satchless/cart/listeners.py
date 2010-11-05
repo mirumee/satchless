@@ -12,6 +12,9 @@ def _to_cart(sender, instance=None, request=None, response=None,
     If the request has been POSTed, it also inits the form with the data
     and tries to validate it.
     """
+    if response:
+        # Someone else has already handled the data and returned HttpResponse.
+        return
     Form = forms.addtocart_factory(instance.get_variant_formclass())
     form = Form(data=request.POST or None, product=instance, typ=typ)
     if request.method == 'POST':
@@ -26,8 +29,8 @@ def addtocart_listener(typ):
         return _to_cart(typ=typ, *args, **kwargs)
     return do_listener
 
-def qpa(*args, **kwargs):
-    _to_cart(typ='satchless_cart', *args, **kwargs)
+# Bind with strong reference, as the generated function goes off-scope anw would be garbage collected.
+product_view.connect(addtocart_listener('satchless_cart'), weak=False)
 
-product_view.connect(addtocart_listener('satchless_cart'))
-product_view.connect(qpa)
+# Example: add to wishlist:
+#product_view.connect(addtocart_listener('satchless_wishlist'), weak=False)

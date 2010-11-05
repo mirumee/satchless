@@ -8,7 +8,7 @@ class QuantityForm(object):
     def clean_quantity(self):
         val = self.cleaned_data['quantity']
         if val < 0:
-            raise forms.ValidationError, _("Quantity cannot be negative")
+            raise forms.ValidationError("Quantity cannot be negative")
         return val
 
 

@@ -1,7 +1,7 @@
+from decimal import Decimal
 from django.db import models
 from django.contrib.contenttypes.models import ContentType
 from django.utils.translation import ugettext_lazy as _
-
 from mptt.models import MPTTModel
 
 __all__ = ('ProductAbstract', 'Variant', 'Category')
@@ -69,6 +69,9 @@ class Product(models.Model):
             else:
                 raise ValueError("Product %s not in category %s" % (self, category))
         return ('satchless.product.views.product', (self.slug,))
+
+    def sanitize_quantity(self, quantity):
+        return Decimal(quantity).quantize(1)
 
     def get_subtype_instance(self):
         return self.content_type.get_object_for_this_type(pk=self.pk)

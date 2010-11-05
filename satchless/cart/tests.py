@@ -92,7 +92,7 @@ class ParrotTest(TestCase):
         cart.set_quantity(self.cockatoo_white_a, 0.0) # throw out
 
         self.assertEqual(cart.get_quantity(self.macaw_blue), Decimal('1'))
-        self.assertEqual(cart.get_quantity(self.macaw_blue_fake), Decimal('2.45'))
+        self.assertEqual(cart.get_quantity(self.macaw_blue_fake), Decimal('2'))
         self.assertEqual(cart.get_quantity(self.cockatoo_white_a), 0) # thrown out
         self.assertRaises(CartItem.DoesNotExist, cart.items.get, variant=self.cockatoo_white_a)
         self.assertEqual(cart.get_quantity(self.cockatoo_white_d), Decimal('0')) # thrown out
@@ -109,7 +109,7 @@ class ParrotTest(TestCase):
         cart.add_quantity(self.cockatoo_blue_d, 100)
 
         self.assertEqual(cart.get_quantity(self.macaw_blue), Decimal('101'))
-        self.assertEqual(cart.get_quantity(self.macaw_blue_fake), Decimal('102.45'))
+        self.assertEqual(cart.get_quantity(self.macaw_blue_fake), Decimal('102'))
         self.assertEqual(cart.get_quantity(self.cockatoo_white_a), Decimal('100'))
         self.assertEqual(cart.get_quantity(self.cockatoo_white_d), Decimal('100'))
         self.assertEqual(cart.get_quantity(self.cockatoo_blue_a), Decimal('100'))

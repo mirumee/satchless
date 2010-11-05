@@ -25,6 +25,7 @@ class Cart(models.Model):
     objects = CartManager()
 
     def add_quantity(self, variant, quantity):
+        quantity = variant.get_subtype_instance().product.sanitize_quantity(quantity)
         try:
             item = self.items.get(variant=variant)
             item.quantity += quantity
@@ -34,6 +35,7 @@ class Cart(models.Model):
         return item.quantity
 
     def set_quantity(self, variant, quantity):
+        quantity = variant.get_subtype_instance().product.sanitize_quantity(quantity)
         try:
             item = self.items.get(variant=variant)
             if quantity > 0:

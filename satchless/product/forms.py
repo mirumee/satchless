@@ -1,11 +1,25 @@
 from django import forms
 from django.utils.translation import ugettext as _
 
-class NonConfigurableVariantForm(forms.Form):
-    def __init__(self, product=None, *args, **kwargs):
-        self.product = product
-        super(NonConfigurableVariantForm, self).__init__(*args, **kwargs)
+from . import models
 
+class BaseVariantForm(forms.Form):
+    product = None
+
+    def __init__(self, *args, **kwargs):
+        self.product = kwargs.pop('product')
+        variant = kwargs.pop('variant', None)
+        super(BaseVariantForm, self).__init__(*args, **kwargs)
+        # If we have a Variant, fill initials with data from the instance
+        if variant:
+            for field in variant._meta.fields:
+                name = field.name
+                if not self.fields.has_key(name):
+                    continue
+                self.fields[name].initial = getattr(variant, name)
+
+
+class NonConfigurableVariantForm(BaseVariantForm):
     def is_valid(self):
         return True
 

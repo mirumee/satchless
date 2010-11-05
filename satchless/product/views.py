@@ -37,8 +37,7 @@ def product(request, category_slugs='', product_slug=''):
     if len(response) == 1:
         return response[0]
     elif len(response) > 1:
-        raise ValueError, _("Multiple responses returned.")
-    print context
+        raise ValueError, "Multiple responses returned."
     context['product'] = product
     context['path'] = path
     return direct_to_template(request,

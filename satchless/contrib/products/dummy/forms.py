@@ -1,14 +1,16 @@
 from django import forms
 from django.utils.translation import ugettext as _
+
+from satchless.product.forms import BaseVariantForm
+
 from . import models
 
-class DummyVariantForm(forms.Form):
+class DummyVariantForm(BaseVariantForm):
     color = forms.CharField(label=_("color"), max_length=10,
             widget=forms.Select(choices=models.DummyVariant.COLOR_CHOICES))
     size = forms.IntegerField(label=_("size"), widget=forms.Select())
 
-    def __init__(self, product=None, *args, **kwargs):
-        self.product = product
+    def __init__(self, *args, **kwargs):
         super(DummyVariantForm, self).__init__(*args, **kwargs)
         sizes = self.product.variants.distinct().order_by('size').values_list('size')
         self.fields['size'].widget.choices = ((s[0],s[0]) for s in sizes)

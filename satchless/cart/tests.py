@@ -5,6 +5,7 @@ from django.test import TestCase, Client
 from django.db import models
 from django import forms
 
+from satchless.product.forms import BaseVariantForm
 from satchless.product.models import ProductAbstract
 from satchless.product.signals import variant_formclass_for_product
 
@@ -24,13 +25,9 @@ class DeadParrotVariant(Variant):
         unique_together = ('product', 'color', 'looks_alive')
 
 
-class DeadParrotVariantForm(forms.Form):
+class DeadParrotVariantForm(BaseVariantForm):
     color = forms.CharField(max_length=10)
     looks_alive = forms.BooleanField()
-
-    def __init__(self, product=None, *args, **kwargs):
-        self.product = product
-        super(DeadParrotVariantForm, self).__init__(*args, **kwargs)
 
     def _get_variant_queryset(self):
         return DeadParrotVariant.objects.filter(

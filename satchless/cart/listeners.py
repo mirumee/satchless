@@ -1,12 +1,13 @@
-from django.http import HttpResponseRedirect
 from django.core.urlresolvers import reverse
-from satchless.product.signals import product_view, variant_formclass_for_product
+from django.http import HttpResponseRedirect
 from satchless.product.forms import NonConfigurableVariantForm
+from satchless.product.signals import product_view, variant_formclass_for_product
+from satchless.product.models import ProductAbstract, Variant
 
 from . import models
 from . import forms
 
-def _to_cart(sender, instance=None, request=None, response=None,
+def _to_cart(sender, instances=None, request=None, response=None,
         extra_context=None, typ='', **kwargs):
     """
     Finds AddToCartForm subclass for model and adds it to the context.
@@ -16,21 +17,31 @@ def _to_cart(sender, instance=None, request=None, response=None,
     if response:
         # Someone else has already handled the data and returned HttpResponse.
         return
-    formclass = []
-    variant_formclass_for_product.send(sender=type(instance), instance=instance, formclass=formclass)
-    if len(formclass) > 1:
-        raise ValueError("Multiple form classes returned for %s : %s." % (
-            instance._meta.object_name, formclass))
-    elif not len(formclass):
-        formclass = [NonConfigurableVariantForm]
-    Form = forms.addtocart_factory(formclass[0])
-    form = Form(data=request.POST or None, product=instance, typ=typ)
-    if request.method == 'POST':
-        if form.is_valid() and len(response) == 0:
-            cart = models.Cart.objects.get_or_create_from_request(request, typ)
-            form.save(cart=cart)
-            response.append(HttpResponseRedirect(reverse('satchless-cart-view', kwargs={'typ': typ})))
-    extra_context['%s_form' % typ] = form
+    for instance in instances:
+        formclass = []
+        if isinstance(instance, ProductAbstract):
+            product = instance
+            variant = None
+        elif isinstance(instance, Variant):
+            product = instance.product
+            variant = instance
+        else:
+            raise ValueError("Received unknown type: %s" % type(instance).__name__)
+        variant_formclass_for_product.send(sender=type(product), instance=product, formclass=formclass)
+        if len(formclass) > 1:
+            raise ValueError("Multiple form classes returned for %s : %s." % (
+                product._meta.object_name, formclass))
+        elif not len(formclass):
+            formclass = [NonConfigurableVariantForm]
+        Form = forms.addtocart_factory(formclass[0])
+        form = Form(data=request.POST or None, product=product, variant=variant, typ=typ)
+        if request.method == 'POST':
+            if form.is_valid() and len(response) == 0:
+                cart = models.Cart.objects.get_or_create_from_request(request, typ)
+                form.save(cart=cart)
+                response.append(HttpResponseRedirect(reverse('satchless-cart-view', kwargs={'typ': typ})))
+                return
+        instance.cart_form = form
 
 def addtocart_listener(typ):
     def do_listener(*args, **kwargs):

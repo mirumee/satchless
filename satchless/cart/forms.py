@@ -26,17 +26,15 @@ class AddToCartForm(forms.Form, QuantityForm):
         super(AddToCartForm, self).__init__(data=data, *args, **kwargs)
         self.fields['typ'].initial = typ
 
-    def get_variant(self):
-        raise Exception("AddToCart should be subclassed and return Variant subclass " \
-                "for given product and form data.")
-
     def save(self, cart):
         cart.add_quantity(self.get_variant(), self.cleaned_data['quantity'])
 
+
 def addtocart_factory(klass):
-    class AddVariantToCartForm(klass, AddToCartForm):
+    class AddVariantToCartForm(AddToCartForm, klass):
         pass
     return AddVariantToCartForm
+
 
 class EditCartItemForm(forms.ModelForm, QuantityForm):
     model = models.CartItem

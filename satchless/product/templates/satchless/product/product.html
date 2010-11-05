@@ -24,10 +24,10 @@
         {% endfor %}
     </ul>
     {% endif %}
-    {% if satchless_cart_form %}
+    {% if product.cart_form %}
     <form method="post" action="">
         {% csrf_token %}
-        {{ satchless_cart_form.as_p }}
+        {{ product.cart_form.as_p }}
         <button type="submit">{% trans "Add to cart" %}</button>
     </form>
     {% endif %}

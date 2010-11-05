@@ -31,7 +31,7 @@ def product(request, category_slugs='', product_slug=''):
     context = {}
     response = []
     signals.product_view.send(
-            sender=type(product), instance=product,
+            sender=type(product), instances=[product],
             request=request, response=response, extra_context=context
             )
     if len(response) == 1:

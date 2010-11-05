@@ -1,14 +1,19 @@
 # -*- coding: utf-8 -*-
+from decimal import Decimal
 from django.core.urlresolvers import reverse
 from django.test import TestCase, Client
 from django.db import models
+from django import forms
+
 from satchless.product.models import ProductAbstract
+from satchless.product.signals import variant_formclass_for_product
+
 from .models import *
 
-from decimal import Decimal
 
 class DeadParrot(ProductAbstract):
     species = models.CharField(max_length=20)
+
 
 class DeadParrotVariant(Variant):
     product = models.ForeignKey(DeadParrot, related_name='variants')
@@ -17,6 +22,35 @@ class DeadParrotVariant(Variant):
 
     class Meta:
         unique_together = ('product', 'color', 'looks_alive')
+
+
+class DeadParrotVariantForm(forms.Form):
+    color = forms.CharField(max_length=10)
+    looks_alive = forms.BooleanField()
+
+    def __init__(self, product=None, *args, **kwargs):
+        self.product = product
+        super(DeadParrotVariantForm, self).__init__(*args, **kwargs)
+
+    def _get_variant_queryset(self):
+        return DeadParrotVariant.objects.filter(
+                product=self.product,
+                color=self.cleaned_data['color'],
+                looks_alive=self.cleaned_data['looks_alive'])
+
+    def clean(self):
+        if not self._get_variant_queryset().exists():
+            raise forms.ValidationError("Variant does not exist")
+        return self.cleaned_data
+
+    def get_variant(self):
+        return self._get_variant_queryset().get()
+
+
+def get_variantformclass(sender=None, instance=None, formclass=None, **kwargs):
+    formclass.append(DeadParrotVariantForm)
+
+variant_formclass_for_product.connect(get_variantformclass, sender=DeadParrot)
 
 
 class ParrotTest(TestCase):
@@ -95,13 +129,13 @@ class ParrotTest(TestCase):
         self._test_status(reverse('satchless-cart-view', kwargs={'typ': 'satchless_cart'}),
                 client_instance=cli_user1, status_code=200)
 
-        self._test_status(reverse('satchless-cart-add', kwargs={'typ': 'satchless_cart'}),
+        self._test_status(self.macaw.get_absolute_url(),
                 method='post',
-                data={'variant': self.macaw_blue.pk, 'quantity': 1},
-                client_instance=cli_user1,
-                status_code=302)
-        self._test_status(reverse('satchless-cart-add'),
-                method='post',
-                data={'variant': self.macaw_blue.pk, 'quantity': 1},
+                data={'typ': 'satchless_cart', 'color': 'blue', 'looks_alive': 1, 'quantity': 1},
                 client_instance=cli_anon,
+                status_code=302)
+        self._test_status(self.cockatoo.get_absolute_url(),
+                method='post',
+                data={'typ': 'satchless_cart', 'color': 'white', 'looks_alive': 1, 'quantity': 10},
+                client_instance=cli_user1,
                 status_code=302)

@@ -34,9 +34,9 @@ class AddToCartForm(forms.Form, QuantityForm):
         cart.add_quantity(self.get_variant(), self.cleaned_data['quantity'])
 
 def addtocart_factory(klass):
-    class AddVariantToForm(klass, AddToCartForm):
+    class AddVariantToCartForm(klass, AddToCartForm):
         pass
-    return AddVariantToForm
+    return AddVariantToCartForm
 
 class EditCartItemForm(forms.ModelForm, QuantityForm):
     model = models.CartItem

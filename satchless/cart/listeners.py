@@ -1,6 +1,7 @@
 from django.http import HttpResponseRedirect
 from django.core.urlresolvers import reverse
-from satchless.product.signals import product_view
+from satchless.product.signals import product_view, variant_formclass_for_product
+from satchless.product.forms import NonConfigurableVariantForm
 
 from . import models
 from . import forms
@@ -15,7 +16,14 @@ def _to_cart(sender, instance=None, request=None, response=None,
     if response:
         # Someone else has already handled the data and returned HttpResponse.
         return
-    Form = forms.addtocart_factory(instance.get_variant_formclass())
+    formclass = []
+    variant_formclass_for_product.send(sender=type(instance), instance=instance, formclass=formclass)
+    if len(formclass) > 1:
+        raise ValueError("Multiple form classes returned for %s : %s." % (
+            instance._meta.object_name, formclass))
+    elif not len(formclass):
+        formclass = [NonConfigurableVariantForm]
+    Form = forms.addtocart_factory(formclass[0])
     form = Form(data=request.POST or None, product=instance, typ=typ)
     if request.method == 'POST':
         if form.is_valid() and len(response) == 0:

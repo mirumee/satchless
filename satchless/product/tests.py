@@ -14,7 +14,6 @@ class DeadParrotVariant(Variant):
     class Meta:
         unique_together = ('product', 'color', 'looks_alive')
 
-
 class ParrotTest(TestCase):
     def setUp(self):
         self.birds = Category.objects.create(slug='birds', name=u"Birds")
@@ -59,6 +58,10 @@ class ParrotTest(TestCase):
                 Category.path_from_slugs,
                 (['birds', 'storks', 'forks', 'porks', 'forks', 'yorks']))
 
+    def test_product_subclass_promotion(self):
+        for product in ProductAbstract.objects.all():
+            self.assertEqual(type(product.get_subtype_instance()), DeadParrot)
+
     def test_variants(self):
         macaw_blue = self.macaw.variants.create(color='blue', looks_alive=False)
         macaw_blue_fake = self.macaw.variants.create(color='blue', looks_alive=True)
@@ -69,6 +72,9 @@ class ParrotTest(TestCase):
         cockatoo_blue_a = self.cockatoo.variants.create(color='blue', looks_alive=True)
         cockatoo_blue_d = self.cockatoo.variants.create(color='blue', looks_alive=False)
         self.assertEqual(4, self.cockatoo.variants.count())
+
+        for variant in Variant.objects.all():
+            self.assertEqual(type(variant.get_subtype_instance()), DeadParrotVariant)
 
     def _test_status(self, url, method='get', *args, **kwargs):
         status_code = kwargs.pop('status_code', 200)

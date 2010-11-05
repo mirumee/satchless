@@ -96,12 +96,16 @@ class NonConfigurableProductAbstract(ProductAbstract):
         super(NonConfigurableProductAbstract, self).save(*args, **kwargs)
         self.variants.get_or_create()
 
-def _store_content_type(sender, instance, **kwargs):
-    if issubclass(instance.__class__, ProductAbstract):
-        instance.content_type = ContentType.objects.get_for_model(sender)
-models.signals.pre_save.connect(_store_content_type)
 
 class Variant(models.Model):
     """A base class for variants. It identifies a concrete product instance,
     which goes to a cart. Custom variants inherit from it."""
-    pass
+    content_type = models.ForeignKey(ContentType, editable=False)
+
+    def get_subtype_instance(self):
+        return self.content_type.get_object_for_this_type(pk=self.pk)
+
+def _store_content_type(sender, instance, **kwargs):
+    if issubclass(type(instance), ProductAbstract) or issubclass(type(instance), Variant):
+        instance.content_type = ContentType.objects.get_for_model(sender)
+models.signals.pre_save.connect(_store_content_type)

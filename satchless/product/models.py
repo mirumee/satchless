@@ -19,6 +19,19 @@ class DescribedModel(models.Model):
         abstract = True
 
 
+class Subtyped(models.Model):
+    content_type = models.ForeignKey(ContentType, editable=False)
+    _subtype_instance = None
+
+    def get_subtype_instance(self):
+        if not self._subtype_instance:
+            self._subtype_instance = self.content_type.get_object_for_this_type(pk=self.pk)
+        return self._subtype_instance
+
+    class Meta:
+        abstract = True
+
+
 class Category(MPTTModel, DescribedModel):
     slug = models.SlugField(max_length=50)
     parent = models.ForeignKey('self', null=True, blank=True, related_name='children')
@@ -52,11 +65,10 @@ class Category(MPTTModel, DescribedModel):
         verbose_name_plural = _("categories")
 
 
-class Product(models.Model):
+class Product(Subtyped):
     """The base Product to rule them all. Provides slug, a powerful item to
     identify member of each tribe."""
     slug = models.SlugField(max_length=80)
-    content_type = models.ForeignKey(ContentType, editable=False)
     categories = models.ManyToManyField(Category, related_name='products')
 
     @models.permalink
@@ -100,13 +112,10 @@ class NonConfigurableProductAbstract(ProductAbstract):
         self.variants.get_or_create()
 
 
-class Variant(models.Model):
+class Variant(Subtyped):
     """A base class for variants. It identifies a concrete product instance,
     which goes to a cart. Custom variants inherit from it."""
-    content_type = models.ForeignKey(ContentType, editable=False)
-
-    def get_subtype_instance(self):
-        return self.content_type.get_object_for_this_type(pk=self.pk)
+    pass
 
 def _store_content_type(sender, instance, **kwargs):
     if issubclass(type(instance), ProductAbstract) or issubclass(type(instance), Variant):

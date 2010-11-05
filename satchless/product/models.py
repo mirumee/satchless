@@ -23,8 +23,13 @@ class Subtyped(models.Model):
     content_type = models.ForeignKey(ContentType, editable=False)
     _subtype_instance = None
 
-    def get_subtype_instance(self):
-        if not self._subtype_instance:
+    def get_subtype_instance(self, refresh=False):
+        """
+        Caches and returns the final subtype instance. If refresh is set,
+        the instance is taken from database, no matter if cached copy
+        exists.
+        """
+        if not self._subtype_instance or refresh:
             self._subtype_instance = self.content_type.get_object_for_this_type(pk=self.pk)
         return self._subtype_instance
 
@@ -42,6 +47,9 @@ class Category(MPTTModel, DescribedModel):
 
     @staticmethod
     def path_from_slugs(slugs):
+        """
+        Returns list of Category instances matchnig given slug path.
+        """
         if len(slugs) == 0:
             return []
         leaves = Category.objects.filter(slug=slugs[-1])
@@ -66,8 +74,10 @@ class Category(MPTTModel, DescribedModel):
 
 
 class Product(Subtyped):
-    """The base Product to rule them all. Provides slug, a powerful item to
-    identify member of each tribe."""
+    """
+    The base Product to rule them all. Provides slug, a powerful item to
+    identify member of each tribe.
+    """
     slug = models.SlugField(max_length=80)
     categories = models.ManyToManyField(Category, related_name='products')
 
@@ -83,18 +93,20 @@ class Product(Subtyped):
         return ('satchless.product.views.product', (self.slug,))
 
     def sanitize_quantity(self, quantity):
+        """
+        Returns sanitized quantity. By default it rounds the value to the
+        nearest integer.
+        """
         return Decimal(quantity).quantize(1)
-
-    def get_subtype_instance(self):
-        return self.content_type.get_object_for_this_type(pk=self.pk)
 
     def __unicode__(self):
         return self.slug
 
 
 class ProductAbstract(DescribedModel, Product):
-    """Base class for every product to inherit from."""
-
+    """
+    Base class for every product to inherit from.
+    """
     class Meta:
         abstract = True
 
@@ -113,8 +125,10 @@ class NonConfigurableProductAbstract(ProductAbstract):
 
 
 class Variant(Subtyped):
-    """A base class for variants. It identifies a concrete product instance,
-    which goes to a cart. Custom variants inherit from it."""
+    """
+    Base class for variants. It identifies a concrete product instance,
+    which goes to a cart. Custom variants inherit from it.
+    """
     pass
 
 def _store_content_type(sender, instance, **kwargs):

@@ -10,9 +10,12 @@ from . import forms
 def _to_cart(sender, instances=None, request=None, response=None,
         extra_context=None, typ='', **kwargs):
     """
-    Finds AddToCartForm subclass for model and adds it to the context.
-    If the request has been POSTed, it also inits the form with the data
-    and tries to validate it.
+    Accepts a list of Product or Variant instances. For every of them finds
+    add-to-cart form. For a POST request, performs validation and if it
+    succeeds, adds item to cart and returns redirect to the cart page.
+
+    It handles adding only a single variant to the cart, but with the quantity
+    specified in request.
     """
     if response:
         # Someone else has already handled the data and returned HttpResponse.

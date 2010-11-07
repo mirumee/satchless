@@ -7,18 +7,20 @@ from . import models
 
 def index(request, *args, **kwargs):
     """Show all sets"""
-    pass
+    sets = models.ProductSet.objects.all()
+    return direct_to_template(request,
+            'satchless/productset/index.html',
+            {'sets': sets})
+
 
 def details(request, slug):
     """
     Show product set
     """
-    print "slug: " + slug
     productset = get_object_or_404(models.ProductSet, slug=slug)
     context = {}
     response = []
     variant_instances = productset.variant_instances()
-    print len(variant_instances)
     signals.product_view.send(
                 sender=type(productset), instances=variant_instances,
                 request=request, response=response, extra_context=context)

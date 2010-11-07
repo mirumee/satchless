@@ -3,9 +3,14 @@ from django.utils.translation import ugettext_lazy as _
 
 from satchless.product.models import Variant
 from satchless.product.models import DescribedModel
+from satchless.image.models import Image
 
 class ProductSet(DescribedModel):
     slug = models.SlugField(max_length=50)
+
+    @models.permalink
+    def get_absolute_url(self):
+        return ('satchless.contrib.productset.views.details', (self.slug,))
 
     class Meta:
         verbose_name = _("product set")
@@ -26,3 +31,10 @@ class ProductSetItem(models.Model):
         ordering = ['sort', 'id']
         verbose_name = _("set item")
         verbose_name_plural = _("set items")
+
+class ProductSetImage(Image):
+    product = models.ForeignKey(ProductSet, related_name='images')
+    sort = models.PositiveIntegerField()
+
+    class Meta:
+        ordering = ['sort', 'id']

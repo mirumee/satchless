@@ -22,6 +22,7 @@ class DescribedModel(models.Model):
 class Subtyped(models.Model):
     content_type = models.ForeignKey(ContentType, editable=False)
     _subtype_instance = None
+    __in_unicode = False
 
     def get_subtype_instance(self, refresh=False):
         """
@@ -32,6 +33,16 @@ class Subtyped(models.Model):
         if not self._subtype_instance or refresh:
             self._subtype_instance = self.content_type.get_object_for_this_type(pk=self.pk)
         return self._subtype_instance
+
+    def __unicode__(self):
+        # XXX: can we do it in more clean way?
+        if self.__in_unicode:
+            return super(Subtyped, self).__unicode__()
+        else:
+            self.__in_unicode = True
+            res = self.get_subtype_instance().__unicode__()
+            self.__in_unicode = False
+            return res
 
     class Meta:
         abstract = True

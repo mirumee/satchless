@@ -2,3 +2,4 @@
 !.gitignore
 *.py[co]
 *~
+doc/_build

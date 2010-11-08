@@ -10,7 +10,11 @@ CART_SESSION_KEY = '_satchless_cart-%s' # takes typ
 class CartManager(models.Manager):
     def get_or_create_from_request(self, request, typ):
         try:
-            return self.get(typ=typ, pk=request.session[CART_SESSION_KEY % typ])
+            cart = self.get(typ=typ, pk=request.session[CART_SESSION_KEY % typ])
+            if cart.owner is None and request.user.is_authenticated():
+                cart.owner = request.user
+                cart.save()
+            return cart
         except (Cart.DoesNotExist, KeyError):
             owner = request.user if request.user.is_authenticated() else None
             cart = self.create(typ=typ, owner=owner)

@@ -38,7 +38,7 @@ Customizing your shop
 =====================
 
     * **Products:**
-      :ref:`Products and variants <product-variants>` |
+      :ref:`Overview <product-overview>` |
       :ref:`Writing custom product models <product-models>` |
       :ref:`Product sets <product-sets>`
     * **Customers:**

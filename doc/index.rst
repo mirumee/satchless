@@ -39,7 +39,7 @@ Customizing your shop
 
     * **Products:**
       :ref:`Overview <product-overview>` |
-      :ref:`Writing custom product models <product-models>` |
+      :ref:`Writing custom product models <product-custom_models>` |
       :ref:`Product sets <product-sets>`
     * **Customers:**
     * **Carts and lists:**

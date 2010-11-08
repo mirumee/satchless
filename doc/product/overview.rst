@@ -58,11 +58,16 @@ The inside class hierarchy looks like this::
 
     satchless.product.models.Product
         satchless.product.models.ProductAbstract
+            satchless.contrib.products.dummy.models.Dummy
             satchless.contrib.products.book.models.Book
-            satchless.contrib.products.clothes.models.TShirt
             user_custom_module.models.CustomProduct
 
     satchless.product.models.Variant
+        satchless.contrib.products.dummy.models.DummyVariant
         satchless.contrib.products.book.models.BookVariant
-        satchless.contrib.products.clothes.models.TShirtVariant
         user_custom_module.models.CustomProductVariant
+
+As you probably noticed, every Product subclass has it's sister Variant
+subclass. The convention we use in Satchless is for Variant to refer to
+it's Product model via ``product`` field and for Product to refer back
+via ``variants`` manager.

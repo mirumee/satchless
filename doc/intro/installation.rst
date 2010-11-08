@@ -44,7 +44,8 @@ Include neccessary applications in your ``INSTALLED_APPS`` tuple in Django
     )
 
 
-Add neccessary entries to your ``urls.py`` file::
+Add neccessary entries to your ``urls.py`` file. The prefixes used here are
+just examples and you may change them freely.::
 
     urlpatterns = patterns('',
         url(r'^products/', include('satchless.product.urls')),

@@ -5,10 +5,8 @@ Writing custom Product models
 =============================
 
 Now we are going to create a simple model for your custom product. A module
-very similar to the one discussed here is present in
-``satchless.contrib.products.dummy``, so you may refer to the code there too.
-You may also take a look at tests included within Satchless - some of them
-carry internal definitions of models too!
+discussed here is present in ``satchless.contrib.examples.parrot``, so you
+may refer to the code there too.
 
 Let's assume we sell different species of parrots which may be red, green or
 blue and also alive or `dead`_.

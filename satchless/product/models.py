@@ -101,7 +101,7 @@ class Product(Subtyped):
                     self.slug))
             else:
                 raise ValueError("Product %s not in category %s" % (self, category))
-        return ('satchless.product.views.product', (self.slug,))
+        return ('satchless.product.views.product', (self.slug, self.pk))
 
     def sanitize_quantity(self, quantity):
         """

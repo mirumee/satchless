@@ -20,9 +20,11 @@ def category(request, parent_slugs, category_slug):
             'satchless/product/category.html',
             {'category': category, 'path': path})
 
-def product(request, category_slugs='', product_slug=''):
+def product(request, category_slugs='', product_slug='', product_pk=None):
     path = models.Category.path_from_slugs(filter(None, category_slugs.split('/')))
     products = models.Product.objects.filter(slug=product_slug)
+    if product_pk:
+        products = products.filter(pk=product_pk)
     if len(path):
         products = products.filter(categories=path[-1])
     if not products.exists():

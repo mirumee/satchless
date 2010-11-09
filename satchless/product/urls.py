@@ -7,6 +7,6 @@ urlpatterns = patterns('',
             views.category, name='satchless-product-category'),
         url(r'^(?P<category_slugs>([a-z0-9_-]+/)+)\+(?P<product_slug>[a-z0-9_-]+)/$',
             views.product, name='satchless-product-product'),
-        url(r'^\+(?P<product_slug>[a-z0-9_-]+)/$',
+        url(r'^\+(?P<product_slug>[a-z0-9_-]+),(?P<product_pk>[0-9]+)/$',
             views.product, name='satchless-product-product'),
         )

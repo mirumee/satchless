@@ -35,6 +35,9 @@ category, product and variant.
       logo*, a variant may describe *Pink men's XL t-shirt with Satchless
       logo*.
 
+    * **Variant selection form** shows variant options to a customer and picks
+      the resulting variant using the data provided.
+
 .. _django-mptt: http://code.google.com/p/django-mptt/
 
 How Products and Variants work

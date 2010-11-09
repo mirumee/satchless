@@ -1,6 +1,7 @@
 from django.core.urlresolvers import reverse
 from django.http import HttpResponseRedirect
-from django.views.generic.simple import direct_to_template
+from django.shortcuts import render_to_response
+from django.template import RequestContext
 from . import models
 from . import forms
 
@@ -13,6 +14,7 @@ def cart(request, typ):
             return HttpResponseRedirect(reverse('satchless-cart-view', kwargs={'typ': typ}))
     else:
         formset = forms.CartItemFormSet(instance=cart)
-    return direct_to_template(request,
-            'satchless/cart/view.html',
-            {'cart': cart, 'formset': formset})
+    return render_to_response(
+            ['satchless/cart/%s/view.html' % typ, 'satchless/cart/view.html'],
+            {'cart': cart, 'formset': formset},
+            context_instance=RequestContext(request))

@@ -28,7 +28,7 @@ category, product and variant.
       Each product gets also it's own URL which is not related to category
       tree. This way, *orphans* are never lost.
 
-    * **Variants**: When it comes to complex products, which are being sold
+    * **Variant**: When it comes to complex products, which are being sold
       in different sizes, colors, flavors, etc., the variant is what you
       are looking for. Varians are products with full list of parameters
       that describe it. For example, if you sell a *T-shirt with Satchless

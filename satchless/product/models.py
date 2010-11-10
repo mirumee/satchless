@@ -1,12 +1,30 @@
 from decimal import Decimal
+from django.conf import settings
 from django.db import models
 from django.contrib.contenttypes.models import ContentType
 from django.utils.translation import ugettext_lazy as _
+from localeurl.models import reverse
+from mothertongue.models import MothertongueModelTranslate
 from mptt.models import MPTTModel
 
-__all__ = ('ProductAbstract', 'Variant', 'Category')
+__all__ = ('ProductAbstract', 'Variant', 'Category', 'ProductAbstractTranslation', 'CategoryTranslation')
 
-class DescribedModel(models.Model):
+class DescribedModel(MothertongueModelTranslate):
+    name = models.CharField(_('name'), max_length=128)
+    description = models.TextField(_('description'), max_length=16*1024, blank=True)
+    meta_description = models.TextField(_('meta description'), max_length=2*1024, blank=True,
+            help_text=_("Description used by search and indexing engines"))
+    translated_fields = ('name', 'description', 'meta_description')
+
+    def __unicode__(self):
+        return self.name
+
+    class Meta:
+        abstract = True
+
+
+class DescribedModelTranslation(models.Model):
+    language = models.CharField(max_length=5, choices=settings.LANGUAGES[1:])
     name = models.CharField(_('name'), max_length=128)
     description = models.TextField(_('description'), max_length=16*1024, blank=True)
     meta_description = models.TextField(_('meta description'), max_length=2*1024, blank=True,
@@ -17,7 +35,6 @@ class DescribedModel(models.Model):
 
     class Meta:
         abstract = True
-
 
 class Subtyped(models.Model):
     content_type = models.ForeignKey(ContentType, editable=False)
@@ -51,6 +68,7 @@ class Subtyped(models.Model):
 class Category(MPTTModel, DescribedModel):
     slug = models.SlugField(max_length=50)
     parent = models.ForeignKey('self', null=True, blank=True, related_name='children')
+    translation_set = 'translations'
 
     def _parents_slug_path(self):
         parents = '/'.join(c.slug for c in self.get_ancestors())
@@ -79,9 +97,22 @@ class Category(MPTTModel, DescribedModel):
     def get_absolute_url(self):
         return ('satchless.product.views.category', (self._parents_slug_path(), self.slug))
 
+    def get_url(self):
+        """Uses reverse resolver, to force localeurl to add language code."""
+        return reverse('satchless-product-category',
+                args=(self._parents_slug_path(), self.slug))
+
     class Meta:
         verbose_name = _("category")
         verbose_name_plural = _("categories")
+
+
+class CategoryTranslation(DescribedModelTranslation):
+    category = models.ForeignKey(Category, related_name='translations')
+    translation_set = 'translations'
+
+    class Meta(object):
+        unique_together = ('category', 'language')
 
 
 class Product(Subtyped):
@@ -92,8 +123,7 @@ class Product(Subtyped):
     slug = models.SlugField(max_length=80)
     categories = models.ManyToManyField(Category, related_name='products')
 
-    @models.permalink
-    def get_absolute_url(self, category=None):
+    def _get_url(self, category):
         if category:
             if self.categories.filter(pk=category.pk).exists():
                 return ('satchless.product.views.product', (
@@ -101,7 +131,16 @@ class Product(Subtyped):
                     self.slug))
             else:
                 raise ValueError("Product %s not in category %s" % (self, category))
-        return ('satchless.product.views.product', (self.slug, self.pk))
+        return ('satchless-product-product', (self.slug, self.pk))
+
+    @models.permalink
+    def get_absolute_url(self):
+        return self._get_url(category=None)
+
+    def get_url(self, category=None):
+        """Uses reverse resolver, to force localeurl to add language code."""
+        view, args = self._get_url(category=category)
+        return reverse(view, args=args)
 
     def sanitize_quantity(self, quantity):
         """
@@ -120,6 +159,17 @@ class ProductAbstract(DescribedModel, Product):
     """
     class Meta:
         abstract = True
+
+class ProductAbstractTranslation(DescribedModelTranslation):
+    """
+    Base class for product translations.
+    """
+    product = models.ForeignKey(Product, related_name='translations')
+    translation_set = 'translations'
+
+    class Meta:
+        abstract = True
+
 
 class NonConfigurableProductAbstract(ProductAbstract):
     """
@@ -141,6 +191,7 @@ class Variant(Subtyped):
     which goes to a cart. Custom variants inherit from it.
     """
     pass
+
 
 def _store_content_type(sender, instance, **kwargs):
     if issubclass(type(instance), ProductAbstract) or issubclass(type(instance), Variant):

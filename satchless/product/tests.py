@@ -32,7 +32,7 @@ class ParrotTest(TestCase):
 
     def test_paths(self):
         self.assertRaises(ValueError,
-                self.macaw.get_absolute_url,
+                self.macaw.get_url,
                 category=self.storks)
         forks = Category.objects.create(slug='forks', name=u"Forks", parent=self.storks)
         porks = Category.objects.create(slug='porks', name=u"Porks", parent=forks)
@@ -91,11 +91,11 @@ class ParrotTest(TestCase):
 
     def test_simple_views(self):
         self._test_status(reverse('satchless.product.views.index'))
-        self._test_status(self.birds.get_absolute_url())
-        self._test_status(self.parrots.get_absolute_url())
-        self._test_status(self.macaw.get_absolute_url())
-        self._test_status(self.macaw.get_absolute_url(category=self.parrots))
+        self._test_status(self.birds.get_url())
+        self._test_status(self.parrots.get_url())
+        self._test_status(self.macaw.get_url())
+        self._test_status(self.macaw.get_url(category=self.parrots))
         self._test_status(
-                self.macaw.get_absolute_url(category=self.parrots).replace('parrots', 'storks'),
+                self.macaw.get_url(category=self.parrots).replace('parrots', 'storks'),
                 status_code=404
                 )

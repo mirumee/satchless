@@ -1,9 +1,15 @@
 from django import forms
+from django.conf import settings
 from django.contrib import admin
 from mptt.admin import MPTTModelAdmin
 
 from . import fields
 from . import models
+
+class CategoryTranslationInline(admin.StackedInline):
+    model = models.CategoryTranslation
+    extra = 1
+    max_num = len(settings.LANGUAGES) - 1
 
 class CategoryForm(forms.ModelForm):
     class Meta:
@@ -14,6 +20,7 @@ class CategoryForm(forms.ModelForm):
 
 class CategoryAdmin(MPTTModelAdmin):
     form = CategoryForm
+    inlines = (CategoryTranslationInline,)
     prepopulated_fields = {'slug': ('name',)}
 
 class ProductForm(forms.ModelForm):

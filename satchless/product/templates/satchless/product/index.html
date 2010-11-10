@@ -9,7 +9,7 @@
     <div id="subcategories">
         <ul>
             {% for cat in categories %}
-            <li><a href="{{ cat.get_absolute_url }}">{{ cat }}</a></li>
+            <li><a href="{{ cat.get_url }}">{{ cat }}</a></li>
             {% endfor %}
         </ul>
     </div>

@@ -1,11 +1,15 @@
 from django.db import models
-from satchless.product.models import ProductAbstract, Variant
+from satchless.product.models import ProductAbstract, Variant, ProductAbstractTranslation
 
 class Parrot(ProductAbstract):
     latin_name = models.CharField(max_length=20)
 
     class Meta:
         app_label = 'product'
+
+
+class ParrotTranslation(ProductAbstractTranslation):
+    pass
 
 
 class ParrotVariant(Variant):

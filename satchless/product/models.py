@@ -31,7 +31,7 @@ class DescribedModelTranslation(models.Model):
             help_text=_("Description used by search and indexing engines"))
 
     def __unicode__(self):
-        return self.name
+        return "%s@%s" % (self.name, self.language)
 
     class Meta:
         abstract = True

@@ -1,12 +1,14 @@
 from django import forms
+from django.utils.translation import ugettext as _
 from satchless.product.forms import BaseVariantForm
 from . import models
 
 class ParrotVariantForm(BaseVariantForm):
     color = forms.CharField(
             max_length=10,
-            widget=forms.Select(choices=models.ParrotVariant.COLOR_CHOICES))
-    looks_alive = forms.BooleanField(required=False)
+            widget=forms.Select(choices=models.ParrotVariant.COLOR_CHOICES),
+            label=_("Color"))
+    looks_alive = forms.BooleanField(required=False, label=_("Looks alive"))
 
     def _get_variant_queryset(self):
         return models.ParrotVariant.objects.filter(
@@ -16,7 +18,7 @@ class ParrotVariantForm(BaseVariantForm):
 
     def clean(self):
         if not self._get_variant_queryset().exists():
-            raise forms.ValidationError("Variant does not exist")
+            raise forms.ValidationError(_("Variant does not exist"))
         return self.cleaned_data
 
     def get_variant(self):

@@ -15,6 +15,7 @@ class DescribedModel(MothertongueModelTranslate):
     meta_description = models.TextField(_('meta description'), max_length=2*1024, blank=True,
             help_text=_("Description used by search and indexing engines"))
     translated_fields = ('name', 'description', 'meta_description')
+    translation_set = 'translations'
 
     def __unicode__(self):
         return self.name
@@ -68,7 +69,6 @@ class Subtyped(models.Model):
 class Category(MPTTModel, DescribedModel):
     slug = models.SlugField(max_length=50)
     parent = models.ForeignKey('self', null=True, blank=True, related_name='children')
-    translation_set = 'translations'
 
     def _parents_slug_path(self):
         parents = '/'.join(c.slug for c in self.get_ancestors())
@@ -109,7 +109,6 @@ class Category(MPTTModel, DescribedModel):
 
 class CategoryTranslation(DescribedModelTranslation):
     category = models.ForeignKey(Category, related_name='translations')
-    translation_set = 'translations'
 
     class Meta(object):
         unique_together = ('category', 'language')
@@ -165,7 +164,6 @@ class ProductAbstractTranslation(DescribedModelTranslation):
     Base class for product translations.
     """
     product = models.ForeignKey(Product, related_name='translations')
-    translation_set = 'translations'
 
     class Meta:
         abstract = True

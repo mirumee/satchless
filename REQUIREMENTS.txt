@@ -2,4 +2,4 @@ django              http://www.djangoproject.com/download/
 django-mptt         http://github.com/django-mptt/django-mptt
 django-countries    http://code.google.com/p/django-countries/
 django-localeurl    http://pypi.python.org/pypi/django-localeurl/1.4
-django-mothertongue http://github.com/emesik/django-mothertongue
+django-mothertongue http://github.com/robcharlwood/django-mothertongue

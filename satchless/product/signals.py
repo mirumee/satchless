@@ -15,14 +15,14 @@ Finds variant selection form clas for given product instance and appends
 it to the form list.
 """
 
-product_unit_price_range_query = dispatch.Signal(providing_args=['instance'])
+product_unit_price_range_query = dispatch.Signal(providing_args=['instance', 'price'])
 product_unit_price_range_query.__doc__ = """
-Checks for product price at quantity of 1. Listeners should set
-`instance.unit_price_range` field.
+Checks for product price at quantity of 1. Listeners should append result
+to the `price` list.
 """
 
-variant_unit_price_query = dispatch.Signal(providing_args=['instance', 'quantity'])
+variant_unit_price_query = dispatch.Signal(providing_args=['instance', 'quantity', 'price'])
 variant_unit_price_query.__doc__ = """
-Checks for variant unit price at given quantity. Listeners should set
-`instance.unit_price` field.
+Checks for variant unit price at given quantity. Listeners should append result
+to the `price` list.
 """

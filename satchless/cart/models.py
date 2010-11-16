@@ -1,9 +1,10 @@
+from decimal import Decimal
 from django.db import models
 from django.contrib.auth.models import User
 from django.utils.translation import ugettext_lazy as _
 from satchless.product.models import Variant
 
-from decimal import Decimal
+from . import signals
 
 CART_SESSION_KEY = '_satchless_cart-%s' # takes typ
 
@@ -68,6 +69,13 @@ class CartItem(models.Model):
     cart = models.ForeignKey(Cart, related_name='items')
     variant = models.ForeignKey(Variant)
     quantity = models.DecimalField(_("quantity"), max_digits=10, decimal_places=4)
+
+    def get_unit_price(self, **kwargs):
+        price = []
+        signals.cartitem_unit_price_query.send(sender=type(self),
+                instance=self, price=price, **kwargs)
+        assert(len(price) == 1)
+        return price[0]
 
     def __unicode__(self):
         return u"%s x %s" % (self.variant, self.quantity)

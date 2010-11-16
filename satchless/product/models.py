@@ -155,10 +155,11 @@ class Product(Subtyped):
         Calls a signal to calculate self.unit_price_range and returns the
         value.
         """
-        signals.product_unit_price_range_query.send(
-                sender=type(self), instance=self, **kwargs)
-        # TODO: custom exception if not set?
-        return self.unit_price_range
+        price_range = []
+        signals.product_unit_price_range_query.send(sender=type(self),
+                instance=self, price_range=price_range, **kwargs)
+        assert(len(price_range) == 1)
+        return price_range[0]
 
     def __unicode__(self):
         return self.slug

@@ -14,6 +14,12 @@ class DeadParrotVariant(Variant):
                 ('blue', 'blue'), ('white', 'white'), ('red', 'red'), ('green', 'green')))
     looks_alive = models.BooleanField()
 
+    def __unicode__(self):
+        "For debugging purposes"
+        return u"%s %s %s" % (
+                "alive" if self.looks_alive else "resting",
+                self.get_color_display(), self.product.slug)
+
     class Meta:
         unique_together = ('product', 'color', 'looks_alive')
 
@@ -68,7 +74,7 @@ class ParrotTest(TestCase):
     def test_cartprices(self):
         macaw_price = ProductPrice.objects.create(product=self.macaw,
                 price=Decimal('10.0'), qty_mode='product')
-        macaw_price.qty_overrides.create(min_qty=5, price=Decimal('9.0'))
+        macaw_price.qty_overrides.create(min_qty=9, price=Decimal('9.0'))
         macaw_price.offsets.create(variant=self.macaw_blue_a, price_offset=Decimal('2.0'))
         cart = Cart.objects.create(typ='test')
         cart.set_quantity(self.macaw_blue_a, 4)

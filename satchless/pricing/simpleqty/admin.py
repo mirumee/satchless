@@ -5,7 +5,7 @@ from . import models
 class VariantOffsetFormSet(BaseInlineFormSet):
     def __init__(self, *args, **kwargs):
         super(VariantOffsetFormSet, self).__init__(*args, **kwargs)
-        if self.instance:
+        if self.instance and self.instance.pk:
             variants = self.instance.product.get_subtype_instance().variants.all()
             for form in self.forms:
                 form.fields['variant'].queryset = variants

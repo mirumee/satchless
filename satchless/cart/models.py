@@ -3,6 +3,7 @@ from django.db import models
 from django.contrib.auth.models import User
 from django.utils.translation import ugettext_lazy as _
 from satchless.product.models import Variant
+from satchless.product.exceptions import PriceDoesNotExist, MultiplePricesReturned
 
 from . import signals
 
@@ -58,6 +59,12 @@ class Cart(models.Model):
         except CartItem.DoesNotExist:
             return Decimal('0')
 
+    def get_total_price(self):
+        total = Decimal('0')
+        for i in self.items.all():
+            total += i.get_unit_price() * i.quantity
+        return total
+
     def __unicode__(self):
         if self.owner:
             return u"%s of %s" % (self.typ, self.user.username)
@@ -70,11 +77,14 @@ class CartItem(models.Model):
     variant = models.ForeignKey(Variant)
     quantity = models.DecimalField(_("quantity"), max_digits=10, decimal_places=4)
 
-    def get_unit_price(self, **kwargs):
+    def get_unit_price(self):
         price = []
         signals.cartitem_unit_price_query.send(sender=type(self),
-                instance=self, price=price, **kwargs)
-        assert(len(price) == 1)
+                instance=self, price=price)
+        if len(price) == 0:
+            raise PriceDoesNotExist("No price found for %s" % self)
+        elif len(price) > 1:
+            raise MultiplePricesReturned("Multiple prices returned for %s" % self)
         return price[0]
 
     def __unicode__(self):

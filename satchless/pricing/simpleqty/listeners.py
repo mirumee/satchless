@@ -49,7 +49,7 @@ def cartitem_unit_price_listener(sender, instance=None, price=None, **kwargs):
     else:
         quantity = instance.quantity
     try:
-        price_val = base_price.qty_overrides.filter(min_qty__lte=instance.quantity)\
+        price_val = base_price.qty_overrides.filter(min_qty__lte=quantity)\
                     .order_by('-min_qty')[0].price
     except IndexError:
         price_val = base_price.price

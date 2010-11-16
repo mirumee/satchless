@@ -1,5 +1,5 @@
 {% extends 'satchless/product/base.html' %}
-{% load i18n promote %}
+{% load i18n promote product_prices %}
 {% block title %}{{ product.name }} | {{ block.super }}{% endblock %}
 {% block meta-description %}{% if product.meta_description %}{{ product.meta_description }}{% else %}{{ block.super }}{% endif %}{% endblock %}
 {% block breadcrumbs %}
@@ -20,7 +20,7 @@
     <h2>{% trans "Variants" %}</h2>
     <ul>
         {% for variant in product.variants.all %}
-            <li>{{ variant }}</li>
+            <li><strong>{{ variant }}</strong>{% with variant|variant_price as price %}{% if price %}, price: {{ price|floatformat:2 }}{% endif %}{% endwith %}</li>
         {% endfor %}
     </ul>
     {% endif %}

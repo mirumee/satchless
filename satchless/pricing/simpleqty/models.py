@@ -8,7 +8,7 @@ class ProductQtyPrice(models.Model):
     Holds price of product unit, depending of total quantity being sold.
     """
     product = models.ForeignKey(Product)
-    min_qty = models.DecimalField(_("minimal quantity"))
+    min_qty = models.DecimalField(_("minimal quantity"), max_digits=10, decimal_places=4)
     price = models.DecimalField(_("unit_price"), max_digits=12, decimal_places=4)
 
     class Meta:

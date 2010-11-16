@@ -204,8 +204,9 @@ class Variant(Subtyped):
         """
         Returns unit price for given quantity.
         """
-        signals.variant_unit_price_query.send(sender=type(self), instance=self,
-                quantity=quantity, price=[], **kwargs)
+        price = []
+        signals.variant_unit_price_query.send(sender=type(self), instance=self.get_subtype_instance(),
+                quantity=quantity, price=price, **kwargs)
         assert(len(price) == 1)
         return price[0]
 

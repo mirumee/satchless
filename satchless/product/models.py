@@ -8,7 +8,6 @@ from mothertongue.models import MothertongueModelTranslate
 from mptt.models import MPTTModel
 
 from . import signals
-from . import exceptions
 
 __all__ = ('ProductAbstract', 'Variant', 'Category', 'ProductAbstractTranslation', 'CategoryTranslation')
 

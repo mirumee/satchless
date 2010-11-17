@@ -1,5 +1,5 @@
 {% extends 'satchless/cart/base.html' %}
-{% load i18n promote product_prices cart_prices %}
+{% load i18n promote prices product_prices cart_prices %}
 {% block title %}{% trans "My cart" %}{% endblock %}
 {% block breadcrumbs %}
     {{ block.super }}
@@ -29,9 +29,15 @@
                 <td>{% promote form.instance.variant as variant %}
                     <a href="{% url satchless-product-product variant.product.slug variant.product.pk %}">{{ variant }}</a>
                 </td>
-                <td class="numerical">{{ form.instance|cartitem_unit_price|floatformat:2 }}</td>
+                <td class="numerical">
+                    {{ form.instance|cartitem_unit_price|gross|floatformat:2 }}<br />
+                    <span class="netPrice">{{ form.instance|cartitem_unit_price|gross|floatformat:2 }}</span>
+                </td>
                 <td class="numerical">&times; {{ form.quantity }}</td>
-                <td class="numerical">= {{ form.instance|cartitem_price|floatformat:2 }}</td>
+                <td class="numerical">
+                    = {{ form.instance|cartitem_price|gross|floatformat:2 }}<br />
+                    <span class="netPrice">{{ form.instance|cartitem_price|gross|floatformat:2 }}</span>
+                </td>
                 <td>{{ form.DELETE }}</td>
             </tr>
             {% endfor %}
@@ -39,7 +45,10 @@
         <tfoot>
             <tr>
                 <th colspan="4">{% trans "Total" %}:</th>
-                <td class="numerical">{{ cart|cart_total|floatformat:2 }}</td>
+                <td class="numerical">
+                    {{ cart|cart_total|gross|floatformat:2 }}<br />
+                    <span class="netPrice">{{ cart|cart_total|gross|floatformat:2 }}</span>
+                </td>
                 <td></td>
             <tr>
                 <td colspan="5">

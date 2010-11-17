@@ -6,7 +6,7 @@ def get_variant_price(variant, quantity=1, **kwargs):
     try:
         base_price = models.ProductPrice.objects.get(product=variant.product)
     except models.ProductPrice.DoesNotExist:
-        return
+        return kwargs.pop('price', None)
     if base_price.qty_mode == 'product' and kwargs.has_key('cart'):
         quantity += kwargs['cart'].items.filter(variant__in=variant.product.variants.all())\
                     .aggregate(Sum('quantity'))['quantity__sum']
@@ -26,7 +26,7 @@ def get_product_price_range(product, **kwargs):
     try:
         base_price = models.ProductPrice.objects.get(product=product)
     except models.ProductPrice.DoesNotExist:
-        return
+        return kwargs.pop('price', None)
     try:
         price = base_price.qty_overrides.filter(min_qty__lte=1).order_by('-min_qty')[0].price
     except IndexError:
@@ -42,7 +42,7 @@ def get_cartitem_unit_price(cartitem, **kwargs):
     try:
         base_price = models.ProductPrice.objects.get(product=product)
     except models.ProductPrice.DoesNotExist:
-        return
+        return kwargs.pop('price', None)
     if base_price.qty_mode == 'product':
         quantity = cartitem.cart.items.filter(variant__in=product.variants.all())\
                     .aggregate(Sum('quantity'))['quantity__sum']

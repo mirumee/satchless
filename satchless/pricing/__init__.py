@@ -1,10 +1,8 @@
 from decimal import Decimal
-from django.conf import settings
-from django.utils.importlib import import_module
 
 class Price(object):
-    gross = None
-    net = None
+    gross = Decimal('NaN')
+    net = Decimal('NaN')
 
     def __unicode__(self):
         return u"net=%s,gross=%s" % (self.net, self.gross)
@@ -13,52 +11,20 @@ class Price(object):
         return "net=%s,gross=%s" % (self.net, self.gross)
 
     def __init__(self, net=None, gross=None):
-        self.net = Decimal(net) if net else None
+        if net is not None:
+            self.net = Decimal(net)
         if gross is None:
             self.gross = self.net
         else:
-            self.gross = Decimal(gross) if gross else None
+            self.gross = Decimal(gross)
 
     def __eq__(self, other):
         if isinstance(other, Price):
             return self.gross == other.gross and self.net == other.net
         return False
 
-class StopPropagation(Exception):
-    pass
+    def __mul__(self, other):
+        return Price(net=self.net * other, gross=self.gross * other)
 
-
-processors_queue = []
-for handler in settings.SATCHLESS_PRICING_HANDLERS:
-    if isinstance(handler, str):
-        mod_name, han_name = handler.rsplit('.', 1)
-        module = import_module(mod_name)
-        handler = getattr(module, han_name)
-    processors_queue.append(handler)
-
-def get_variant_price(variant, quantity=1, **kwargs):
-    price = Price()
-    for handler in processors_queue:
-        try:
-            price = handler.get_variant_price(variant, quantity=quantity, price=price, **kwargs)
-        except StopPropagation:
-            break
-    return price
-
-def get_product_price_range(product, **kwargs):
-    price = Price()
-    for handler in processors_queue:
-        try:
-            price = handler.get_product_price_range(product, price=price, **kwargs)
-        except StopPropagation:
-            break
-    return price
-
-def get_cartitem_unit_price(cartitem, **kwargs):
-    price = Price()
-    for handler in processors_queue:
-        try:
-            price = handler.get_cartitem_unit_price(cartitem, price=price, **kwargs)
-        except StopPropagation:
-            break
-    return price
+    def __add__(self, other):
+        return Price(net=self.net + other.net, gross=self.gross + other.gross)

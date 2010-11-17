@@ -20,7 +20,7 @@
     <h2>{% trans "Variants" %}</h2>
     <ul>
         {% for variant in product.variants.all %}
-            <li><strong>{{ variant }}</strong>{% with variant|variant_price as price %}{% if price %}, price: {{ price|floatformat:2 }}{% endif %}{% endwith %}</li>
+            <li><strong>{{ variant }}</strong>{% with variant|variant_price as price %}{% if price %}, price: {{ price.gross|floatformat:2 }} ({{ price.net|floatformat:2 }} net){% endif %}{% endwith %}</li>
         {% endfor %}
     </ul>
     {% endif %}

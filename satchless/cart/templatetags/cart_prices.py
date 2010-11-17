@@ -5,7 +5,7 @@ register = template.Library()
 @register.filter
 def cartitem_unit_price(cartitem):
     try:
-        from satchless.pricing import get_cartitem_unit_price
+        from satchless.pricing.handler import get_cartitem_unit_price
         return get_cartitem_unit_price(cartitem)
     except ImportError:
         return ''
@@ -13,7 +13,7 @@ def cartitem_unit_price(cartitem):
 @register.filter
 def cartitem_price(cartitem):
     try:
-        from satchless.pricing import get_cartitem_unit_price
+        from satchless.pricing.handler import get_cartitem_unit_price
         return get_cartitem_unit_price(cartitem)
     except (ImportError, NotImplementedError):
         return ''

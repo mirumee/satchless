@@ -3,9 +3,7 @@ from django.db import models
 from django.contrib.auth.models import User
 from django.utils.translation import ugettext_lazy as _
 from satchless.product.models import Variant
-from satchless.product.exceptions import PriceDoesNotExist, MultiplePricesReturned
-
-from . import signals
+from satchless.pricing import Price
 
 CART_SESSION_KEY = '_satchless_cart-%s' # takes typ
 
@@ -60,7 +58,7 @@ class Cart(models.Model):
             return Decimal('0')
 
     def get_total_price(self):
-        total = Decimal('0')
+        total = Price(0)
         for i in self.items.all():
             total += i.get_unit_price() * i.quantity
         return total
@@ -78,7 +76,7 @@ class CartItem(models.Model):
     quantity = models.DecimalField(_("quantity"), max_digits=10, decimal_places=4)
 
     def get_unit_price(self, **kwargs):
-        from satchless.pricing import get_cartitem_unit_price
+        from satchless.pricing.handler import get_cartitem_unit_price
         return get_cartitem_unit_price(cartitem=self, **kwargs)
 
     def __unicode__(self):

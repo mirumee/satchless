@@ -1,0 +1,2 @@
+class StopPropagation(Exception):
+    pass

@@ -2,6 +2,8 @@ from decimal import Decimal
 from django.test import TestCase, Client
 from django.db import models
 from satchless.cart.models import Cart
+from satchless.pricing.handler import Price,\
+        get_variant_price, get_product_price_range, get_cartitem_unit_price
 from satchless.product.models import ProductAbstract, Variant
 from .models import ProductPrice, PriceQtyOverride, VariantPriceOffset
 
@@ -41,23 +43,31 @@ class ParrotTest(TestCase):
     def tearDown(self):
         ProductPrice.objects.all().delete()
 
+    def test_price(self):
+        p1 = Price()
+        p2 = Price()
+        self.assertEqual(p1, p2)
+        p1 = Price(10)
+        p2 = Price(10)
+        self.assertEqual(p1, p2)
+
     def test_basicprices(self):
         macaw_price = ProductPrice.objects.create(product=self.macaw, price=Decimal('10.0'))
         macaw_price.qty_overrides.create(min_qty=5, price=Decimal('9.0'))
         macaw_price.qty_overrides.create(min_qty=10, price=Decimal('8.0'))
         macaw_price.offsets.create(variant=self.macaw_blue_a, price_offset=Decimal('2.0'))
-        self.assertEqual(self.macaw_blue_d.get_unit_price(quantity=1), Decimal('10.0'))
-        self.assertEqual(self.macaw_blue_d.get_unit_price(quantity=Decimal('4.9999')), Decimal('10.0'))
-        self.assertEqual(self.macaw_blue_d.get_unit_price(quantity=5), Decimal('9.0'))
-        self.assertEqual(self.macaw_blue_d.get_unit_price(quantity=Decimal('9.9999')), Decimal('9.0'))
-        self.assertEqual(self.macaw_blue_d.get_unit_price(quantity=10), Decimal('8.0'))
-        self.assertEqual(self.macaw_blue_d.get_unit_price(quantity=100), Decimal('8.0'))
-        self.assertEqual(self.macaw_blue_a.get_unit_price(quantity=1), Decimal('12.0'))
-        self.assertEqual(self.macaw_blue_a.get_unit_price(quantity=Decimal('4.9999')), Decimal('12.0'))
-        self.assertEqual(self.macaw_blue_a.get_unit_price(quantity=5), Decimal('11.0'))
-        self.assertEqual(self.macaw_blue_a.get_unit_price(quantity=Decimal('9.9999')), Decimal('11.0'))
-        self.assertEqual(self.macaw_blue_a.get_unit_price(quantity=10), Decimal('10.0'))
-        self.assertEqual(self.macaw_blue_a.get_unit_price(quantity=100), Decimal('10.0'))
+        self.assertEqual(get_variant_price(self.macaw_blue_d, quantity=1), Price(Decimal('10.0')))
+        self.assertEqual(get_variant_price(self.macaw_blue_d, quantity=Decimal('4.9999')), Price(Decimal('10.0')))
+        self.assertEqual(get_variant_price(self.macaw_blue_d, quantity=5), Price(Decimal('9.0')))
+        self.assertEqual(get_variant_price(self.macaw_blue_d, quantity=Decimal('9.9999')), Price(Decimal('9.0')))
+        self.assertEqual(get_variant_price(self.macaw_blue_d, quantity=10), Price(Decimal('8.0')))
+        self.assertEqual(get_variant_price(self.macaw_blue_d, quantity=100), Price(Decimal('8.0')))
+        self.assertEqual(get_variant_price(self.macaw_blue_a, quantity=1), Price(Decimal('12.0')))
+        self.assertEqual(get_variant_price(self.macaw_blue_a, quantity=Decimal('4.9999')), Price(Decimal('12.0')))
+        self.assertEqual(get_variant_price(self.macaw_blue_a, quantity=5), Price(Decimal('11.0')))
+        self.assertEqual(get_variant_price(self.macaw_blue_a, quantity=Decimal('9.9999')), Price(Decimal('11.0')))
+        self.assertEqual(get_variant_price(self.macaw_blue_a, quantity=10), Price(Decimal('10.0')))
+        self.assertEqual(get_variant_price(self.macaw_blue_a, quantity=100), Price(Decimal('10.0')))
 
     def test_basicranges(self):
         macaw_price = ProductPrice.objects.create(product=self.macaw, price=Decimal('10.0'))
@@ -68,8 +78,8 @@ class ParrotTest(TestCase):
         cockatoo_price.offsets.create(variant=self.cockatoo_white_d, price_offset=Decimal('-5.0'))
         cockatoo_price.offsets.create(variant=self.cockatoo_green_d, price_offset=Decimal('-8.0'))
         cockatoo_price.offsets.create(variant=self.cockatoo_green_a, price_offset=Decimal('4.0'))
-        self.assertEqual(self.macaw.get_unit_price_range(), (Decimal('10.0'), Decimal('16.0')))
-        self.assertEqual(self.cockatoo.get_unit_price_range(), (Decimal('4.0'), Decimal('16.0')))
+        self.assertEqual(get_product_price_range(self.macaw), (Price(Decimal('10.0')), Price(Decimal('16.0'))))
+        self.assertEqual(get_product_price_range(self.cockatoo), (Price(Decimal('4.0')), Price(Decimal('16.0'))))
 
     def test_cartprices(self):
         macaw_price = ProductPrice.objects.create(product=self.macaw,
@@ -81,23 +91,23 @@ class ParrotTest(TestCase):
         cart.set_quantity(self.macaw_blue_d, 4)
         item_macaw_blue_a = cart.items.get(variant=self.macaw_blue_a)
         item_macaw_blue_d = cart.items.get(variant=self.macaw_blue_d)
-        self.assertEqual(item_macaw_blue_a.get_unit_price(), Decimal('12.0'))
-        self.assertEqual(item_macaw_blue_d.get_unit_price(), Decimal('10.0'))
+        self.assertEqual(get_cartitem_unit_price(item_macaw_blue_a), Price(Decimal('12.0')))
+        self.assertEqual(get_cartitem_unit_price(item_macaw_blue_d), Price(Decimal('10.0')))
         cart.add_quantity(self.macaw_blue_a, 1)
         cart.add_quantity(self.macaw_blue_d, 1)
         item_macaw_blue_a = cart.items.get(variant=self.macaw_blue_a)
         item_macaw_blue_d = cart.items.get(variant=self.macaw_blue_d)
 
         # cartitem
-        self.assertEqual(item_macaw_blue_a.get_unit_price(), Decimal('11.0'))
+        self.assertEqual(get_cartitem_unit_price(item_macaw_blue_a), Price(Decimal('11.0')))
         # contextless product
-        self.assertEqual(self.macaw_blue_a.get_unit_price(), Decimal('12.0'))
+        self.assertEqual(get_variant_price(self.macaw_blue_a), Price(Decimal('12.0')))
         # product in cart context
-        self.assertEqual(self.macaw_blue_a.get_unit_price(cart=cart), Decimal('11.0'))
+        self.assertEqual(get_variant_price(self.macaw_blue_a, cart=cart), Price(Decimal('11.0')))
 
         # cartitem
-        self.assertEqual(item_macaw_blue_d.get_unit_price(), Decimal('9.0'))
+        self.assertEqual(get_cartitem_unit_price(item_macaw_blue_d), Price(Decimal('9.0')))
         # contextless product
-        self.assertEqual(self.macaw_blue_d.get_unit_price(), Decimal('10.0'))
+        self.assertEqual(get_variant_price(self.macaw_blue_d), Price(Decimal('10.0')))
         # product in cart context
-        self.assertEqual(self.macaw_blue_d.get_unit_price(cart=cart), Decimal('9.0'))
+        self.assertEqual(get_variant_price(self.macaw_blue_d, cart=cart), Price(Decimal('9.0')))

@@ -77,15 +77,9 @@ class CartItem(models.Model):
     variant = models.ForeignKey(Variant)
     quantity = models.DecimalField(_("quantity"), max_digits=10, decimal_places=4)
 
-    def get_unit_price(self):
-        price = []
-        signals.cartitem_unit_price_query.send(sender=type(self),
-                instance=self, price=price)
-        if len(price) == 0:
-            raise PriceDoesNotExist("No price found for %s" % self)
-        elif len(price) > 1:
-            raise MultiplePricesReturned("Multiple prices returned for %s" % self)
-        return price[0]
+    def get_unit_price(self, **kwargs):
+        from satchless.pricing import get_cartitem_unit_price
+        return get_cartitem_unit_price(cartitem=self, **kwargs)
 
     def __unicode__(self):
         return u"%s x %s" % (self.variant, self.quantity)

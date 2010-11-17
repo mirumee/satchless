@@ -153,20 +153,6 @@ class Product(Subtyped):
         """
         return Decimal(quantity).quantize(1)
 
-    def get_unit_price_range(self, **kwargs):
-        """
-        Calls a signal to calculate self.unit_price_range and returns the
-        value.
-        """
-        price_range = []
-        signals.product_unit_price_range_query.send(sender=type(self),
-                instance=self, price_range=price_range, **kwargs)
-        if len(price_range) == 0:
-            raise exceptions.PriceDoesNotExist("No price range found for %s" % self)
-        elif len(price_range) > 1:
-            raise exceptions.MultiplePricesReturned("Multiple price ranges returned for %s" % self)
-        return price_range[0]
-
     def __unicode__(self):
         return self.slug
 
@@ -207,18 +193,7 @@ class Variant(Subtyped):
     Base class for variants. It identifies a concrete product instance,
     which goes to a cart. Custom variants inherit from it.
     """
-    def get_unit_price(self, quantity=1, **kwargs):
-        """
-        Returns unit price for given quantity.
-        """
-        price = []
-        signals.variant_unit_price_query.send(sender=type(self), instance=self.get_subtype_instance(),
-                quantity=quantity, price=price, **kwargs)
-        if len(price) == 0:
-            raise exceptions.PriceDoesNotExist("No price found for %s" % self)
-        elif len(price) > 1:
-            raise exceptions.MultiplePricesReturned("Multiple prices returned for %s" % self)
-        return price[0]
+    pass
 
 def _store_content_type(sender, instance, **kwargs):
     if issubclass(type(instance), ProductAbstract) or issubclass(type(instance), Variant):

@@ -1,18 +1,19 @@
 from django import template
-from satchless.product.exceptions import PriceException
 
 register = template.Library()
 
 @register.filter
 def variant_price(variant):
     try:
-        return variant.get_subtype_instance().get_unit_price()
-    except PriceException:
+        from satchless.pricing import get_handler
+        return get_handler().get_variant_price(variant=variant.get_subtype_instance())
+    except (ImportError, NotImplementedError)
         return ''
 
 @register.filter
 def product_price_range(product):
     try:
-        return product.get_subtype_instance().get_unit_price_range()
+        from satchless.pricing import get_handler
+        return get_handler()(product=product.get_subtype_instance())
     except PriceException:
         return ''

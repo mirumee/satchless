@@ -44,12 +44,17 @@ class ParrotTest(TestCase):
         ProductPrice.objects.all().delete()
 
     def test_price(self):
-        p1 = Price()
-        p2 = Price()
-        self.assertEqual(p1, p2)
         p1 = Price(10)
         p2 = Price(10)
         self.assertEqual(p1, p2)
+        p1 = Price(10,20)
+        p2 = Price(10,20)
+        self.assertEqual(p1, p2)
+        p1 = Price(10,20)
+        p2 = Price(20,10)
+        self.assertNotEqual(p1, p2)
+        self.assertEqual(p1 + p2, Price(30,30))
+        self.assertEqual(p1 * 3, Price(30,60))
 
     def test_basicprices(self):
         macaw_price = ProductPrice.objects.create(product=self.macaw, price=Decimal('10.0'))

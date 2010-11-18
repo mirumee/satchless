@@ -1,5 +1,7 @@
 from decimal import Decimal
+from django.core.exceptions import ValidationError
 from django.db import models
+from django.db.models import Q
 from django.utils.translation import ugettext_lazy as _
 from satchless.product.models import Product
 from satchless.pricing import Price
@@ -10,7 +12,8 @@ class TaxGroup(models.Model):
             help_text=_("Percentile rate of the tax."))
     rate_name = models.CharField(_("name of the rate"), max_length=30,
             help_text=_("Name of the rate which will be displayed to the user."))
-    products = models.ManyToManyField(Product)
+    products = models.ManyToManyField(Product,
+            help_text=_("WARNING: Adding product to a group will remove it from other groups."))
     default = models.BooleanField(_("Is default group?"),
             help_text=_("Products not listed in other tax groups will go to the default one."))
 
@@ -36,3 +39,10 @@ class TaxGroup(models.Model):
 
     def __unicode__(self):
         return self.name
+
+def _enforce_single_taxgroup(sender, instance, **kwargs):
+    if isinstance(instance, TaxGroup):
+        for p in instance.products.all():
+            p.taxgroup_set.clear()
+            p.taxgroup_set.add(instance)
+models.signals.m2m_changed.connect(_enforce_single_taxgroup)

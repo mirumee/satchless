@@ -45,7 +45,9 @@ Customizing your shop
     * **Carts and lists:**
       :ref:`Carts overview <cart-overview>` |
       :ref:`Wishlist as a cart <cart-wishlist>`
-    * **Prices:**
+    * **Prices and taxes:**
+      :ref:`Pricing overview <pricing-overview>` |
+      :ref:`Writing your own price or tax handler <pricing-handler>`
     * **Checkout:**
       :ref:`Orders <checkout-order>` |
       :ref:`Shipping, payment and routers <checkout-router>`

@@ -2,13 +2,16 @@ from decimal import Decimal
 from django.db import models
 from django.utils.translation import ugettext_lazy as _
 from satchless.product.models import Product
+from satchless.pricing import Price
 
 class TaxGroup(models.Model):
     name = models.CharField(_("group name"), max_length=100)
     rate = models.DecimalField(_("rate"), max_digits=4, decimal_places=2,
-            help_text=_("Percentile rate"))
+            help_text=_("Percentile rate of the tax."))
+    rate_name = models.CharField(_("name of the rate"), max_length=30,
+            help_text=_("Name of the rate which will be displayed to the user."))
     products = models.ManyToManyField(Product)
-    default = models.BooleanField(_("Is default group?"), required=False,
+    default = models.BooleanField(_("Is default group?"),
             help_text=_("Products not listed in other tax groups will go to the default one."))
 
     def save(self, *args, **kwargs):
@@ -18,6 +21,18 @@ class TaxGroup(models.Model):
                 q = q.exclude(pk=self.pk)
             q.update(default=False)
         super(TaxGroup, self).save(*args, **kwargs)
+
+    def get_tax_amount(self, price):
+        """
+        For Price objects multiplies only the gross amount.
+        """
+        multi = (self.rate + Decimal('100')) / Decimal('100')
+        if isinstance(price, Price):
+            return Price(net=price.net, gross=price.gross * multi, tax_name=self.rate_name)
+        else:
+            price = price * multi
+            price.tax_name = self.rate_name
+            return price
 
     def __unicode__(self):
         return self.name

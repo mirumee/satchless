@@ -15,3 +15,17 @@ def gross(price):
         return price.gross
     except AttributeError:
         return ''
+
+@register.filter
+def tax(price):
+    try:
+        return price.gross - price.net
+    except AttributeError:
+        return ''
+
+@register.filter
+def tax_name(price):
+    try:
+        return price.tax_name
+    except AtributeError:
+        return ''

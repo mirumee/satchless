@@ -1,6 +1,6 @@
 from django.conf import settings
 from django.utils.importlib import import_module
-from satchless.pricing import Price
+from satchless.pricing import Price, StopPropagation
 
 _handlers_queue = None
 
@@ -14,13 +14,13 @@ def get_variant_price(variant, quantity=1, **kwargs):
     return price
 
 def get_product_price_range(product, **kwargs):
-    price = Price()
+    range = (Price(), Price())
     for handler in _handlers_queue:
         try:
-            price = handler.get_product_price_range(product, price=price, **kwargs)
+            range = handler.get_product_price_range(product, range=range, **kwargs)
         except StopPropagation:
             break
-    return price
+    return range
 
 def get_cartitem_unit_price(cartitem, **kwargs):
     price = Price()

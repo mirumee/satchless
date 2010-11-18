@@ -67,3 +67,25 @@ operations).
 The ``Price`` object may carry additional data, like *tax name* which holds
 a short description of the tax rate applied. In most cases, you have to take
 care of this data being transferred to new ``Price`` objects you create.
+
+Using handlers
+--------------
+
+To get prices processed by entire handlers stack, use the interface provided
+by ``satchless.pricing.handler``. The following functions will return a single
+``Price`` object:
+
+    * ``get_variant_price(variant, quantity=1, **context)``
+    * ``get_cartitem_unit_price(cartitem, **context)``
+
+They should be used to get a price of variant and cart item respectively.
+
+Important thing here is the ``context`` which allows you to put many
+additional parameters for handlers to inspect. For example, you may add
+cart or customer object there for discounts based on cart contents or
+customer history, nationality, birthday, etc.
+
+The following function returns a tuple, which is a range of prices for
+the cheapest and the most expensive variants available:
+
+    * ``get_product_price_range(product, **context)``

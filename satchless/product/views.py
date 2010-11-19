@@ -1,5 +1,7 @@
 from django.http import HttpResponse, HttpResponseNotFound
 from django.views.generic.simple import direct_to_template
+from django.shortcuts import render_to_response
+from django.template import RequestContext
 from . import models
 from . import signals
 
@@ -48,4 +50,4 @@ def product(request, category_slugs='', product_slug='', product_pk=None):
         'satchless/product/%s_view.html' % product._meta.module_name,
         'satchless/product/view.html',
         ]
-    return direct_to_template(request, templates, context)
+    return render_to_response(templates, context, context_instance=RequestContext(request))

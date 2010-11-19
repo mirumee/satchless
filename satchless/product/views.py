@@ -42,6 +42,10 @@ def product(request, category_slugs='', product_slug='', product_pk=None):
         raise ValueError, "Multiple responses returned."
     context['product'] = product
     context['path'] = path
-    return direct_to_template(request,
-            'satchless/product/product.html',
-            context)
+    templates = [
+        'satchless/product/%s_%s_view.html' % (
+            product._meta.module_name, product._meta.object_name.lower()),
+        'satchless/product/%s_view.html' % product._meta.module_name,
+        'satchless/product/view.html',
+        ]
+    return direct_to_template(request, templates, context)

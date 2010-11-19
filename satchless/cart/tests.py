@@ -149,14 +149,34 @@ class ParrotTest(TestCase):
                 result.append((Decimal('1'), u"Parrots don't rest in groups"))
 
         cart = Cart.objects.create(typ='satchless.test_cart_with_signals')
-        signals.pre_cart_quantity_change.connect(modify_qty)
+        signals.cart_quantity_change_check.connect(modify_qty)
+        self.assertEqual(
+            cart.set_quantity(self.macaw_blue, 10, dry_run=True),
+            (0, u"Out of stock")
+            )
+        self.assertEqual(0, cart.get_quantity(self.macaw_blue))
         self.assertEqual(
             cart.set_quantity(self.macaw_blue, 10),
             (0, u"Out of stock")
             )
         self.assertEqual(0, cart.get_quantity(self.macaw_blue))
         self.assertEqual(
+            cart.add_quantity(self.macaw_blue, 10),
+            (0, 0, u"Out of stock")
+            )
+        self.assertEqual(0, cart.get_quantity(self.macaw_blue))
+        self.assertEqual(
+            cart.set_quantity(self.cockatoo_white_d, 10, dry_run=True),
+            (1, u"Parrots don't rest in groups")
+            )
+        self.assertEqual(0, cart.get_quantity(self.cockatoo_white_d))
+        self.assertEqual(
             cart.set_quantity(self.cockatoo_white_d, 10),
             (1, u"Parrots don't rest in groups")
+            )
+        self.assertEqual(1, cart.get_quantity(self.cockatoo_white_d))
+        self.assertEqual(
+            cart.add_quantity(self.cockatoo_white_d, 10),
+            (1, 0, u"Parrots don't rest in groups")
             )
         self.assertEqual(1, cart.get_quantity(self.cockatoo_white_d))

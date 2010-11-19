@@ -25,6 +25,15 @@
         <tbody>
             {% for form in formset.forms %}
             {{ form.id }}
+            {% if form.quantity.errors %}
+            <tr class="errors">
+                <td></td>
+                <td colspan="5">
+                    {{ form.quantity.errors }}
+                </td>
+                <td></td>
+            </tr>
+            {% endif %}
             {% with form.instance|cartitem_unit_price as unit_price %}
             {% with form.instance|cartitem_price as item_price %}
             <tr class="item">

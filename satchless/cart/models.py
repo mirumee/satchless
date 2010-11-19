@@ -31,7 +31,7 @@ class Cart(models.Model):
 
     objects = CartManager()
 
-    def add_quantity(self, variant, quantity):
+    def add_quantity(self, variant, quantity, dry_run=False):
         variant = variant.get_subtype_instance()
         quantity = variant.product.sanitize_quantity(quantity)
         try:
@@ -43,16 +43,21 @@ class Cart(models.Model):
         new_qty = old_qty + quantity
         result = []
         reason = u""
-        signals.pre_cart_quantity_change.send(sender=type(self), instance=self,
+        signals.cart_quantity_change_check.send(sender=type(self), instance=self,
                 variant=variant, old_quantity=old_qty, new_quantity=new_qty, result=result)
         assert(len(result) <= 1)
         if len(result) == 1:
             new_qty, reason = result[0]
-        item.quantity = new_qty
-        item.save()
-        return (new_qty, reason)
+        if not dry_run:
+            if new_qty == 0:
+                if item.pk:
+                    item.delete()
+            else:
+                item.quantity = new_qty
+                item.save()
+        return (new_qty, new_qty - old_qty, reason)
 
-    def set_quantity(self, variant, quantity):
+    def set_quantity(self, variant, quantity, dry_run=False):
         variant = variant.get_subtype_instance()
         quantity = variant.product.sanitize_quantity(quantity)
         try:
@@ -63,17 +68,19 @@ class Cart(models.Model):
             old_qty = Decimal('0')
         result = []
         reason = u""
-        signals.pre_cart_quantity_change.send(sender=type(self), instance=self,
+        signals.cart_quantity_change_check.send(sender=type(self), instance=self,
                 variant=variant, old_quantity=old_qty, new_quantity=quantity, result=result)
+        print result
         assert(len(result) <= 1)
         if len(result) == 1:
             quantity, reason = result[0]
-        if quantity == 0:
-            if item.pk:
-                item.delete()
-        else:
-            item.quantity = quantity
-            item.save()
+        if not dry_run:
+            if quantity == 0:
+                if item.pk:
+                    item.delete()
+            else:
+                item.quantity = quantity
+                item.save()
         return (quantity, reason)
 
     def get_quantity(self, variant):

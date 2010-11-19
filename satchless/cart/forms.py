@@ -23,16 +23,34 @@ class AddToCartForm(forms.Form, QuantityForm):
         typ = kwargs.pop('typ')
         if data and data.get('typ') != typ:
             data = None
+        self.cart = kwargs.pop('cart', None)
         super(AddToCartForm, self).__init__(data=data, *args, **kwargs)
         self.fields['typ'].initial = typ
 
-    def save(self, cart):
-        cart.add_quantity(self.get_variant(), self.cleaned_data['quantity'])
+    def clean(self):
+        data = super(AddToCartForm, self).clean()
+        qty = data['quantity']
+        cart_qty, qty_change, reason = self.cart.add_quantity(self.get_variant(), qty, dry_run=True)
+        if qty_change < qty:
+            raise forms.ValidationError(reason)
+        return data
+
+    def save(self):
+        self.cart.add_quantity(self.get_variant(), self.cleaned_data['quantity'])
 
 
 class EditCartItemForm(forms.ModelForm, QuantityForm):
     model = models.CartItem
     fields = ('quantity',)
+
+    def clean_quantity(self):
+        qty = super(EditCartItemForm, self).clean_quantity()
+        cart_qty, reason = \
+            self.instance.cart.set_quantity(self.instance.variant, qty, dry_run=True)
+        print (cart_qty, qty)
+        if cart_qty < qty:
+            raise forms.ValidationError(reason)
+        return cart_qty
 
     def save(self, commit=True):
         """Do not call the original save() method, but use cart.set_quantity() instead."""

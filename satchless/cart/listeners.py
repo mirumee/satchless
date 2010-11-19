@@ -70,14 +70,16 @@ class AddToCartListener(object):
             elif not len(formclass):
                 formclass = [NonConfigurableVariantForm]
             Form = self.build_formclass(formclass[0])
-            form = Form(data=request.POST or None, product=product, variant=variant, typ=self.typ)
             if request.method == 'POST':
+                cart = models.Cart.objects.get_or_create_from_request(request, self.typ)
+                form = Form(data=request.POST, cart=cart, product=product, variant=variant, typ=self.typ)
                 if form.is_valid() and len(response) == 0:
-                    cart = models.Cart.objects.get_or_create_from_request(request, self.typ)
-                    form.save(cart=cart)
+                    form.save()
                     response.append(HttpResponseRedirect(
                             reverse('satchless-cart-view', kwargs={'typ': self.typ})))
                     return
+            else:
+                form = Form(data=None, product=product, variant=variant, typ=self.typ)
             # Attach the form to instance
             setattr(instance, self.form_attribute, form)
 

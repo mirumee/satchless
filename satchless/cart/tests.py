@@ -10,6 +10,7 @@ from satchless.product.models import ProductAbstract
 from satchless.product.signals import variant_formclass_for_product
 
 from .models import *
+from . import signals
 
 
 class DeadParrot(ProductAbstract):
@@ -136,3 +137,26 @@ class ParrotTest(TestCase):
                 data={'typ': 'satchless_cart', 'color': 'white', 'looks_alive': 1, 'quantity': 10},
                 client_instance=cli_user1,
                 status_code=302)
+
+    def test_signals(self):
+        def modify_qty(sender, instance=None, variant=None,
+                old_quantity=None, new_quantity=None, result=None, **kwargs):
+            if instance.typ != 'satchless.test_cart_with_signals':
+                return
+            if variant.product == self.macaw:
+                result.append((Decimal('0'), u"Out of stock"))
+            elif not variant.looks_alive:
+                result.append((Decimal('1'), u"Parrots don't rest in groups"))
+
+        cart = Cart.objects.create(typ='satchless.test_cart_with_signals')
+        signals.pre_cart_quantity_change.connect(modify_qty)
+        self.assertEqual(
+            cart.set_quantity(self.macaw_blue, 10),
+            (0, u"Out of stock")
+            )
+        self.assertEqual(0, cart.get_quantity(self.macaw_blue))
+        self.assertEqual(
+            cart.set_quantity(self.cockatoo_white_d, 10),
+            (1, u"Parrots don't rest in groups")
+            )
+        self.assertEqual(1, cart.get_quantity(self.cockatoo_white_d))

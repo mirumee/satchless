@@ -1,9 +1,12 @@
+# -*- coding: utf-8 -*-
 from decimal import Decimal
 from django.db import models
 from django.contrib.auth.models import User
 from django.utils.translation import ugettext_lazy as _
 from satchless.product.models import Variant
 from satchless.pricing import Price
+
+from . import signals
 
 CART_SESSION_KEY = '_satchless_cart-%s' # takes typ
 
@@ -29,27 +32,49 @@ class Cart(models.Model):
     objects = CartManager()
 
     def add_quantity(self, variant, quantity):
-        quantity = variant.get_subtype_instance().product.sanitize_quantity(quantity)
+        variant = variant.get_subtype_instance()
+        quantity = variant.product.sanitize_quantity(quantity)
         try:
             item = self.items.get(variant=variant)
-            item.quantity += quantity
-            item.save()
+            old_qty = item.quantity
         except CartItem.DoesNotExist:
-            item = self.items.create(variant=variant, quantity=quantity)
-        return item.quantity
+            item = CartItem(cart=self, variant=variant)
+            old_qty = Decimal('0')
+        new_qty = old_qty + quantity
+        result = []
+        reason = u""
+        signals.pre_cart_quantity_change.send(sender=type(self), instance=self,
+                variant=variant, old_quantity=old_qty, new_quantity=new_qty, result=result)
+        assert(len(result) <= 1)
+        if len(result) == 1:
+            new_qty, reason = result[0]
+        item.quantity = new_qty
+        item.save()
+        return (new_qty, reason)
 
     def set_quantity(self, variant, quantity):
-        quantity = variant.get_subtype_instance().product.sanitize_quantity(quantity)
+        variant = variant.get_subtype_instance()
+        quantity = variant.product.sanitize_quantity(quantity)
         try:
             item = self.items.get(variant=variant)
-            if quantity > 0:
-                item.quantity = quantity
-                item.save()
-            else:
-                item.delete()
+            old_qty = item.quantity
         except CartItem.DoesNotExist:
-            if quantity > 0:
-                item = self.items.create(variant=variant, quantity=quantity)
+            item = CartItem(cart=self, variant=variant)
+            old_qty = Decimal('0')
+        result = []
+        reason = u""
+        signals.pre_cart_quantity_change.send(sender=type(self), instance=self,
+                variant=variant, old_quantity=old_qty, new_quantity=quantity, result=result)
+        assert(len(result) <= 1)
+        if len(result) == 1:
+            quantity, reason = result[0]
+        if quantity == 0:
+            if item.pk:
+                item.delete()
+        else:
+            item.quantity = quantity
+            item.save()
+        return (quantity, reason)
 
     def get_quantity(self, variant):
         try:
@@ -79,8 +104,12 @@ class CartItem(models.Model):
         from satchless.pricing.handler import get_cartitem_unit_price
         return get_cartitem_unit_price(cartitem=self, **kwargs)
 
+    def save(self, *args, **kwargs):
+        assert(self.quantity > 0)
+        super(CartItem, self).save(*args, **kwargs)
+
     def __unicode__(self):
-        return u"%s x %s" % (self.variant, self.quantity)
+        return u"%s × %s" % (self.variant, self.quantity)
 
     class Meta:
         unique_together = ('cart', 'variant')

@@ -47,7 +47,6 @@ class EditCartItemForm(forms.ModelForm, QuantityForm):
         qty = super(EditCartItemForm, self).clean_quantity()
         cart_qty, reason = \
             self.instance.cart.set_quantity(self.instance.variant, qty, dry_run=True)
-        print (cart_qty, qty)
         if cart_qty < qty:
             raise forms.ValidationError(reason)
         return cart_qty

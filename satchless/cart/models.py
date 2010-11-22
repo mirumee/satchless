@@ -70,7 +70,6 @@ class Cart(models.Model):
         reason = u""
         signals.cart_quantity_change_check.send(sender=type(self), instance=self,
                 variant=variant, old_quantity=old_qty, new_quantity=quantity, result=result)
-        print result
         assert(len(result) <= 1)
         if len(result) == 1:
             quantity, reason = result[0]

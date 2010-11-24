@@ -9,7 +9,6 @@ def variant_price(variant):
         price = get_variant_price(variant.get_subtype_instance())
         if price.has_value():
             return price
-        print price
     except ImportError:
         pass
     return ''

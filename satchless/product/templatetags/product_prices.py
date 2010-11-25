@@ -6,7 +6,7 @@ register = template.Library()
 def variant_price(variant):
     try:
         from satchless.pricing.handler import get_variant_price
-        price = get_variant_price(variant.get_subtype_instance())
+        price = get_variant_price(variant)
         if price.has_value():
             return price
         print price
@@ -18,7 +18,7 @@ def variant_price(variant):
 def product_price_range(product):
     try:
         from satchless.pricing.handler import get_product_price_range
-        price = get_product_price_range(product.get_subtype_instance())
+        price = get_product_price_range(product)
         if price.has_value():
             return price
     except ImportError:

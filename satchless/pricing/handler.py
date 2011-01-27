@@ -8,7 +8,8 @@ def get_variant_price(variant, quantity=1, **context):
     price = Price()
     for handler in _handlers_queue:
         try:
-            price = handler.get_variant_price(variant, quantity=quantity, price=price, **context)
+            price = handler.get_variant_price(variant, quantity=quantity,
+                                              price=price, **context)
         except StopPropagation:
             break
     return price
@@ -17,7 +18,8 @@ def get_product_price_range(product, **context):
     range = (Price(), Price())
     for handler in _handlers_queue:
         try:
-            range = handler.get_product_price_range(product, range=range, **context)
+            range = handler.get_product_price_range(product, range=range,
+                                                    **context)
         except StopPropagation:
             break
     return range
@@ -26,7 +28,8 @@ def get_cartitem_unit_price(cartitem, **context):
     price = Price()
     for handler in _handlers_queue:
         try:
-            price = handler.get_cartitem_unit_price(cartitem, price=price, **context)
+            price = handler.get_cartitem_unit_price(cartitem, price=price,
+                                                    **context)
         except StopPropagation:
             break
     return price
@@ -41,5 +44,4 @@ def init_queue():
             handler = getattr(module, han_name)
         _handlers_queue.append(handler)
 
-if _handlers_queue is None:
-    init_queue()
+init_queue()

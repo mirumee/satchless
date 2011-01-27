@@ -14,7 +14,7 @@ class TaxGroup(models.Model):
             help_text=_("Name of the rate which will be displayed to the user."))
     products = models.ManyToManyField(Product,
             help_text=_("WARNING: Adding product to a group will remove it from other groups."))
-    default = models.BooleanField(_("Is default group?"),
+    default = models.BooleanField(_("Is default group?"), default=False,
             help_text=_("Products not listed in other tax groups will go to the default one."))
 
     def save(self, *args, **kwargs):

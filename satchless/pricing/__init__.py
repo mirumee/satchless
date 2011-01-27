@@ -32,7 +32,9 @@ class Price(object):
         return Price(net=self.net * other, gross=self.gross * other, tax_name=self.tax_name)
 
     def __add__(self, other):
-        if self.tax_name == other.tax_name:
+        if not isinstance(other, Price):
+            raise TypeError("Cannot add %s object to Price" % type(other))
+        if other.self.tax_name == other.tax_name:
             return Price(net=self.net + other.net, gross=self.gross + other.gross, tax_name=self.tax_name)
         return Price(net=self.net + other.net, gross=self.gross + other.gross)
 

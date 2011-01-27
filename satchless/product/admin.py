@@ -20,6 +20,17 @@ class CategoryForm(forms.ModelForm):
     parent = fields.CategoryChoiceField(queryset=models.Category.objects \
             .order_by('tree_id', 'lft'), required=False)
 
+    def __init__(self, *args, **kwargs):
+        super(CategoryForm, self).__init__(*args, **kwargs)
+        if self.instance.pk:
+            self.fields['parent'].queryset = models.Category.objects\
+                    .exclude(
+                            tree_id=self.instance.tree_id,
+                            lft__gte=self.instance.lft,
+                            rght__lte=self.instance.rght)\
+                    .order_by('tree_id', 'lft')
+
+
 class CategoryAdmin(MPTTModelAdmin):
     form = CategoryForm
     inlines = (CategoryTranslationInline,)

@@ -5,25 +5,8 @@ from satchless.cart.models import Cart
 from satchless.pricing.handler import Price,\
         get_variant_price, get_product_price_range, get_cartitem_unit_price
 from satchless.product.models import ProductAbstract, Variant
+from satchless.product.tests import DeadParrot, DeadParrotVariant
 from .models import ProductPrice, PriceQtyOverride, VariantPriceOffset
-
-class DeadParrot(ProductAbstract):
-    species = models.CharField(max_length=20)
-
-class DeadParrotVariant(Variant):
-    product = models.ForeignKey(DeadParrot, related_name='variants')
-    color = models.CharField(max_length=10, choices=(
-                ('blue', 'blue'), ('white', 'white'), ('red', 'red'), ('green', 'green')))
-    looks_alive = models.BooleanField()
-
-    def __unicode__(self):
-        "For debugging purposes"
-        return u"%s %s %s" % (
-                "alive" if self.looks_alive else "resting",
-                self.get_color_display(), self.product.slug)
-
-    class Meta:
-        unique_together = ('product', 'color', 'looks_alive')
 
 class ParrotTest(TestCase):
     def setUp(self):

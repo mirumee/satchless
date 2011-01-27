@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Satchless\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2010-11-15 14:02+0100\n"
-"PO-Revision-Date: 2010-11-15 14:20+0100\n"
+"POT-Creation-Date: 2011-01-27 17:13+0100\n"
+"PO-Revision-Date: 2011-01-27 17:17+0100\n"
 "Last-Translator: Michał Sałaban <michal@salaban.info>\n"
 "Language-Team: Mirumee Software\n"
 "Language: \n"
@@ -18,33 +18,49 @@ msgstr ""
 "Plural-Forms: nplurals=3; plural=(n==1 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
 "X-Poedit-Language: Polish\n"
 
-#: models.py:13
-#: models.py:29
+#: models.py:15
+#: models.py:31
 msgid "name"
 msgstr "nazwa"
 
-#: models.py:14
-#: models.py:30
+#: models.py:16
+#: models.py:32
 msgid "description"
 msgstr "opis"
 
-#: models.py:15
-#: models.py:31
+#: models.py:17
+#: models.py:33
 msgid "meta description"
 msgstr "meta-opis"
 
-#: models.py:16
-#: models.py:32
+#: models.py:18
+#: models.py:34
 msgid "Description used by search and indexing engines"
 msgstr "Opis używany przez wyszukiwarki internetowe."
 
-#: models.py:106
+#: models.py:110
 msgid "category"
 msgstr "kategoria"
 
-#: models.py:107
+#: models.py:111
 msgid "categories"
 msgstr "kategorie"
+
+#: models.py:126
+msgid "slug"
+msgstr "slug"
+
+#: models.py:127
+msgid "Slug will be used in the address of the product page. It should be URL-friendly (letters, numbers, hyphens and underscores only) and descriptive for the SEO needs."
+msgstr "Slug będzie używany w adresie strony produktu. Powinien składać się ze znaków dopuszczalnych w URL (litery, cyfry, myślniki i podkreślenia) i opisywać produkt pod kątem wyszukiwarek internetowych."
+
+#: models.py:198
+msgid "SKU"
+msgstr "SKU"
+
+#: models.py:199
+msgid "ID of the product variant used internally in the shop."
+msgstr "Identyfikator produktu używany wewnętrznie w sklepie."
 
 #: templates/satchless/product/category.html:7
 #: templates/satchless/product/category.html:31
@@ -61,15 +77,15 @@ msgstr "Podkategorie"
 msgid "There are no products in this category."
 msgstr "W tej kategorii nie ma produktów."
 
-#: templates/satchless/product/product.html:20
+#: templates/satchless/product/view.html:20
 msgid "Variants"
 msgstr "Warianty"
 
-#: templates/satchless/product/product.html:31
+#: templates/satchless/product/view.html:31
 msgid "Add to cart"
 msgstr "Dodaj do koszyka"
 
-#: templates/satchless/product/product.html:35
+#: templates/satchless/product/view.html:35
 msgid "Images"
-msgstr ""
+msgstr "Obrazy"
 

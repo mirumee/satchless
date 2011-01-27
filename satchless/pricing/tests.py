@@ -15,3 +15,6 @@ class PriceTest(TestCase):
         self.assertEqual(p2, p3)
         p4 = p1 * decimal.Decimal('NaN')
         self.assert_(not p4.has_value())
+        p5 = p2 + p3
+        self.assertEqual(p5.net, 100)
+        self.assertEqual(p5.gross, 100)

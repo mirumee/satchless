@@ -8,19 +8,18 @@ from . import signals
 def index(request, *args, **kwargs):
     """Show root categories"""
     categories = models.Category.objects.filter(parent__isnull=True)
-    return direct_to_template(request,
-            'satchless/product/index.html',
-            {'categories': categories})
+    return direct_to_template(request, 'satchless/product/index.html',
+                              {'categories': categories})
 
 def category(request, parent_slugs, category_slug):
+    slugs = filter(None, parent_slugs.split('/') + [category_slug])
     try:
-        path = models.Category.path_from_slugs(filter(None, parent_slugs.split('/') + [category_slug]))
+        path = models.Category.path_from_slugs(slugs)
     except models.Category.DoesNotExist:
         return HttpResponseNotFound()
     category = path[-1]
-    return direct_to_template(request,
-            'satchless/product/category.html',
-            {'category': category, 'path': path})
+    return direct_to_template(request, 'satchless/product/category.html',
+                              {'category': category, 'path': path})
 
 def product(request, category_slugs='', product_slug='', product_pk=None):
     path = models.Category.path_from_slugs(filter(None, category_slugs.split('/')))
@@ -34,10 +33,9 @@ def product(request, category_slugs='', product_slug='', product_pk=None):
     product = products[0].get_subtype_instance()
     context = {}
     response = []
-    signals.product_view.send(
-            sender=type(product), instances=[product],
-            request=request, response=response, extra_context=context
-            )
+    signals.product_view.send(sender=type(product), instances=[product],
+                              request=request, response=response,
+                              extra_context=context)
     if len(response) == 1:
         return response[0]
     elif len(response) > 1:
@@ -45,9 +43,10 @@ def product(request, category_slugs='', product_slug='', product_pk=None):
     context['product'] = product
     context['path'] = path
     templates = [
-        'satchless/product/%s_%s_view.html' % (
-            product._meta.module_name, product._meta.object_name.lower()),
+        'satchless/product/%s_%s_view.html' %
+        (product._meta.module_name, product._meta.object_name.lower()),
         'satchless/product/%s_view.html' % product._meta.module_name,
         'satchless/product/view.html',
-        ]
-    return render_to_response(templates, context, context_instance=RequestContext(request))
+    ]
+    return render_to_response(templates, context,
+                              context_instance=RequestContext(request))

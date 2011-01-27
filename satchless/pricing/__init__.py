@@ -16,7 +16,8 @@ class Price(object):
 
     def __unicode__(self):
         if self.tax_name:
-            return u"net=%s,gross=%s (%s)" % (self.net, self.gross, self.tax_name)
+            return u"net=%s,gross=%s (%s)" %
+                   (self.net, self.gross, self.tax_name)
         else:
             return u"net=%s,gross=%s" % (self.net, self.gross)
 
@@ -29,18 +30,22 @@ class Price(object):
         return False
 
     def __mul__(self, other):
-        return Price(net=self.net * other, gross=self.gross * other, tax_name=self.tax_name)
+        price_net = self.net * other
+        price_gross = self.gross * other
+        return Price(net=price_net, gross=price_gross, tax_name=self.tax_name)
 
     def __add__(self, other):
         if not isinstance(other, Price):
             raise TypeError("Cannot add %s object to Price" % type(other))
-        if other.self.tax_name == other.tax_name:
-            return Price(net=self.net + other.net, gross=self.gross + other.gross, tax_name=self.tax_name)
-        return Price(net=self.net + other.net, gross=self.gross + other.gross)
+        price_net = self.net + other.net
+        price_gross = self.gross + other.gross
+        if self.tax_name == other.tax_name:
+            return Price(net=price_net, gross=price_gross,
+                         tax_name=self.tax_name)
+        return Price(net=price_net, gross=price_gross)
 
     def has_value(self):
         return not (self.net.is_nan() and self.gross.is_nan())
-
 
 class StopPropagation(Exception):
     pass

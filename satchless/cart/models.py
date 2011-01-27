@@ -43,8 +43,12 @@ class Cart(models.Model):
         new_qty = old_qty + quantity
         result = []
         reason = u""
-        signals.cart_quantity_change_check.send(sender=type(self), instance=self,
-                variant=variant, old_quantity=old_qty, new_quantity=new_qty, result=result)
+        signals.cart_quantity_change_check.send(sender=type(self),
+                                                instance=self,
+                                                variant=variant,
+                                                old_quantity=old_qty,
+                                                new_quantity=new_qty,
+                                                result=result)
         assert(len(result) <= 1)
         if len(result) == 1:
             new_qty, reason = result[0]
@@ -68,8 +72,12 @@ class Cart(models.Model):
             old_qty = Decimal('0')
         result = []
         reason = u""
-        signals.cart_quantity_change_check.send(sender=type(self), instance=self,
-                variant=variant, old_quantity=old_qty, new_quantity=quantity, result=result)
+        signals.cart_quantity_change_check.send(sender=type(self),
+                                                instance=self,
+                                                variant=variant,
+                                                old_quantity=old_qty,
+                                                new_quantity=quantity,
+                                                result=result)
         assert(len(result) <= 1)
         if len(result) == 1:
             quantity, reason = result[0]
@@ -104,7 +112,8 @@ class Cart(models.Model):
 class CartItem(models.Model):
     cart = models.ForeignKey(Cart, related_name='items')
     variant = models.ForeignKey(Variant)
-    quantity = models.DecimalField(_("quantity"), max_digits=10, decimal_places=4)
+    quantity = models.DecimalField(_("quantity"), max_digits=10,
+                                   decimal_places=4)
 
     def get_unit_price(self, **kwargs):
         from satchless.pricing.handler import get_cartitem_unit_price

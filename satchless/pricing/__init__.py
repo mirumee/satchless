@@ -16,8 +16,8 @@ class Price(object):
 
     def __unicode__(self):
         if self.tax_name:
-            return u"net=%s,gross=%s (%s)" %
-                   (self.net, self.gross, self.tax_name)
+            return (u"net=%s,gross=%s (%s)" %
+                    (self.net, self.gross, self.tax_name))
         else:
             return u"net=%s,gross=%s" % (self.net, self.gross)
 

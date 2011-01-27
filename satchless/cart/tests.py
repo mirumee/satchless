@@ -8,23 +8,10 @@ from django import forms
 from satchless.product.forms import BaseVariantForm
 from satchless.product.models import ProductAbstract
 from satchless.product.signals import variant_formclass_for_product
+from satchless.product.tests import DeadParrot, DeadParrotVariant
 
 from .models import *
 from . import signals
-
-
-class DeadParrot(ProductAbstract):
-    species = models.CharField(max_length=20)
-
-
-class DeadParrotVariant(Variant):
-    product = models.ForeignKey(DeadParrot, related_name='variants')
-    color = models.CharField(max_length=10, choices=(('blue', 'blue'), ('white', 'white')))
-    looks_alive = models.BooleanField()
-
-    class Meta:
-        unique_together = ('product', 'color', 'looks_alive')
-
 
 class DeadParrotVariantForm(BaseVariantForm):
     color = forms.CharField(max_length=10)

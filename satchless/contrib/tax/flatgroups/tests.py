@@ -1,6 +1,7 @@
 from decimal import Decimal
 from django.conf import settings
 from django.test import TestCase
+from satchless.cart.models import Cart
 from satchless.contrib.pricing.simpleqty.models import ProductPrice
 from satchless.product.tests import DeadParrot, DeadParrotVariant
 from satchless.pricing import Price, handler
@@ -38,6 +39,28 @@ class ParrotTaxTest(TestCase):
         # while these have no tax group, hence the tax is zero
         self.assertEqual(handler.get_variant_price(self.cockatoo_white_a), Price(20, 20))
         self.assertEqual(handler.get_variant_price(self.cockatoo_green_a), Price(25, 25))
+        # same in cart
+        cart = Cart.objects.create(typ='test')
+        cart.set_quantity(self.macaw_blue_a, 3)
+        cart.set_quantity(self.macaw_blue_d, 5)
+        item_macaw_blue_a = cart.items.get(variant=self.macaw_blue_a)
+        item_macaw_blue_d = cart.items.get(variant=self.macaw_blue_d)
+        self.assertEqual(
+                handler.get_cartitem_unit_price(item_macaw_blue_a),
+                Price(12, Decimal('12.96')))
+        self.assertEqual(
+                handler.get_cartitem_unit_price(item_macaw_blue_d),
+                Price(10, Decimal('10.80')))
+        cart.set_quantity(self.cockatoo_white_a, 3)
+        cart.set_quantity(self.cockatoo_green_a, 5)
+        item_cockatoo_white_a = cart.items.get(variant=self.cockatoo_white_a)
+        item_cockatoo_green_a = cart.items.get(variant=self.cockatoo_green_a)
+        self.assertEqual(
+                handler.get_cartitem_unit_price(item_cockatoo_white_a),
+                Price(20, 20))
+        self.assertEqual(
+                handler.get_cartitem_unit_price(item_cockatoo_green_a),
+                Price(25, 25))
 
     def test_default(self):
         self.vat23.default = True
@@ -48,3 +71,25 @@ class ParrotTaxTest(TestCase):
         # while these have default 23% VAT
         self.assertEqual(handler.get_variant_price(self.cockatoo_white_a), Price(20, Decimal('24.60')))
         self.assertEqual(handler.get_variant_price(self.cockatoo_green_a), Price(25, Decimal('30.75')))
+        # same in cart
+        cart = Cart.objects.create(typ='test')
+        cart.set_quantity(self.macaw_blue_a, 3)
+        cart.set_quantity(self.macaw_blue_d, 5)
+        item_macaw_blue_a = cart.items.get(variant=self.macaw_blue_a)
+        item_macaw_blue_d = cart.items.get(variant=self.macaw_blue_d)
+        self.assertEqual(
+                handler.get_cartitem_unit_price(item_macaw_blue_a),
+                Price(12, Decimal('12.96')))
+        self.assertEqual(
+                handler.get_cartitem_unit_price(item_macaw_blue_d),
+                Price(10, Decimal('10.80')))
+        cart.set_quantity(self.cockatoo_white_a, 3)
+        cart.set_quantity(self.cockatoo_green_a, 5)
+        item_cockatoo_white_a = cart.items.get(variant=self.cockatoo_white_a)
+        item_cockatoo_green_a = cart.items.get(variant=self.cockatoo_green_a)
+        self.assertEqual(
+                handler.get_cartitem_unit_price(item_cockatoo_white_a),
+                Price(20, Decimal('24.60')))
+        self.assertEqual(
+                handler.get_cartitem_unit_price(item_cockatoo_green_a),
+                Price(25, Decimal('30.75')))

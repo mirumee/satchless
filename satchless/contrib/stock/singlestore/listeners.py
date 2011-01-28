@@ -1,3 +1,4 @@
+from django.utils.translation import ugettext as _
 from satchless.product.models import Product, Variant
 from satchless.product.signals import product_view
 from satchless.cart.signals import cart_quantity_change_check

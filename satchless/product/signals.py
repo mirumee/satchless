@@ -10,6 +10,6 @@ product page.
 
 variant_formclass_for_product = dispatch.Signal(providing_args=['instance', 'formclass'])
 variant_formclass_for_product.__doc__ = """
-Finds variant selection form clas for given product instance and appends
+Finds variant selection form class for given product instance and appends
 it to the form list.
 """

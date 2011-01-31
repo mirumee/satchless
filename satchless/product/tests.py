@@ -67,6 +67,11 @@ class ParrotTest(TestCase):
 
     def test_product_subclass_promotion(self):
         for product in ProductAbstract.objects.all():
+            # test saving as base and promoted class
+            self.assertEqual(type(product.get_subtype_instance()), DeadParrot)
+            ProductAbstract.objects.get(pk=product.pk).save()
+            self.assertEqual(type(product.get_subtype_instance()), DeadParrot)
+            DeadParrot.objects.get(pk=product.pk).save()
             self.assertEqual(type(product.get_subtype_instance()), DeadParrot)
 
     def test_variants(self):
@@ -81,6 +86,11 @@ class ParrotTest(TestCase):
         self.assertEqual(4, self.cockatoo.variants.count())
 
         for variant in Variant.objects.all():
+            # test saving as base and promoted class
+            self.assertEqual(type(variant.get_subtype_instance()), DeadParrotVariant)
+            Variant.objects.get(pk=variant.pk).save()
+            self.assertEqual(type(variant.get_subtype_instance()), DeadParrotVariant)
+            DeadParrotVariant.objects.get(pk=variant.pk).save()
             self.assertEqual(type(variant.get_subtype_instance()), DeadParrotVariant)
 
     def _test_status(self, url, method='get', *args, **kwargs):

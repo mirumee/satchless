@@ -24,7 +24,7 @@ class PriceQtyOverride(models.Model):
     """
     base_price = models.ForeignKey(ProductPrice, related_name='qty_overrides')
     min_qty = models.DecimalField(_("minimal quantity"), max_digits=10, decimal_places=4)
-    price = models.DecimalField(_("unit_price"), max_digits=12, decimal_places=4)
+    price = models.DecimalField(_("unit price"), max_digits=12, decimal_places=4)
 
     class Meta:
         ordering = ('min_qty',)

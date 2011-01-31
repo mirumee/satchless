@@ -8,6 +8,7 @@ from mothertongue.models import MothertongueModelTranslate
 from mptt.models import MPTTModel
 
 from . import signals
+from ..util.models import Subtyped
 
 __all__ = ('ProductAbstract', 'Variant', 'Category', 'ProductAbstractTranslation', 'CategoryTranslation')
 
@@ -35,36 +36,6 @@ class DescribedModelTranslation(models.Model):
 
     def __unicode__(self):
         return "%s@%s" % (self.name, self.language)
-
-    class Meta:
-        abstract = True
-
-class Subtyped(models.Model):
-    content_type = models.ForeignKey(ContentType, editable=False)
-    _subtype_instance = None
-    __in_unicode = False
-
-    def get_subtype_instance(self, refresh=False):
-        """
-        Caches and returns the final subtype instance. If refresh is set,
-        the instance is taken from database, no matter if cached copy
-        exists.
-        """
-        if not self._subtype_instance or refresh:
-            self._subtype_instance = self.content_type.get_object_for_this_type(pk=self.pk)
-        return self._subtype_instance
-
-    def __unicode__(self):
-        # XXX: can we do it in more clean way?
-        if self.__in_unicode:
-            return super(Subtyped, self).__unicode__()
-        elif type(self.get_subtype_instance()) == type(self):
-            self.__in_unicode = True
-            res = self.__unicode__()
-            self.__in_unicode = False
-            return res
-        else:
-            return self.get_subtype_instance().__unicode__()
 
     class Meta:
         abstract = True
@@ -166,6 +137,7 @@ class ProductAbstract(DescribedModel, Product):
     class Meta:
         abstract = True
 
+
 class ProductAbstractTranslation(DescribedModelTranslation):
     """
     Base class for product translations.
@@ -199,6 +171,6 @@ class Variant(Subtyped):
             help_text=_('ID of the product variant used internally in the shop.'))
 
 def _store_content_type(sender, instance, **kwargs):
-    if issubclass(type(instance), ProductAbstract) or issubclass(type(instance), Variant):
-        instance.content_type = ContentType.objects.get_for_model(sender)
+    if isinstance(instance, ProductAbstract) or isinstance(instance, Variant):
+        instance.store_content_type(sender)
 models.signals.pre_save.connect(_store_content_type)

@@ -1,7 +1,6 @@
 from decimal import Decimal
 from django.conf import settings
 from django.db import models
-from django.contrib.contenttypes.models import ContentType
 from django.utils.translation import ugettext_lazy as _
 from localeurl.models import reverse
 from mothertongue.models import MothertongueModelTranslate
@@ -157,7 +156,7 @@ class NonConfigurableProductAbstract(ProductAbstract):
     class Meta:
         abstract = True
 
-    def save(*args, **kwargs):
+    def save(self, *args, **kwargs):
         super(NonConfigurableProductAbstract, self).save(*args, **kwargs)
         self.variants.get_or_create()
 
@@ -169,8 +168,3 @@ class Variant(Subtyped):
     """
     sku = models.CharField(_('SKU'), max_length=128, blank=True,
             help_text=_('ID of the product variant used internally in the shop.'))
-
-def _store_content_type(sender, instance, **kwargs):
-    if isinstance(instance, ProductAbstract) or isinstance(instance, Variant):
-        instance.store_content_type(sender)
-models.signals.pre_save.connect(_store_content_type)

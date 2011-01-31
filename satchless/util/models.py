@@ -33,3 +33,8 @@ class Subtyped(models.Model):
 
     class Meta:
         abstract = True
+
+def _store_content_type(sender, instance, **kwargs):
+    if isinstance(instance, Subtyped):
+        instance.store_content_type(sender)
+models.signals.pre_save.connect(_store_content_type)

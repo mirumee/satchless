@@ -1,4 +1,4 @@
-from django.http import HttpResponse, HttpResponseNotFound
+from django.http import HttpResponseNotFound
 from django.views.generic.simple import direct_to_template
 from django.shortcuts import render_to_response
 from django.template import RequestContext

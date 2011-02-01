@@ -1,7 +1,7 @@
+from countries.models import Country
 from django.db import models
 from django.utils.translation import ugettext_lazy as _
 from django.contrib.auth.models import User
-from countries.models import Country
 
 class Address(models.Model):
     customer = models.ForeignKey('Customer')

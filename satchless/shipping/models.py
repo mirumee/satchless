@@ -1,3 +1,4 @@
+from countries.models import Country
 from django.conf import settings
 from django.db import models
 from mothertongue.models import MothertongueModelTranslate
@@ -13,6 +14,7 @@ class ShippingVariant(MothertongueModelTranslate, Subtyped):
     description = models.TextField(_('description'), blank=True)
     price = models.DecimalField(_('unit price'),
                                 max_digits=12, decimal_places=4)
+
     def __unicode__(self):
         return self.name
 
@@ -24,3 +26,21 @@ class ShippingVariantTranslation(models.Model):
 
     def __unicode__(self):
         return "%s@%s" % (self.name, self.language)
+
+
+class PhysicalShippingVariant(ShippingVariant):
+    shipping_full_name = models.CharField(_("full person name"), max_length=256)
+    shipping_company_name = models.CharField(_("company name"),
+                                             max_length=256, blank=True)
+    shipping_street_address_1 = models.CharField(_("street address 1"),
+                                                 max_length=256)
+    shipping_street_address_2 = models.CharField(_("street address 2"),
+                                                 max_length=256, blank=True)
+    shipping_city = models.CharField(_("city"), max_length=256)
+    shipping_postal_code = models.CharField(_("postal code"), max_length=20)
+    shipping_country = models.ForeignKey(Country)
+    shipping_phone = models.CharField(_("phone number"),
+                                      max_length=30, blank=True)
+
+    class Meta:
+        abstract = True

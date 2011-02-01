@@ -1,3 +1,4 @@
+from countries.models import Country
 import datetime
 from django.contrib.auth.models import User
 from django.db import models
@@ -12,6 +13,15 @@ class Order(models.Model):
                                    editable=False, blank=True)
     user = models.ForeignKey(User, blank=True, null=True)
     payment_variant = models.ForeignKey(PaymentVariant)
+    billing_full_name = models.CharField(_("full person name"), max_length=256)
+    billing_company_name = models.CharField(_("company name"), max_length=256, blank=True)
+    billing_street_address_1 = models.CharField(_("street address 1"), max_length=256)
+    billing_street_address_2 = models.CharField(_("street address 2"), max_length=256, blank=True)
+    billing_city = models.CharField(_("city"), max_length=256)
+    billing_postal_code = models.CharField(_("postal code"), max_length=20)
+    billing_country = models.ForeignKey(Country)
+    billing_tax_id = models.CharField(_("tax ID"), max_length=40, blank=True)
+    billing_phone = models.CharField(_("phone number"), max_length=30, blank=True)
 
     def __unicode__(self):
         return _('Order #%d') % self.id

@@ -13,6 +13,7 @@ class PaymentVariant(MothertongueModelTranslate, Subtyped):
     description = models.TextField(_('description'), blank=True)
     price = models.DecimalField(_('unit price'),
                                 max_digits=12, decimal_places=4)
+
     def __unicode__(self):
         return self.name
 

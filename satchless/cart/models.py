@@ -3,8 +3,9 @@ from decimal import Decimal
 from django.db import models
 from django.contrib.auth.models import User
 from django.utils.translation import ugettext_lazy as _
-from satchless.product.models import Variant
-from satchless.pricing import Price
+
+from ..product.models import Variant
+from ..pricing import Price
 
 from . import signals
 
@@ -116,7 +117,7 @@ class CartItem(models.Model):
                                    decimal_places=4)
 
     def get_unit_price(self, **kwargs):
-        from satchless.pricing.handler import get_cartitem_unit_price
+        from ..pricing.handler import get_cartitem_unit_price
         return get_cartitem_unit_price(cartitem=self, **kwargs)
 
     def save(self, *args, **kwargs):

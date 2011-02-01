@@ -27,5 +27,5 @@ def tax(price):
 def tax_name(price):
     try:
         return price.tax_name
-    except AtributeError:
+    except AttributeError:
         return ''

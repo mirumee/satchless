@@ -2,7 +2,7 @@ from decimal import Decimal
 from django.test import TestCase, Client
 from django.db import models
 from satchless.cart.models import Cart
-from satchless.pricing.handler import Price,\
+from satchless.pricing.handler import Price, \
         get_variant_price, get_product_price_range, get_cartitem_unit_price
 from satchless.product.models import ProductAbstract, Variant
 from satchless.product.tests import DeadParrot, DeadParrotVariant

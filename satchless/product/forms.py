@@ -1,7 +1,4 @@
 from django import forms
-from django.utils.translation import ugettext as _
-
-from . import models
 
 class BaseVariantForm(forms.Form):
     product = None

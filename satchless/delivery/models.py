@@ -1,25 +1,28 @@
 from countries.models import Country
 from django.conf import settings
 from django.db import models
+from django.utils.translation import ugettext_lazy as _
 from mothertongue.models import MothertongueModelTranslate
 
 from ..util.models import Subtyped
 
-class ShippingVariant(MothertongueModelTranslate, Subtyped):
+class DeliveryVariant(MothertongueModelTranslate, Subtyped):
     '''
-    Base class for all shipping variants. This is what gets assigned to an
+    Base class for all delivery variants. This is what gets assigned to an
     order shipping group at the checkout step.
     '''
     name = models.CharField(_('name'), max_length=128)
     description = models.TextField(_('description'), blank=True)
     price = models.DecimalField(_('unit price'),
                                 max_digits=12, decimal_places=4)
+    translated_fields = ('name', 'description')
+    translation_set = 'translations'
 
     def __unicode__(self):
         return self.name
 
 
-class ShippingVariantTranslation(models.Model):
+class DeliveryVariantTranslation(models.Model):
     language = models.CharField(max_length=5, choices=settings.LANGUAGES[1:])
     name = models.CharField(_('name'), max_length=128)
     description = models.TextField(_('description'), blank=True)
@@ -28,7 +31,7 @@ class ShippingVariantTranslation(models.Model):
         return "%s@%s" % (self.name, self.language)
 
 
-class PhysicalShippingVariant(ShippingVariant):
+class PhysicalShippingVariant(DeliveryVariant):
     shipping_full_name = models.CharField(_("full person name"), max_length=256)
     shipping_company_name = models.CharField(_("company name"),
                                              max_length=256, blank=True)
@@ -38,7 +41,7 @@ class PhysicalShippingVariant(ShippingVariant):
                                                  max_length=256, blank=True)
     shipping_city = models.CharField(_("city"), max_length=256)
     shipping_postal_code = models.CharField(_("postal code"), max_length=20)
-    shipping_country = models.ForeignKey(Country)
+    shipping_country = models.ForeignKey(Country, related_name='+')
     shipping_phone = models.CharField(_("phone number"),
                                       max_length=30, blank=True)
 

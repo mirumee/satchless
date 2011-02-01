@@ -1,5 +1,6 @@
 from django.conf import settings
 from django.db import models
+from django.utils.translation import ugettext_lazy as _
 from mothertongue.models import MothertongueModelTranslate
 
 from ..util.models import Subtyped
@@ -13,6 +14,8 @@ class PaymentVariant(MothertongueModelTranslate, Subtyped):
     description = models.TextField(_('description'), blank=True)
     price = models.DecimalField(_('unit price'),
                                 max_digits=12, decimal_places=4)
+    translated_fields = ('name', 'description')
+    translation_set = 'translations'
 
     def __unicode__(self):
         return self.name

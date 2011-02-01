@@ -1,14 +1,13 @@
 from django import forms
 from django.forms.models import inlineformset_factory
 from django.utils.translation import ugettext as _
-from satchless.product.models import Variant, ProductAbstract
 from . import models
 
 class QuantityForm(object):
     def clean_quantity(self):
         val = self.cleaned_data['quantity']
         if val < 0:
-            raise forms.ValidationError("Quantity cannot be negative")
+            raise forms.ValidationError(_("Quantity cannot be negative"))
         return val
 
 

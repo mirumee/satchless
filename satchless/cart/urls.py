@@ -1,6 +1,5 @@
 from django.conf.urls.defaults import *
 from . import views
-from . import forms
 
 urlpatterns = patterns('',
         # TODO

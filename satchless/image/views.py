@@ -5,7 +5,6 @@ try:
 except:
     from StringIO import StringIO
 
-from django.core.files import File
 from django.core.files.uploadedfile import InMemoryUploadedFile
 from django.http import HttpResponseNotFound, HttpResponseRedirect
 from django.shortcuts import get_object_or_404

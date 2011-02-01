@@ -1,6 +1,7 @@
 from django.conf import settings
 from django.utils.importlib import import_module
-from satchless.pricing import Price, StopPropagation
+
+from . import Price, StopPropagation
 
 _handlers_queue = None
 

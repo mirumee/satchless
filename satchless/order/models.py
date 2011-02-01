@@ -76,12 +76,12 @@ class Order(models.Model):
 
 class DeliveryGroup(models.Model):
     order = models.ForeignKey(Order, related_name='groups')
-    shipping_variant = models.ForeignKey(DeliveryVariant,
+    delivery_variant = models.ForeignKey(DeliveryVariant,
                                          related_name='delivery_groups')
 
 
 class OrderedItem(models.Model):
-    shipping_group = models.ForeignKey(DeliveryGroup, related_name='items')
+    delivery_group = models.ForeignKey(DeliveryGroup, related_name='items')
     product_variant = models.ForeignKey(Variant, blank=True, null=True,
                                         related_name='+')
     product_name = models.CharField(max_length=128)

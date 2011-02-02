@@ -22,15 +22,18 @@ class OrderManager(models.Manager):
         if previous_orders.exclude(status__in=safe_statuses).exists():
             raise SuspiciousOperation('A paid order exists for this cart.')
         previous_orders.delete()
-        order = Order.objects.create(cart=cart, user=cart.user)
+        order = Order.objects.create(cart=cart, user=cart.user,
+                                     currency=cart.currency)
         groups = partition(cart)
         for group in groups:
             delivery_group = order.groups.create()
             for item in group:
+                price = item.get_unit_price()
                 delivery_group.items.create(product_variant=item.variant,
                                             product_name=unicode(item.variant),
                                             quantity=item.quantity,
-                                            price=item.get_unit_price())
+                                            unit_price_net=price.net,
+                                            unit_price_gross=price.gross)
         return order
 
 class Order(models.Model):
@@ -47,6 +50,7 @@ class Order(models.Model):
                                    editable=False, blank=True)
     user = models.ForeignKey(User, blank=True, null=True, related_name='orders')
     cart = models.ForeignKey(Cart, blank=True, null=True, related_name='+')
+    currency = models.CharField(max_length=3)
     payment_variant = models.ForeignKey(PaymentVariant, blank=True,
                                         null=True, related_name='orders')
     billing_full_name = models.CharField(_("full person name"),
@@ -87,5 +91,7 @@ class OrderedItem(models.Model):
     product_name = models.CharField(max_length=128)
     quantity = models.DecimalField(_('quantity'),
                                    max_digits=10, decimal_places=4)
-    price = models.DecimalField(_('unit price'),
-                                max_digits=12, decimal_places=4)
+    unit_price_net = models.DecimalField(_('unit price (net)'),
+                                         max_digits=12, decimal_places=4)
+    unit_price_gross = models.DecimalField(_('unit price (gross)'),
+                                           max_digits=12, decimal_places=4)

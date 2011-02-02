@@ -1,8 +1,9 @@
 from django.db.models import Sum, Min, Max
-from satchless.pricing import Price
+
+from ....pricing import Price
 from . import models
 
-def get_variant_price(variant, quantity=1, **kwargs):
+def get_variant_price(variant, currency, quantity=1, **kwargs):
     try:
         base_price = models.ProductPrice.objects.get(product=variant.product)
     except models.ProductPrice.DoesNotExist:
@@ -20,9 +21,9 @@ def get_variant_price(variant, quantity=1, **kwargs):
     except models.VariantPriceOffset.DoesNotExist:
         offset = 0
     price = price + offset
-    return Price(net=price, gross=price)
+    return Price(net=price, gross=price, currency=currency)
 
-def get_product_price_range(product, **kwargs):
+def get_product_price_range(product, currency, **kwargs):
     try:
         base_price = models.ProductPrice.objects.get(product=product)
     except models.ProductPrice.DoesNotExist:
@@ -35,9 +36,10 @@ def get_product_price_range(product, **kwargs):
     max_offset = base_price.offsets.aggregate(Max('price_offset'))['price_offset__max']
     max_price = max(price, price + max_offset)
     min_price = min(price, price + min_offset)
-    return (Price(net=min_price, gross=min_price), Price(net=max_price, gross=max_price))
+    return (Price(net=min_price, gross=min_price, currency=currency),
+            Price(net=max_price, gross=max_price, currency=currency))
 
-def get_cartitem_unit_price(cartitem, **kwargs):
+def get_cartitem_unit_price(cartitem, currency, **kwargs):
     product = cartitem.variant.get_subtype_instance().product
     try:
         base_price = models.ProductPrice.objects.get(product=product)
@@ -58,4 +60,4 @@ def get_cartitem_unit_price(cartitem, **kwargs):
     except models.VariantPriceOffset.DoesNotExist:
         offset = 0
     price = price_val + offset
-    return Price(net=price, gross=price)
+    return Price(net=price, gross=price, currency=currency)

@@ -5,7 +5,7 @@ class DeliveryProvider(object):
         widget. When given a DeliveryGroup it should only return types
         available for that group.
         '''
-        raise NotImplemented()
+        raise NotImplementedError()
 
     def get_form(self, customer, delivery_group, typ):
         '''
@@ -18,4 +18,4 @@ class DeliveryProvider(object):
         '''
         Take a valid form instance if any and return a DeliveryVariant instance.
         '''
-        raise NotImplemented()
+        raise NotImplementedError()

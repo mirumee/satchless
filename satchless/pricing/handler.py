@@ -5,32 +5,35 @@ from . import Price, StopPropagation
 
 _handlers_queue = None
 
-def get_variant_price(variant, quantity=1, **context):
+def get_variant_price(variant, currency, quantity=1, **context):
     price = Price()
     for handler in _handlers_queue:
         try:
-            price = handler.get_variant_price(variant, quantity=quantity,
-                                              price=price, **context)
+            price = handler.get_variant_price(variant, currency=currency,
+                                              quantity=quantity, price=price,
+                                              **context)
         except StopPropagation:
             break
     return price
 
-def get_product_price_range(product, **context):
-    range = (Price(), Price())
+def get_product_price_range(product, currency, **context):
+    p_range = (Price(), Price())
     for handler in _handlers_queue:
         try:
-            range = handler.get_product_price_range(product, range=range,
-                                                    **context)
+            p_range = handler.get_product_price_range(product,
+                                                      currency=currency,
+                                                      price_range=p_range,
+                                                      **context)
         except StopPropagation:
             break
-    return range
+    return p_range
 
-def get_cartitem_unit_price(cartitem, **context):
+def get_cartitem_unit_price(cartitem, currency, **context):
     price = Price()
     for handler in _handlers_queue:
         try:
-            price = handler.get_cartitem_unit_price(cartitem, price=price,
-                                                    **context)
+            price = handler.get_cartitem_unit_price(cartitem, currency=currency,
+                                                    price=price, **context)
         except StopPropagation:
             break
     return price

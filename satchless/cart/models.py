@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 from decimal import Decimal
+from django.conf import settings
 from django.db import models
 from django.contrib.auth.models import User
 from django.utils.translation import ugettext_lazy as _
@@ -10,6 +11,9 @@ from ..pricing import Price
 from . import signals
 
 CART_SESSION_KEY = '_satchless_cart-%s' # takes typ
+
+def get_default_currency():
+    return settings.SATCHLESS_DEFAULT_CURRENCY
 
 class CartManager(models.Manager):
     def get_or_create_from_request(self, request, typ):
@@ -29,6 +33,8 @@ class CartManager(models.Manager):
 class Cart(models.Model):
     owner = models.ForeignKey(User, null=True, blank=True)
     typ = models.CharField(_("type"), max_length=100)
+    currency = models.CharField(_("currency"), max_length=3,
+                                default=get_default_currency)
 
     objects = CartManager()
 
@@ -118,7 +124,9 @@ class CartItem(models.Model):
 
     def get_unit_price(self, **kwargs):
         from ..pricing.handler import get_cartitem_unit_price
-        return get_cartitem_unit_price(cartitem=self, **kwargs)
+        currency = self.cart.currency
+        return get_cartitem_unit_price(cartitem=self, currency=currency,
+                                       **kwargs)
 
     def save(self, *args, **kwargs):
         assert(self.quantity > 0)

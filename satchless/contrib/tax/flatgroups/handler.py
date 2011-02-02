@@ -19,7 +19,7 @@ def get_variant_price(variant, quantity=1, **kwargs):
     return _tax_product(variant.product, kwargs.pop('price'))
 
 def get_product_price_range(product, **kwargs):
-    return _tax_product(product, kwargs.pop('range'))
+    return _tax_product(product, kwargs.pop('price_range'))
 
 def get_cartitem_unit_price(cartitem, **kwargs):
     return _tax_product(cartitem.variant.get_subtype_instance().product, kwargs.pop('price'))

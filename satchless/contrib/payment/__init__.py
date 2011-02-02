@@ -6,7 +6,7 @@ from . import models
 
 class DjangoPaymentsProvider(PaymentProvider):
     def enum_types(self, customer, order=None):
-        payment_types = getattr(settings, 'SATCHLESS_DJAGO_PAYMENT_TYPES', None)
+        payment_types = getattr(settings, 'SATCHLESS_DJANGO_PAYMENT_TYPES', None)
         if not payment_types:
             payment_types = ()
         return payment_types

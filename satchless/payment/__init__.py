@@ -6,7 +6,7 @@ class PaymentProvider(object):
         '''
         raise NotImplementedError()
 
-    def get_form(self, customer, order, typ):
+    def get_configuration_form(self, customer, order, typ):
         '''
         If applicable, return a form class responsible for getting any
         additional payment data.
@@ -16,5 +16,12 @@ class PaymentProvider(object):
     def get_variant(self, customer, order, typ, form):
         '''
         Take a valid form instance if any and return a PaymentVariant instance.
+        '''
+        raise NotImplementedError()
+
+    def get_confirmation_form(self, customer, order, variant):
+        '''
+        Build a form that can be used on the order confirmation page to start
+        payment processing.
         '''
         raise NotImplementedError()

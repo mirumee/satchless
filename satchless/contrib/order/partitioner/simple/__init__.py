@@ -6,6 +6,6 @@ delivery group.
 '''
 
 def partition(cart, items):
-    handled_groups = [list(remaining_items)]
+    handled_groups = [list(items)]
     remaining_items = ()
     return handled_groups, remaining_items

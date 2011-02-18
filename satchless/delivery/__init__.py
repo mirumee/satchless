@@ -1,5 +1,5 @@
 class DeliveryProvider(object):
-    def enum_types(self, customer, delivery_group=None):
+    def enum_types(self, customer=None, delivery_group=None):
         '''
         Should return an iterable consisting of pairs suitable for a select
         widget. When given a DeliveryGroup it should only return types
@@ -7,14 +7,14 @@ class DeliveryProvider(object):
         '''
         raise NotImplementedError()
 
-    def get_form(self, customer, delivery_group, typ):
+    def get_form(self, delivery_group, typ):
         '''
         If applicable, return a form class responsible for getting any
         additional delivery data.
         '''
         return None
 
-    def get_variant(self, customer, delivery_group, typ, form):
+    def get_variant(self, delivery_group, typ, form):
         '''
         Take a valid form instance if any and return a DeliveryVariant instance.
         '''

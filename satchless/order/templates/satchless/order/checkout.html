@@ -1,0 +1,23 @@
+{% extends 'satchless/order/base.html' %}
+{% load i18n %}
+{% block title %}{{ block.super }} | {% trans "Shipping" %}{% endblock %}
+{% block breadcrumbs %}
+    {{ block.super }}
+    <li><a href="">{% trans "Order" %}</a></li>
+{% endblock %}
+{% block content %}
+    <h1>{% trans "Order" %}</h1>
+    <form method="post" action="">{% csrf_token %}
+        {{ delivery_formset.management_form }}
+        {% for form in delivery_formset.forms %}{% with form.instance as group %}
+            {% if order.groups.count > 1 %}<h2>Delivery group:</h2>{% endif %}
+            <ul>
+            {% for item in group.items.all %}
+                <li>{{ item.product_name }} &times; {{ item.quantity }}</li>
+            {% endfor %}
+            </ul>
+            {{ form.as_p }}
+        {% endwith %}{% endfor %}
+        <button type="submit">{% trans "Proceed" %}</button>
+    </form>
+{% endblock %}

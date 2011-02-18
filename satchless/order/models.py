@@ -22,11 +22,11 @@ class OrderManager(models.Manager):
         if previous_orders.exclude(status__in=safe_statuses).exists():
             raise SuspiciousOperation('A paid order exists for this cart.')
         previous_orders.delete()
-        order = Order.objects.create(cart=cart, user=cart.user,
+        order = Order.objects.create(cart=cart, user=cart.owner,
                                      currency=cart.currency)
         groups = partition(cart)
         for group in groups:
-            delivery_group = order.groups.create()
+            delivery_group = order.groups.create(order=order)
             for item in group:
                 price = item.get_unit_price()
                 delivery_group.items.create(product_variant=item.variant,
@@ -70,6 +70,8 @@ class Order(models.Model):
     billing_phone = models.CharField(_("phone number"),
                                      max_length=30, blank=True)
 
+    objects = OrderManager()
+
     def __unicode__(self):
         return _('Order #%d') % self.id
 
@@ -80,7 +82,7 @@ class Order(models.Model):
 
 class DeliveryGroup(models.Model):
     order = models.ForeignKey(Order, related_name='groups')
-    delivery_variant = models.ForeignKey(DeliveryVariant,
+    delivery_variant = models.ForeignKey(DeliveryVariant, null=True, blank=True,
                                          related_name='delivery_groups')
 
 

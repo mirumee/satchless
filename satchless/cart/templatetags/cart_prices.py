@@ -3,10 +3,10 @@ from django import template
 register = template.Library()
 
 @register.filter
-def cartitem_unit_price(cartitem):
+def cartitem_unit_price(cartitem, currency=None):
     try:
         from satchless.pricing.handler import get_cartitem_unit_price
-        price = get_cartitem_unit_price(cartitem)
+        price = get_cartitem_unit_price(cartitem, currency if currency else cartitem.cart.currency)
         if price.has_value():
             return price
     except ImportError:
@@ -14,10 +14,10 @@ def cartitem_unit_price(cartitem):
     return ''
 
 @register.filter
-def cartitem_price(cartitem):
+def cartitem_price(cartitem, currency=None):
     try:
         from satchless.pricing.handler import get_cartitem_unit_price
-        price = get_cartitem_unit_price(cartitem)
+        price = get_cartitem_unit_price(cartitem, currency if currency else cartitem.cart.currency)
         if price.has_value():
             return price * cartitem.quantity
     except (ImportError, NotImplementedError):

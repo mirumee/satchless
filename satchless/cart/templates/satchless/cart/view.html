@@ -42,24 +42,24 @@
                     <a href="{% url satchless-product-product variant.product.slug variant.product.pk %}">{{ variant }}</a>
                 </td>
                 <td class="numerical unitPrice">
-                    {{ unit_price|gross|floatformat:2 }}<br />
+                    {{ unit_price|gross|floatformat:2 }} <span class="currency">{{ cart.currency }}</span><br />
                 </td>
                 <td class="numerical quantity">&times; {{ form.quantity }}</td>
                 <td class="numerical itemPrice">
-                    = {{ item_price|gross|floatformat:2 }}<br />
+                    = {{ item_price|gross|floatformat:2 }} <span class="currency">{{ cart.currency }}</span><br />
                 </td>
                 <td class="numerical tax">
-                    {{ item_price|tax|floatformat:2 }}
+                    {{ item_price|tax|floatformat:2 }} <span class="currency">{{ cart.currency }}</span>
                 </td>
                 <td rowspan="2">{{ form.DELETE }}</td>
             </tr>
             <tr>
                 <td class="numerical unitPrice netPrice">
-                    {{ unit_price|net|floatformat:2 }}
+                    {{ unit_price|net|floatformat:2 }} <span class="currency">{{ cart.currency }}</span>
                 </td>
                 <td></td>
                 <td class="numerical itemPrice netPrice">
-                    {{ item_price|net|floatformat:2 }}
+                    {{ item_price|net|floatformat:2 }} <span class="currency">{{ cart.currency }}</span>
                 </td>
                 <td class="numerical taxName">
                     {% with item_price|tax_name as taxname %}{% if taxname %}({{ taxname }}){% endif %}{% endwith %}
@@ -73,12 +73,12 @@
             <tr class="total">
                 <th colspan="4" rowspan="2">{% trans "Total" %}:</th>
                 <td class="numerical">
-                    {{ cart|cart_total|gross|floatformat:2 }}<br />
+                    {{ cart|cart_total|gross|floatformat:2 }} <span class="currency">{{ cart.currency }}</span><br />
                 </td>
                 <td colspan="2" rowspan="2"></td>
             </tr>
             <tr>
-                <td class="numerical netPrice">{{ cart|cart_total|net|floatformat:2 }}</td>
+                <td class="numerical netPrice">{{ cart|cart_total|net|floatformat:2 }} <span class="currency">{{ cart.currency }}</span></td>
             </tr>
             <tr>
                 <td colspan="7">

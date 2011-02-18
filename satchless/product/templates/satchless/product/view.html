@@ -20,7 +20,13 @@
     <h2>{% trans "Variants" %}</h2>
     <ul>
         {% for variant in product.variants.all %}
-            <li><strong>{{ variant }}</strong>{% with variant|variant_price as price %}{% if price %}, price: {{ price.gross|floatformat:2 }} ({{ price.net|floatformat:2 }} net){% endif %}{% endwith %}</li>
+            <li>
+                <strong>{{ variant }}</strong>
+                {% with variant|variant_price:BTC as price %}{% if price %}
+                price: {{ price.gross|floatformat:2 }} <span class="currency">BTC</span>
+                ({{ price.net|floatformat:2 }} <span class="currency">BTC</span> net)
+                {% endif %}{% endwith %}
+            </li>
         {% endfor %}
     </ul>
     {% endif %}

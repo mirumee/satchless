@@ -3,6 +3,7 @@ from django.utils.importlib import import_module
 
 _partitioners_queue = None
 _delivery_providers_queue = None
+_payment_providers_queue = None
 
 def partition(cart):
     groups = []
@@ -58,5 +59,15 @@ def init_queues():
         module = import_module(mod_name)
         provider = getattr(module, prov_name)()
         _delivery_providers_queue.append((provider_path, provider))
+    global _payment_providers_queue
+    _payment_providers_queue = []
+    providers = getattr(settings, 'SATCHLESS_PAYMENT_PROVIDERS', [
+        'satchless.payment.PaymentProvider',
+    ])
+    for provider_path in providers:
+        mod_name, prov_name = provider_path.rsplit('.', 1)
+        module = import_module(mod_name)
+        provider = getattr(module, prov_name)()
+        _payment_providers_queue.append((provider_path, provider))
 
 init_queues()

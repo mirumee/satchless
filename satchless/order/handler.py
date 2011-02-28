@@ -22,15 +22,15 @@ def get_delivery_types(delivery_group):
         types.extend([('%s:%s' % (provider_path, t[0]), t[1]) for t in prov_types])
     return types
 
-def get_delivery_form(delivery_group, typ):
-    provider_path, typ_short = typ.lsplit(':', 1)
+def get_delivery_formclass(delivery_group, typ):
+    provider_path, typ_short = typ.split(':', 1)
     for prov_path, provider in _delivery_providers_queue:
         if provider_path == prov_path:
-            return provider.get_form(delivery_group, typ_short)
+            return provider.get_formclass(delivery_group, typ_short)
     raise ValueError('No provider found for delivery type %s.' % typ)
 
 def get_delivery_variant(delivery_group, typ, form):
-    provider_path, typ_short = typ.lsplit(':', 1)
+    provider_path, typ_short = typ.split(':', 1)
     for prov_path, provider in _delivery_providers_queue:
         if provider_path == prov_path:
             return provider.get_delivery_variant(delivery_group, typ_short, form)

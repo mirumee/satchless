@@ -1,5 +1,6 @@
 from countries.models import Country
 import datetime
+from django.conf import settings
 from django.contrib.auth.models import User
 from django.core.exceptions import SuspiciousOperation
 from django.db import models
@@ -12,10 +13,11 @@ from ..delivery.models import DeliveryVariant
 from .handler import partition
 
 class OrderManager(models.Manager):
-    def create_for_cart(self, cart):
+    def create_for_cart(self, cart, session=None):
         '''
         Create an order from the user's cart, possibly discarding any previous
-        orders created for this cart.
+        orders created for this cart. If session is given, the order ID will be
+        stored there.
         '''
         safe_statuses = ['checkout', 'payment-pending', 'cancelled']
         previous_orders = self.filter(cart=cart)
@@ -34,7 +36,23 @@ class OrderManager(models.Manager):
                                             quantity=item.quantity,
                                             unit_price_net=price.net,
                                             unit_price_gross=price.gross)
+        if session:
+            session['satchless_order'] = order.pk
         return order
+
+    def get_from_session(self, session):
+        '''
+        Get the order from session, possibly invalidating the variable if the
+        order has been processed already.
+        '''
+        try:
+            order = Order.objects.get(pk=session['satchless_order'], status='checkout')
+            return order
+        except KeyError:
+            return None
+        except Order.DoesNotExist:
+            del session['satchless_order']
+            return None
 
 class Order(models.Model):
     STATUS_CHOICES = (

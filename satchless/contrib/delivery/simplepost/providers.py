@@ -8,7 +8,7 @@ class PostDeliveryProvider(DeliveryProvider):
     def enum_types(self, customer=None, delivery_group=None):
         return ([(t.typ, t.name) for t in models.PostShippingType.objects.all()])
 
-    def get_form(self, delivery_group, typ):
+    def get_formclass(self, delivery_group, typ):
         return forms.PostShippingVariantForm
 
     def get_variant(self, delivery_group, typ, form):

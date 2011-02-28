@@ -3,10 +3,10 @@
 {% block title %}{{ block.super }} | {% trans "Shipping" %}{% endblock %}
 {% block breadcrumbs %}
     {{ block.super }}
-    <li><a href="">{% trans "Order" %}</a></li>
+    <li><a href="">{% trans "Order (business)" %}</a></li>
 {% endblock %}
 {% block content %}
-    <h1>{% trans "Order" %}</h1>
+    <h1>{% trans "Order (business)" %}</h1>
     <form method="post" action="">{% csrf_token %}
         {{ delivery_formset.management_form }}
         {% for form in delivery_formset.forms %}{% with form.instance as group %}

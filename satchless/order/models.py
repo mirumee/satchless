@@ -76,8 +76,9 @@ class Order(models.Model):
         return _('Order #%d') % self.id
 
     class Meta:
-        verbose_name = _('order')
-        verbose_name_plural = _('orders')
+        # Use described string to resolve ambiguity of the word 'order' in English.
+        verbose_name = _('order (business)')
+        verbose_name_plural = _('orders (business)')
 
 
 class DeliveryGroup(models.Model):

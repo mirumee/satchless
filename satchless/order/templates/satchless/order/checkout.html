@@ -10,11 +10,9 @@
     <form method="post" action="">{% csrf_token %}
         {{ delivery_formset.management_form }}
         {% for form in delivery_formset.forms %}{% with form.instance as group %}
-            {% if order.groups.count > 1 %}<h2>Delivery group:</h2>{% endif %}
+            {% if order.groups.count > 1 %}<h2>{% trans "Delivery group" %}:</h2>{% endif %}
             <ul>
-            {% for item in group.items.all %}
-                <li>{{ item.product_name }} &times; {{ item.quantity }}</li>
-            {% endfor %}
+            {% include 'satchless/order/snippets/delivery_group.html' %}
             </ul>
             {{ form.as_p }}
         {% endwith %}{% endfor %}

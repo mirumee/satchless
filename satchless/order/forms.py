@@ -27,11 +27,17 @@ class BaseDeliveryMethodFormset(BaseModelFormSet):
 DeliveryMethodFormset = modelformset_factory(models.DeliveryGroup,
         form=DeliveryMethodForm, formset=BaseDeliveryMethodFormset, extra=0)
 
-def get_delivery_details_forms(order, request):
-    forms = []
+def get_delivery_details_forms_for_groups(order, request):
+    '''
+    For each delivery group creates a (group, typ, delivery details form) tuple.
+    If there is no form, the third element is None.
+    '''
+    groups_and_forms = []
     for group in order.groups.all():
-        Form = handler.get_delivery_formclass(group,
-                request.session['satchless_delivery_groups'][group.pk])
+        typ = request.session['satchless_delivery_groups'][group.pk]
+        form = None
+        Form = handler.get_delivery_formclass(group, typ)
         if Form:
-            forms.append(Form(data=request.POST or None, prefix='delivery_group-%s' % group.pk))
-    return forms
+            form = Form(data=request.POST or None, prefix='delivery_group-%s' % group.pk)
+        groups_and_forms.append((group, typ, form))
+    return groups_and_forms

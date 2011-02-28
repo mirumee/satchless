@@ -1,0 +1,3 @@
+{% for item in group.items.all %}
+    <li>{{ item.product_name }} &times; {{ item.quantity }}</li>
+{% endfor %}

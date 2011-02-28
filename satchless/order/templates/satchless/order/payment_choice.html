@@ -1,0 +1,21 @@
+{% extends 'satchless/order/base.html' %}
+{% load i18n %}
+{% block title %}{{ block.super }} | {% trans "Payment" %}{% endblock %}
+{% block breadcrumbs %}
+    {{ block.super }}
+    <li><a href="">{% trans "Order (business)" %}</a></li>
+{% endblock %}
+{% block content %}
+    <h1>{% trans "Payment" %}</h1>
+<pre>
+{{ order }}
+{% for group in order.groups.all %}
+Group {{ forloop.counter }}
+--------
+{% for item in group.items.all %}{{ item.product_name }} x {{ item.quantity }}
+{% endfor %}
+
+Delivery: {{ group.delivery_variant.get_subtype_instance }}
+{% endfor %}
+</pre>
+{% endblock %}

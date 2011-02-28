@@ -47,3 +47,6 @@ class PhysicalShippingVariant(DeliveryVariant):
 
     class Meta:
         abstract = True
+
+    def __unicode__(self):
+        return "%s for %s, %s" % (self.name, self.shipping_full_name, self.shipping_country)

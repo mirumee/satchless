@@ -33,7 +33,7 @@ def get_delivery_variant(delivery_group, typ, form):
     provider_path, typ_short = typ.split(':', 1)
     for prov_path, provider in _delivery_providers_queue:
         if provider_path == prov_path:
-            return provider.get_delivery_variant(delivery_group, typ_short, form)
+            return provider.get_variant(delivery_group, typ_short, form)
     raise ValueError('No provider found for delivery type %s.' % typ)
 
 def init_queues():

@@ -1,6 +1,6 @@
 from django.db import models
 
-from ..payment.models import PaymentVariant
+from satchless.payment.models import PaymentVariant
 
 class DjangoPaymentsVariant(PaymentVariant):
     payment = models.OneToOneField(PaymentVariant,

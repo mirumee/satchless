@@ -39,5 +39,6 @@ def delivery_details(request):
 
 def payment_choice(request):
     order = models.Order.objects.get_from_session(request.session)
+    payment_form = forms.PaymentMethodForm(data=request.POST or None, instance=order)
     return direct_to_template(request, 'satchless/order/payment_choice.html',
-            {'order': order})
+            {'order': order, 'payment_form': payment_form})

@@ -7,7 +7,12 @@
 {% endblock %}
 {% block content %}
     <h1>{% trans "Payment" %}</h1>
+    <form action="" method="post">
+        {{ payment_form.as_p }}
+        <button type="submit">{% trans "Proceed" %}</button>
+    </form>
 <pre>
+DEBUG:
 {{ order }}
 {% for group in order.groups.all %}
 Group {{ forloop.counter }}

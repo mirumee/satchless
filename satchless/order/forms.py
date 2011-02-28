@@ -41,3 +41,15 @@ def get_delivery_details_forms_for_groups(order, request):
             form = Form(data=request.POST or None, prefix='delivery_group-%s' % group.pk)
         groups_and_forms.append((group, typ, form))
     return groups_and_forms
+
+
+class PaymentMethodForm(forms.ModelForm):
+    payment_typ = forms.ChoiceField(label=_('Payment method'), choices=[])
+
+    class Meta:
+        model = models.Order
+        fields = ('payment_typ',)
+
+    def __init__(self, *args, **kwargs):
+        super(PaymentMethodForm, self).__init__(*args, **kwargs)
+        self.fields['payment_typ'].choices = handler.get_payment_types(self.instance)

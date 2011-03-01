@@ -54,7 +54,7 @@ Let's start with a model for the product, in ``models.py`` file.::
             app_label = 'product'
             unique_together = ('product', 'color', 'looks_alive')
 
-Looks pretty simple, doesn't it? Notice the optional ``appname`` meta
+Looks pretty simple, doesn't it? Notice the optional ``app_label`` meta
 attribute, which will cause parrots to appear in *Products* admin group.
 
 .. note::
@@ -153,7 +153,7 @@ file::
     from . import forms
     from . import models
 
-    def get_variantformclass(sender=None, instance=None, formclass=None, **kwargs):
+    def get_variantformclass(sender, instance, formclass, **kwargs):
         formclass.append(forms.ParrotVariantForm)
 
     variant_formclass_for_product.connect(get_variantformclass, sender=models.Parrot)

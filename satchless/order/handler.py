@@ -23,19 +23,20 @@ def get_delivery_types(delivery_group):
         types.extend([('%s:%s' % (provider_path, t[0]), t[1]) for t in prov_types])
     return types
 
-def get_delivery_formclass(delivery_group, typ):
+def get_delivery_provider(typ):
     provider_path, typ_short = typ.split(':', 1)
     for prov_path, provider in _delivery_providers_queue:
         if provider_path == prov_path:
-            return provider.get_formclass(delivery_group, typ_short)
+            return provider, typ_short
     raise ValueError('No provider found for delivery type %s.' % typ)
 
+def get_delivery_formclass(delivery_group, typ):
+    provider, typ_short = get_delivery_provider(typ)
+    return provider.get_formclass(delivery_group, typ_short)
+
 def get_delivery_variant(delivery_group, typ, form):
-    provider_path, typ_short = typ.split(':', 1)
-    for prov_path, provider in _delivery_providers_queue:
-        if provider_path == prov_path:
-            return provider.get_variant(delivery_group, typ_short, form)
-    raise ValueError('No provider found for delivery type %s.' % typ)
+    provider, typ_short = get_delivery_provider(typ)
+    return provider.get_variant(delivery_group, typ_short, form)
 
 def get_payment_types(order):
     types = []
@@ -43,6 +44,25 @@ def get_payment_types(order):
         prov_types = provider.enum_types(order=order)
         types.extend([('%s:%s' % (provider_path, t[0]), t[1]) for t in prov_types])
     return types
+
+def get_payment_provider(typ):
+    provider_path, typ_short = typ.split(':', 1)
+    for prov_path, provider in _payment_providers_queue:
+        if provider_path == prov_path:
+            return provider, typ_short
+    raise ValueError('No provider found for payment type %s.' % typ)
+
+def get_payment_formclass(order, typ):
+    provider, typ_short = get_payment_provider(typ)
+    return provider.get_configuration_formclass(order, typ_short)
+
+def get_payment_variant(order, typ, form):
+    provider, typ_short = get_payment_provider(typ)
+    return provider.get_variant(order, typ_short, form)
+
+def get_confirmation_formdata(order, typ):
+    provider, typ_short = get_payment_provider(typ)
+    return provider.get_confirmation_form(order)
 
 def init_queues():
     global _partitioners_queue

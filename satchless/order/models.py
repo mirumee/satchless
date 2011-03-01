@@ -62,6 +62,7 @@ class Order(models.Model):
         ('delivery', _('shipped')),
         ('cancelled', _('cancelled')),
     )
+    # Do not set the status manually, use .set_status() instead.
     status = models.CharField(_('order status'), max_length=32,
                               choices=STATUS_CHOICES, default='checkout')
     created = models.DateTimeField(default=datetime.datetime.now,
@@ -92,6 +93,12 @@ class Order(models.Model):
 
     def __unicode__(self):
         return _('Order #%d') % self.id
+
+    def set_status(self, new_status):
+        old_status = self.status
+        self.status = new_status
+        self.save()
+        # TODO: blah.blah.order_status_changed.send(old_status, new_status) blah blah
 
     class Meta:
         # Use described string to resolve ambiguity of the word 'order' in English.

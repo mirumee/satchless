@@ -10,5 +10,5 @@ urlpatterns = patterns('',
     url(r'^checkout/payment_details/$', views.payment_details,
             name='satchless-checkout-payment_details'),
     url(r'^checkout/confirmation/$', views.confirmation,
-            name='satchless-checkout-confirm'),
+            name='satchless-checkout-confirmation'),
     )

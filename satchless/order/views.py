@@ -30,6 +30,8 @@ def delivery_details(request):
     user will be asked for them. Otherwise we redirect to step 2.
     """
     order = models.Order.objects.get_from_session(request.session)
+    if not order:
+        return redirect('satchless-checkout')
     delivery_groups_forms = forms.get_delivery_details_forms_for_groups(order, request)
     groups_with_forms = filter(lambda gf: gf[2], delivery_groups_forms)
     if len(groups_with_forms) == 0:
@@ -54,7 +56,13 @@ def payment_choice(request):
     User will choose the payment method.
     """
     order = models.Order.objects.get_from_session(request.session)
+    if not order:
+        return redirect('satchless-checkout')
     payment_form = forms.PaymentMethodForm(data=request.POST or None, instance=order)
+    if request.method == 'POST':
+        if payment_form.is_valid():
+            payment_form.save(request.session)
+            return redirect('satchless-checkout-payment_details')
     return direct_to_template(request, 'satchless/order/payment_choice.html',
             {'order': order, 'payment_form': payment_form})
 
@@ -64,7 +72,26 @@ def payment_details(request):
     If any payment details are needed, user will be asked for them. Otherwise
     we redirect to step 3.
     """
-    pass
+    order = models.Order.objects.get_from_session(request.session)
+    if not order:
+        return redirect('satchless-checkout')
+    form = forms.get_payment_details_form(order, request)
+    typ = request.session['satchless_payment_method']
+
+    def proceed(order, typ, form):
+        variant = handler.get_payment_variant(order, typ, form)
+        order.payment_variant = variant
+        order.save()
+        return redirect('satchless-checkout-confirmation')
+
+    if form:
+        if request.method == 'POST':
+            if form.is_valid():
+                return proceed(order, typ, form)
+        return direct_to_template(request, 'satchless/order/payment_details.html',
+                {'order': order, 'form': form})
+    else:
+        return proceed(order, typ, form)
 
 def confirmation(request):
     """
@@ -72,4 +99,11 @@ def confirmation(request):
     The final summary, where user is asked to review and confirm the order.
     Confirmation will redirect to the payment gateway.
     """
-    pass
+    order = models.Order.objects.get_from_session(request.session)
+    if not order:
+        return redirect('satchless-checkout')
+    order.set_status('payment-pending')
+    # TODO: get rid of typ here. We have the variant already.
+    formdata = handler.get_confirmation_formdata(order, request.session['satchless_payment_method'])
+    return direct_to_template(request, 'satchless/order/confirmation.html',
+            {'order': order, 'formdata': formdata})

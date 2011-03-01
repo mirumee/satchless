@@ -1,15 +1,14 @@
 {% extends 'satchless/order/base.html' %}
 {% load i18n %}
-{% block title %}{{ block.super }} | {% trans "Payment" %}{% endblock %}
+{% block title %}{{ block.super }} | {% trans "Payment details" %}{% endblock %}
 {% block breadcrumbs %}
     {{ block.super }}
     <li><a href="">{% trans "Order (business)" %}</a></li>
 {% endblock %}
 {% block content %}
-    <h1>{% trans "Payment" %}</h1>
-    <form action="" method="post">{% csrf_token %}
-        {{ payment_form.as_p }}
+    <h1>{% trans "Payment details" %}</h1>
+    <form method="post" action="">{% csrf_token %}
+        {{ form.as_p }}
         <button type="submit">{% trans "Proceed" %}</button>
     </form>
-<pre>
 {% endblock %}

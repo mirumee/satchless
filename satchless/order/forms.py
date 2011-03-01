@@ -53,3 +53,14 @@ class PaymentMethodForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super(PaymentMethodForm, self).__init__(*args, **kwargs)
         self.fields['payment_typ'].choices = handler.get_payment_types(self.instance)
+
+    def save(self, session):
+        session['satchless_payment_method'] = self.cleaned_data['payment_typ']
+
+
+def get_payment_details_form(order, request):
+    typ = request.session['satchless_payment_method']
+    Form = handler.get_payment_formclass(order, typ)
+    if Form:
+        return Form(data=request.POST or None)
+    return None

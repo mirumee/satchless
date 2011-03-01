@@ -111,7 +111,7 @@ class Cart(models.Model):
 
     def __unicode__(self):
         if self.owner:
-            return u"%s of %s" % (self.typ, self.user.username)
+            return u"%s of %s" % (self.typ, self.owner.username)
         else:
             return self.typ
 

@@ -14,6 +14,9 @@ from ..delivery.models import DeliveryVariant
 from .handler import partition
 from . import signals
 
+class EmptyCart(Exception):
+    pass
+
 class OrderManager(models.Manager):
     def create_for_cart(self, cart, session=None):
         '''
@@ -21,6 +24,8 @@ class OrderManager(models.Manager):
         orders created for this cart. If session is given, the order ID will be
         stored there.
         '''
+        if cart.is_empty():
+            raise EmptyCart("Cannot create empty order.")
         safe_statuses = ['checkout', 'payment-pending', 'cancelled']
         previous_orders = self.filter(cart=cart)
         if previous_orders.exclude(status__in=safe_statuses).exists():

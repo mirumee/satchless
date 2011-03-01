@@ -14,12 +14,18 @@ def checkout(request, typ):
     for each of the groups.
     """
     cart = Cart.objects.get_or_create_from_request(request, typ)
-    order = models.Order.objects.create_for_cart(cart, session=request.session)
-    delivery_formset = forms.DeliveryMethodFormset(data=request.POST or None, queryset=order.groups.all())
-    if request.method == 'POST':
-        if delivery_formset.is_valid():
-            delivery_formset.save(request.session)
-            return redirect('satchless-checkout-delivery_details')
+    try:
+        order = models.Order.objects.create_for_cart(cart, session=request.session)
+    except models.EmptyCart:
+        order = None
+        delivery_formset = None
+    if order:
+        delivery_formset = forms.DeliveryMethodFormset(
+                data=request.POST or None, queryset=order.groups.all())
+        if request.method == 'POST':
+            if delivery_formset.is_valid():
+                delivery_formset.save(request.session)
+                return redirect('satchless-checkout-delivery_details')
     return direct_to_template(request, 'satchless/order/checkout.html',
             {'order': order, 'delivery_formset': delivery_formset})
 

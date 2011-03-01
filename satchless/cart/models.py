@@ -109,6 +109,9 @@ class Cart(models.Model):
             total += i.get_unit_price() * i.quantity
         return total
 
+    def is_empty(self):
+        return self.items.count() == 0
+
     def __unicode__(self):
         if self.owner:
             return u"%s of %s" % (self.typ, self.owner.username)

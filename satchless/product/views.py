@@ -28,6 +28,8 @@ def product(request, category_slugs='', product_slug='', product_pk=None):
         products = products.filter(pk=product_pk)
     if len(path):
         products = products.filter(categories=path[-1])
+    elif not request.user.is_staff:
+        products = products.filter(categories__isnull=False)
     if not products.exists():
         return HttpResponseNotFound()
     product = products[0].get_subtype_instance()

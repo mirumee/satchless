@@ -59,11 +59,12 @@ MEDIA_ROOT = os.path.join(PROJECT_ROOT, 'media')
 # trailing slash if there is a path component (optional in other cases).
 # Examples: "http://media.lawrence.com", "http://example.com/media/"
 MEDIA_URL = '/'
+STATIC_URL = '/static/'
 
 # URL prefix for admin media -- CSS, JavaScript and images. Make sure to use a
 # trailing slash.
 # Examples: "http://foo.com/media/", "/media/".
-ADMIN_MEDIA_PREFIX = '/media/admin/'
+ADMIN_MEDIA_PREFIX = STATIC_URL + 'grappelli/'
 
 # Make this unique, and don't share it with anybody.
 SECRET_KEY = 'm+q17zt_)tsu+-=9gi)4g%66rys*bn9rw5w*v$xxkh%dua*7_8'
@@ -82,6 +83,7 @@ MIDDLEWARE_CLASSES = (
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
+    'pagination.middleware.PaginationMiddleware',
 )
 
 ROOT_URLCONF = 'urls'
@@ -98,11 +100,16 @@ TEMPLATE_CONTEXT_PROCESSORS = (
     'django.core.context_processors.debug',
     'django.core.context_processors.i18n',
     'django.core.context_processors.media',
+    'django.core.context_processors.static',
     'django.core.context_processors.request',
     'django.contrib.messages.context_processors.messages',
 #    'grappelli.context_processors.admin_template_path',
     'mothertongue.context_processors.router',
 )
+STATICFILES_DIRS = (
+    os.path.join(PROJECT_ROOT, "static"),
+)
+
 
 INSTALLED_APPS = (
     'django.contrib.auth',
@@ -110,6 +117,7 @@ INSTALLED_APPS = (
     'django.contrib.sessions',
     'django.contrib.sites',
     'django.contrib.messages',
+    'django.contrib.staticfiles',
 
     'localeurl',
     'mothertongue',
@@ -131,7 +139,8 @@ INSTALLED_APPS = (
     'satchless.order',
     'satchless.contrib.delivery.simplepost',
     'products',
-    'south'
+    'south',
+    'pagination',
 )
 
 SATCHLESS_IMAGE_SIZES = {
@@ -142,7 +151,15 @@ SATCHLESS_IMAGE_SIZES = {
     'product-detail': {
         'size': (200, 150),
         'crop': False,
-    }
+    },
+    'category': {
+        'size': (230, 257),
+        'crop': True,
+    },
+    'product': {
+        'size': (230, 307),
+        'crop': True,
+    },
 }
 
 SATCHLESS_DEFAULT_CURRENCY = 'GBP'

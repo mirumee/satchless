@@ -8,6 +8,7 @@ from django.utils.translation import ugettext_lazy as _
 
 from ..cart.models import Cart
 from ..payment.models import PaymentVariant
+from ..pricing import Price
 from ..product.models import Variant
 from ..delivery.models import DeliveryVariant
 from .handler import partition
@@ -100,6 +101,13 @@ class Order(models.Model):
         self.save()
         # TODO: blah.blah.order_status_changed.send(old_status, new_status) blah blah
 
+    def total(self):
+        if self.payment_variant:
+            payment_price = Price(self.payment_variant.price)
+        else:
+            payment_price = Price(0)
+        return payment_price + sum([g.total() for g in self.groups.all()], Price(0))
+
     class Meta:
         # Use described string to resolve ambiguity of the word 'order' in English.
         verbose_name = _('order (business)')
@@ -110,6 +118,13 @@ class DeliveryGroup(models.Model):
     order = models.ForeignKey(Order, related_name='groups')
     delivery_variant = models.ForeignKey(DeliveryVariant, null=True, blank=True,
                                          related_name='delivery_groups')
+
+    def total(self):
+        if self.delivery_variant:
+            delivery_price = Price(self.delivery_variant.price)
+        else:
+            delivery_price = Price(0)
+        return delivery_price + sum([i.price() for i in self.items.all()], Price(0))
 
 
 class OrderedItem(models.Model):
@@ -123,3 +138,7 @@ class OrderedItem(models.Model):
                                          max_digits=12, decimal_places=4)
     unit_price_gross = models.DecimalField(_('unit price (gross)'),
                                            max_digits=12, decimal_places=4)
+
+    def price(self):
+        return Price(net=self.unit_price_net * self.quantity,
+                    gross=self.unit_price_gross * self.quantity)

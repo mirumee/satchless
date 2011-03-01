@@ -3,6 +3,7 @@ import payments
 
 from satchless.payment import PaymentProvider
 from . import models
+from . import listeners
 
 class DjangoPaymentsProvider(PaymentProvider):
     def enum_types(self, order=None, customer=None):

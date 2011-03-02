@@ -21,7 +21,8 @@ def checkout(request, typ):
         delivery_formset = None
     if order:
         delivery_formset = forms.DeliveryMethodFormset(
-                data=request.POST or None, queryset=order.groups.all())
+                data=request.POST or None, queryset=order.groups.all(),
+                session=request.session)
         if request.method == 'POST':
             if delivery_formset.is_valid():
                 delivery_formset.save(request.session)

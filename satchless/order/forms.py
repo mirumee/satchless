@@ -18,6 +18,17 @@ class DeliveryMethodForm(forms.ModelForm):
 
 
 class BaseDeliveryMethodFormset(BaseModelFormSet):
+    def __init__(self, *args, **kwargs):
+        self.session = kwargs.pop('session', None)
+        super(BaseDeliveryMethodFormset, self).__init__(*args, **kwargs)
+        for form in self.forms:
+            if form.instance and form.instance.pk:
+                try:
+                    form.fields['delivery_typ'].initial = \
+                        self.session['satchless_delivery_groups'][form.instance.pk]
+                except KeyError:
+                    pass
+
     def save(self, session):
         data = {}
         for form in self.forms:

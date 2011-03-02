@@ -66,6 +66,7 @@ class Cart(models.Model):
             else:
                 item.quantity = new_qty
                 item.save()
+            signals.cart_content_changed.send(sender=type(self), instance=self)
         return (new_qty, new_qty - old_qty, reason)
 
     def set_quantity(self, variant, quantity, dry_run=False):
@@ -95,6 +96,7 @@ class Cart(models.Model):
             else:
                 item.quantity = quantity
                 item.save()
+            signals.cart_content_changed.send(sender=type(self), instance=self)
         return (quantity, reason)
 
     def get_quantity(self, variant):

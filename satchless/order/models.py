@@ -10,6 +10,7 @@ from ..cart.models import Cart
 from ..pricing import Price
 from ..product.models import Variant
 from . import signals
+from . import listeners
 
 class EmptyCart(Exception):
     pass
@@ -35,18 +36,20 @@ class OrderManager(models.Manager):
             try:
                 order = Order.objects.get(pk=order_pk, cart=cart, status='checkout')
             except Order.DoesNotExist:
-                order = Order.objects.create(cart=cart, user=cart.owner,
-                                             currency=cart.currency)
-                groups = partition(cart)
-                for group in groups:
-                    delivery_group = order.groups.create(order=order)
-                    for item in group:
-                        price = item.get_unit_price()
-                        delivery_group.items.create(product_variant=item.variant,
-                                                    product_name=unicode(item.variant),
-                                                    quantity=item.quantity,
-                                                    unit_price_net=price.net,
-                                                    unit_price_gross=price.gross)
+                order = None
+        if not order:
+            order = Order.objects.create(cart=cart, user=cart.owner,
+                                         currency=cart.currency)
+            groups = partition(cart)
+            for group in groups:
+                delivery_group = order.groups.create(order=order)
+                for item in group:
+                    price = item.get_unit_price()
+                    delivery_group.items.create(product_variant=item.variant,
+                                                product_name=unicode(item.variant),
+                                                quantity=item.quantity,
+                                                unit_price_net=price.net,
+                                                unit_price_gross=price.gross)
         previous_orders = previous_orders.exclude(pk=order.pk)
         previous_orders.delete()
         if session:
@@ -81,7 +84,7 @@ class Order(models.Model):
     created = models.DateTimeField(default=datetime.datetime.now,
                                    editable=False, blank=True)
     user = models.ForeignKey(User, blank=True, null=True, related_name='orders')
-    cart = models.ForeignKey(Cart, blank=True, null=True, related_name='+')
+    cart = models.ForeignKey(Cart, blank=True, null=True, related_name='orders')
     currency = models.CharField(max_length=3)
     billing_full_name = models.CharField(_("full person name"),
                                          max_length=256, blank=True)

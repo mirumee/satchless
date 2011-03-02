@@ -15,6 +15,7 @@ class PostDeliveryProvider(DeliveryProvider):
         typ = models.PostShippingType.objects.get(typ=typ)
         form.save(commit=False)
         variant = form.instance
+        variant.delivery_group = delivery_group
         variant.name = typ.name
         variant.price = typ.price
         variant.save()

@@ -25,7 +25,7 @@ def checkout(request, typ):
                 session=request.session)
         if request.method == 'POST':
             if delivery_formset.is_valid():
-                delivery_formset.save(request.session)
+                delivery_formset.save(session=request.session)
                 return redirect('satchless-checkout-delivery_details')
     return direct_to_template(request, 'satchless/order/checkout.html',
             {'order': order, 'delivery_formset': delivery_formset})
@@ -51,8 +51,6 @@ def delivery_details(request):
         if are_valid:
             for group, typ, form in delivery_groups_forms:
                 variant = handler.get_delivery_variant(group, typ, form)
-                group.delivery_variant = variant
-                group.save()
             return redirect('satchless-checkout-payment_choice')
     return direct_to_template(request, 'satchless/order/delivery_details.html',
             {'order': order, 'delivery_groups_forms': groups_with_forms})

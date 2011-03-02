@@ -4,6 +4,7 @@ from django.db import models
 from django.utils.translation import ugettext_lazy as _
 from mothertongue.models import MothertongueModelTranslate
 
+from ..order.models import DeliveryGroup
 from ..util.models import Subtyped
 
 class DeliveryVariant(MothertongueModelTranslate, Subtyped):
@@ -11,6 +12,7 @@ class DeliveryVariant(MothertongueModelTranslate, Subtyped):
     Base class for all delivery variants. This is what gets assigned to an
     order shipping group at the checkout step.
     '''
+    delivery_group = models.OneToOneField(DeliveryGroup)
     name = models.CharField(_('name'), max_length=128)
     description = models.TextField(_('description'), blank=True)
     price = models.DecimalField(_('unit price'),

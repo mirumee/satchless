@@ -1,4 +1,5 @@
 from django import forms
+from django.core.exceptions import ObjectDoesNotExist
 from django.forms.models import BaseModelFormSet, modelformset_factory
 from django.utils.translation import ugettext as _
 
@@ -29,7 +30,9 @@ class BaseDeliveryMethodFormset(BaseModelFormSet):
                 except KeyError:
                     pass
 
-    def save(self, session):
+    def save(self, *args, **kwargs):
+        session = kwargs.pop('session')
+        super(BaseDeliveryMethodFormset, self).save(*args, **kwargs)
         data = {}
         for form in self.forms:
             data[form.instance.pk] = form.cleaned_data['delivery_typ']
@@ -49,7 +52,13 @@ def get_delivery_details_forms_for_groups(order, request):
         form = None
         Form = handler.get_delivery_formclass(group, typ)
         if Form:
-            form = Form(data=request.POST or None, prefix='delivery_group-%s' % group.pk)
+            try:
+                variant = group.deliveryvariant.get_subtype_instance()
+            except ObjectDoesNotExist:
+                variant = None
+            form = Form(data=request.POST or None,
+                    instance=variant,
+                    prefix='delivery_group-%s' % group.pk)
         groups_and_forms.append((group, typ, form))
     return groups_and_forms
 

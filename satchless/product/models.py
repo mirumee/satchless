@@ -174,3 +174,6 @@ class Variant(Subtyped):
     sku = models.CharField(_('SKU'), max_length=128, blank=True,
                            help_text=_('ID of the product variant used '
                                        'internally in the shop.'))
+
+    def __unicode__(self):
+        return '%s' % self.sku

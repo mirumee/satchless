@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from django.http import HttpResponseNotFound
 from django.shortcuts import redirect
 from django.views.generic.simple import direct_to_template
 from satchless.cart.models import Cart
@@ -6,6 +7,21 @@ from satchless.cart.models import Cart
 from . import models
 from . import forms
 from . import handler
+
+def view(request, order_pk):
+    if request.user.is_authenticated():
+        orders = models.Order.objects.filter(user=request.user)
+    elif request.session.has_key('satchless_order'):
+        # We allow anonymous users to see their latest order.
+        orders = models.Order.objects.filter(pk=request.session['satchless_order'])
+    else:
+        return HttpResponseNotFound()
+    try:
+        order = orders.get(pk=order_pk)
+    except models.Order.DoesnotExist:
+        return HttpResponseNotFound()
+    return direct_to_template(request, 'satchless/order/view.html',
+            {'order': order})
 
 def checkout(request, typ):
     """

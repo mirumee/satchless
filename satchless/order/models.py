@@ -110,6 +110,7 @@ class Order(models.Model):
 
     def set_status(self, new_status):
         old_status = self.status
+        self.status = new_status
         self.save()
         signals.order_status_changed.send(sender=type(self), instance=self, old_status=old_status)
 

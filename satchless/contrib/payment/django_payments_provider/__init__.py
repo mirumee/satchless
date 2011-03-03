@@ -16,13 +16,13 @@ class DjangoPaymentsProvider(PaymentProvider):
 
     def get_variant(self, order, typ, form):
         factory = payments.factory(typ)
-        payment = factory.create_payment(currency=order.currency)
+        payment = factory.create_payment(currency=order.currency, total=order.total().gross)
         payment_variant = models.DjangoPaymentsVariant.objects \
-                                                      .create(payment=payment, price=0)
+                                .create(payment=payment, order=order, price=0)
         return payment_variant
 
     def get_confirmation_form(self, order):
-        form = order.payment_variant.get_subtype_instance().payment.get_form()
+        form = order.paymentvariant.get_subtype_instance().payment.get_form()
         return {'form': form,
                 'action': form.action,
                 'method': form.method}

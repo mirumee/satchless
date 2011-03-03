@@ -8,3 +8,8 @@ Sent to check if it is possible to change item's quantity to new value.
 It passes old and new quantity as arguments and may receive a result as tuple
 ``(result_quantity, reason)`` where reason is a message to be shown to the
 user."""
+
+cart_content_changed = dispatch.Signal()
+cart_content_changed.__doc__ = """
+Sent whenever cart'scontent has been changed.
+"""

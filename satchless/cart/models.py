@@ -66,6 +66,7 @@ class Cart(models.Model):
             else:
                 item.quantity = new_qty
                 item.save()
+            signals.cart_content_changed.send(sender=type(self), instance=self)
         return (new_qty, new_qty - old_qty, reason)
 
     def set_quantity(self, variant, quantity, dry_run=False):
@@ -95,6 +96,7 @@ class Cart(models.Model):
             else:
                 item.quantity = quantity
                 item.save()
+            signals.cart_content_changed.send(sender=type(self), instance=self)
         return (quantity, reason)
 
     def get_quantity(self, variant):
@@ -109,9 +111,12 @@ class Cart(models.Model):
             total += i.get_unit_price() * i.quantity
         return total
 
+    def is_empty(self):
+        return self.items.count() == 0
+
     def __unicode__(self):
         if self.owner:
-            return u"%s of %s" % (self.typ, self.user.username)
+            return u"%s of %s" % (self.typ, self.owner.username)
         else:
             return self.typ
 

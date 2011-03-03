@@ -1,40 +1,74 @@
 from countries.models import Country
 import datetime
+from django.conf import settings
 from django.contrib.auth.models import User
-from django.core.exceptions import SuspiciousOperation
+from django.core.exceptions import ObjectDoesNotExist
 from django.db import models
 from django.utils.translation import ugettext_lazy as _
 
 from ..cart.models import Cart
-from ..payment.models import PaymentVariant
+from ..pricing import Price
 from ..product.models import Variant
-from ..delivery.models import DeliveryVariant
-from .handler import partition
+from . import signals
+from . import listeners
+
+class EmptyCart(Exception):
+    pass
 
 class OrderManager(models.Manager):
-    def create_for_cart(self, cart):
+    def create_for_cart(self, cart, session=None):
         '''
         Create an order from the user's cart, possibly discarding any previous
-        orders created for this cart.
+        orders created for this cart. If session is given, the order ID will be
+        stored there.
         '''
+        from .handler import partition
+        if cart.is_empty():
+            raise EmptyCart("Cannot create empty order.")
+
+        order_pk = None
+        order = None
         safe_statuses = ['checkout', 'payment-pending', 'cancelled']
+        if session:
+            order_pk = session.get('satchless_order')
         previous_orders = self.filter(cart=cart)
-        if previous_orders.exclude(status__in=safe_statuses).exists():
-            raise SuspiciousOperation('A paid order exists for this cart.')
+        if order_pk:
+            try:
+                order = Order.objects.get(pk=order_pk, cart=cart, status='checkout')
+            except Order.DoesNotExist:
+                order = None
+        if not order:
+            order = Order.objects.create(cart=cart, user=cart.owner,
+                                         currency=cart.currency)
+            groups = partition(cart)
+            for group in groups:
+                delivery_group = order.groups.create(order=order)
+                for item in group:
+                    price = item.get_unit_price()
+                    delivery_group.items.create(product_variant=item.variant,
+                                                product_name=unicode(item.variant),
+                                                quantity=item.quantity,
+                                                unit_price_net=price.net,
+                                                unit_price_gross=price.gross)
+        previous_orders = previous_orders.exclude(pk=order.pk)
         previous_orders.delete()
-        order = Order.objects.create(cart=cart, user=cart.owner,
-                                     currency=cart.currency)
-        groups = partition(cart)
-        for group in groups:
-            delivery_group = order.groups.create(order=order)
-            for item in group:
-                price = item.get_unit_price()
-                delivery_group.items.create(product_variant=item.variant,
-                                            product_name=unicode(item.variant),
-                                            quantity=item.quantity,
-                                            unit_price_net=price.net,
-                                            unit_price_gross=price.gross)
+        if session:
+            session['satchless_order'] = order.pk
         return order
+
+    def get_from_session(self, session):
+        '''
+        Get the order from session, possibly invalidating the variable if the
+        order has been processed already.
+        '''
+        try:
+            order = Order.objects.get(pk=session['satchless_order'], status='checkout')
+            return order
+        except KeyError:
+            return None
+        except Order.DoesNotExist:
+            del session['satchless_order']
+            return None
 
 class Order(models.Model):
     STATUS_CHOICES = (
@@ -44,15 +78,14 @@ class Order(models.Model):
         ('delivery', _('shipped')),
         ('cancelled', _('cancelled')),
     )
+    # Do not set the status manually, use .set_status() instead.
     status = models.CharField(_('order status'), max_length=32,
                               choices=STATUS_CHOICES, default='checkout')
     created = models.DateTimeField(default=datetime.datetime.now,
                                    editable=False, blank=True)
     user = models.ForeignKey(User, blank=True, null=True, related_name='orders')
-    cart = models.ForeignKey(Cart, blank=True, null=True, related_name='+')
+    cart = models.ForeignKey(Cart, blank=True, null=True, related_name='orders')
     currency = models.CharField(max_length=3)
-    payment_variant = models.ForeignKey(PaymentVariant, blank=True,
-                                        null=True, related_name='orders')
     billing_full_name = models.CharField(_("full person name"),
                                          max_length=256, blank=True)
     billing_company_name = models.CharField(_("company name"),
@@ -75,15 +108,34 @@ class Order(models.Model):
     def __unicode__(self):
         return _('Order #%d') % self.id
 
+    def set_status(self, new_status):
+        old_status = self.status
+        self.status = new_status
+        self.save()
+        signals.order_status_changed.send(sender=type(self), instance=self, old_status=old_status)
+
+    def total(self):
+        try:
+            payment_price = Price(self.paymentvariant.price)
+        except ObjectDoesNotExist:
+            payment_price = Price(0)
+        return payment_price + sum([g.total() for g in self.groups.all()], Price(0))
+
     class Meta:
-        verbose_name = _('order')
-        verbose_name_plural = _('orders')
+        # Use described string to resolve ambiguity of the word 'order' in English.
+        verbose_name = _('order (business)')
+        verbose_name_plural = _('orders (business)')
 
 
 class DeliveryGroup(models.Model):
     order = models.ForeignKey(Order, related_name='groups')
-    delivery_variant = models.ForeignKey(DeliveryVariant, null=True, blank=True,
-                                         related_name='delivery_groups')
+
+    def total(self):
+        try:
+            delivery_price = Price(self.deliveryvariant.price)
+        except ObjectDoesNotExist:
+            delivery_price = Price(0)
+        return delivery_price + sum([i.price() for i in self.items.all()], Price(0))
 
 
 class OrderedItem(models.Model):
@@ -97,3 +149,7 @@ class OrderedItem(models.Model):
                                          max_digits=12, decimal_places=4)
     unit_price_gross = models.DecimalField(_('unit price (gross)'),
                                            max_digits=12, decimal_places=4)
+
+    def price(self):
+        return Price(net=self.unit_price_net * self.quantity,
+                    gross=self.unit_price_gross * self.quantity)

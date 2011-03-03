@@ -1,23 +1,29 @@
 {% extends 'satchless/order/base.html' %}
 {% load i18n %}
-{% block title %}{{ block.super }} | {% trans "Shipping" %}{% endblock %}
+{% block title %}{{ block.super }} | {% trans "Delivery method" %}{% endblock %}
 {% block breadcrumbs %}
     {{ block.super }}
-    <li><a href="">{% trans "Order" %}</a></li>
+    <li><a href="">{% trans "Order (business)" %}</a></li>
 {% endblock %}
 {% block content %}
-    <h1>{% trans "Order" %}</h1>
+    <h1>{% trans "Order (business)" %}</h1>
+    {% if order %}
     <form method="post" action="">{% csrf_token %}
         {{ delivery_formset.management_form }}
         {% for form in delivery_formset.forms %}{% with form.instance as group %}
-            {% if order.groups.count > 1 %}<h2>Delivery group:</h2>{% endif %}
+            {% if order.groups.count > 1 %}<h2>{% trans "Delivery group" %}:</h2>{% endif %}
             <ul>
-            {% for item in group.items.all %}
-                <li>{{ item.product_name }} &times; {{ item.quantity }}</li>
-            {% endfor %}
+            {% include 'satchless/order/snippets/delivery_group.html' %}
             </ul>
             {{ form.as_p }}
         {% endwith %}{% endfor %}
         <button type="submit">{% trans "Proceed" %}</button>
     </form>
+    {% else %}
+    <p>
+    {% blocktrans %}
+    Profound emptiness is gazing at you from the bottom of the cart. You turn back swiftly and
+    <a href="/">continue shopping</a>.
+    {% endblocktrans %}
+    {% endif %}
 {% endblock %}

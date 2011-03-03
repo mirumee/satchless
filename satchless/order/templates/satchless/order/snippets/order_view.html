@@ -1,0 +1,47 @@
+{% load i18n prices %}
+{% for group in order.groups.all %}
+<table>
+    <thead>
+        {% if order.groups.count > 1 %}
+        <tr>
+            <th colspan="4">
+            {% blocktrans %}Delivery group #{{ forloop.counter }}{% endblocktrans %}
+            </th>
+        </tr>
+        {% endif %}
+        <tr>
+            <th>{% trans "Item" %}</th>
+            <th>{% trans "Qty." %}</th>
+            <th>{% trans "Unit price" %}</th>
+            <th>{% trans "Price" %}</th>
+        </tr>
+    </thead>
+    <tfoot>
+        {% if group.deliveryvariant %}{% with group.deliveryvariant.get_subtype_instance as variant %}
+        <tr>
+            <th>{% trans "Delivery" %}:</th>
+            <td colspan="2">{{ variant }}</td>
+            <td class="numerical">{{ variant.price|floatformat:2 }}</td>
+        </tr>
+        {% endwith %}{% endif %}
+        <tr>
+            <th colspan="3">{% trans "Total" %}:</th>
+            <td class="numerical">{{ group.total|gross|floatformat:2 }}</td>
+        </tr>
+    </tfoot>
+    <tbody>
+        {% for item in group.items.all %}
+        <tr>
+            <td>{{ item.product_name }}</td>
+            <td class="numerical">{{ item.quantity }}</td>
+            <td><span class="gross">{{ item.unit_price_gross|floatformat:2 }}</span></td>
+            <td class="numerical">{{ item.price|gross|floatformat:2 }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endfor %}
+<p>Total amount to pay: {{ order.total|gross|floatformat:2 }} <span class="currency">{{ order.currency }}</span></p>
+{% if order.paymentvariant %}
+<p>{% trans "Payment method" %}: {{ order.paymentvariant.get_subtype_instance }}
+{% endif %}

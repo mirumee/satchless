@@ -1,0 +1,115 @@
+html {
+    font-family: sans-serif;
+    font-size: 14px;
+    background-color: white;
+    color: black;
+}
+html, body {
+    margin: 0;
+    padding: 0;
+}
+a, a:link, a:visited {
+    color: #de1515;
+    text-decoration: underline;
+}
+    a:hover {
+        text-decoration: none;
+    }
+img {
+    border: 0;
+}
+h2 {
+    font-family: Georgia, serif;
+    font-weight: normal;
+    font-size: 26px;
+}
+#header {
+    position: relative;
+    overflow: visible;
+}
+    #header h1 {
+        float: left;
+        width: 89px;
+        margin: 0;
+        padding: 20px 20px 10px 20px;
+        font-weight: normal;
+        font-size: 22px;
+        background-color: #de1515;
+        color: white;
+    }
+    #header .thingie {
+        display: block;
+        position: absolute;
+        left: 0;
+        bottom: -17px;
+        height: 17px;
+        width: 129px;
+        background: transparent url('../img/title-thingie.png') 0 0 no-repeat;
+    }
+    #header p {
+        float: left;
+        margin: 0;
+        padding-top: 26px;
+        margin: 0 30px;
+    }
+        #header p.founded {
+            float: right;
+            margin-right: 0;
+            padding-top: 16px;
+        }
+#banner {
+    border-top: 1px solid #e3e3e3;
+    border-bottom: 1px solid #e3e3e3;
+    background: transparent url('../img/banner-bg.png') 0 0 repeat;
+    padding: 10px 0;
+}
+    #banner h2, #banner h3 {
+        font-weight: normal;
+    }
+    #banner h2 {
+        margin: 15px 0;
+        font-size: 48px;
+    }
+    #banner h3 {
+        margin: 5px 0;
+        padding: 0 10px;
+        color: #de1515;
+    }
+#body {
+}
+    #body .text p {
+        color: #646464;
+        text-align: justify;
+    }
+    #body .download {
+        background-color: #f3f3f3;
+        border: 1px solid #e3e3e3;
+        border-radius: 5px;
+        -moz-border-radius: 5px;
+        -webkit-border-radius: 5px;
+        margin-top: 15px;
+        padding: 10px 15px 15px 15px;
+    }
+        #body .download h2 {
+            margin-top: 0;
+            margin-bottom: 10px;
+        }
+        #body .download .license {
+            color: #646464;
+        }
+        #body .download .get_it {
+            background: #2b303d url('../img/download-arrow.png') 14px 10px no-repeat;
+            border-radius: 5px;
+            -moz-border-radius: 5px;
+            -webkit-border-radius: 5px;
+            margin: 10px 0;
+            padding: 8px 20px 8px 40px;
+            color: white;
+            text-decoration: none;
+        }
+#footer {
+    border-top: 1px solid #e3e3e3;
+}
+    #footer .founded {
+        text-align: right;
+    }

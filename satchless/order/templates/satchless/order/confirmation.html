@@ -1,0 +1,17 @@
+{% extends 'satchless/order/base.html' %}
+{% load i18n %}
+{% block title %}{{ block.super }} | {% trans "Confirmation" %}{% endblock %}
+{% block breadcrumbs %}
+    {{ block.super }}
+    <li><a href="">{% trans "Order (business)" %}</a></li>
+{% endblock %}
+{% block content %}
+    <h1>{% trans "Confirmation" %}</h1>
+    <h2>{% trans "Order #" %}{{ order.id }}</h2>
+    {% include 'satchless/order/snippets/order_view.html' %}
+    <form action="{{ formdata.action }}" method="{{ formdata.method }}">{% csrf_token %}
+        {{ formdata.form.as_p }}
+        <button type="submit">{% trans "Confirm" %}</button>
+    </form>
+<pre>
+{% endblock %}

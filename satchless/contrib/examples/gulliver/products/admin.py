@@ -31,6 +31,7 @@ class ProductWithImageAdmin(ProductAdmin):
 
 class ProductImageInline(ImageInline):
     model = models.ProductImage
+    sortable_field_name = "order"
 
 class HatAdmin(ProductAdmin):
     pass

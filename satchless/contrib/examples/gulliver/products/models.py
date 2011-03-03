@@ -16,9 +16,19 @@ class CategoryImage(Image):
 
 class ProductImage(Image):
     product = models.ForeignKey(Product, related_name="images")
+    caption = models.CharField(_("Caption"), max_length=128, blank=True)
+    order = models.PositiveIntegerField(blank=True)
+
+    class Meta:
+        ordering = ('order',)
 
     def __unicode__(self):
         return os.path.basename(self.image.name)
+
+    def save(self, *args, **kwargs):
+        if self.order is None:
+            self.order = self.product.images.aggregate(max_order=models.Max("order"))['max_order'] or 0
+        return super(ProductImage, self).save(*args, **kwargs)
 
 class ProductWithImage(ProductAbstract):
     manufacture = models.TextField(_("Manufacture"), default='', blank=True)
@@ -29,7 +39,8 @@ class ProductWithImage(ProductAbstract):
         abstract = True
 
 def assign_main_image(sender, instance, **kwargs):
-    if instance.product.main_image == None and instance.product.images.exists():
+    if not kwargs.get('raw', False) and instance.product.main_image == None \
+            and instance.product.images.exists():
         instance.product.main_image = instance.product.images.all()[0]
         instance.product.save()
 models.signals.post_save.connect(assign_main_image, sender=ProductImage)
@@ -48,7 +59,6 @@ class ColoredVariant(Variant):
     color = models.CharField(max_length=32, choices=COLOR_CHOICES)
     class Meta:
         abstract = True
-        app_label = 'product'
 
 class TShirt(ProductWithImage):
     pass
@@ -60,6 +70,9 @@ class TShirtVariant(ColoredVariant):
 
 class Hat(ProductWithImage):
     pass
+
+class Hat(Variant):
+    product = models.ForeignKey(TShirt, related_name='variants')
 
 class Shirt(ProductWithImage):
     pass

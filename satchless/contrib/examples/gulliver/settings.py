@@ -1,4 +1,4 @@
-# Django settings for gulliver project.
+# -*- coding:utf-8 -*-
 import os
 import re
 
@@ -133,7 +133,7 @@ INSTALLED_APPS = (
     #'satchless.contact',
     'satchless.cart',
     'satchless.pricing',
-    #'satchless.contrib.pricing.simpleqty',
+    'satchless.contrib.pricing.simpleqty',
     #'satchless.contrib.tax.flatgroups',
     #'satchless.contrib.stock.singlestore',
     'satchless.order',
@@ -148,21 +148,25 @@ SATCHLESS_IMAGE_SIZES = {
         'size': (100, 100),
         'crop': True,
     },
-    'product-detail': {
-        'size': (200, 150),
-        'crop': False,
-    },
     'category': {
         'size': (230, 257),
         'crop': True,
     },
-    'product': {
+    'category-product': {
         'size': (230, 307),
+        'crop': True,
+    },
+    'product-detail': {
+        'size': (460, 900),
+        'crop': False,
+    },
+    'product-thumb': {
+        'size': (55, 74),
         'crop': True,
     },
 }
 
-SATCHLESS_DEFAULT_CURRENCY = 'GBP'
+SATCHLESS_DEFAULT_CURRENCY = '£' #'GBP'
 
 INTERNAL_IPS = ['127.0.0.1']
 

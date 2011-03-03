@@ -32,10 +32,13 @@ def get_product_price_range(product, currency, **kwargs):
         price = base_price.qty_overrides.filter(min_qty__lte=1).order_by('-min_qty')[0].price
     except IndexError:
         price = base_price.price
+    max_price = min_price = price
     min_offset = base_price.offsets.aggregate(Min('price_offset'))['price_offset__min']
     max_offset = base_price.offsets.aggregate(Max('price_offset'))['price_offset__max']
-    max_price = max(price, price + max_offset)
-    min_price = min(price, price + min_offset)
+    if max_offset is not None:
+        max_price = max(price, price + max_offset)
+    if min_offset is not None:
+        min_price = min(price, price + min_offset)
     return (Price(net=min_price, gross=min_price, currency=currency),
             Price(net=max_price, gross=max_price, currency=currency))
 

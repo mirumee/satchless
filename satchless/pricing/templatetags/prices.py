@@ -17,6 +17,10 @@ def gross(price):
         return ''
 
 @register.filter
+def currency(price):
+    return price.currency if price.currency else ''
+
+@register.filter
 def tax(price):
     try:
         return price.gross - price.net

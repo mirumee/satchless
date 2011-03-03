@@ -22,9 +22,9 @@ def product_price_range(product, currency=getattr(settings, 'SATCHLESS_DEFAULT_C
         return ''
     try:
         from satchless.pricing.handler import get_product_price_range
-        price = get_product_price_range(product, currency)
-        if price.has_value():
-            return price
+        min_price, max_price = get_product_price_range(product, currency)
+        if min_price.has_value():
+            return min_price, max_price
     except ImportError:
         pass
     return ''

@@ -39,6 +39,9 @@ class Price(object):
                     self.currency == other.currency)
         return False
 
+    def __ne__(self, other):
+        return not self == other
+
     def __mul__(self, other):
         price_net = self.net * other
         price_gross = self.gross * other

@@ -16,6 +16,8 @@ from . import models
 def scale_and_crop(image, size, crop=False, upscale=False):
     image.open()
     im = Image.open(image)
+    # Force PIL to load image data.
+    im.load()
 
     source_x, source_y = [float(v) for v in im.size]
     target_x, target_y = [float(v) for v in size]

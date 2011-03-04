@@ -164,6 +164,10 @@ SATCHLESS_IMAGE_SIZES = {
         'size': (55, 74),
         'crop': True,
     },
+    'product-cart': {
+        'size': ('98', '135'),
+        'crop': True,
+    }
 }
 
 SATCHLESS_DEFAULT_CURRENCY = '£' #'GBP'
@@ -173,6 +177,9 @@ INTERNAL_IPS = ['127.0.0.1']
 SATCHLESS_PRICING_HANDLERS = [
     'satchless.contrib.pricing.simpleqty.handler',
     #'satchless.contrib.tax.flatgroups.handler',
+]
+SATCHLESS_PRODUCT_VIEW_HANDLERS = [
+    'core.handler.cart_handler',
 ]
 #
 #SATCHLESS_ORDER_PARTITIONERS = [

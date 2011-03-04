@@ -82,6 +82,9 @@ class ShirtVariant(ColoredVariant):
     SIZE_CHOICES = tuple([(str(s),str(s)) for s in range(8, 17)])
     size = models.CharField(choices=SIZE_CHOICES, max_length=2)
 
+    def __unicode__(self):
+        return '%s / %s' % (self.get_color_display(), self.get_size_display())
+
 class Cardigan(ProductWithImage):
     pass
 
@@ -89,6 +92,9 @@ class CardiganVariant(ColoredVariant):
     product = models.ForeignKey(Cardigan, related_name='variants')
     SIZE_CHOICES = (('S', 'S'), ('XS', 'XS'), ('M', 'M'), ('L', 'L'), ('XL', 'XL'))
     size = models.CharField(choices=SIZE_CHOICES, max_length=2)
+
+    def __unicode__(self):
+        return '%s / %s' % (self.get_color_display(), self.get_size_display())
 
 class Jacket(ProductWithImage):
     pass
@@ -98,6 +104,9 @@ class JacketVariant(ColoredVariant):
     SIZE_CHOICES = tuple([(str(s),str(s)) for s in range(36, 49)])
     size = models.CharField(choices=SIZE_CHOICES, max_length=2)
 
+    def __unicode__(self):
+        return '%s / %s' % (self.get_color_display(), self.get_size_display())
+
 class Trousers(ProductWithImage):
     pass
 
@@ -105,6 +114,9 @@ class TrousersVariant(ColoredVariant):
     product = models.ForeignKey(Trousers, related_name='variants')
     SIZE_CHOICES = tuple([(str(s),str(s)) for s in range(30, 39)])
     size = models.CharField(choices=SIZE_CHOICES, max_length=2)
+
+    def __unicode__(self):
+        return '%s / %s' % (self.get_color_display(), self.get_size_display())
 
 class Dress(ProductWithImage):
     pass
@@ -114,3 +126,5 @@ class DressVariant(ColoredVariant):
     SIZE_CHOICES = tuple([(str(s),str(s)) for s in range(8, 15)])
     size = models.CharField(choices=SIZE_CHOICES, max_length=2)
 
+    def __unicode__(self):
+        return '%s / %s' % (self.get_color_display(), self.get_size_display())

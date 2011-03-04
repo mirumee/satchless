@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.core.urlresolvers import reverse
 from django.test import TestCase, Client
 from django.db import models
@@ -36,6 +37,14 @@ class ParrotTest(TestCase):
         self.cockatoo.categories.add(self.parrots)
 
         self.client_test = Client()
+        self.original_pricing_handlers = settings.SATCHLESS_PRICING_HANDLERS
+        settings.SATCHLESS_PRICING_HANDLERS = []
+        self.original_product_view_handlers = settings.SATCHLESS_PRODUCT_VIEW_HANDLERS
+        settings.SATCHLESS_PRODUCT_VIEW_HANDLERS = []
+
+    def tearDown(self):
+        settings.SATCHLESS_PRICING_HANDLERS = self.original_pricing_handlers
+        settings.SATCHLESS_PRODUCT_VIEW_HANDLERS = self.original_product_view_handlers
 
     def test_paths(self):
         self.assertRaises(ValueError,

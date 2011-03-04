@@ -1,12 +1,13 @@
 # -*- coding: utf-8 -*-
 from decimal import Decimal
+from django.conf import settings
 from django.core.urlresolvers import reverse
 from django.test import TestCase, Client
 from django.db import models
 from django import forms
 
 from satchless.product.forms import BaseVariantForm
-from satchless.product.models import ProductAbstract
+from satchless.product.models import ProductAbstract, Category
 from satchless.product.signals import variant_formclass_for_product
 from satchless.product.tests import DeadParrot, DeadParrotVariant
 
@@ -40,19 +41,30 @@ variant_formclass_for_product.connect(get_variantformclass, sender=DeadParrot)
 
 class ParrotTest(TestCase):
     def setUp(self):
+        category = Category.objects.create(name='parrot')
         self.macaw = DeadParrot.objects.create(slug='macaw',
                 species="Hyacinth Macaw")
+        self.macaw.categories.add(category)
         self.cockatoo = DeadParrot.objects.create(slug='cockatoo',
                 species="White Cockatoo")
+        self.cockatoo.categories.add(category)
         self.macaw_blue = self.macaw.variants.create(color='blue', looks_alive=False)
         self.macaw_blue_fake = self.macaw.variants.create(color='blue', looks_alive=True)
         self.cockatoo_white_a = self.cockatoo.variants.create(color='white', looks_alive=True)
         self.cockatoo_white_d = self.cockatoo.variants.create(color='white', looks_alive=False)
         self.cockatoo_blue_a = self.cockatoo.variants.create(color='blue', looks_alive=True)
         self.cockatoo_blue_d = self.cockatoo.variants.create(color='blue', looks_alive=False)
-        self.user1 = User.objects.create(username="testuser")
+        # only staff users can view uncategorized products
+        self.user1 = User.objects.create(username="testuser", is_staff=True, is_superuser=True)
         self.user1.set_password(u"pasło")
         self.user1.save()
+        self.original_product_view_handlers = settings.SATCHLESS_PRODUCT_VIEW_HANDLERS
+        settings.SATCHLESS_PRODUCT_VIEW_HANDLERS = [
+            'satchless.cart.handler.add_to_cart_handler',
+        ]
+
+    def tearDown(self):
+        settings.SATCHLESS_PRODUCT_VIEW_HANDLERS = self.original_product_view_handlers
 
     def _test_status(self, url, method='get', *args, **kwargs):
         status_code = kwargs.pop('status_code', 200)
@@ -72,12 +84,12 @@ class ParrotTest(TestCase):
         cart.set_quantity(self.macaw_blue, 1)
         cart.set_quantity(self.macaw_blue_fake, Decimal('2.45'))
         cart.set_quantity(self.cockatoo_white_a, Decimal('2.45'))
-        cart.set_quantity(self.cockatoo_white_d, 4.11)
+        cart.set_quantity(self.cockatoo_white_d, '4.11')
         cart.set_quantity(self.cockatoo_blue_a, 6)
         cart.set_quantity(self.cockatoo_blue_d, Decimal('2'))
         cart.set_quantity(self.cockatoo_white_d, 0) # throw out
         cart.set_quantity(self.cockatoo_blue_a, Decimal('0')) # throw out
-        cart.set_quantity(self.cockatoo_white_a, 0.0) # throw out
+        cart.set_quantity(self.cockatoo_white_a, '0.0') # throw out
 
         self.assertEqual(cart.get_quantity(self.macaw_blue), Decimal('1'))
         self.assertEqual(cart.get_quantity(self.macaw_blue_fake), Decimal('2'))
@@ -85,7 +97,7 @@ class ParrotTest(TestCase):
         self.assertRaises(CartItem.DoesNotExist, cart.items.get, variant=self.cockatoo_white_a)
         self.assertEqual(cart.get_quantity(self.cockatoo_white_d), Decimal('0')) # thrown out
         self.assertRaises(CartItem.DoesNotExist, cart.items.get, variant=self.cockatoo_white_d)
-        self.assertEqual(cart.get_quantity(self.cockatoo_blue_a), 0.0) # thrown out
+        self.assertEqual(cart.get_quantity(self.cockatoo_blue_a), Decimal('0.0')) # thrown out
         self.assertRaises(CartItem.DoesNotExist, cart.items.get, variant=self.cockatoo_blue_a)
         self.assertEqual(cart.get_quantity(self.cockatoo_blue_d), Decimal('2'))
 

@@ -1,9 +1,10 @@
-from django.http import HttpResponseNotFound
+from django.http import HttpResponseNotFound, HttpResponse
 from django.views.generic.simple import direct_to_template
 from django.shortcuts import render_to_response
 from django.template import RequestContext
 from . import models
 from . import signals
+from . import handler
 
 def index(request, *args, **kwargs):
     """Show root categories"""
@@ -33,15 +34,10 @@ def product(request, category_slugs='', product_slug='', product_pk=None):
     if not products.exists():
         return HttpResponseNotFound()
     product = products[0].get_subtype_instance()
-    context = {}
-    response = []
-    signals.product_view.send(sender=type(product), instances=[product],
-                              request=request, response=response,
-                              extra_context=context)
-    if len(response) == 1:
-        return response[0]
-    elif len(response) > 1:
-        raise ValueError, "Multiple responses returned."
+    context = handler.product_view(instances=[product], request=request)
+    if isinstance(context, HttpResponse):
+        return context
+
     context['product'] = product
     context['path'] = path
     templates = [

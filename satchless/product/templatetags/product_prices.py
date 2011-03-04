@@ -10,7 +10,7 @@ def variant_price(variant, currency=getattr(settings, 'SATCHLESS_DEFAULT_CURRENC
     try:
         from satchless.pricing.handler import get_variant_price
         price = get_variant_price(variant, currency)
-        if price.has_value():
+        if price is not None and price.has_value():
             return price
     except ImportError:
         pass
@@ -23,7 +23,7 @@ def product_price_range(product, currency=getattr(settings, 'SATCHLESS_DEFAULT_C
     try:
         from satchless.pricing.handler import get_product_price_range
         min_price, max_price = get_product_price_range(product, currency)
-        if min_price.has_value():
+        if min_price is not None and min_price.has_value():
             return min_price, max_price
     except ImportError:
         pass

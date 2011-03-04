@@ -27,7 +27,7 @@ def get_product_price_range(product, currency, **kwargs):
     try:
         base_price = models.ProductPrice.objects.get(product=product)
     except models.ProductPrice.DoesNotExist:
-        return kwargs.pop('price', None)
+        return kwargs.pop('price', (None, None))
     try:
         price = base_price.qty_overrides.filter(min_qty__lte=1).order_by('-min_qty')[0].price
     except IndexError:

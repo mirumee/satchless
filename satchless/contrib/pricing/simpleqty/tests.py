@@ -1,4 +1,5 @@
 from decimal import Decimal
+from django.conf import settings
 from django.test import TestCase, Client
 from django.db import models
 from satchless.cart.models import Cart
@@ -23,8 +24,12 @@ class ParrotTest(TestCase):
         self.cockatoo_green_a = self.cockatoo.variants.create(color='green', looks_alive=True)
         self.cockatoo_green_d = self.cockatoo.variants.create(color='green', looks_alive=False)
 
+        self.original_pricing_handlers = settings.SATCHLESS_PRICING_HANDLERS
+        settings.SATCHLESS_PRICING_HANDLERS = ['satchless.contrib.pricing.simpleqty.handler']
+
     def tearDown(self):
         ProductPrice.objects.all().delete()
+        settings.SATCHLESS_PRICING_HANDLERS = self.original_pricing_handlers
 
     def test_price(self):
         p1 = Price(10)

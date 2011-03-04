@@ -1,5 +1,6 @@
 from django.conf import settings
 from django.conf.urls.defaults import *
+from core.forms import CartItemFormSet
 
 # Uncomment the next two lines to enable the admin:
 from django.contrib import admin
@@ -11,7 +12,7 @@ urlpatterns = patterns('',
     url(r'^contact/', include('satchless.contact.urls')),
     url(r'^image/', include('satchless.image.urls')),
     url(r'^view/(?P<typ>satchless_cart|satchless_wishlist)/$', 'satchless.cart.views.cart', name='satchless-cart-view'),
-    url(r'^cart/', include('satchless.cart.urls')),
+    url(r'^cart/', include('satchless.cart.urls'), {'formset_class': CartItemFormSet}),
     url(r'^order/', include('satchless.order.urls')),
     url(r'^product-set/', include('satchless.contrib.productset.urls')),
 

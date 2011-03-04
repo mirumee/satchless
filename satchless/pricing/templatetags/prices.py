@@ -18,7 +18,10 @@ def gross(price):
 
 @register.filter
 def currency(price):
-    return price.currency if price.currency else ''
+    try:
+        return price.currency if price.currency else ''
+    except AttributeError:
+        return ''
 
 @register.filter
 def tax(price):

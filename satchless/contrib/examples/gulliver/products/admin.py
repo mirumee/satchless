@@ -3,8 +3,10 @@ from django.contrib import admin
 from django.db.models.query import EmptyQuerySet
 import django.db.models
 
+from satchless.contrib.pricing import simpleqty
 import satchless.product.models
-from satchless.product.admin import ProductAdmin, TranslationInline, CategoryAdmin, ProductForm
+import satchless.product.admin
+import sale.models
 
 from . import models
 from . import widgets
@@ -18,23 +20,32 @@ class ImageInline(admin.TabularInline):
             'all': ['css/admin.css']
         }
 
-class ProductWithImageForm(ProductForm):
+class ProductForm(satchless.product.admin.ProductForm):
     def __init__(self, *args, **kwargs):
-        super(ProductWithImageForm, self).__init__(*args, **kwargs)
+        super(ProductForm, self).__init__(*args, **kwargs)
         if self.instance.id:
             self.fields['main_image'].queryset = models.ProductImage.objects.filter(product=self.instance)
         else:
             self.fields['main_image'].queryset = EmptyQuerySet(model=models.ProductImage)
 
-class ProductWithImageAdmin(ProductAdmin):
-    form = ProductWithImageForm
+class ProductAdmin(satchless.product.admin.ProductAdmin):
+    form = ProductForm
 
 class ProductImageInline(ImageInline):
+    extra = 4
+    max_num = 4
     model = models.ProductImage
     sortable_field_name = "order"
 
+class PriceInline(admin.TabularInline):
+    model = simpleqty.models.ProductPrice
+
+class DiscountInline(admin.TabularInline):
+    model = sale.models.DiscountGroup.products.through
+    max_num = 1
+
 class HatAdmin(ProductAdmin):
-    pass
+    inlines = [ PriceInline, DiscountInline, ProductImageInline ]
 
 class TShirtVariantInline(admin.TabularInline):
     model = models.TShirtVariant
@@ -45,37 +56,37 @@ class TShirtAdmin(ProductAdmin):
 class ShirtVariantInline(admin.TabularInline):
     model = models.ShirtVariant
 
-class ShirtAdmin(ProductWithImageAdmin):
+class ShirtAdmin(ProductAdmin):
     inlines = [ ShirtVariantInline, ProductImageInline ]
 
 class CardiganVariantInline(admin.TabularInline):
     model = models.CardiganVariant
 
-class CardiganAdmin(ProductWithImageAdmin):
+class CardiganAdmin(ProductAdmin):
     inlines = [ CardiganVariantInline, ProductImageInline ]
 
 class JacketVariantInline(admin.TabularInline):
     model = models.JacketVariant
 
-class JacketAdmin(ProductWithImageAdmin):
-    inlines = [ JacketVariantInline, ProductImageInline ]
+class JacketAdmin(ProductAdmin):
+    inlines = [ PriceInline, DiscountInline, JacketVariantInline, ProductImageInline ]
 
 class TrousersVariantInline(admin.TabularInline):
     model = models.TrousersVariant
 
-class TrousersAdmin(ProductWithImageAdmin):
+class TrousersAdmin(ProductAdmin):
     inlines = [ TrousersVariantInline, ProductImageInline ]
 
 class DressVariantInline(admin.TabularInline):
     model = models.DressVariant
 
-class DressAdmin(ProductWithImageAdmin):
-    inlines = [ DressVariantInline, ProductImageInline ]
+class DressAdmin(ProductAdmin):
+    inlines = [ PriceInline, DiscountInline, DressVariantInline, ProductImageInline ]
 
 class CategoryImageInline(ImageInline):
     model = models.CategoryImage
 
-class CategoryWithImageAdmin(CategoryAdmin):
+class CategoryWithImageAdmin(satchless.product.admin.CategoryAdmin):
    inlines = [ CategoryImageInline ]
 
 admin.site.unregister(satchless.product.models.Category)

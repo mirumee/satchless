@@ -61,7 +61,9 @@ class ColoredVariant(Variant):
         abstract = True
 
 class TShirt(ProductWithImage):
-    pass
+    class Meta:
+        verbose_name = _('TShirt')
+        verbose_name_plural = _('TShirts')
 
 class TShirtVariant(ColoredVariant):
     product = models.ForeignKey(TShirt, related_name='variants')
@@ -69,13 +71,22 @@ class TShirtVariant(ColoredVariant):
     size = models.CharField(choices=SIZE_CHOICES, max_length=2)
 
 class Hat(ProductWithImage):
-    pass
+    class Meta:
+        verbose_name = _('Hat')
+        verbose_name_plural = _('Hats')
 
-class Hat(Variant):
-    product = models.ForeignKey(TShirt, related_name='variants')
+class HatVariant(Variant):
+    product = models.ForeignKey(Hat, related_name='variants')
+
+def _create_empty_variant(sender, instance, created, **kwargs):
+    if not kwargs.get('raw', False) and created:
+        instance.variants.create()
+models.signals.post_save.connect(_create_empty_variant, sender=Hat)
 
 class Shirt(ProductWithImage):
-    pass
+    class Meta:
+        verbose_name = _('Shirt')
+        verbose_name_plural = _('Shirts')
 
 class ShirtVariant(ColoredVariant):
     product = models.ForeignKey(Shirt, related_name='variants')
@@ -86,7 +97,9 @@ class ShirtVariant(ColoredVariant):
         return '%s / %s' % (self.get_color_display(), self.get_size_display())
 
 class Cardigan(ProductWithImage):
-    pass
+    class Meta:
+        verbose_name = _('Cardigan')
+        verbose_name_plural = _('Cardigans')
 
 class CardiganVariant(ColoredVariant):
     product = models.ForeignKey(Cardigan, related_name='variants')
@@ -97,7 +110,9 @@ class CardiganVariant(ColoredVariant):
         return '%s / %s' % (self.get_color_display(), self.get_size_display())
 
 class Jacket(ProductWithImage):
-    pass
+    class Meta:
+        verbose_name = _('Jacket')
+        verbose_name_plural = _('Jackets')
 
 class JacketVariant(ColoredVariant):
     product = models.ForeignKey(Jacket, related_name='variants')
@@ -108,7 +123,9 @@ class JacketVariant(ColoredVariant):
         return '%s / %s' % (self.get_color_display(), self.get_size_display())
 
 class Trousers(ProductWithImage):
-    pass
+    class Meta:
+        verbose_name = _('Trousers')
+        verbose_name_plural = _('Trousers')
 
 class TrousersVariant(ColoredVariant):
     product = models.ForeignKey(Trousers, related_name='variants')
@@ -119,7 +136,9 @@ class TrousersVariant(ColoredVariant):
         return '%s / %s' % (self.get_color_display(), self.get_size_display())
 
 class Dress(ProductWithImage):
-    pass
+    class Meta:
+        verbose_name = _('Dress')
+        verbose_name_plural = _('Dresses')
 
 class DressVariant(ColoredVariant):
     product = models.ForeignKey(Dress, related_name='variants')

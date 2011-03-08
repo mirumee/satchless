@@ -41,12 +41,17 @@ class TShirtVariantForm(ColoredVariantForm):
                 color=self.cleaned_data['color'],
                 size=self.cleaned_data['size'])
 
-class HatVariantForm(NonConfigurableVariantForm):
-    pass
-
 class ShirtVariantForm(ColoredVariantForm):
     size = forms.CharField(max_length=10,
             widget=forms.Select(choices=models.ShirtVariant.SIZE_CHOICES))
+
+    def __init__(self, *args, **kwargs):
+        super(ShirtVariantForm, self).__init__(*args, **kwargs)
+        existing_choices = _get_existing_variants_choices(
+                models.ShirtVariant.objects.all(), ('color', 'size'))
+        for field_name, choices in existing_choices.items():
+            self.fields[field_name].widget.choices = choices
+
     def _get_variant_queryset(self):
         return models.ShirtVariant.objects.filter(
                 product=self.product,
@@ -56,6 +61,14 @@ class ShirtVariantForm(ColoredVariantForm):
 class CardiganVariantForm(ColoredVariantForm):
     size = forms.CharField(max_length=10,
             widget=forms.Select(choices=models.CardiganVariant.SIZE_CHOICES))
+
+    def __init__(self, *args, **kwargs):
+        super(CardiganVariantForm, self).__init__(*args, **kwargs)
+        existing_choices = _get_existing_variants_choices(
+                models.CardiganVariant.objects.all(), ('color', 'size'))
+        for field_name, choices in existing_choices.items():
+            self.fields[field_name].widget.choices = choices
+
     def _get_variant_queryset(self):
         return models.CardiganVariant.objects.filter(
                 product=self.product,
@@ -81,6 +94,14 @@ class JacketVariantForm(ColoredVariantForm):
 class TrousersVariantForm(ColoredVariantForm):
     size = forms.CharField(max_length=10,
             widget=forms.Select(choices=models.TrousersVariant.SIZE_CHOICES))
+
+    def __init__(self, *args, **kwargs):
+        super(TrousersVariantForm, self).__init__(*args, **kwargs)
+        existing_choices = _get_existing_variants_choices(
+                models.TrousersVariant.objects.all(), ('color', 'size'))
+        for field_name, choices in existing_choices.items():
+            self.fields[field_name].widget.choices = choices
+
     def _get_variant_queryset(self):
         return models.TrousersVariant.objects.filter(
                 product=self.product,
@@ -90,6 +111,14 @@ class TrousersVariantForm(ColoredVariantForm):
 class DressVariantForm(ColoredVariantForm):
     size = forms.CharField(max_length=10,
             widget=forms.Select(choices=models.DressVariant.SIZE_CHOICES))
+
+    def __init__(self, *args, **kwargs):
+        super(DressVariantForm, self).__init__(*args, **kwargs)
+        existing_choices = _get_existing_variants_choices(
+                models.DressVariant.objects.all(), ('color', 'size'))
+        for field_name, choices in existing_choices.items():
+            self.fields[field_name].widget.choices = choices
+
     def _get_variant_queryset(self):
         return models.DressVariant.objects.filter(
                 product=self.product,

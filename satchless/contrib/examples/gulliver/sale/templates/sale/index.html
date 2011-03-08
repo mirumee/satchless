@@ -1,0 +1,63 @@
+{% extends "satchless/base.html" %}
+{% load pagination_tags %}
+{% load product_url %}
+{% load satchless_image %}
+
+{% block body-class %}sale {% if path %} cat-{{ path.0.slug }}{% endif %}{% endblock %}
+
+{% block extra-body %}
+{{ block.super }}
+<script>
+$(function() {
+    $('.product h3').hide();
+    $('.product').hover(function(){
+        $(this).find('h3').fadeIn('fast');
+    }, function(){
+        $(this).find('h3').fadeOut('fast');
+    });
+});
+</script>
+{% endblock %}
+
+{% block content-grid %}
+<div id="sidebar" class="grid_1">
+    <ul class="categories">
+{% for cat in categories %}
+        <li><a href="{{ cat.get_url }}">{{ cat.name }}</a></li>
+{% endfor %}
+    </ul>
+</div>
+{% endblock %}
+
+{% comment %}
+<div id="content" class="grid_3">
+    {% with category.products.all as products %}
+        {% autopaginate products 21 %}
+        {% if products %}
+    {% paginate %}
+            {% for product in products %}
+                {% with product.get_subtype_instance as product %}
+                {% with product|product_in_category_url:category as product_url %}
+    <div class="product grid_1 {% cycle 'alpha' '' 'omega' %}">
+        <a href="{{ product_url }}" class="product-photo">
+                    {% if product.main_image %}
+            <img src="{{ product.main_image|at_size:'category-product' }}" alt="{{ product.name }} image" />
+                    {% endif %}
+        </a>
+        <h3><a href="{{ product_url }}" title="{{ product.name }}">{{ product.name }}</a></h3>
+    </div>
+    {% cycle '' '' '<div class="clear"></div>' %}
+                {% endwith %}
+                {% endwith %}
+            {% endfor %}
+    {% paginate %}
+        {% else %}
+
+        {% endif %}
+    <div class="clear"></div>
+    {% endwith %}
+</div>
+{% endif %}
+<div class="clear"></div>
+{% endblock %}
+{% endcomment %}

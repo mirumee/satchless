@@ -17,8 +17,5 @@ class BaseVariantForm(forms.Form):
 
 
 class NonConfigurableVariantForm(BaseVariantForm):
-    def is_valid(self):
-        return True
-
     def get_variant(self):
         return self.product.variants.get()

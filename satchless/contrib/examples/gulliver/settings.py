@@ -134,13 +134,14 @@ INSTALLED_APPS = (
     'satchless.cart',
     'satchless.pricing',
     'satchless.contrib.pricing.simpleqty',
-    #'satchless.contrib.tax.flatgroups',
+    'satchless.contrib.tax.flatgroups',
     #'satchless.contrib.stock.singlestore',
     'satchless.order',
-    'satchless.contrib.delivery.simplepost',
+    #'satchless.contrib.delivery.simplepost',
     'products',
     'south',
     'pagination',
+    'sale',
 )
 
 SATCHLESS_IMAGE_SIZES = {
@@ -176,7 +177,8 @@ INTERNAL_IPS = ['127.0.0.1']
 
 SATCHLESS_PRICING_HANDLERS = [
     'satchless.contrib.pricing.simpleqty.handler',
-    #'satchless.contrib.tax.flatgroups.handler',
+    'satchless.contrib.tax.flatgroups.handler',
+    'sale.handler',
 ]
 SATCHLESS_PRODUCT_VIEW_HANDLERS = [
     'core.handler.cart_handler',

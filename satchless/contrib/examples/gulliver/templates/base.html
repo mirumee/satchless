@@ -1,0 +1,126 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+{% load i18n localeurl_tags %}
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="pl-PL" lang="pl-PL">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <title>{% block title %}Saleor{% endblock %}</title>
+    <meta name="description" content="{% block meta-description %}{% trans "Gulliver not dead!" %}{% endblock %}" />
+    <link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}css/grid.css" />
+    <link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}css/style.css" />
+</head>
+
+<body id="{% block body-id %}{% endblock %}" class="{% block body-class %}{% endblock %}">
+
+{% block top-bar %}
+    <div id="top-bar" class="container_4">
+        <div class="grid_3">
+            <ul class="menu">
+                <li class="mens">
+                    <a href="{% url satchless-product-category '' 'mens' %}">Mens</a>
+                </li>
+                <li class="womens">
+                    <a href="{% url satchless-product-category '' 'womens' %}">Womens</a>
+                </li>
+                <li class="other-brands">
+                    <a href="{% url satchless-product-category '' 'other-brands' %}">Other Brands</a>
+                </li>
+                <li class="other-brands">
+                    <a href="{% url sale-index %}">Sale</a>
+                </li>
+                {% comment %}
+                <li class="newsletter"><a href="{% url newsletter-subscribe %}">Newsletter</a></li>
+                <li class="collections"><a href="{% url satchmo_looks %}">Collections</a></li>
+                <li class="about"><a href="{% url static_about %}">About Us</a></li>
+                <li class="blog"><a href="{% url blog_home %}">Blog</a></li>
+                <li class="press"><a href="{% url press_home %}">Press</a></li>
+                <li class="contact"><a href="{% url static_contact %}">Contact</a></li>
+                <li class="terms"><a href="{% url static_terms %}">Terms</a></li>
+                {% endcomment %}
+            </ul>
+            <div class="clear"></div>
+        </div>
+        <div class="grid_1">
+{% comment %}
+            <form class="search" method="get" action="{% url local_search %}">
+                Search
+                <input class="keywords" type="text" name="keywords" value="{{ request.GET.keywords }}" />
+                <input class="submit" type="submit" value="Search" />
+            </form>
+{% endcomment %}
+            <a id="shopping-cart" href="{% url satchless-cart-view %}">{% trans "Shopping Bag" %}{% if cart_count %} (<span>{{ cart_count|floatformat }}</span>){% endif %}</a>
+        </div>
+        <div class="clear"></div>
+        <div class="grid_4">
+            <hr />
+        </div>
+        <div class="clear"></div>
+    </div> {# top-bar #}
+    {% comment %}
+    <div class="container_4">
+    {% if messages %}
+    <div id="messages" class="grid_3 prefix_1">
+        {% for m in messages %}
+            <div class="message {{ m.tags }}">{{ m|safe }}</div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div id="messages" class="grid_3 prefix_1 placeholder"></div>
+    {% endif %}
+    <div class="clear"></div>
+    </div>
+    {% endcomment %}
+{% endblock %}
+
+{% block page %}
+    <div class="container_4">
+    {% if messages %}
+        <div id="messages" class="grid_3 prefix_1">
+        {% for m in messages %}
+            <div class="message {{ m.tags }}">{{ m|safe }}</div>
+        {% endfor %}
+        </div>
+    {% else %}
+        <div id="messages" class="grid_3 prefix_1 placeholder"></div>
+    {% endif %}
+    </div>
+    <div class="clear"></div>
+    <div id="content" class="container_4">
+{% block content-grid %}
+{% endblock %}
+    </div>
+{% endblock %}
+{% if debug %}
+<div id="debug">
+  <h2>Queries</h2>
+  <p>
+    {{ sql_queries|length }} Quer{{ sql_queries|pluralize:"y,ies" }}
+    {% ifnotequal sql_queries|length 0 %}
+    (<span style="cursor: pointer;" onclick="var s=document.getElementById('debugQueryTable').style;s.display=s.display=='none'?'':'none';this.innerHTML=this.innerHTML=='Show'?'Hide':'Show';">Show</span>)
+    {% endifnotequal %}
+  </p>
+  <table id="debugQueryTable" style="display: none;">
+    <col width="1"></col>
+    <col></col>
+    <col width="1"></col>
+    <thead>
+    <tr>
+      <th scope="col">#</th>
+      <th scope="col">SQL</th>
+      <th scope="col">Time</th>
+    </tr>
+    </thead>
+    <tbody>
+    {% for query in sql_queries %}<tr class="{% cycle odd,even %}">
+      <td>{{ forloop.counter }}</td>
+      <td>{{ query.sql|escape }}</td>
+      <td>{{ query.time }}</td>
+    </tr>{% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endif %}
+{% block extra-body %}
+<script type="text/javascript" src="{{ STATIC_URL }}js/jquery.js"></script>
+{% endblock %}
+</body>
+</html>

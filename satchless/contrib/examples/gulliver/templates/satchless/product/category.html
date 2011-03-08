@@ -1,0 +1,83 @@
+{% extends "satchless/base.html" %}
+{% load pagination_tags %}
+{% load product_url %}
+{% load satchless_image %}
+
+{% block body-class %}category{% if path %} cat-{{ path.0.slug }}{% endif %}{% endblock %}
+{% block extra-body %}
+{{ block.super }}
+<script>
+$(function() {
+    $('.product h3').hide();
+    $('.product').hover(function(){
+        $(this).find('h3').fadeIn('fast');
+    }, function(){
+        $(this).find('h3').fadeOut('fast');
+    });
+});
+</script>
+{% endblock %}
+
+{% block content-grid %}
+{% if category %}
+    {% if category.is_root_node %}
+        {% with category.get_children as subcategories %}
+        {% autopaginate subcategories 21 %}
+            {% if subcategories %}
+                {% for child in subcategories %}
+<div class="category grid_1">
+                    {% if child.image %}
+    <a href="{{ child.get_url }}"><img src="{{ child.image|at_size:'category' }}" alt="" /></a>
+                    {% endif %}
+    <h3><a href="{{ child.get_url }}" title="{{ child.name }}">{{ child.name }}</a></h3>
+</div>
+{% cycle '' '' '' '<div class="clear"></div>' %}
+                {% endfor %}
+<div class="clear"></div>
+{% paginate %}
+            {% else %}
+            <p class="no-items">Coming soon&hellip;</p>
+            {% endif %}
+        {% endwith %}
+    {% else %}
+<div id="sidebar" class="grid_1">
+        {% with path.0.get_children as siblings %}
+    <ul class="categories">
+            {% for cat in siblings %}
+        <li{% if cat == category %} class="active"{% endif %}><a href="{{ cat.get_url }}">{{ cat.name }}</a></li>
+            {% endfor %}
+    </ul>
+        {% endwith %}
+</div>
+{% endif %}
+
+<div id="content" class="grid_3">
+    {% with category.products.all as products %}
+        {% autopaginate products 21 %}
+        {% if products %}
+    {% paginate %}
+            {% for product in products %}
+                {% with product.get_subtype_instance as product %}
+                {% with product|product_in_category_url:category as product_url %}
+    <div class="product grid_1 {% cycle 'alpha' '' 'omega' %}">
+        <a href="{{ product_url }}" class="product-photo">
+                    {% if product.main_image %}
+            <img src="{{ product.main_image|at_size:'category-product' }}" alt="{{ product.name }} image" />
+                    {% endif %}
+        </a>
+        <h3><a href="{{ product_url }}" title="{{ product.name }}">{{ product.name }}</a></h3>
+    </div>
+    {% cycle '' '' '<div class="clear"></div>' %}
+                {% endwith %}
+                {% endwith %}
+            {% endfor %}
+    {% paginate %}
+        {% else %}
+
+        {% endif %}
+    <div class="clear"></div>
+    {% endwith %}
+</div>
+{% endif %}
+<div class="clear"></div>
+{% endblock %}

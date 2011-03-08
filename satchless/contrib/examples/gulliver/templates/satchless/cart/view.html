@@ -39,10 +39,10 @@
     {% with form.instance|cartitem_price as item_price %}
             <tr class="item">
                 <td class="image">
-                    <a href="{{ variant.get_url }}"><img src="{{ variant.get_subtype_instance.product.main_image|at_size:'product-cart' }}" alt="{{ item }}" /></a>
+                    <a href="{{ variant.product.get_url }}"><img src="{{ variant.product.main_image|at_size:'product-cart' }}" alt="{{ item }}" /></a>
                 </td>
                 <td class="name">
-                    <a href="{{ variant.get_url }}">{{ variant.product }}</a>
+                    <a href="{{ variant.product.get_url }}">{{ variant.product }}</a>
                     </a>
                 </td>
                 <td>

@@ -102,6 +102,14 @@ class ShirtVariantForm(ColoredVariantForm):
 class TShirtVariantForm(ColoredVariantForm):
     size = forms.CharField(max_length=10,
             widget=forms.Select(choices=models.TShirtVariant.SIZE_CHOICES))
+
+    def __init__(self, *args, **kwargs):
+        super(TShirtVariantForm, self).__init__(*args, **kwargs)
+        existing_choices = _get_existing_variants_choices(
+                models.TShirtVariant.objects.all(), ('color', 'size'))
+        for field_name, choices in existing_choices.items():
+            self.fields[field_name].widget.choices = choices
+
     def _get_variant_queryset(self):
         return models.TShirtVariant.objects.filter(
                 product=self.product,

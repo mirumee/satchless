@@ -21,6 +21,11 @@ independent and extensible. Using Satchless you will be able to build quickly:
         * downloadable products
         * with both of them or any other product type you may imagine.
 
+.. note::
+   Satchless is not a turn-key solution for online shop and is not aimed to be.
+   It should be considered as a set of advanced, loosely coupled bricks which
+   would be turned into a working shop by a web developer.
+
 .. _`Django`: http://djangoproject.org/
 .. _`Python`: http://python.org/
 

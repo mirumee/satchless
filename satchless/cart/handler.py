@@ -9,13 +9,13 @@ from . import models
 class AddToCartHandler(object):
     """
     Parametrized handler for `product_view`, which produces *add to cart* forms,
-    validates them and performs all the logic of adding an item to cart.
+    validates them and performs all the logic of adding an item to a cart.
     """
 
     def __init__(self, typ='satchless_cart', addtocart_formclass=forms.AddToCartForm,
                  form_attribute='cart_form'):
         """
-        Sets up a parametrized listener for `product_view` signal.
+        Sets up a parametrized handler for product view.
 
         Accepts:
 
@@ -82,4 +82,3 @@ class AddToCartHandler(object):
             setattr(instance, self.form_attribute, form)
         return extra_context
 
-add_to_cart_handler = AddToCartHandler('satchless_cart')

@@ -47,6 +47,7 @@ Customizing your shop
       :ref:`Writing custom product models <product-custom_models>` |
       :ref:`Product sets <product-sets>`
     * **Customers:**
+      :ref:`Contacts <contacts>`
     * **Carts and lists:**
       :ref:`Carts overview <cart-overview>` |
       :ref:`Wishlist as a cart <cart-wishlist>`

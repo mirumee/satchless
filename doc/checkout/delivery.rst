@@ -41,3 +41,28 @@ Each member of the queue is given a list of remaining (ungrouped) items. It
 returns a list of groups it decided to create, and a list of remaining items
 which is passed to the next partitioner. The only requirement is to have all
 the order items grouped after the queue has been finished.
+
+Querying for delivery types
+---------------------------
+
+After the items have been grouped, it's time to ask for available delivery
+methods for each of the groups. Another queue,
+``SATCHLESS_DELIVERY_PROVIDERS``, does that. Each delivery group is passed
+through this queue and each provider may add a list of delivery types
+available for this group.
+
+.. note::
+   In a bookstore mentioned above, this is a moment to assign download method
+   to the group containing ebooks and post/messenger/pickup to the others.
+
+Delivery details
+----------------
+
+After the delivery types have been chosen, every provider involved is asked for
+an optional details form. Usually, we ask there for the shipping address. If no
+provider returned a form, we skip to the payment step.
+
+This is a good place to do your customization. Satchless comes with an
+:ref:`address book <contacts>` and it would be a good idea to copy customer's
+default shipping address into forms here.
+

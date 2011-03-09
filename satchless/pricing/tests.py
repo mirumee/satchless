@@ -30,8 +30,8 @@ class FiveDolarPriceHandler(object):
         return Price(net=5, gross=5, currency=u'$')
     @staticmethod
     def get_product_price_range(*args, **kwargs):
-        return {'min': Price(net=5, gross=5, currency=u'$'),
-                'max': Price(net=5, gross=5, currency=u'$')}
+        return ( Price(net=5, gross=5, currency=u'$'),
+                 Price(net=5, gross=5, currency=u'$') )
     @staticmethod
     def get_cartitem_unit_price(*args, **kwargs):
         return Price(net=5, gross=5, currency=u'$')
@@ -49,8 +49,8 @@ class NinetyPerecentTaxPriceHandler(object):
     @staticmethod
     def get_product_price_range(*args, **kwargs):
         price_range = kwargs.get('price_range')
-        return {'min': NinetyPerecentTaxPriceHandler._tax(price_range['min']),
-                'max': NinetyPerecentTaxPriceHandler._tax(price_range['max'])}
+        return ( NinetyPerecentTaxPriceHandler._tax(price_range[0]),
+                 NinetyPerecentTaxPriceHandler._tax(price_range[1]) )
     @staticmethod
     def get_cartitem_unit_price(*args, **kwargs):
         price = kwargs.get('price')
@@ -84,8 +84,8 @@ class HandlerTest(TestCase):
     def test_range_price_chain(self):
         chain = handler.get_product_price_range_chain(None, u'$', quantity=1)
         self.assertEqual(chain['satchless.pricing.tests.FiveDolarPriceHandler'],
-                         {'min': Price(net=5, gross=5, currency=u'$'),
-                          'max': Price(net=5, gross=5, currency=u'$')})
+                         ( Price(net=5, gross=5, currency=u'$'),
+                           Price(net=5, gross=5, currency=u'$') ))
         self.assertEqual(chain[NinetyPerecentTaxPriceHandler],
-                         {'min': Price(net=5, gross=5*decimal.Decimal('1.9'), currency=u'$'),
-                          'max': Price(net=5, gross=5*decimal.Decimal('1.9'), currency=u'$')})
+                         ( Price(net=5, gross=5*decimal.Decimal('1.9'), currency=u'$'),
+                           Price(net=5, gross=5*decimal.Decimal('1.9'), currency=u'$') ))

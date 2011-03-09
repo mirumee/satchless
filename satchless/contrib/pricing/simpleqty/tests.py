@@ -72,9 +72,9 @@ class ParrotTest(TestCase):
         cockatoo_price.offsets.create(variant=self.cockatoo_green_d, price_offset=Decimal('-8.0'))
         cockatoo_price.offsets.create(variant=self.cockatoo_green_a, price_offset=Decimal('4.0'))
         self.assertEqual(get_product_price_range(self.macaw, currency='BTC'),
-                        {'min':Price(Decimal('10.0'), currency='BTC'), 'max': Price(Decimal('16.0'), currency='BTC')})
+                        (Price(Decimal('10.0'), currency='BTC'), Price(Decimal('16.0'), currency='BTC')))
         self.assertEqual(get_product_price_range(self.cockatoo, currency='BTC'),
-                        {'min': Price(Decimal('4.0'), currency='BTC'), 'max': Price(Decimal('16.0'), currency='BTC')})
+                        (Price(Decimal('4.0'), currency='BTC'), Price(Decimal('16.0'), currency='BTC')))
 
     def test_cartprices(self):
         macaw_price = ProductPrice.objects.create(product=self.macaw,

@@ -27,7 +27,7 @@ def get_product_price_range(product, currency, **kwargs):
     try:
         base_price = models.ProductPrice.objects.get(product=product)
     except models.ProductPrice.DoesNotExist:
-        return kwargs.pop('price', (None, None))
+        return kwargs.pop('price', {'min': None, 'max': None})
     try:
         price = base_price.qty_overrides.filter(min_qty__lte=1).order_by('-min_qty')[0].price
     except IndexError:
@@ -39,8 +39,8 @@ def get_product_price_range(product, currency, **kwargs):
         max_price = max(price, price + max_offset)
     if min_offset is not None:
         min_price = min(price, price + min_offset)
-    return (Price(net=min_price, gross=min_price, currency=currency),
-            Price(net=max_price, gross=max_price, currency=currency))
+    return {'min': Price(net=min_price, gross=min_price, currency=currency),
+            'max': Price(net=max_price, gross=max_price, currency=currency)}
 
 def get_cartitem_unit_price(cartitem, currency, **kwargs):
     product = cartitem.variant.get_subtype_instance().product

@@ -32,26 +32,25 @@ Let's write our ``forms.py`` then::
             super(AddToWishlistForm, self).__init__(*args, **kwargs)
             self.fields['quantity'].widget = forms.HiddenInput()
 
-        def save(self, cart):
-            cart.add_quantity(self.get_variant(), 1)
+        def save(self):
+            self.cart.add_quantity(self.get_variant(), 1)
 
 .. _cart-wishlist-signal:
 
 The signal
 ----------
 
-Now we should connect a listener which will produce *add to wishlist* forms
-for every product being viewed. It goes to ``listeners.py`` file::
+Now we should create a handler which will produce *add to wishlist* forms
+for every product being viewed. It uses the same class as the standard cart
+does, and we will put it onto the top of our application module, that is
+``__init__.py`` file::
 
-    from satchless.product.signals import product_view
-    from satchless.cart.listeners import AddToCartListener
+    from satchless.cart.handler import AddToCartHandler
     from . import forms
 
-    wishlist_listener = AddToCartListener(
-            'satchless_wishlist',
-            addtocart_formclass=forms.AddToWishlistForm,
-            form_attribute='wishlist_form')
-    product_view.connect(wisthlist_listener)
+    add_to_wishlist_handler = AddToCartHandler('satchless_wishlist',
+                addtocart_formclass=forms.AddToWishlistForm,
+                form_attribute='wishlist_form')
 
 This requires a little explanation:
 
@@ -61,22 +60,13 @@ This requires a little explanation:
     * In the product view template every product instance will have the form
       stored under ``wishlist_form`` attribute.
 
-.. note::
-   You may also generate the listener inline, but remember to use strong
-   reference, as it goes out of scope immediately. That means using
-   ``weak=False`` parameter::
+Finally, you should add the handler to the queue. Assuming that the standard cart
+handler is already present, the corresponding setting would look like this::
 
-        product_view.connect(
-            AddToCartListener(
-                'satchless_wishlist',
-                addtocart_formclass=forms.AddToWishlistForm,
-                form_attribute='wishlist_form'),
-            weak=False)
-
-Finally, you should connect the listener when the application is being loaded,
-by writing ``__init__.py`` file::
-
-    import listeners
+    SATCHLESS_PRODUCT_VIEW_HANDLERS = [
+        'satchless.cart.add_to_cart_handler',
+        'wishlist.add_to_wishlist_handler',
+    ]
 
 The template
 ------------

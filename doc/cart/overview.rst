@@ -5,10 +5,13 @@ Satchless carts
 ===============
 
 Carts are containers which help customers with grouping items they are
-interested in. The default behavior is to have one shopping cart per
-customer, but you may allow multiple carts per customer to allow them
-managing more sophisticated shopping. Cart may also serve as wishlist,
-*save for later* list or any other temporary storage.
+interested in. The default behavior in majority of the shops is to have one
+shopping cart per customer, and Satchless provides out-of-the-box method to
+enable it.
+
+However, you may allow multiple carts per customer to allow them managing more
+sophisticated shopping.  Cart may also serve as wishlist, *save for later* list
+or any other temporary storage.
 
 Cart items consist of two values: :ref:`Variant <product-overview>` and
 *quantity*.
@@ -30,40 +33,78 @@ type is named ``satchless_cart``.
 Carts can be owned by registered users or anonymous. The latter ones are
 usually being used by customers who have not authorized themselves yet.
 
+How to enable basic cart?
+-------------------------
+
+First of all, you should add the ``satchless.cart`` application to Django's
+``INSTALLED_APPS`` list and run the ``syncdb`` command.
+
+Second, add the following lines to ``settings.py``:
+
+::
+
+    SATCHLESS_PRODUCT_VIEW_HANDLERS = [
+        'satchless.cart.add_to_cart_handler',
+    ]
+
+Now the cart is enabled. If you wish to know the topic better or use other cart
+types, continue reading.
+
 Adding to cart
 --------------
 
-Adding to cart mechanism uses signals quite extensively. The aim is to keep
+Adding to cart mechanism uses a handler queue. The aim is to keep
 ``satchless.product`` and ``satchless.cart`` separated (i.e. keep only one-way
-dependency).
+dependency). For that reason, the product view doesn't know anything about the
+cart, wishlists etc. You have to process the data in handlers and display it in
+the template layer.
 
-When a product is being viewed, the ``satchless.product.signals.product_view``
-is sent. The cart application listens to it and gets variant selection form for
-every product or variant passed with the signal. Another signal,
+When a product is about to be viewed, the ``SATCHLESS_PRODUCT_VIEW_HANDLERS``
+queue is being run through. Each handler receives a list of product or variant
+instances which have been selected to be displayed to the user. Each handler
+may alter these instances or modify template context. The results are passed to
+the next handler in the queue. A handler may also return a ``HttpResponse``
+instance, which will be immediately passed to the user, stopping execution of
+the handlers queue.
+
+Behavior of the standard handler
+................................
+
+The standard handler (``satchless.cart.add_to_cart_handler``) finds the variant
+selection form for every product or variant received.  A signal,
 ``satchless.product.signals.variant_formclass_for_product`` is used to do that.
-The form is merged together with another one containing quantity and cart type,
-and together they form complete *add to cart* form.
+Then this form is merged with another one, containing quantity and cart type,
+and together they build a complete *add to cart* form.
+
+Then, the resulting form is added to each product or variant instance, under
+the ``cart_form`` attribute.
+
+.. note::
+    The attribute name and also the cart type can be easily changed. The
+    standard handler uses ``satchless.cart.handler.AddToCartHandler`` which
+    you may instatinate into a parametrized handler serving needs of your
+    custom cart(s).
 
 Depending on the request type, there are two actions possible:
 
-    * If the request carries POST data, the *add to cart* forms are being
+    * If the request carries POST data - which usually happens after user has
+      clicked *add to cart* button - the *add to cart* forms are being
       validated against it. The resulting variants are being put it into the
-      cart and response object (with redirect to the cart page) is passed back.
+      cart and ``HttpResponse`` instance (with redirect to the cart page)
+      is passed back.
 
-    * If there is no POST data or validation has failed, the listener adds
-      form to every product/variant instance received.
+    * If there is no POST data and the product is just being shown, or the
+      validation of *add to cart* form has failed, the listener adds form to
+      every product/variant instance received.
 
-After the signal has been handled, the product view looks for any response
-objects returned by listener(s). If there is a response, it's being served.
-
-Otherwise, the standard template is being rendered. By default it checks for
-cart forms and displays them if present. By overriding the template, it's
-possible to display other forms too.
+If no ``HttpResponse`` has broken execution of the queue, the standard template
+is being rendered. By default it checks for cart forms and displays them if
+present. By overriding the template, it's possible to display other forms too.
 
 .. note::
    For more details, refer to the source code:
 
-    * ``satchless/cart/listeners.py``
+    * ``satchless/cart/handler.py``
     * ``satchless/product/views.py``
     * and ``satchless/product/templates/satchless/product/product.html``
 

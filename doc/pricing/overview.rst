@@ -45,28 +45,33 @@ set of basic features:
       work in two modes: *per variant* when the minimal quantity of single
       variant is present in the cart, or *per product* when the quantity
       of all product's variants in the cart reaches the limit.
+    * It doesn't care about currency.
 
-The second step is taxing module in ``satchless.contrib.tax.flatgroups``
-defines groups of products with different tax rates. It can also have a
-default "catch-all" group. The price given by former handler is being
-processed here and used on the shop pages.
+The second step is taxing module in ``satchless.contrib.tax.flatgroups``, which
+defines groups of products with different tax rates. It can also have a default
+"catch-all" group.  The price given by former handler is being processed here
+and used on the shop pages.
 
 Price objects
 -------------
 
 Satchless uses special ``satchless.pricing.Price`` objects internally. Each
 of them represents a double price set: ``net`` and ``gross``. In a shop where
-taxing is not being handled, usually they contain the same value.
+taxing is not being handled, they are equal.
 
-These objects can handle a limited set of operations. For example, you may
-add two ``Price`` objects together, but multiplication may use a single-number
-object as the second argument (e.g. ``int``, ``Decimal`` and also ``float``
+These objects can handle a limited set of operations. For example, you may add
+two ``Price`` objects together, but multiplication may use only single-number
+objects as the second argument (e.g. ``int``, ``Decimal`` and also ``float``
 which is not recommended due to limited precision, unacceptable in monetary
 operations).
 
-The ``Price`` object may carry additional data, like *tax name* which holds
-a short description of the tax rate applied. In most cases, you have to take
-care of this data being transferred to new ``Price`` objects you create.
+The ``Price`` object may carry additional data. One of them is *currency*
+3-letter code, stored in the ``currency`` attribute. **Price objects with
+different currencies cannot be added or subtracted.**
+
+The other data is *tax name*, which holds a short description of the tax rate
+applied. In most cases, you have to take care of this data being transferred to
+new ``Price`` objects you create.
 
 Using handlers
 --------------
@@ -75,10 +80,11 @@ To get prices processed by entire handlers stack, use the interface provided
 by ``satchless.pricing.handler``. The following functions will return a single
 ``Price`` object:
 
-    * ``get_variant_price(variant, quantity=1, **context)``
-    * ``get_cartitem_unit_price(cartitem, **context)``
+    * ``get_variant_price(variant, currency, quantity=1, **context)``
+    * ``get_cartitem_unit_price(cartitem, currency, **context)``
 
-They should be used to get a price of variant and cart item respectively.
+They should be used to get a price of variant and cart item respectively,
+in the currency specified.
 
 Important thing here is the ``context`` which allows you to put many
 additional parameters for handlers to inspect. For example, you may add
@@ -88,4 +94,16 @@ customer history, nationality, birthday, etc.
 The following function returns a tuple, which is a range of prices for
 the cheapest and the most expensive variants available:
 
-    * ``get_product_price_range(product, **context)``
+    * ``get_product_price_range(product, currency, **context)``
+
+The default handler
+-------------------
+
+The default handler shipped with satchless
+(``satchless.contrib.pricing.simpleqty.handler``) is a stupid one, absolutely
+unaware of currencies.  It will automatically sign the price retrieved from
+database with any currency code you ask it.
+
+However, more advanced handlers for multi-currency shops should return a
+``Price`` object **only** if a value is found for the currency they have been
+asked for. Otherwise, they should return ``None``.

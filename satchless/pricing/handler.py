@@ -53,7 +53,7 @@ def get_variant_price_chain(variant, currency, quantity=1, **context):
     return price_chain
 
 def get_product_price_range_chain(product, currency, **context):
-    price_range = {'min': Price(), 'max': Price()}
+    price_range = (Price(), Price())
     price_range_chain = SortedDict()
     for handler_name, handler in _handlers_queue.items():
         try:

@@ -34,11 +34,15 @@ class ParrotTaxTest(TestCase):
 
     def test_nodefault(self):
         # these have 8% VAT
-        self.assertEqual(handler.get_variant_price(self.macaw_blue_d), Price(10, Decimal('10.80')))
-        self.assertEqual(handler.get_variant_price(self.macaw_blue_a), Price(12, Decimal('12.96')))
+        self.assertEqual(handler.get_variant_price(self.macaw_blue_d, currency='PLN'),
+                         Price(10, Decimal('10.80'), currency='PLN'))
+        self.assertEqual(handler.get_variant_price(self.macaw_blue_a, currency='PLN'),
+                         Price(12, Decimal('12.96'), currency='PLN'))
         # while these have no tax group, hence the tax is zero
-        self.assertEqual(handler.get_variant_price(self.cockatoo_white_a), Price(20, 20))
-        self.assertEqual(handler.get_variant_price(self.cockatoo_green_a), Price(25, 25))
+        self.assertEqual(handler.get_variant_price(self.cockatoo_white_a, currency='PLN'),
+                         Price(20, 20, currency='PLN'))
+        self.assertEqual(handler.get_variant_price(self.cockatoo_green_a, currency='PLN'),
+                         Price(25, 25, currency='PLN'))
         # same in cart
         cart = Cart.objects.create(typ='test')
         cart.set_quantity(self.macaw_blue_a, 3)
@@ -46,31 +50,35 @@ class ParrotTaxTest(TestCase):
         item_macaw_blue_a = cart.items.get(variant=self.macaw_blue_a)
         item_macaw_blue_d = cart.items.get(variant=self.macaw_blue_d)
         self.assertEqual(
-                handler.get_cartitem_unit_price(item_macaw_blue_a),
-                Price(12, Decimal('12.96')))
+                handler.get_cartitem_unit_price(item_macaw_blue_a, currency='PLN'),
+                Price(12, Decimal('12.96'), currency='PLN'))
         self.assertEqual(
-                handler.get_cartitem_unit_price(item_macaw_blue_d),
-                Price(10, Decimal('10.80')))
+                handler.get_cartitem_unit_price(item_macaw_blue_d, currency='PLN'),
+                Price(10, Decimal('10.80'), currency='PLN'))
         cart.set_quantity(self.cockatoo_white_a, 3)
         cart.set_quantity(self.cockatoo_green_a, 5)
         item_cockatoo_white_a = cart.items.get(variant=self.cockatoo_white_a)
         item_cockatoo_green_a = cart.items.get(variant=self.cockatoo_green_a)
         self.assertEqual(
-                handler.get_cartitem_unit_price(item_cockatoo_white_a),
-                Price(20, 20))
+                handler.get_cartitem_unit_price(item_cockatoo_white_a, currency='PLN'),
+                Price(20, 20, currency='PLN'))
         self.assertEqual(
-                handler.get_cartitem_unit_price(item_cockatoo_green_a),
-                Price(25, 25))
+                handler.get_cartitem_unit_price(item_cockatoo_green_a, currency='PLN'),
+                Price(25, 25, currency='PLN'))
 
     def test_default(self):
         self.vat23.default = True
         self.vat23.save()
         # these have 8% VAT
-        self.assertEqual(handler.get_variant_price(self.macaw_blue_d), Price(10, Decimal('10.80')))
-        self.assertEqual(handler.get_variant_price(self.macaw_blue_a), Price(12, Decimal('12.96')))
+        self.assertEqual(handler.get_variant_price(self.macaw_blue_d, currency='PLN'),
+                         Price(10, Decimal('10.80'), currency='PLN'))
+        self.assertEqual(handler.get_variant_price(self.macaw_blue_a, currency='PLN'),
+                         Price(12, Decimal('12.96'), currency='PLN'))
         # while these have default 23% VAT
-        self.assertEqual(handler.get_variant_price(self.cockatoo_white_a), Price(20, Decimal('24.60')))
-        self.assertEqual(handler.get_variant_price(self.cockatoo_green_a), Price(25, Decimal('30.75')))
+        self.assertEqual(handler.get_variant_price(self.cockatoo_white_a, currency='PLN'),
+                         Price(20, Decimal('24.60'), currency='PLN'))
+        self.assertEqual(handler.get_variant_price(self.cockatoo_green_a, currency='PLN'),
+                         Price(25, Decimal('30.75'), currency='PLN'))
         # same in cart
         cart = Cart.objects.create(typ='test')
         cart.set_quantity(self.macaw_blue_a, 3)
@@ -78,18 +86,18 @@ class ParrotTaxTest(TestCase):
         item_macaw_blue_a = cart.items.get(variant=self.macaw_blue_a)
         item_macaw_blue_d = cart.items.get(variant=self.macaw_blue_d)
         self.assertEqual(
-                handler.get_cartitem_unit_price(item_macaw_blue_a),
-                Price(12, Decimal('12.96')))
+                handler.get_cartitem_unit_price(item_macaw_blue_a, currency='PLN'),
+                Price(12, Decimal('12.96'), currency='PLN'))
         self.assertEqual(
-                handler.get_cartitem_unit_price(item_macaw_blue_d),
-                Price(10, Decimal('10.80')))
+                handler.get_cartitem_unit_price(item_macaw_blue_d, currency='PLN'),
+                Price(10, Decimal('10.80'), currency='PLN'))
         cart.set_quantity(self.cockatoo_white_a, 3)
         cart.set_quantity(self.cockatoo_green_a, 5)
         item_cockatoo_white_a = cart.items.get(variant=self.cockatoo_white_a)
         item_cockatoo_green_a = cart.items.get(variant=self.cockatoo_green_a)
         self.assertEqual(
-                handler.get_cartitem_unit_price(item_cockatoo_white_a),
-                Price(20, Decimal('24.60')))
+                handler.get_cartitem_unit_price(item_cockatoo_white_a, currency='PLN'),
+                Price(20, Decimal('24.60'), currency='PLN'))
         self.assertEqual(
-                handler.get_cartitem_unit_price(item_cockatoo_green_a),
-                Price(25, Decimal('30.75')))
+                handler.get_cartitem_unit_price(item_cockatoo_green_a, currency='PLN'),
+                Price(25, Decimal('30.75'), currency='PLN'))

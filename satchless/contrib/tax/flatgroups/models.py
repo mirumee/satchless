@@ -29,7 +29,8 @@ class TaxGroup(models.Model):
         """
         multi = (self.rate + Decimal('100')) / Decimal('100')
         if isinstance(price, Price):
-            return Price(net=price.net, gross=price.gross * multi, tax_name=self.rate_name)
+            return Price(net=price.net, gross=price.gross * multi,
+                         tax_name=self.rate_name, currency=price.currency)
         else:
             price = price * multi
             price.tax_name = self.rate_name

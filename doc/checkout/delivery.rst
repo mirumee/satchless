@@ -1,0 +1,5 @@
+.. _checkout-delivery:
+
+========
+Delivery
+========

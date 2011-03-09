@@ -60,7 +60,7 @@ class ParrotTest(TestCase):
         self.user1.save()
         self.original_product_view_handlers = settings.SATCHLESS_PRODUCT_VIEW_HANDLERS
         settings.SATCHLESS_PRODUCT_VIEW_HANDLERS = [
-            'satchless.cart.handler.add_to_cart_handler',
+            'satchless.cart.add_to_cart_handler',
         ]
 
     def tearDown(self):

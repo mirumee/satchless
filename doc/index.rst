@@ -47,6 +47,7 @@ Customizing your shop
       :ref:`Writing custom product models <product-custom_models>` |
       :ref:`Product sets <product-sets>`
     * **Customers:**
+      :ref:`Contacts <contacts>`
     * **Carts and lists:**
       :ref:`Carts overview <cart-overview>` |
       :ref:`Wishlist as a cart <cart-wishlist>`
@@ -54,6 +55,6 @@ Customizing your shop
       :ref:`Pricing overview <pricing-overview>` |
       :ref:`Writing your own price or tax handler <pricing-handler>`
     * **Checkout:**
-      :ref:`Orders <checkout-order>` |
-      :ref:`Shipping, payment and routers <checkout-router>`
+      :ref:`Introduction to orders <checkout-order>` |
+      :ref:`Delivery and partitioners <checkout-delivery>`
     * **Payments:**

@@ -3,3 +3,4 @@
 *.py[co]
 *~
 doc/_build
+website/*.db

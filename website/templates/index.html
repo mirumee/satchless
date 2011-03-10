@@ -2,10 +2,11 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 <head>
-	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
-	<title>Satchless &mdash; eCommerce framework built with Python &amp; Django</title>
-	<link rel="stylesheet" type="text/css" href="https://github.com/nathansmith/960-Grid-System/raw/master/code/css/960.css" />
-    <link rel="stylesheet" href="css/styles.css" />
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <meta name="description" content="Satchless is an eCommerce framework built on top of Python and Django. It provides all necessary tools to build full-blown online shop." />
+    <title>Satchless &mdash; eCommerce framework built with Python &amp; Django</title>
+    <link rel="stylesheet" type="text/css" href="https://github.com/nathansmith/960-Grid-System/raw/master/code/css/960.css" />
+    <link rel="stylesheet" href="{{ MEDIA_URL }}css/styles.css" />
 </head>
 <body>
 <div class="container_16">
@@ -15,11 +16,11 @@
         <p class="is_what">Less is mo'</p>
         <p class="links">
             <a href="https://github.com/mirumee/satchless">Source Code</a> | 
-            <a href="docs/">Documentation</a>
+            <a href="/static/doc/">Documentation</a>
         </p>
         <p class="founded">
             Founded by <a href="https://www.github.com/mirumee/">
-            <img src="img/mirumee-labs.png" alt="Mirumee Labs" /></a>
+            <img src="{{ MEDIA_URL }}img/mirumee-labs.png" alt="Mirumee Labs" /></a>
         </p>
     </div>
 </div>
@@ -36,7 +37,7 @@
                 <h3>Pony included</h3>
             </div>
             <div class="grid_6 omega">
-                <img src="img/chariot.png" alt="A fancy shopping cart" />
+                <img src="{{ MEDIA_URL }}img/chariot.png" alt="A fancy shopping cart" />
             </div>
         </div>
     </div>
@@ -72,7 +73,7 @@
     <div class="grid_12">
         <p>
         <a href="http://mirumee.com/">
-        <img src="img/we-build.png" alt="Mirumee &mdash; We build webapps. Better." />
+        <img src="{{ MEDIA_URL }}img/we-build.png" alt="Mirumee &mdash; We build webapps. Better." />
         </a>
         </p>
     </div>

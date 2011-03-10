@@ -43,13 +43,19 @@ h2 {
         #header .info p {
             float: left;
             margin: 0;
-            padding-top: 34px;
+            padding-top: 35px;
             margin: 0 25px;
         }
+            #header .info p.is_what {
+                margin-left: -25px;
+            }
+            #header .info p.links a {
+                margin: 0 6px;
+            }
             #header .info p.founded {
                 float: right;
                 margin-right: 0;
-                padding-top: 22px;
+                padding-top: 23px;
             }
 #banner {
     border-top: 1px solid #e3e3e3;
@@ -69,11 +75,16 @@ h2 {
         padding: 0 10px;
         color: #de1515;
     }
+        #banner h3.hint {
+            color: #AAA;
+            font-size: 12px;
+        }
 #body {
 }
     #body .text p {
         color: #646464;
         text-align: justify;
+        line-height: 1.4em;
     }
     #body .download {
         background-color: #f3f3f3;

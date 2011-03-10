@@ -24,39 +24,33 @@ h2 {
     font-size: 26px;
 }
 #header {
-    position: relative;
     overflow: visible;
+    height: 62px;
 }
     #header h1 {
-        float: left;
-        width: 89px;
-        margin: 0;
-        padding: 20px 20px 10px 20px;
+        width: 156px;
+        min-height: 46px;
+        margin: 0 0 0 -12px;
+        padding: 30px 0 0 0;
+        color: white;
         font-weight: normal;
         font-size: 22px;
-        background-color: #de1515;
-        color: white;
-    }
-    #header .thingie {
-        display: block;
-        position: absolute;
-        left: 0;
-        bottom: -17px;
-        height: 17px;
-        width: 129px;
+        text-align: center;
         background: transparent url('../img/title-thingie.png') 0 0 no-repeat;
     }
-    #header p {
-        float: left;
-        margin: 0;
-        padding-top: 26px;
-        margin: 0 30px;
+    #header .info {
     }
-        #header p.founded {
-            float: right;
-            margin-right: 0;
-            padding-top: 16px;
+        #header .info p {
+            float: left;
+            margin: 0;
+            padding-top: 34px;
+            margin: 0 25px;
         }
+            #header .info p.founded {
+                float: right;
+                margin-right: 0;
+                padding-top: 22px;
+            }
 #banner {
     border-top: 1px solid #e3e3e3;
     border-bottom: 1px solid #e3e3e3;

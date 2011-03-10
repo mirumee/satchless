@@ -17,8 +17,8 @@ following:
     * ask customer to select the delivery method for each of the groups,
     * if needed, ask about details for the methods chosen.
 
-Grouping order items
---------------------
+Partitioners: Grouping order items
+----------------------------------
 
 The code responsible for distributing items among delivery groups is called
 *partitioner*. It is usually a custom code designed for specific shop instance.
@@ -27,7 +27,7 @@ Satchless comes with one default partitoner,
 a single group.
 
 .. note::
-   A bookstore, for example, may use simple partitioner which puts dead-tree
+   A bookstore, for example, may use a custom partitioner which puts dead-tree
    books into one group for post shipping and ebooks into another group for
    immediate download.
 
@@ -42,8 +42,9 @@ returns a list of groups it decided to create, and a list of remaining items
 which is passed to the next partitioner. The only requirement is to have all
 the order items grouped after the queue has been finished.
 
-Querying for delivery types
----------------------------
+Providers: Querying for delivery types
+--------------------------------------
+.. _checkout-delivery-providers:
 
 After the items have been grouped, it's time to ask for available delivery
 methods for each of the groups. Another queue,

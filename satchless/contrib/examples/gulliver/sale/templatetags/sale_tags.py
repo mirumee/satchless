@@ -44,3 +44,10 @@ def product_in_category_tree_url(product, category=None):
     category = Category.objects.filter(products=product, lft__gte=category.lft,
                                        rght__lte=category.rght)[0]
     return product.get_url(category=category)
+
+@register.inclusion_tag("sale/snippets/price.html")
+def discount_price(product):
+    return {
+        'product': product
+    }
+

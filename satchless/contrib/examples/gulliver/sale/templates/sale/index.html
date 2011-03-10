@@ -53,6 +53,9 @@ $(function() {
                     {% endif %}
         </a>
         <h3><a href="{{ product_url }}" title="{{ product.name }}">{{ product.name }}</a></h3>
+        <div class="price">
+        {% discount_price product %}
+        </div>
     </div>
     {% cycle '' '' '<div class="clear"></div>' %}
                 {% endwith %}

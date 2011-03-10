@@ -87,6 +87,19 @@ body#store.sale {
         body#store.sale #sidebar li a.active {
             color: #ed1c24;
         }
+    body#store.sale #content {
+    }
+        body#store.sale #content #products .product {
+        }
+            body#store.sale #content #products .product .price {
+                font-size: 16px;
+                line-height: 16px;
+                margin: 15px 0 0;
+            }
+                body#store.sale #content #products .product .price .strike {
+                    font-size: 12px;
+                    text-decoration: line-through;
+                }
 body#store {
 }
     body#store.category #content .category,

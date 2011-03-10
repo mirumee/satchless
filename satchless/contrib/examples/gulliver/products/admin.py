@@ -107,8 +107,11 @@ class TShirtAdmin(ProductAdmin):
 class CategoryImageInline(ImageInline):
     model = models.CategoryImage
 
+class CategoryTranslationInline(satchless.product.admin.TranslationInline):
+    model = satchless.product.models.CategoryTranslation
+
 class CategoryWithImageAdmin(satchless.product.admin.CategoryAdmin):
-   inlines = [ CategoryImageInline ]
+   inlines = [ CategoryTranslationInline, CategoryImageInline ]
 
 admin.site.register(models.Cardigan, CardiganAdmin)
 admin.site.register(models.Dress, DressAdmin)

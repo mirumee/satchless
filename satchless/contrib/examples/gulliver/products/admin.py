@@ -47,41 +47,62 @@ class DiscountInline(admin.TabularInline):
 class CardiganVariantInline(admin.TabularInline):
     model = models.CardiganVariant
 
+class CardiganTranslationInline(satchless.product.admin.TranslationInline):
+    model = models.CardiganTranslation
+
 class CardiganAdmin(ProductAdmin):
-    inlines = [ CardiganVariantInline, ProductImageInline ]
+    inlines = [ CardiganTranslationInline, CardiganVariantInline, ProductImageInline ]
 
 class DressVariantInline(admin.TabularInline):
     model = models.DressVariant
 
+class DressTranslationInline(satchless.product.admin.TranslationInline):
+    model = models.DressTranslation
+
 class DressAdmin(ProductAdmin):
-    inlines = [ PriceInline, DiscountInline, DressVariantInline, ProductImageInline ]
+    inlines = [ DressTranslationInline, PriceInline, DiscountInline, DressVariantInline, ProductImageInline ]
+
+class HatTranslationInline(satchless.product.admin.TranslationInline):
+    model = models.HatTranslation
 
 class HatAdmin(ProductAdmin):
-    inlines = [ PriceInline, DiscountInline, ProductImageInline ]
+    inlines = [ HatTranslationInline, PriceInline, DiscountInline, ProductImageInline ]
 
 class JacketVariantInline(admin.TabularInline):
     model = models.JacketVariant
 
+class JacketTranslationInline(satchless.product.admin.TranslationInline):
+    model = models.JacketTranslation
+
 class JacketAdmin(ProductAdmin):
-    inlines = [ PriceInline, DiscountInline, JacketVariantInline, ProductImageInline ]
+    inlines = [ JacketTranslationInline, PriceInline, DiscountInline, JacketVariantInline, ProductImageInline ]
 
 class ShirtVariantInline(admin.TabularInline):
     model = models.ShirtVariant
 
+class ShirtTranslationInline(satchless.product.admin.TranslationInline):
+    model = models.ShirtTranslation
+
 class ShirtAdmin(ProductAdmin):
-    inlines = [ ShirtVariantInline, ProductImageInline ]
+    inlines = [ ShirtTranslationInline, ShirtVariantInline, ProductImageInline ]
 
 class TrousersVariantInline(admin.TabularInline):
     model = models.TrousersVariant
 
+class TrousersTranslationInline(satchless.product.admin.TranslationInline):
+    model = models.TrousersTranslation
+
 class TrousersAdmin(ProductAdmin):
-    inlines = [ TrousersVariantInline, ProductImageInline ]
+    inlines = [ TrousersTranslationInline, TrousersVariantInline, ProductImageInline ]
 
 class TShirtVariantInline(admin.TabularInline):
     model = models.TShirtVariant
 
+class TShirtTranslationInline(satchless.product.admin.TranslationInline):
+    model = models.TShirtTranslation
+
 class TShirtAdmin(ProductAdmin):
-    inlines = [ TShirtVariantInline, ProductImageInline ]
+    inlines = [ TShirtTranslationInline, TShirtVariantInline, ProductImageInline ]
 
 class CategoryImageInline(ImageInline):
     model = models.CategoryImage

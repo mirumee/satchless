@@ -14,6 +14,7 @@
 
 <hr />
 
+{% if formset.forms %}
 <form method="post">
     {% csrf_token %}
     {{ formset.management_form }}
@@ -101,6 +102,11 @@
         </tfoot>
 {% endcomment %}
     </table>
-    </form>
-    <a href="{% url satchless-checkout %}">{% trans "Check out" %}</a>
+</form>
+{# <a href="{% url satchless-checkout %}">{% trans "Check out" %}</a> #}
+{% else %}
+<p class="no-items">
+    {% trans "Your shopping bag is empty." %}
+</p>
+{% endif %}
 {% endblock %}

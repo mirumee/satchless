@@ -5,8 +5,9 @@ from django.db import models
 from django.utils.translation import ugettext as _
 from django.db.models import permalink
 
-from satchless.product.models import ( Product, ProductAbstract,
+from satchless.product.models import ( ProductAbstract, DescribedModelTranslation,
         Variant, ProductAbstractTranslation, Category )
+import satchless.product.models
 from satchless.image.models import Image
 
 class CategoryImage(Image):
@@ -15,7 +16,7 @@ class CategoryImage(Image):
         verbose_name_plural = _("Category image")
 
 class ProductImage(Image):
-    product = models.ForeignKey(Product, related_name="images")
+    product = models.ForeignKey(satchless.product.models.Product, related_name="images")
     caption = models.CharField(_("Caption"), max_length=128, blank=True)
     order = models.PositiveIntegerField(blank=True)
 
@@ -30,11 +31,18 @@ class ProductImage(Image):
             self.order = self.product.images.aggregate(max_order=models.Max("order"))['max_order'] or 0
         return super(ProductImage, self).save(*args, **kwargs)
 
-class ProductWithImage(ProductAbstract):
+class Product(ProductAbstract):
     manufacture = models.TextField(_("Manufacture"), default='', blank=True)
     main_image = models.ForeignKey(ProductImage, null=True, blank=True, on_delete=models.SET_NULL,
             help_text=_("Main product image (first image by default)"))
+    translated_fields = ('name', 'description', 'meta_description', 'manufacture')
+    translation_set = 'translations'
 
+    class Meta:
+        abstract = True
+
+class ProductTranslation(DescribedModelTranslation):
+    manufacture = models.TextField(_("Manufacture"), default='', blank=True)
     class Meta:
         abstract = True
 
@@ -60,10 +68,13 @@ class ColoredVariant(Variant):
     class Meta:
         abstract = True
 
-class Cardigan(ProductWithImage):
+class Cardigan(Product):
     class Meta:
         verbose_name = _('Cardigan')
         verbose_name_plural = _('Cardigans')
+
+class CardiganTranslation(ProductTranslation):
+    product = models.ForeignKey(Cardigan, related_name='translation')
 
 class CardiganVariant(ColoredVariant):
     product = models.ForeignKey(Cardigan, related_name='variants')
@@ -73,10 +84,13 @@ class CardiganVariant(ColoredVariant):
     def __unicode__(self):
         return '%s / %s' % (self.get_color_display(), self.get_size_display())
 
-class Dress(ProductWithImage):
+class Dress(Product):
     class Meta:
         verbose_name = _('Dress')
         verbose_name_plural = _('Dresses')
+
+class DressTranslation(ProductTranslation):
+    product = models.ForeignKey(Dress, related_name='translations')
 
 class DressVariant(ColoredVariant):
     product = models.ForeignKey(Dress, related_name='variants')
@@ -86,10 +100,13 @@ class DressVariant(ColoredVariant):
     def __unicode__(self):
         return '%s / %s' % (self.get_color_display(), self.get_size_display())
 
-class Hat(ProductWithImage):
+class Hat(Product):
     class Meta:
         verbose_name = _('Hat')
         verbose_name_plural = _('Hats')
+
+class HatTranslation(ProductTranslation):
+    product = models.ForeignKey(Hat, related_name='translations')
 
 class HatVariant(Variant):
     product = models.ForeignKey(Hat, related_name='variants')
@@ -99,10 +116,13 @@ def _create_empty_variant(sender, instance, created, **kwargs):
         instance.variants.create()
 models.signals.post_save.connect(_create_empty_variant, sender=Hat)
 
-class Jacket(ProductWithImage):
+class Jacket(Product):
     class Meta:
         verbose_name = _('Jacket')
         verbose_name_plural = _('Jackets')
+
+class JacketTranslation(ProductTranslation):
+    product = models.ForeignKey(Jacket, related_name='translations')
 
 class JacketVariant(ColoredVariant):
     product = models.ForeignKey(Jacket, related_name='variants')
@@ -112,10 +132,13 @@ class JacketVariant(ColoredVariant):
     def __unicode__(self):
         return '%s / %s' % (self.get_color_display(), self.get_size_display())
 
-class Shirt(ProductWithImage):
+class Shirt(Product):
     class Meta:
         verbose_name = _('Shirt')
         verbose_name_plural = _('Shirts')
+
+class ShirtTranslation(ProductTranslation):
+    product = models.ForeignKey(Shirt, related_name='translations')
 
 class ShirtVariant(ColoredVariant):
     product = models.ForeignKey(Shirt, related_name='variants')
@@ -125,20 +148,26 @@ class ShirtVariant(ColoredVariant):
     def __unicode__(self):
         return '%s / %s' % (self.get_color_display(), self.get_size_display())
 
-class TShirt(ProductWithImage):
+class TShirt(Product):
     class Meta:
         verbose_name = _('TShirt')
         verbose_name_plural = _('TShirts')
+
+class TShirtTranslation(ProductTranslation):
+    product = models.ForeignKey(TShirt, related_name='translations')
 
 class TShirtVariant(ColoredVariant):
     product = models.ForeignKey(TShirt, related_name='variants')
     SIZE_CHOICES = (('S', 'S'), ('XS', 'XS'), ('M', 'M'), ('L', 'L'), ('XL', 'XL'))
     size = models.CharField(choices=SIZE_CHOICES, max_length=2)
 
-class Trousers(ProductWithImage):
+class Trousers(Product):
     class Meta:
         verbose_name = _('Trousers')
         verbose_name_plural = _('Trousers')
+
+class TrousersTranslation(ProductTranslation):
+    product = models.ForeignKey(Trousers, related_name='translations')
 
 class TrousersVariant(ColoredVariant):
     product = models.ForeignKey(Trousers, related_name='variants')

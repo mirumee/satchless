@@ -94,7 +94,7 @@ $(function(){
         <div class="description">{{ product.description|linebreaks }}</div>
 
         {% if product.manufacture %}
-        <p class="manufacture">Manufactured in {{ product.manufacture }}</p>
+        <p class="manufacture">{{ product.manufacture }}</p>
         {% endif %}
         <div class="size-chart"><a href="#" onclick="$('#size-chart').slideToggle(); return false">View Size Chart</a></div>
     </div>

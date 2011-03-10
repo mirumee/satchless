@@ -16,10 +16,7 @@ urlpatterns = patterns('',
     url(r'^order/', include('satchless.order.urls')),
     url(r'^product-set/', include('satchless.contrib.productset.urls')),
     url(r'^sale/', include('sale.urls')),
-
-    # Uncomment the admin/doc line below and add 'django.contrib.admindocs' 
-    # to INSTALLED_APPS to enable admin documentation:
-    # (r'^admin/doc/', include('django.contrib.admindocs.urls')),
+    url(r'^localeurl/', include('localeurl.urls')),
 
     url(r'^grappelli/', include('grappelli.urls')),
     url(r'^admin/', include(admin.site.urls)),

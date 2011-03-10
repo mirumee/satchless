@@ -38,8 +38,13 @@ TIME_ZONE = 'Europe/Warsaw'
 LANGUAGE_CODE = 'en'
 LANGUAGES = (
     ('en', u"English"),
+    ('pl', u"Polski"),
 )
+
 PREFIX_DEFAULT_LOCALE = True
+LOCALE_INDEPENDENT_PATHS = (
+    re.compile('^/admin'),
+)
 
 SITE_ID = 1
 
@@ -58,7 +63,7 @@ MEDIA_ROOT = os.path.join(PROJECT_ROOT, 'media')
 # URL that handles the media served from MEDIA_ROOT. Make sure to use a
 # trailing slash if there is a path component (optional in other cases).
 # Examples: "http://media.lawrence.com", "http://example.com/media/"
-MEDIA_URL = '/'
+MEDIA_URL = '/media/'
 STATIC_URL = '/static/'
 
 # URL prefix for admin media -- CSS, JavaScript and images. Make sure to use a
@@ -103,7 +108,6 @@ TEMPLATE_CONTEXT_PROCESSORS = (
     'django.core.context_processors.static',
     'django.core.context_processors.request',
     'django.contrib.messages.context_processors.messages',
-#    'grappelli.context_processors.admin_template_path',
     'mothertongue.context_processors.router',
 )
 STATICFILES_DIRS = (
@@ -112,6 +116,7 @@ STATICFILES_DIRS = (
 
 
 INSTALLED_APPS = (
+    'localeurl',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
@@ -119,7 +124,6 @@ INSTALLED_APPS = (
     'django.contrib.messages',
     'django.contrib.staticfiles',
 
-    'localeurl',
     'mothertongue',
     'grappelli',
     'django.contrib.admin',
@@ -127,8 +131,6 @@ INSTALLED_APPS = (
     'countries',
     'satchless.product',
     'satchless.image',
-    #'satchless.contrib.examples.dummy',
-    #'satchless.contrib.examples.parrot',
     #'satchless.contrib.productset',
     #'satchless.contact',
     'satchless.cart',
@@ -192,12 +194,7 @@ SATCHLESS_PRODUCT_VIEW_HANDLERS = [
 #    'satchless.contrib.delivery.simplepost.providers.PostDeliveryProvider',
 #]
 #
-#INTERNAL_IPS = ['127.0.0.1']
-#
-#try:
-#    execfile(os.path.join(PROJECT_ROOT, 'local_settings.py'))
-#except IOError:
-#    pass
+INTERNAL_IPS = ['127.0.0.1']
 
 try:
     execfile(os.path.join(PROJECT_ROOT, 'local_settings.py'))

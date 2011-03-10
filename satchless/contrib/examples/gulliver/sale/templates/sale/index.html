@@ -47,12 +47,14 @@ $(function() {
                 {% with product.get_subtype_instance as product %}
                 {% with product|product_in_category_tree_url:category as product_url %}
     <div class="product grid_1 {% cycle 'alpha' '' 'omega' %}">
-        <a href="{{ product_url }}" class="product-photo">
+        <div class="placeholder">
+            <a href="{{ product_url }}" class="product-photo">
                     {% if product.main_image %}
-            <img src="{{ product.main_image|at_size:'category-product' }}" alt="{{ product.name }} image" />
+                <img src="{{ product.main_image|at_size:'category-product' }}" alt="{{ product.name }} image" />
                     {% endif %}
-        </a>
-        <h3><a href="{{ product_url }}" title="{{ product.name }}">{{ product.name }}</a></h3>
+            </a>
+            <h3><a href="{{ product_url }}" title="{{ product.name }}">{{ product.name }}</a></h3>
+        </div>
         <div class="price">
         {% discount_price product %}
         </div>

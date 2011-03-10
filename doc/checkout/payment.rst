@@ -18,7 +18,7 @@ for available payment methods and for details forms, much in the way the
 :ref:`delivery providers <checkout-delivery-providers>` are asked.
 
 Confirmation form
----------------------
+.................
 
 Every payment provider should implement a confirmation form, which includes
 all the order's details and additional info ready to be processed by the
@@ -32,3 +32,12 @@ payment gateway.
 .. note::
    Satchless allows the confirmation form to carry information about the method
    used to send the data, so even ``GET`` requests could be handled there.
+
+Example of payments provider
+............................
+
+In ``satchless.contrib.payment.django_payments_provider`` you may find an
+example, working implementation of a paymnt provider, using `django-payments`_
+as a backend.
+
+.. _`django-payments`: https://github.com/mirumee/django-payments

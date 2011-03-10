@@ -92,11 +92,12 @@ h2 {
             color: #646464;
         }
         #body .download .get_it {
+            display: block;
             background: #2b303d url('../img/download-arrow.png') 14px 10px no-repeat;
             border-radius: 5px;
             -moz-border-radius: 5px;
             -webkit-border-radius: 5px;
-            margin: 10px 0;
+            margin: 20px 0 10px 0;
             padding: 8px 20px 8px 40px;
             color: white;
             text-decoration: none;

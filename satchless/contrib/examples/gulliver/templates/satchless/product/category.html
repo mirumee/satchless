@@ -51,7 +51,7 @@ $(function() {
 </div>
 {% endif %}
 
-<div id="content" class="grid_3">
+<div id="products" class="grid_3">
     {% with category.products.all as products %}
         {% autopaginate products 21 %}
         {% if products %}

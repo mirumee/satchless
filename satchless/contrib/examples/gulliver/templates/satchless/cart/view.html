@@ -7,6 +7,7 @@
 {% load satchless_image %}
 
 {% block title %}{% trans "Shopping Bag" %} || {{ block.super }}{% endblock %}
+{% block body-class %}{{ block.super }} cart{% endblock %}
 
 {% block content-grid %}
 <h1>{% trans "Shopping Bag" %}</h1>

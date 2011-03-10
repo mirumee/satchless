@@ -56,9 +56,14 @@ hr {
             #top-bar ul.menu li a {
                 display: block;
             }
-            #store.cat-womens #top-bar ul.menu li.womens a,
-            #store.cat-other-brands #top-bar ul.menu li.other-brands a,
-            #store.cat-mens #top-bar ul.menu li.mens a {
+            #store.cart #top-bar a#cart,
+            #store.sale #top-bar ul.menu li.sale a,
+            #store.product.cat-womens #top-bar ul.menu li.womens a,
+            #store.product.cat-other-brands #top-bar ul.menu li.other-brands a,
+            #store.product.cat-mens #top-bar ul.menu li.mens a,
+            #store.category.cat-womens #top-bar ul.menu li.womens a,
+            #store.category.cat-other-brands #top-bar ul.menu li.other-brands a,
+            #store.category.cat-mens #top-bar ul.menu li.mens a {
                 color: #ed1c24;
             }
 #messages {
@@ -75,10 +80,17 @@ hr {
     #messages .success {
         background: #e9fbd8;
     }
-
+body#store.sale {
+}
+    body#store.sale #sidebar {
+    }
+        body#store.sale #sidebar li a.active {
+            color: #ed1c24;
+        }
 body#store {
 }
-    body#store.category #content .category {
+    body#store.category #content .category,
+    body#store.category #content .product {
         text-align: center;
     }
         body#store.category #content .category h3 {
@@ -88,6 +100,9 @@ body#store {
             padding: 0;
         }
     body#store #sidebar {
+    }
+    body#store #sidebar.placeholder {
+        height: 1px;
     }
         body#store #sidebar .categories {
             line-height: 18px;
@@ -202,11 +217,17 @@ body#store.product {
             line-height: 18px;
             margin: 0 0 15px;
         }
-    body#store.product #main-photo .zoom-hint {
-        font-size: 8pt;
-        margin-top: 10px;
-        text-align: center;
+    body#store.product #main-photo {
     }
+        body#store.product #main-photo img {
+            display: block;
+            margin: 0 auto;
+        }
+        body#store.product #main-photo .zoom-hint {
+            font-size: 8pt;
+            margin-top: 10px;
+            text-align: center;
+        }
     body#store.product .product {
         padding: 0;
         text-align: left;
@@ -246,6 +267,29 @@ body#store.product {
                 width: 155px;
             }
             body#store.product .product h3 a:hover {
+                color: #000;
+            }
+#store #content #products {
+}
+    #store #content #products .product {
+        text-align: center;
+    }
+        #store #content #products .product h3 {
+            background: #fff;
+            font-size: 14px;
+            font-weight: normal;
+            line-height: 16px;
+            position: absolute;
+            right: 0;
+            text-align: left;
+            top: 80px;
+        }
+            #store #content #products .product h3 a {
+                display: block;
+                padding: 4px 4px 8px;
+                width: 155px;
+            }
+            #store #content #products .product h3 a:hover {
                 color: #000;
             }
 body#store.checkout {

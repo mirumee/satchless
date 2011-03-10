@@ -16,16 +16,16 @@
         <div class="grid_3">
             <ul class="menu">
                 <li class="mens">
-                    <a href="{% url satchless-product-category '' 'mens' %}">Mens</a>
+                    <a href="{% url satchless-product-category 'mens' %}">Mens</a>
                 </li>
                 <li class="womens">
-                    <a href="{% url satchless-product-category '' 'womens' %}">Womens</a>
+                    <a href="{% url satchless-product-category 'womens' %}">Womens</a>
                 </li>
                 <li class="other-brands">
-                    <a href="{% url satchless-product-category '' 'other-brands' %}">Other Brands</a>
+                    <a href="{% url satchless-product-category 'other-brands' %}">Other Brands</a>
                 </li>
-                <li class="other-brands">
-                    <a href="{% url sale-index %}">Sale</a>
+                <li class="sale">
+                    <a href="{% url sale %}">Sale</a>
                 </li>
                 {% comment %}
                 <li class="newsletter"><a href="{% url newsletter-subscribe %}">Newsletter</a></li>
@@ -47,7 +47,7 @@
                 <input class="submit" type="submit" value="Search" />
             </form>
 {% endcomment %}
-            <a id="shopping-cart" href="{% url satchless-cart-view %}">{% trans "Shopping Bag" %}{% if cart_count %} (<span>{{ cart_count|floatformat }}</span>){% endif %}</a>
+            <a id="cart" href="{% url satchless-cart-view %}">{% trans "Shopping Bag" %}{% if cart_count %} (<span>{{ cart_count|floatformat }}</span>){% endif %}</a>
         </div>
         <div class="clear"></div>
         <div class="grid_4">

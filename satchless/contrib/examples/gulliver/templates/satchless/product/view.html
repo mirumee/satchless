@@ -8,7 +8,7 @@
 
 {% block title %}Oliver Spencer &mdash; {{ product.name }}{% endblock %}
 
-{% block body-class %}{% if path %}cat-{{ path.0.slug }} {% endif %}product{% endblock %}
+{% block body-class %}{{ block.super }} {% if path %}cat-{{ path.0.slug }} {% endif %}product{% endblock %}
 
 {% block extra-body %}
 {{ block.super }}
@@ -64,7 +64,7 @@ $(function(){
 {% endblock %}
 
 {% block content-grid %}
-<div id="sidebar" class="grid_1">
+<div id="sidebar" class="grid_1 {% if not path %}placeholder{% endif %}">
 {% if path %}
     {% with path.0.get_children as categories %}
     <ul class="categories">

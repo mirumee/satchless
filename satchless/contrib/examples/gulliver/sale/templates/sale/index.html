@@ -1,10 +1,10 @@
-{% extends "satchless/base.html" %}
+{% extends "sale/base.html" %}
 {% load pagination_tags %}
 {% load product_url %}
+{% load sale_tags %}
 {% load satchless_image %}
 
-{% block body-class %}sale {% if path %} cat-{{ path.0.slug }}{% endif %}{% endblock %}
-
+{% block body-class %}{{ block.super }}{% endblock %}
 {% block extra-body %}
 {{ block.super }}
 <script>
@@ -23,21 +23,29 @@ $(function() {
 <div id="sidebar" class="grid_1">
     <ul class="categories">
 {% for cat in categories %}
-        <li><a href="{{ cat.get_url }}">{{ cat.name }}</a></li>
+        <li>
+            <a class="{% if cat == category %}active{% endif %}" href="{{ cat|category_in_sale_url }}">{{ cat.name }}</a>
+    {% if cat == path.0 %}
+        {% with cat|subcategories_in_sale as subcategories %}
+            <ul>
+            {% for c in cat|subcategories_in_sale %}
+                <li><a class="{% if c == category %}active{% endif %}" href="{{ c|category_in_sale_url }}">{{ c.name }}</a></li>
+            {% endfor %}
+            </ul>
+        {% endwith %}
+    {% endif %}
+        </li>
 {% endfor %}
     </ul>
 </div>
-{% endblock %}
 
-{% comment %}
-<div id="content" class="grid_3">
-    {% with category.products.all as products %}
+<div id="products" class="grid_3">
         {% autopaginate products 21 %}
         {% if products %}
     {% paginate %}
             {% for product in products %}
                 {% with product.get_subtype_instance as product %}
-                {% with product|product_in_category_url:category as product_url %}
+                {% with product|product_in_category_tree_url:category as product_url %}
     <div class="product grid_1 {% cycle 'alpha' '' 'omega' %}">
         <a href="{{ product_url }}" class="product-photo">
                     {% if product.main_image %}
@@ -55,9 +63,6 @@ $(function() {
 
         {% endif %}
     <div class="clear"></div>
-    {% endwith %}
 </div>
-{% endif %}
 <div class="clear"></div>
 {% endblock %}
-{% endcomment %}

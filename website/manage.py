@@ -1,4 +1,9 @@
 #!/usr/bin/env python
+from os.path import dirname, join
+import sys
+
+sys.path.insert(0, join(dirname(__file__), "external"))
+
 from django.core.management import execute_manager
 try:
     import settings # Assumed to be in the same directory.

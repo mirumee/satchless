@@ -56,5 +56,5 @@ Customizing your shop
       :ref:`Writing your own price or tax handler <pricing-handler>`
     * **Checkout:**
       :ref:`Introduction to orders <checkout-order>` |
-      :ref:`Delivery and partitioners <checkout-delivery>`
-    * **Payments:**
+      :ref:`Delivery: partitioners and providers <checkout-delivery>` |
+      :ref:`Payment <checkout-payment>`

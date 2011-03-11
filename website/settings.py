@@ -99,6 +99,14 @@ INSTALLED_APPS = (
     # 'django.contrib.admindocs',
 )
 
+TEMPLATE_CONTEXT_PROCESSORS = (
+    'django.contrib.auth.context_processors.auth',
+    'django.core.context_processors.debug',
+    'django.core.context_processors.i18n',
+    'django.core.context_processors.media',
+    'ga_processor.google_analytics',
+)
+
 try:
     execfile(os.path.join(PROJECT_PATH, 'custom_settings.py'))
 except IOError:

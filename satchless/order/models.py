@@ -46,7 +46,7 @@ class OrderManager(models.Manager):
                 for item in group:
                     price = item.get_unit_price()
                     delivery_group.items.create(product_variant=item.variant,
-                                                product_name=unicode(item.variant),
+                                                product_name=unicode(item.variant.get_subtype_instance()),
                                                 quantity=item.quantity,
                                                 unit_price_net=price.net,
                                                 unit_price_gross=price.gross)

@@ -86,6 +86,15 @@ h2 {
         text-align: justify;
         line-height: 1.4em;
     }
+    #body .sidebar {
+        margin-top: 15px;
+        padding: 10px 15px 15px 15px;
+    }
+        #body .sidebar h2 {
+            font-size: 18px;
+            margin-top: 0;
+            margin-bottom: 10px;
+        }
     #body .download {
         background-color: #f3f3f3;
         border: 1px solid #e3e3e3;
@@ -96,6 +105,7 @@ h2 {
         padding: 10px 15px 15px 15px;
     }
         #body .download h2 {
+            font-size: 18px;
             margin-top: 0;
             margin-bottom: 10px;
         }
@@ -118,4 +128,10 @@ h2 {
 }
     #footer .founded {
         text-align: right;
+        color: #777;
+        font-size: 12px;
     }
+.hint {
+    color: #777;
+    font-size: 12px;
+}

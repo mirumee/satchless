@@ -432,6 +432,9 @@ body#store.checkout {
                     padding: 10px;
                     vertical-align: middle;
                 }
+                body#store.checkout #content table.cart-contents .numerical {
+                    text-align: right;
+                }
                 body#store.checkout #content table.cart-contents td.image {
                     padding-left: 0;
                 }

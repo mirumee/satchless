@@ -63,7 +63,7 @@ $(function(){
 
 {% endblock %}
 
-{% block content-grid %}
+{% block content %}
 <div id="sidebar" class="grid_1 {% if not path %}placeholder{% endif %}">
 {% if path %}
     {% with path.0.get_children as categories %}

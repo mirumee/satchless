@@ -18,7 +18,7 @@ $(function() {
 </script>
 {% endblock %}
 
-{% block content-grid %}
+{% block content %}
 {% if category %}
     {% if category.is_root_node %}
         {% with category.get_children as subcategories %}

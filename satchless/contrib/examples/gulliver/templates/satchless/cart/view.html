@@ -9,7 +9,7 @@
 {% block title %}{% trans "Shopping Bag" %} || {{ block.super }}{% endblock %}
 {% block body-class %}{{ block.super }} cart{% endblock %}
 
-{% block content-grid %}
+{% block content %}
 <h1>{% trans "Shopping Bag" %}</h1>
 
 <hr />
@@ -103,7 +103,7 @@
 {% endcomment %}
     </table>
 </form>
-{# <a href="{% url satchless-checkout %}">{% trans "Check out" %}</a> #}
+<a href="{% url satchless-checkout %}">{% trans "Check out" %}</a>
 {% else %}
 <p class="no-items">
     {% trans "Your shopping bag is empty." %}

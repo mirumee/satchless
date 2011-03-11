@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: Satchless\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2010-11-15 14:03+0100\n"
-"PO-Revision-Date: 2010-11-15 14:18+0100\n"
+"PO-Revision-Date: 2011-03-11 12:45+0100\n"
 "Last-Translator: Michał Sałaban <michal@salaban.info>\n"
 "Language-Team: Mirumee software\n"
 "Language: \n"
@@ -28,11 +28,11 @@ msgstr "Ustaw jako domyślny adres dostawy"
 
 #: models.py:8
 msgid "short alias"
-msgstr ""
+msgstr "nazwa skrócona"
 
 #: models.py:9
 msgid "User-defined alias which identifies this address"
-msgstr ""
+msgstr "Zdefiniowany przez użytkownika skrót identyfikujący ten adres"
 
 #: models.py:10
 msgid "full person name"

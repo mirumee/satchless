@@ -5,7 +5,7 @@ from satchless.delivery.models import PhysicalShippingVariant
 from mothertongue.models import MothertongueModelTranslate
 
 class PostShippingType(MothertongueModelTranslate):
-    typ = models.SlugField(max_length=50)
+    typ = models.SlugField(max_length=50, unique=True)
     name = models.CharField(_('name'), max_length=128)
     price = models.DecimalField(_('price'), max_digits=10, decimal_places=2)
     translated_fields = ('name',)

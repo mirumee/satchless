@@ -1,3 +1,6 @@
 from django.utils.translation import ugettext_lazy as _
+from .providers import PostDeliveryProvider
 
-_('Simplepost')
+_('Simple post')
+
+provider = PostDeliveryProvider()

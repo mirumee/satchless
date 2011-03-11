@@ -11,9 +11,9 @@
         {% endif %}
         <tr>
             <th>{% trans "Item" %}</th>
-            <th>{% trans "Qty." %}</th>
-            <th>{% trans "Unit price" %}</th>
-            <th>{% trans "Price" %}</th>
+            <th class="numerical">{% trans "Qty." %}</th>
+            <th class="numerical">{% trans "Unit price" %}</th>
+            <th class="numerical">{% trans "Price" %}</th>
         </tr>
     </thead>
     <tfoot>
@@ -31,12 +31,21 @@
     </tfoot>
     <tbody>
         {% for item in group.items.all %}
+        {% with item.product_variant.get_subtype_instance.product as product %}
         <tr>
-            <td>{{ item.product_name }}</td>
+            <td>
+                {% url satchless-product-product product.slug product.pk as product_url %}
+                {% if product_url %}
+                <a href="{{ product_url }}">{{ item.product_name }}</a>
+                {% else %}
+                {{ item.product_name }}
+                {% endif %}
+            </td>
             <td class="numerical">{{ item.quantity }}</td>
-            <td><span class="gross">{{ item.unit_price_gross|floatformat:2 }}</span></td>
+            <td class="numerical"><span class="gross">{{ item.unit_price_gross|floatformat:2 }}</span></td>
             <td class="numerical">{{ item.price|gross|floatformat:2 }}</td>
         </tr>
+        {% endwith %}
         {% endfor %}
     </tbody>
 </table>

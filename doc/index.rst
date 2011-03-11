@@ -9,10 +9,10 @@ A shop for perfectionists with deadlines and coding standards.
 Overview
 ========
 
-Satchless is a high level framework which provides parts to build an online
+Satchless is a high level framework that provides building blocks for an online
 shop. It's based on `Django`_ web application framework and written in
 `Python`_ language. The aim of this project is to make each module
-independent and extensible. Using Satchless you will be able to build quickly:
+independent and extensible. Using Satchless you will be able to quickly build:
 
     * A product catalog
     * A catalog with wishlists
@@ -25,13 +25,13 @@ independent and extensible. Using Satchless you will be able to build quickly:
 .. _`Python`: http://python.org/
 
 .. note::
-   Satchless is not a turn-key solution for online shop and is not aimed to be.
-   It should be considered as a set of advanced, loosely coupled bricks which
-   would be turned into a working shop by a web developer.
+   Satchless is not a turn-key solution for online shops and is not meant to be
+   one. It should be considered as a set of advanced, loosely coupled bricks
+   which can be turned into a working shop by a web developer.
 
-**Warning:** Currently Satchless is in early stage of development. It is
+**Warning:** Currently Satchless is in an early stage of development. It is
 already possible to build a shop on top of it, but still you should be prepared
-for radical and backwards incompatible changes in the code.
+for radical and backward-incompatible changes to the code.
 
 First steps
 ===========

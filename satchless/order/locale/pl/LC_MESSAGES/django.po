@@ -5,107 +5,110 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: Satchless\n"
+"Project-Id-Version: satchless\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2011-03-11 17:04+0100\n"
-"PO-Revision-Date: 2011-02-28 12:22+0100\n"
+"PO-Revision-Date: 2011-03-11 17:10+0100\n"
 "Last-Translator: Michał Sałaban <michal@salaban.info>\n"
-"Language-Team: Mirumee Software <devel@satchless.com>\n"
+"Language-Team: Mirumee Software <satchless@mirumee.com>\n"
 "Language: \n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Poedit-Language: English\n"
+"Plural-Forms: nplurals=3; plural=(n==1 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2)\n"
+"X-Poedit-Language: Polish\n"
 
-#: forms.py:10 templates/satchless/order/checkout.html:3
+#: forms.py:10
+#: templates/satchless/order/checkout.html:3
 #: templates/satchless/order/delivery_details.html:12
 msgid "Delivery method"
-msgstr ""
+msgstr "Sposób dostawy"
 
-#: forms.py:67 templates/satchless/order/snippets/order_view.html:46
+#: forms.py:67
+#: templates/satchless/order/snippets/order_view.html:46
 msgid "Payment method"
-msgstr ""
+msgstr "Sposób płatności"
 
 #: models.py:75
 msgid "undergoing checkout"
-msgstr ""
+msgstr "w trakcie zamawiania"
 
 #: models.py:76
 msgid "waiting for payment"
-msgstr ""
+msgstr "oczekuje na płatność"
 
 #: models.py:77
 msgid "paid"
-msgstr ""
+msgstr "opłacone"
 
 #: models.py:78
 msgid "shipped"
-msgstr ""
+msgstr "dostarczone"
 
 #: models.py:79
 msgid "cancelled"
-msgstr ""
+msgstr "anulowane"
 
 #: models.py:82
 msgid "order status"
-msgstr ""
+msgstr "stan zamówienia"
 
 #: models.py:89
 msgid "full person name"
-msgstr ""
+msgstr "imię i nazwisko"
 
 #: models.py:91
 msgid "company name"
-msgstr ""
+msgstr "nazwa firmy"
 
 #: models.py:93
 msgid "street address 1"
-msgstr ""
+msgstr "adres 1"
 
 #: models.py:95
 msgid "street address 2"
-msgstr ""
+msgstr "adres 2"
 
 #: models.py:97
 msgid "city"
-msgstr ""
+msgstr "miasto"
 
 #: models.py:98
 msgid "postal code"
-msgstr ""
+msgstr "kod pocztowy"
 
 #: models.py:102
 msgid "tax ID"
-msgstr ""
+msgstr "NIP/VAT ID"
 
 #: models.py:103
 msgid "phone number"
-msgstr ""
+msgstr "numer telefonu"
 
 #: models.py:109
 #, python-format
 msgid "Order #%d"
-msgstr ""
+msgstr "Zamówienie #%d"
 
 #: models.py:126
 msgid "order (business)"
-msgstr "order"
+msgstr "zamówienie"
 
 #: models.py:127
 msgid "orders (business)"
-msgstr "orders"
+msgstr "zamówienie"
 
 #: models.py:146
 msgid "quantity"
-msgstr ""
+msgstr "ilość"
 
 #: models.py:148
 msgid "unit price (net)"
-msgstr ""
+msgstr "cena jednostkowa (netto)"
 
 #: models.py:150
 msgid "unit price (gross)"
-msgstr ""
+msgstr "cena jednostkowa (brutto)"
 
 #: templates/satchless/order/base.html:3
 #: templates/satchless/order/checkout.html:6
@@ -114,9 +117,10 @@ msgstr ""
 #: templates/satchless/order/delivery_details.html:6
 #: templates/satchless/order/payment_choice.html:6
 #: templates/satchless/order/payment_details.html:6
-#: templates/satchless/order/view.html:3 templates/satchless/order/view.html:5
+#: templates/satchless/order/view.html:3
+#: templates/satchless/order/view.html:5
 msgid "Order (business)"
-msgstr "Order"
+msgstr "Zamówienie"
 
 #: templates/satchless/order/checkout.html:14
 msgid "Delivery group"
@@ -127,51 +131,52 @@ msgstr ""
 #: templates/satchless/order/payment_choice.html:14
 #: templates/satchless/order/payment_details.html:14
 msgid "Proceed"
-msgstr ""
+msgstr "Kontynuuj"
 
 #: templates/satchless/order/checkout.html:24
 msgid ""
 "\n"
-"    Profound emptiness is gazing at you from the bottom of the cart. You "
-"turn back swiftly and\n"
+"    Profound emptiness is gazing at you from the bottom of the cart. You turn back swiftly and\n"
 "    <a href=\"/\">continue shopping</a>.\n"
 "    "
 msgstr ""
+"\n"
+"Bezdenna pustka spogląda na ciebie z głębi koszyka. Obracasz się na pięcie i <a href=\"/\">kontynuujesz zakupy</a>."
 
 #: templates/satchless/order/confirmation.html:3
 #: templates/satchless/order/confirmation.html:9
 msgid "Confirmation"
-msgstr ""
+msgstr "Potwierdzenie"
 
 #: templates/satchless/order/confirmation.html:10
 #: templates/satchless/order/payment_choice.html:10
 #: templates/satchless/order/payment_details.html:10
 msgid "Order #"
-msgstr ""
+msgstr "Zamówienie #"
 
 #: templates/satchless/order/confirmation.html:14
 msgid "Confirm"
-msgstr ""
+msgstr "Potwierdź"
 
 #: templates/satchless/order/delivery_details.html:3
 #: templates/satchless/order/delivery_details.html:9
 #: templates/satchless/order/delivery_details.html:17
 msgid "Delivery details"
-msgstr ""
+msgstr "Status dostawy"
 
 #: templates/satchless/order/delivery_details.html:13
 msgid "Items deliverd using this method"
-msgstr ""
+msgstr "Artykuły dostarczane tą metodą"
 
 #: templates/satchless/order/payment_choice.html:3
 #: templates/satchless/order/payment_choice.html:9
 msgid "Payment"
-msgstr ""
+msgstr "Płatność"
 
 #: templates/satchless/order/payment_details.html:3
 #: templates/satchless/order/payment_details.html:9
 msgid "Payment details"
-msgstr ""
+msgstr "Szczegóły płatnści"
 
 #: templates/satchless/order/snippets/order_view.html:8
 #, python-format
@@ -180,24 +185,25 @@ msgstr ""
 
 #: templates/satchless/order/snippets/order_view.html:13
 msgid "Item"
-msgstr ""
+msgstr "Artykuł"
 
 #: templates/satchless/order/snippets/order_view.html:14
 msgid "Qty."
-msgstr ""
+msgstr "Ilość"
 
 #: templates/satchless/order/snippets/order_view.html:15
 msgid "Unit price"
-msgstr ""
+msgstr "Cena jednostkowa"
 
 #: templates/satchless/order/snippets/order_view.html:16
 msgid "Price"
-msgstr ""
+msgstr "Cena"
 
 #: templates/satchless/order/snippets/order_view.html:22
 msgid "Delivery"
-msgstr ""
+msgstr "Dostawa"
 
 #: templates/satchless/order/snippets/order_view.html:28
 msgid "Total"
-msgstr ""
+msgstr "Razem"
+

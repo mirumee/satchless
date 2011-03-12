@@ -25,6 +25,11 @@ h2 {
     font-weight: normal;
     font-size: 26px;
 }
+hr {
+    border: none 0;
+    border-top: 1px dashed #CCC;
+    height: 1px;
+} 
 #header {
     overflow: visible;
     height: 62px;
@@ -58,6 +63,8 @@ h2 {
                 float: right;
                 margin-right: 0;
                 padding-top: 23px;
+                color: #777;
+                font-size: 12px;
             }
 #banner {
     border-top: 1px solid #e3e3e3;
@@ -141,3 +148,14 @@ h2 {
     color: #777;
     font-size: 12px;
 }
+.twitter span {
+    color: #777;
+    font-size: 12px;
+    vertical-align: top;
+}
+    .twitter a:hover {
+        background: none;
+    }
+    .twitter img {
+        margin: 0 8px;
+    }

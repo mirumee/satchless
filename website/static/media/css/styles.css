@@ -13,6 +13,8 @@ a, a:link, a:visited {
     text-decoration: underline;
 }
     a:hover {
+        background-color: #f4e3e3;
+        color: #de1515;
         text-decoration: none;
     }
 img {
@@ -67,8 +69,8 @@ h2 {
         font-weight: normal;
     }
     #banner h2 {
-        margin: 15px 0;
-        font-size: 48px;
+        margin: 25px 0 15px;
+        font-size: 40px;
     }
     #banner h3 {
         margin: 5px 0;
@@ -126,10 +128,14 @@ h2 {
 #footer {
     border-top: 1px solid #e3e3e3;
 }
-    #footer .founded {
+    #footer .technologies {
         text-align: right;
+        padding-top: 12px;
+    }
+    #footer .copyright {
         color: #777;
         font-size: 12px;
+        vertical-align: top;
     }
 .hint {
     color: #777;

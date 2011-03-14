@@ -30,15 +30,32 @@ surprisingly, called a *partitioner*. To read more, see the
 Checkout process
 ================
 
-The default checkout process consists of 3 to 5 internal steps:
+The default checkout process consists of 3 to 5 internal steps. At the
+beginning of the checkout process, the cart becomes an order. For this to
+happen, a list of partitioners takes turn to split the items from the cart
+into delivery groups.
 
-    * **Step 1**: The order is partitioned into delivery groups and customer
-      is asked to choose a delivery method for each of them.
-    * **Step 1½**: If a delivery method requires any additional data (the
-      address, for example), the customer is asked for it.
-    * **Step 2**: The customer is being asked for the payment method.
-    * **Step 2½**: If the payment method requires any additional data, the
-      customer is asked for it.
-    * **Step 3**: Confirmation. The complete order data is being presented
-      and the customer is being asked for confirmation. This screen will
-      usually redirect the customer to the appropriate payment gateway.
+.. image:: ../img/satchless-checkout-architecture-v2-0-cart.png
+
+**1:** Each group designates a set of products that can be delivered together.
+Now, for each delivery group, a list of :ref:`delivery providers
+<checkout-delivery>` is queried for suitable delivery methods. Then the user
+is asked to pick one of the methods for each group. Once the choice is
+submitted, the **delivery providers** are queried whether further data is needed
+for the methods picked. **1½:** If that is the case, the user is presented with
+a form asking to provide additional info before being transferred to the
+payment step.
+
+.. image:: ../img/satchless-checkout-architecture-v2-1-delivery_methods.png
+
+**2:** Once we have the delivery details sorted out, a list of :ref:`payment
+providers <checkout-payment>` is queried for payment methods suitable for the
+order as a whole. The user gets to pick one, and again the **provider** is
+asked whether further information is needed. **2½:** If so, the user will be
+presented with a form asking for additional payment information.
+
+.. image:: ../img/satchless-checkout-architecture-v2-2-payment_methods.png
+
+**3:** At this point all we need is to confirm the order.
+
+.. image:: ../img/satchless-checkout-architecture-v2-3-confirmation.png

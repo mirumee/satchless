@@ -15,7 +15,9 @@
         {% include 'satchless/order/snippets/delivery_group.html' %}
         </ul>
         <h3>{% trans "Delivery details" %}:</h3>
-        {{ form.as_p }}
+        <table>
+            {{ form.as_table }}
+        </table>
         {% endfor %}
         <button type="submit">{% trans "Proceed" %}</button>
     </form>

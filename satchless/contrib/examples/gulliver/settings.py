@@ -147,6 +147,7 @@ INSTALLED_APPS = (
     'south',
     'pagination',
     'sale',
+    'payments',
 )
 
 SATCHLESS_IMAGE_SIZES = {
@@ -197,6 +198,12 @@ SATCHLESS_DELIVERY_PROVIDERS = [
 SATCHLESS_PAYMENT_PROVIDERS = [
     'satchless.contrib.payment.django_payments_provider.provider',
 ]
+SATCHLESS_DJANGO_PAYMENT_TYPES = ('dummy',)
+PAYMENT_VARIANTS = {
+    'dummy': ('payments.dummy.DummyProvider', {
+            'url': '/',
+        })
+}
 
 INTERNAL_IPS = ['127.0.0.1']
 

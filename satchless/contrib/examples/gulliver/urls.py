@@ -17,6 +17,7 @@ urlpatterns = patterns('',
     url(r'^product-set/', include('satchless.contrib.productset.urls')),
     url(r'^sale/', include('sale.urls')),
     url(r'^localeurl/', include('localeurl.urls')),
+    url(r'^payments/', include('payments.urls')),
 
     url(r'^grappelli/', include('grappelli.urls')),
     url(r'^admin/', include(admin.site.urls)),

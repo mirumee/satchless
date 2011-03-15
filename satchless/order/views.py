@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from django.contrib.auth.decorators import login_required
 from django.http import HttpResponseNotFound
 from django.shortcuts import redirect
 from django.views.generic.simple import direct_to_template
@@ -7,6 +8,12 @@ from satchless.cart.models import Cart
 from . import models
 from . import forms
 from . import handler
+
+@login_required
+def my_orders(request):
+    orders = models.Order.objects.filter(user=request.user)
+    return direct_to_template(request, 'satchless/order/my_orders.html',
+            {'orders': orders})
 
 def view(request, order_pk):
     if request.user.is_authenticated():

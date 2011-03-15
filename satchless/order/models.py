@@ -127,6 +127,7 @@ class Order(models.Model):
         # Use described string to resolve ambiguity of the word 'order' in English.
         verbose_name = _('order (business)')
         verbose_name_plural = _('orders (business)')
+        ordering = ('-created',)
 
 
 class DeliveryGroup(models.Model):

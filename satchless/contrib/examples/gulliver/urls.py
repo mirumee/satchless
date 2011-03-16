@@ -19,6 +19,7 @@ urlpatterns = patterns('',
     url(r'^localeurl/', include('localeurl.urls')),
     url(r'^payments/', include('payments.urls')),
 
+    url(r'^search/', include('satchless.contrib.search.haystack_predictive.urls')),
     url(r'^grappelli/', include('grappelli.urls')),
     url(r'^admin/', include(admin.site.urls)),
 )

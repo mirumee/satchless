@@ -128,15 +128,17 @@ INSTALLED_APPS = (
     'grappelli',
     'django.contrib.admin',
     'mptt',
+    'haystack',
     'countries',
     'satchless.product',
     'satchless.image',
-    #'satchless.contrib.productset',
+    'satchless.contrib.productset',
     #'satchless.contact',
     'satchless.cart',
     'satchless.pricing',
     'satchless.contrib.pricing.simpleqty',
     'satchless.contrib.tax.flatgroups',
+    'satchless.contrib.search.haystack_predictive',
     #'satchless.contrib.stock.singlestore',
     'satchless.order',
     'satchless.delivery',
@@ -204,6 +206,10 @@ PAYMENT_VARIANTS = {
             'url': '/',
         })
 }
+
+HAYSTACK_SITECONF = 'search_sites'
+HAYSTACK_SEARCH_ENGINE = 'whoosh'
+HAYSTACK_WHOOSH_PATH = os.path.join(PROJECT_ROOT, 'whoosh_index')
 
 INTERNAL_IPS = ['127.0.0.1']
 

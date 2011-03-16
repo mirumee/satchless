@@ -76,25 +76,24 @@ def init_queues():
             module = import_module(mod_name)
             handler = getattr(module, han_name)
         _partitioners_queue.append(handler)
+
+    def build_q_from_paths(setting_name):
+        queue = []
+        elements = getattr(settings, setting_name, [])
+        for e in elements:
+            if isinstance(e, str):
+                mod_name, obj_name = e.rsplit('.', 1)
+                module = import_module(mod_name)
+                e_obj = getattr(module, obj_name)
+                queue.append((e, e_obj))
+            else:
+                raise ValueError('%r in %s is not a proper Python path' % \
+                        (e, setting_name))
+        return queue
+
     global _delivery_providers_queue
-    _delivery_providers_queue = []
-    providers = getattr(settings, 'SATCHLESS_DELIVERY_PROVIDERS', [
-        'satchless.delivery.DeliveryProvider',
-    ])
-    for provider_path in providers:
-        mod_name, prov_name = provider_path.rsplit('.', 1)
-        module = import_module(mod_name)
-        provider = getattr(module, prov_name)()
-        _delivery_providers_queue.append((provider_path, provider))
+    _delivery_providers_queue = build_q_from_paths('SATCHLESS_DELIVERY_PROVIDERS')
     global _payment_providers_queue
-    _payment_providers_queue = []
-    providers = getattr(settings, 'SATCHLESS_PAYMENT_PROVIDERS', [
-        'satchless.payment.PaymentProvider',
-    ])
-    for provider_path in providers:
-        mod_name, prov_name = provider_path.rsplit('.', 1)
-        module = import_module(mod_name)
-        provider = getattr(module, prov_name)()
-        _payment_providers_queue.append((provider_path, provider))
+    _payment_providers_queue = build_q_from_paths('SATCHLESS_PAYMENT_PROVIDERS')
 
 init_queues()

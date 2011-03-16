@@ -9,10 +9,10 @@ A shop for perfectionists with deadlines and coding standards.
 Overview
 ========
 
-Satchless is a high level framework which provides parts to build an online
+Satchless is a high level framework that provides building blocks for an online
 shop. It's based on `Django`_ web application framework and written in
 `Python`_ language. The aim of this project is to make each module
-independent and extensible. Using Satchless you will be able to build quickly:
+independent and extensible. Using Satchless you will be able to quickly build:
 
     * A product catalog
     * A catalog with wishlists
@@ -21,13 +21,17 @@ independent and extensible. Using Satchless you will be able to build quickly:
         * downloadable products
         * with both of them or any other product type you may imagine.
 
-.. note::
-   Satchless is not a turn-key solution for online shop and is not aimed to be.
-   It should be considered as a set of advanced, loosely coupled bricks which
-   would be turned into a working shop by a web developer.
-
 .. _`Django`: http://djangoproject.org/
 .. _`Python`: http://python.org/
+
+.. note::
+   Satchless is not a turn-key solution for online shops and is not meant to be
+   one. It should be considered as a set of advanced, loosely coupled bricks
+   which can be turned into a working shop by a web developer.
+
+**Warning:** Currently Satchless is in an early stage of development. It is
+already possible to build a shop on top of it, but still you should be prepared
+for radical and backward-incompatible changes to the code.
 
 First steps
 ===========
@@ -56,5 +60,5 @@ Customizing your shop
       :ref:`Writing your own price or tax handler <pricing-handler>`
     * **Checkout:**
       :ref:`Introduction to orders <checkout-order>` |
-      :ref:`Delivery and partitioners <checkout-delivery>`
-    * **Payments:**
+      :ref:`Delivery: partitioners and providers <checkout-delivery>` |
+      :ref:`Payment <checkout-payment>`

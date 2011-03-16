@@ -6,22 +6,40 @@
     <meta name="description" content="Satchless is an eCommerce framework built on top of Python and Django. It provides all necessary tools to build full-blown online shop." />
     <title>Satchless &mdash; eCommerce framework built with Python &amp; Django</title>
     <link rel="stylesheet" type="text/css" href="https://github.com/nathansmith/960-Grid-System/raw/master/code/css/960.css" />
+    <link rel="shortcut icon" href="/static/img/favicon.ico" />
     <link rel="stylesheet" href="{{ MEDIA_URL }}css/styles.css" />
+    <link rel="shortcut icon" href="{{ MEDIA_URL }}img/favicon.ico" />
+    {% if GOOGLE_ANALYTICS_ID %}
+    <script type="text/javascript">
+        var _gaq = _gaq || [];
+        _gaq.push(['_setAccount', '{{ GOOGLE_ANALYTICS_ID }}']);
+        _gaq.push(['_trackPageview']);
+
+        (function() {
+            var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+            ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+            var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+        })();
+    </script>
+    {% endif %}
 </head>
 <body>
 <div class="container_16">
     <div id="header" class="grid_16">
-        <h1>Satchless</h1>
-        <span class="thingie"></span>
-        <p class="is_what">Less is mo'</p>
-        <p class="links">
-            <a href="https://github.com/mirumee/satchless">Source Code</a> | 
-            <a href="/static/doc/">Documentation</a>
-        </p>
-        <p class="founded">
-            Founded by <a href="https://www.github.com/mirumee/">
-            <img src="{{ MEDIA_URL }}img/mirumee-labs.png" alt="Mirumee Labs" /></a>
-        </p>
+        <div class="grid_3 alpha">
+            <h1>Satchless</h1>
+        </div>
+        <div class="info grid_13 omega">
+            <p class="is_what">Less is mo'</p>
+            <p class="links">
+                <a href="https://github.com/mirumee/satchless">Source Code</a> | 
+                <a href="http://docs.satchless.com/">Documentation</a>
+            </p>
+            <p class="founded">
+                Founded by <a href="https://www.github.com/mirumee/">
+                <img src="{{ MEDIA_URL }}img/mirumee-labs.png" alt="Mirumee Labs" /></a>
+            </p>
+        </div>
     </div>
 </div>
 <div class="clear"></div>
@@ -30,11 +48,10 @@
         <div class="grid_16">
             <div class="grid_10 alpha">
                 <h2>eCommerce framework<br />built with Python &amp; Django</h2>
-                <h3>For (real) prefectionists with (real) deadlines</h3>
+                <h3>For (real) perfectionists with (real) deadlines</h3>
                 <h3>Beautiful &amp; flexible design</h3>
                 <h3>Great documentation</h3>
-                <h3>No livesettings<h3>
-                <h3>Pony included</h3>
+                <h3 class="hint">+ No livesettings, pony included</h3>
             </div>
             <div class="grid_6 omega">
                 <img src="{{ MEDIA_URL }}img/chariot.png" alt="A fancy shopping cart" />
@@ -45,17 +62,28 @@
 </div>
 <div id="body" class="container_16">
     <div class="grid_8 text">
-        <h2>Our goals</h2>
+        <h2>Django, meet Satchless</h2>
         <p>
-        Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do
-        eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad
-        minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip
-        ex ea commodo consequat. Duis aute irure dolor in reprehenderit in
-        voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur
-        sint occaecat cupidatat non proident, sunt in culpa qui officia
-        deserunt mollit anim id est laborum.
+        Ever tried to build an e-commerce using Django? Noticed how you pretty
+        much have to choose between Satchmo and Lightning Fast Shop? LFS's code
+        is of great quality but the project is not really modular. Satchmo
+        promises to be modular but the code... well, there is code.
         </p>
-        <h2>Satchless story</h2>
+        <p>
+        Here comes a new challenger. "Less is more" and Satchless's name is a
+        play on that idea. We believe a good framework should give you just the
+        right tools to prototype, test and build an efficient solution that
+        suits you and your business. It should not provide a generic solution
+        and require you to bend your requirements to fit it. In e-commerce
+        there is no one-size-fits-all.
+        </p>
+        <p>
+        If you love Django, meet Satchless and fall in love once again. Written
+        from scratch, it consists of 100% beautiful code, 0% hacks and 0%
+        magic. Comes with pre-built "contrib" modules for common cases and
+        enough freedom to never get in your way. Sounds good? Oh, and it comes
+        under the same open-source BSD license.
+        </p>
     </div>
     <div class="grid_4">
         <div class="download">
@@ -70,15 +98,15 @@
     <div class="clear"></div>
 </div>
 <div id="footer" class="container_16">
-    <div class="grid_12">
+    <div class="grid_10">
         <p>
         <a href="http://mirumee.com/">
         <img src="{{ MEDIA_URL }}img/we-build.png" alt="Mirumee &mdash; We build webapps. Better." />
         </a>
         </p>
     </div>
-    <div class="grid_4">
-        <p class="founded">Founded by Mirumee Labs</p>
+    <div class="grid_6">
+        <p class="founded">Copyright &copy; 2010-2011 Mirumee Software.</p>
     </div>
     <div class="clear"></div>
 </body>

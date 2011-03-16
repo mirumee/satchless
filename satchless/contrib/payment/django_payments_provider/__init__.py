@@ -26,3 +26,5 @@ class DjangoPaymentsProvider(PaymentProvider):
         return {'form': form,
                 'action': form.action,
                 'method': form.method}
+
+provider = DjangoPaymentsProvider()

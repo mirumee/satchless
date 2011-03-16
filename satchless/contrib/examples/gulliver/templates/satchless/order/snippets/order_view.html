@@ -1,6 +1,6 @@
 {% load i18n prices %}
 {% for group in order.groups.all %}
-<table>
+<table class="cart-contents">
     <thead>
         {% if order.groups.count > 1 %}
         <tr>
@@ -20,7 +20,9 @@
         {% if group.deliveryvariant %}{% with group.deliveryvariant.get_subtype_instance as variant %}
         <tr>
             <th>{% trans "Delivery" %}:</th>
-            <td colspan="2">{{ variant }}</td>
+            <td colspan="2">
+                {{ variant }}
+            </td>
             <td class="numerical">{{ variant.price|floatformat:2 }}</td>
         </tr>
         {% endwith %}{% endif %}

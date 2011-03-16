@@ -139,11 +139,15 @@ INSTALLED_APPS = (
     'satchless.contrib.tax.flatgroups',
     #'satchless.contrib.stock.singlestore',
     'satchless.order',
-    #'satchless.contrib.delivery.simplepost',
+    'satchless.delivery',
+    'satchless.contrib.delivery.simplepost',
+    'satchless.payment',
+    'satchless.contrib.payment.django_payments_provider',
     'products',
     'south',
     'pagination',
     'sale',
+    'payments',
 )
 
 SATCHLESS_IMAGE_SIZES = {
@@ -173,7 +177,7 @@ SATCHLESS_IMAGE_SIZES = {
     }
 }
 
-SATCHLESS_DEFAULT_CURRENCY = '£' #'GBP'
+SATCHLESS_DEFAULT_CURRENCY = 'GBP'
 
 INTERNAL_IPS = ['127.0.0.1']
 
@@ -185,15 +189,22 @@ SATCHLESS_PRICING_HANDLERS = [
 SATCHLESS_PRODUCT_VIEW_HANDLERS = [
     'core.handler.cart_handler',
 ]
-#
-#SATCHLESS_ORDER_PARTITIONERS = [
-#    'satchless.contrib.order.partitioner.simple',
-#]
-#
-#SATCHLESS_DELIVERY_PROVIDERS = [
-#    'satchless.contrib.delivery.simplepost.providers.PostDeliveryProvider',
-#]
-#
+SATCHLESS_ORDER_PARTITIONERS = [
+    'satchless.contrib.order.partitioner.simple',
+]
+SATCHLESS_DELIVERY_PROVIDERS = [
+    'satchless.contrib.delivery.simplepost.provider',
+]
+SATCHLESS_PAYMENT_PROVIDERS = [
+    'satchless.contrib.payment.django_payments_provider.provider',
+]
+SATCHLESS_DJANGO_PAYMENT_TYPES = ('dummy',)
+PAYMENT_VARIANTS = {
+    'dummy': ('payments.dummy.DummyProvider', {
+            'url': '/',
+        })
+}
+
 INTERNAL_IPS = ['127.0.0.1']
 
 try:

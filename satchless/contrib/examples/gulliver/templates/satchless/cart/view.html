@@ -9,7 +9,7 @@
 {% block title %}{% trans "Shopping Bag" %} || {{ block.super }}{% endblock %}
 {% block body-class %}{{ block.super }} cart{% endblock %}
 
-{% block content-grid %}
+{% block content %}
 <h1>{% trans "Shopping Bag" %}</h1>
 
 <hr />
@@ -36,6 +36,7 @@
         </thead>
         <tbody>
 {% for form in formset.forms %}
+    {{ form.id }}
     {% promote form.instance.variant as variant %}
     {% with form.instance|cartitem_unit_price as unit_price %}
     {% with form.instance|cartitem_price as item_price %}
@@ -71,7 +72,6 @@
     {% endwith %}
 {% endfor %}
         </tbody>
-{% comment %}
     {% if form.quantity.errors %}
             <tr class="errors">
                 <td>
@@ -85,14 +85,11 @@
     {% endif %}
         <tfoot>
             <tr class="total">
-                <th colspan="4" rowspan="2">{% trans "Total" %}:</th>
+                <th colspan="5">{% trans "Total" %}:</th>
                 <td class="numerical">
                     {{ cart|cart_total|gross|floatformat:2 }} <span class="currency">{{ cart.currency }}</span><br />
                 </td>
                 <td colspan="2" rowspan="2"></td>
-            </tr>
-            <tr>
-                <td class="numerical netPrice">{{ cart|cart_total|net|floatformat:2 }} <span class="currency">{{ cart.currency }}</span></td>
             </tr>
             <tr>
                 <td colspan="7">
@@ -100,10 +97,9 @@
                 </td>
             </tr>
         </tfoot>
-{% endcomment %}
     </table>
 </form>
-{# <a href="{% url satchless-checkout %}">{% trans "Check out" %}</a> #}
+<a href="{% url satchless-checkout %}">{% trans "Check out" %}</a>
 {% else %}
 <p class="no-items">
     {% trans "Your shopping bag is empty." %}

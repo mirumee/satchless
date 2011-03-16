@@ -16,7 +16,7 @@ from . import forms
 
 PRODUCTS_PER_PAGE = 5
 
-def search_product(request, template_name='satchless/search/haystack_predictive/products.html'):
+def search_products(request, template_name='satchless/search/haystack_predictive/products.html'):
     form = forms.ProductPredictiveSearchForm(data=request.GET or None)
     if form.is_valid():
         results = form.search()

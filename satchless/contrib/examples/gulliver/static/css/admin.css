@@ -1,3 +1,7 @@
 .file-upload br {
     display: inline;
 }
+.pagination {
+    margin-top: 5px;
+    text-align: center;
+}

@@ -38,20 +38,22 @@
                 <li class="other-brands">
                     <a href="{% url satchless-product-category 'other-brands' %}">Other Brands</a>
                 </li>
+                <li class="product-set">
+                    <a href="{% url satchless-product-set-index %}">Collections</a>
+                </li>
                 <li class="sale">
                     <a href="{% url sale %}">Sale</a>
                 </li>
             </ul>
             <div class="clear"></div>
         </div>
-        <div class="grid_1">
-{% comment %}
-            <form class="search" method="get" action="{% url local_search %}">
+        <div class="grid_1 omega right-menu">
+            <form class="search" method="get" action="{% url satchless-search-haystack-predictive %}">
                 Search
-                <input class="keywords" type="text" name="keywords" value="{{ request.GET.keywords }}" />
+                <input class="keywords" type="text" name="q" value="{{ request.GET.keywords }}" />
                 <input class="submit" type="submit" value="Search" />
             </form>
-{% endcomment %}
+
             <a id="cart" href="{% url satchless-cart-view %}">{% trans "Shopping Bag" %}{% if cart_count %} (<span>{{ cart_count|floatformat }}</span>){% endif %}</a>
         </div>
         <div class="clear"></div>

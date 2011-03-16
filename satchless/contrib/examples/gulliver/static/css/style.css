@@ -63,6 +63,7 @@ hr {
             }
             #store.cart #top-bar a#cart,
             #store.sale #top-bar ul.menu li.sale a,
+            #store.product-set #top-bar ul.menu li.product-set a,
             #store.product.cat-womens #top-bar ul.menu li.womens a,
             #store.product.cat-other-brands #top-bar ul.menu li.other-brands a,
             #store.product.cat-mens #top-bar ul.menu li.mens a,
@@ -74,6 +75,33 @@ hr {
             #store #top-bar a#cart {
                 float: right;
             }
+            #top-bar .right-menu {
+                text-align: right;
+            }
+                #top-bar form.search {
+                    display: inline;
+                    margin: 0 10px 0 0;
+                    padding: 0;
+                    text-align: right;
+                }
+                    #top-bar form.search .keywords {
+                        background: #fff;
+                        border: 1px solid white;
+                        border-bottom: 1px solid #f00;
+                        color: #000;
+                        font: inherit;
+                        margin: 0 6px 0 0;
+                        outline: 0 none;
+                        padding: 0;
+                        vertical-align: baseline;
+                        width: 104px;
+                    }
+                        #top-bar form.search .keywords::-webkit-input-placeholder {
+                            color: #000;
+                        }
+                    #top-bar form.search .submit {
+                        display: none;
+                    }
 #messages {
     font-family: Arial,Helvetica,sans-serif;
     margin-bottom: 0px;

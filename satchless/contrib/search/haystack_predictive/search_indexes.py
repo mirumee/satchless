@@ -7,9 +7,6 @@ from haystack.indexes import *
 
 from satchless.product import models
 
-# Because haystack allows registering only one search index per model
-# all translations are kept in one dynamically created index
-
 class ProductEdgeNgramField(EdgeNgramField):
     def __init__(self, fieldname, *args, **kwargs):
         self.fieldname = fieldname

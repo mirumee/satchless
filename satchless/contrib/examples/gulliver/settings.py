@@ -145,11 +145,13 @@ INSTALLED_APPS = (
     'satchless.contrib.delivery.simplepost',
     'satchless.payment',
     'satchless.contrib.payment.django_payments_provider',
+    'satchless.contrib.payment.mamona_provider',
     'products',
     'south',
     'pagination',
     'sale',
     'payments',
+    'mamona',
 )
 
 SATCHLESS_IMAGE_SIZES = {
@@ -205,6 +207,16 @@ PAYMENT_VARIANTS = {
     'dummy': ('payments.dummy.DummyProvider', {
             'url': '/',
         })
+}
+MAMONA_ACTIVE_BACKENDS = (
+    'dummy',
+    'paypal',
+)
+MAMONA_BACKENDS_SETTINGS = {
+    'paypal': {
+        'url': 'https://www.sandbox.paypal.com/cgi-bin/webscr',
+        'email': 'me@my-email.com',
+    },
 }
 
 HAYSTACK_SITECONF = 'search_sites'

@@ -13,6 +13,8 @@ a, a:link, a:visited {
     text-decoration: underline;
 }
     a:hover {
+        background-color: #f4e3e3;
+        color: #de1515;
         text-decoration: none;
     }
 img {
@@ -23,6 +25,11 @@ h2 {
     font-weight: normal;
     font-size: 26px;
 }
+hr {
+    border: none 0;
+    border-top: 1px dashed #CCC;
+    height: 1px;
+} 
 #header {
     overflow: visible;
     height: 62px;
@@ -56,6 +63,8 @@ h2 {
                 float: right;
                 margin-right: 0;
                 padding-top: 23px;
+                color: #777;
+                font-size: 12px;
             }
 #banner {
     border-top: 1px solid #e3e3e3;
@@ -67,8 +76,8 @@ h2 {
         font-weight: normal;
     }
     #banner h2 {
-        margin: 15px 0;
-        font-size: 48px;
+        margin: 25px 0 15px;
+        font-size: 40px;
     }
     #banner h3 {
         margin: 5px 0;
@@ -86,6 +95,15 @@ h2 {
         text-align: justify;
         line-height: 1.4em;
     }
+    #body .sidebar {
+        margin-top: 15px;
+        padding: 10px 15px 15px 15px;
+    }
+        #body .sidebar h2 {
+            font-size: 18px;
+            margin-top: 0;
+            margin-bottom: 10px;
+        }
     #body .download {
         background-color: #f3f3f3;
         border: 1px solid #e3e3e3;
@@ -96,6 +114,7 @@ h2 {
         padding: 10px 15px 15px 15px;
     }
         #body .download h2 {
+            font-size: 18px;
             margin-top: 0;
             margin-bottom: 10px;
         }
@@ -116,6 +135,27 @@ h2 {
 #footer {
     border-top: 1px solid #e3e3e3;
 }
-    #footer .founded {
+    #footer .technologies {
         text-align: right;
+        padding-top: 12px;
+    }
+    #footer .copyright {
+        color: #777;
+        font-size: 12px;
+        vertical-align: top;
+    }
+.hint {
+    color: #777;
+    font-size: 12px;
+}
+.twitter span {
+    color: #777;
+    font-size: 12px;
+    vertical-align: top;
+}
+    .twitter a:hover {
+        background: none;
+    }
+    .twitter img {
+        margin: 0 8px;
     }

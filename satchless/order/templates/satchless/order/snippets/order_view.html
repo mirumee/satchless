@@ -21,12 +21,12 @@
         <tr>
             <th>{% trans "Delivery" %}:</th>
             <td colspan="2">{{ variant }}</td>
-            <td class="numerical">{{ variant.price|floatformat:2 }}</td>
+            <td class="numerical">{{ variant.price|floatformat:2 }} <span class="currency">{{ order.currency }}</span></td>
         </tr>
         {% endwith %}{% endif %}
         <tr>
-            <th colspan="3">{% trans "Total" %}:</th>
-            <td class="numerical">{{ group.total|gross|floatformat:2 }}</td>
+            <th class="numerical" colspan="3">{% trans "Total" %}:</th>
+            <td class="numerical">{{ group.total|gross|floatformat:2 }} <span class="currency">{{ order.currency }}</span></td>
         </tr>
     </tfoot>
     <tbody>
@@ -42,8 +42,8 @@
                 {% endif %}
             </td>
             <td class="numerical">{{ item.quantity }}</td>
-            <td class="numerical"><span class="gross">{{ item.unit_price_gross|floatformat:2 }}</span></td>
-            <td class="numerical">{{ item.price|gross|floatformat:2 }}</td>
+            <td class="numerical"><span class="gross">{{ item.unit_price_gross|floatformat:2 }} <span class="currency">{{ order.currency }}</span></span></td>
+            <td class="numerical">{{ item.price|gross|floatformat:2 }} <span class="currency">{{ order.currency }}</span></td>
         </tr>
         {% endwith %}
         {% endfor %}

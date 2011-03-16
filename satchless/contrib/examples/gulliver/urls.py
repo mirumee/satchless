@@ -1,10 +1,7 @@
 from django.conf import settings
 from django.conf.urls.defaults import *
 from core.forms import CartItemFormSet
-
-# Uncomment the next two lines to enable the admin:
-from django.contrib import admin
-admin.autodiscover()
+from core.admin import gulliver_admin
 
 urlpatterns = patterns('',
     url(r'^$', 'django.views.generic.simple.redirect_to', {'url': '/products/'}),
@@ -21,7 +18,7 @@ urlpatterns = patterns('',
 
     url(r'^search/', include('satchless.contrib.search.haystack_predictive.urls')),
     url(r'^grappelli/', include('grappelli.urls')),
-    url(r'^admin/', include(admin.site.urls)),
+    url(r'^admin/', include(gulliver_admin.urls)),
 )
 
 if settings.DEBUG:

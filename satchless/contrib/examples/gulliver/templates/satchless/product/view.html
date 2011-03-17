@@ -1,0 +1,130 @@
+{% extends "satchless/base.html" %}
+{% load i18n %}
+{% load pagination_tags %}
+{% load prices %}
+{% load product_prices %}
+{% load satchless_image %}
+{% load sale_tags %}
+
+{% block title %}Oliver Spencer &mdash; {{ product.name }}{% endblock %}
+
+{% block body-class %}{{ block.super }} {% if path %}cat-{{ path.0.slug }} {% endif %}product{% endblock %}
+
+{% block extra-body %}
+{{ block.super }}
+<link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}css/cloud-zoom.css" />
+
+<script type="text/javascript" src="{{ STATIC_URL }}js/cloud-zoom.1.0.2.js"></script>
+<script type="text/javascript" src="{{ STATIC_URL }}js/product.js"></script>
+<script type="text/javascript">
+$(function(){
+    $('#main-photo').append('<div class="zoom-hint">Click the image to zoom in.<br />To pan, move your mouse around the image.</div>');
+    {% comment %}
+    $('form#options').submit(function() {
+        var url = '{% url satchmo_cart_add_ajax %}';
+        var self = $(this);
+        self.find('span.errors').remove();
+        var data = self.serialize();
+        var customizations = self.find('select');
+        var valid = true;
+        customizations.each(function() {
+            var c = $(this);
+            var unselectable = c.find(':selected:disabled');
+            if (!c.val() || (unselectable && unselectable.length)) {
+                c.parent('p').append($('<span class="errors">You need to select all the options</span>'));
+                valid = false;
+            }
+        });
+        if (valid) {
+            $.ajax({
+                'url': '{% url satchmo_cart_add_ajax %}',
+                'data': data,
+                'dataType': 'json',
+                'type': 'POST',
+                'success': function(data) {
+                    $('#header .cart a').text('Shopping bag (' + data['cart_count'] + ')');
+                    $('#added-to-cart').fadeIn();
+                }
+            });
+        }
+        return false;
+    });
+    $('form select.priced').each(function() {
+        var c = $(this);
+        var unselectable = c.find(':selected:disabled');
+        var selectable = c.find(':not(:disabled)');
+        if (!c.val() || (unselectable && unselectable.length && selectable && selectable.length)) {
+            c.val(selectable[0].value);
+        }
+    });
+    {% endcomment %}
+});
+</script>
+
+{% endblock %}
+
+{% block content %}
+<div id="sidebar" class="grid_1 {% if not path %}placeholder{% endif %}">
+{% if path %}
+    {% with path.0.get_children as categories %}
+    <ul class="categories">
+        {% for cat in categories %}
+        <li{% if cat == path.1 %} class="active"{% endif %}><a href="{{ cat.get_url }}">{{ cat.name }}</a></li>
+        {% endfor %}
+    </ul>
+    {% endwith %}
+{% endif %}
+</div>
+
+<div id="main-photo" class="grid_2">
+{% if product.main_image %}
+    <a href="{{ product.main_image.image.url }}" class="cloud-zoom" rel="position: 'inside', showTitle: false"><img src="{{ product.main_image|at_size:'product-detail' }}" /></a>
+{% endif %}
+</div>
+
+<div id="content" class="grid_1">
+    <div class="product">
+        <h1>{{ product.name }}</h1>
+        <hr />
+
+        <div class="price">
+        {% discount_price product %}
+        </div>
+
+        <div class="description">{{ product.description|linebreaks }}</div>
+
+        {% if product.manufacture %}
+        <p class="manufacture">{{ product.manufacture }}</p>
+        {% endif %}
+        <div class="size-chart"><a href="#" onclick="$('#size-chart').slideToggle(); return false">View Size Chart</a></div>
+    </div>
+
+    <form action="" method="post" class="variant-form">
+        {% csrf_token %}
+        <table>
+        {{ product.cart_form.as_table }}
+        </table>
+        <div class="add-to-cart">
+            <input type="submit" class="add-to-bag" value="Add to shopping bag" />
+        </div>
+    </form>
+    <hr />
+
+    <div class="photos">
+    {% spaceless %}
+    {% for image in product.images.all %}
+        {% with image|at_size:'product-thumb' as thumb %}
+        {% with image|at_size:'product-detail' as detail %}
+        <a href="{{ detail }}" data-big-picture="{{ image.image.url }}" title="Click to see this image enlarged">
+            <img src="{{ thumb }}" alt="{{ image.caption }}"{% if forloop.first %} class="active"{% endif %} />
+        </a>
+        {% endwith %}
+        {% endwith %}
+    {% endfor %}
+    {% endspaceless %}
+    </div>
+    <hr />
+</div>
+
+<div class="clear"></div>
+{% endblock %}

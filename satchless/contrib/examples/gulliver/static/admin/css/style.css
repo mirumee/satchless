@@ -1,0 +1,28 @@
+.file-upload br {
+    display: inline;
+}
+.pagination {
+    margin-top: 5px;
+    text-align: center;
+}
+
+#search-products {
+}
+    #search-products #products .product .variants {
+        padding-left: 5px;
+        padding-right: 5px;
+    }
+        #search-products #products .product .variants .variant {
+            background: #e8e8e8;
+            border-radius: 2px;
+            -moz-border-radius: 2px;
+            -webkit-border-radius: 2px;
+            margin-bottom: 3px;
+            max-height: 200px;
+            overflow: auto;
+            padding: 8px;
+        }
+        #search-products #products .product .variants .variant:hover {
+            cursor: pointer;
+            background: #f8f8f8;
+        }

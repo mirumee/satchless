@@ -1,0 +1,73 @@
+{% extends "sale/base.html" %}
+{% load pagination_tags %}
+{% load product_url %}
+{% load sale_tags %}
+{% load satchless_image %}
+
+{% block body-class %}{{ block.super }}{% endblock %}
+{% block extra-body %}
+{{ block.super }}
+<script>
+$(function() {
+    $('.product h3').hide();
+    $('.product').hover(function(){
+        $(this).find('h3').fadeIn('fast');
+    }, function(){
+        $(this).find('h3').fadeOut('fast');
+    });
+});
+</script>
+{% endblock %}
+
+{% block content-grid %}
+<div id="sidebar" class="grid_1">
+    <ul class="categories">
+{% for cat in categories %}
+        <li>
+            <a class="{% if cat == category %}active{% endif %}" href="{{ cat|category_in_sale_url }}">{{ cat.name }}</a>
+    {% if cat == path.0 %}
+        {% with cat|subcategories_in_sale as subcategories %}
+            <ul>
+            {% for c in cat|subcategories_in_sale %}
+                <li><a class="{% if c == category %}active{% endif %}" href="{{ c|category_in_sale_url }}">{{ c.name }}</a></li>
+            {% endfor %}
+            </ul>
+        {% endwith %}
+    {% endif %}
+        </li>
+{% endfor %}
+    </ul>
+</div>
+
+<div id="products" class="grid_3">
+        {% autopaginate products 21 %}
+        {% if products %}
+    {% paginate %}
+            {% for product in products %}
+                {% with product.get_subtype_instance as product %}
+                {% with product|product_in_category_tree_url:category as product_url %}
+    <div class="product grid_1 {% cycle 'alpha' '' 'omega' %}">
+        <div class="placeholder">
+            <a href="{{ product_url }}" class="product-photo">
+                    {% if product.main_image %}
+                <img src="{{ product.main_image|at_size:'category-product' }}" alt="{{ product.name }} image" />
+                    {% endif %}
+            </a>
+            <h3><a href="{{ product_url }}" title="{{ product.name }}">{{ product.name }}</a></h3>
+        </div>
+        <div class="price">
+        {% discount_price product %}
+        </div>
+    </div>
+    {% cycle '' '' '<div class="clear"></div>' %}
+                {% endwith %}
+                {% endwith %}
+            {% endfor %}
+    {% paginate %}
+        {% else %}
+
+        {% endif %}
+    <div class="clear"></div>
+</div>
+<div class="clear"></div>
+{% endblock %}

@@ -5,21 +5,25 @@
 {% load satchless_image %}
 
 {% block content %}
-<div id="variant-select">
+<div id="related-lookup">
     <div class="search filter module">
-        <form action="{% url admin:search-products %}"  method="get" id="search-variant">
+        <form action="{% url admin:search-products %}"  method="get" id="search-product">
             <input type="text" id="searchbar" name="q">
             <button class="search" type="submit" value="" name="search" >&nbsp;</button>
         </form>
     </div>
     <div class="clear"></div>
-    <div class="module table" id="variants">
+    <div class="module table" id="related-products">
         <div class="module tbody">
 {% for result in page.object_list %}
     {% with result.object.get_subtype_instance as product %}
-            <div class="tr variant" data-variant-pk="{{ variant.pk }}" >
+            <div class="tr product" data-variant-pk="{{ variant.pk }}" >
                 <div class="td">
                     <img src="{{ product.main_image|at_size:'admin' }}" alt="" />
+                </div>
+                <div class="td product-id-container">
+                    {% trans "Copy this value to form input to select this product." %}
+                    <span class="product-id">{{ product.id }}</span>
                 </div>
                 <div class="td">
                     <a class="name" href="{{ product.get_absolute_url }}">{{ product }}</a>

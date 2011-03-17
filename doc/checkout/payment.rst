@@ -36,8 +36,13 @@ payment gateway.
 Example of payments provider
 ............................
 
-In ``satchless.contrib.payment.django_payments_provider`` you may find an
-example, working implementation of a paymnt provider, using `django-payments`_
-as a backend.
+In the contrib module you will find working implementations of payment
+providers:
+
+    * ``satchless.contrib.payment.django_payments_provider`` using
+      `django-payments`_,
+    * ``satchless.contrib.payment.mamona_provider`` using
+      `mamona`_.
 
 .. _`django-payments`: https://github.com/mirumee/django-payments
+.. _`mamona`: https://github.com/emesik/mamona

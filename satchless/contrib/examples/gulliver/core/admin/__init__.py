@@ -1,0 +1,52 @@
+# -*- coding:utf-8 -*-
+from django.contrib import admin
+from django.contrib import admin
+from django.http import HttpResponse, Http404
+from django.utils.translation import ugettext as _
+from django.views.generic.simple import direct_to_template
+import django.forms
+
+from haystack.query import EmptySearchQuerySet, RelatedSearchQuerySet
+
+from satchless.contrib.search.haystack_predictive.views import search_products
+from satchless.product.models import Product
+
+from sale.models import DiscountGroup
+from . import widgets
+
+class GulliverAdminSite(admin.AdminSite):
+    def get_urls(self):
+        from django.conf.urls.defaults import patterns, url
+
+        urls = super(GulliverAdminSite, self).get_urls()
+        urls += patterns('',
+            url(r'^search/product/$', self.admin_view(search_products),
+                kwargs={'template_name': 'admin/product/search_products.html'},
+                name='search-products')
+        )
+        return urls
+
+gulliver_admin = GulliverAdminSite()
+
+# FIXME (register by hand?): UGLY HACK to register apps in gulliver_admin instance
+admin.autodiscover()
+for model, admin_class in admin.site._registry.items():
+    if model not in (DiscountGroup,):
+        gulliver_admin.register(model, admin_class.__class__)
+
+class DiscountProductForm(django.forms.ModelForm):
+    product = django.forms.ModelChoiceField(label=_("variant id"), queryset=Product.objects.all(),
+                                            widget=widgets.ProductRawIdWidget)
+    class Meta:
+        model = DiscountGroup.products.through
+
+class DiscountProductInline(admin.TabularInline):
+    model = DiscountGroup.products.through
+    form = DiscountProductForm
+
+class DiscountGroupAdmin(admin.ModelAdmin):
+    model = DiscountGroup
+    inlines = [ DiscountProductInline, ]
+    exclude = ('products',)
+
+gulliver_admin.register(DiscountGroup, DiscountGroupAdmin)

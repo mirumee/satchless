@@ -7,7 +7,7 @@ function filterHtml(data, selector) {
 django.jQuery.fn.relatedLookup = function(selectRelated, options) {
     var $ = django.jQuery;
     var defaults = {
-        selectRelatedBodySelector: '#related-lookup'
+        responseContentSelector: '#related-lookup'
     };
     var opts = $.extend({}, defaults, options);
 
@@ -15,7 +15,7 @@ django.jQuery.fn.relatedLookup = function(selectRelated, options) {
         var dialog;
         var widget = $(this);
 
-        function onRelatedSelect(id) {
+        function onRelatedSelect(id, selectedElement) {
             widget.prev('input').val(id);
             dialog.dialog("destroy");
             dialog.remove();
@@ -29,15 +29,15 @@ django.jQuery.fn.relatedLookup = function(selectRelated, options) {
                 data: {},
                 type: 'GET',
                 success: function (response, textStatus, xhr) {
-                    var theCode = filterHtml(response, opts.selectRelatedBodySelector);
+                    var theCode = filterHtml(response, opts.responseContentSelector);
                     dialog.html(theCode);
                     dialog.dialog({
                         modal: true,
                         resizable: true,
-                        width: '620px',
+                        width: '800px',
                         zIndex: 900
                     });
-                    selectRelated(dialog.find(opts.selectRelatedBodySelector), onRelatedSelect);
+                    selectRelated(dialog.find(opts.responseContentSelector), onRelatedSelect);
                 }
             });
 

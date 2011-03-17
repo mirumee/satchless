@@ -15,10 +15,6 @@ class ImageInline(admin.TabularInline):
     formfield_overrides = {
         django.db.models.ImageField: { 'widget': widgets.AdminImageWidget },
     }
-    class Media:
-        css = {
-            'all': ['css/admin.css']
-        }
 
 class ProductForm(satchless.product.admin.ProductForm):
     def __init__(self, *args, **kwargs):

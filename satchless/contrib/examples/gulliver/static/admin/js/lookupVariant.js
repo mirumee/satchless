@@ -1,4 +1,4 @@
-function lookupProduct(container, onProductSelect) {
+function lookupVariant(container, onVariantSelect) {
     var $ = django.jQuery;
     var searchForm = $('form', container);
     var url = searchForm.attr('action');
@@ -6,13 +6,12 @@ function lookupProduct(container, onProductSelect) {
 
     function initProductList() {
         $('.product', container).each(function() {
-            $(this)
-            .css({cursor: 'pointer'})
-            .click(function() {
-                onProductSelect($(this).find('.product-id').html().trim(), $(this));
+            $(this).find('.variants').click(function() {
+                onVariantSelect($(this).find('.variant-id').html().trim(), $(this));
                 return false;
             });
             $(this).find('.product-id-container').hide();
+            $(this).find('.variant-id').hide();
         });
     };
     function searchProduct(q) {
@@ -22,8 +21,8 @@ function lookupProduct(container, onProductSelect) {
                 q: q,
             },
             success: function(response) {
-                var productList = $('#search-products', container);
-                var html = filterHtml(response, '#search-products').html();
+                var productList = $('#products', container);
+                var html = filterHtml(response, '#products').html();
                 $(productList).html(html);
                 initProductList();
             }
@@ -46,7 +45,7 @@ function lookupProduct(container, onProductSelect) {
 
 django.jQuery(function() {
     var $ = django.jQuery;
-    $('.related-lookup').relatedLookup(lookupProduct, {
+    $('.related-lookup').relatedLookup(lookupVariant, {
         responseContentSelector: '#search-products'
     });
 });

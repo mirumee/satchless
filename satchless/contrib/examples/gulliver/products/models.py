@@ -111,6 +111,9 @@ class HatTranslation(ProductTranslation):
 class HatVariant(Variant):
     product = models.ForeignKey(Hat, related_name='variants')
 
+    def __unicode__(self):
+        return _("This product has only one variant.")
+
 def _create_empty_variant(sender, instance, created, **kwargs):
     if not kwargs.get('raw', False) and created:
         instance.variants.create()

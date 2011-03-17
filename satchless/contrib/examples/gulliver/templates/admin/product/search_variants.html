@@ -7,7 +7,7 @@
 {% block content %}
 <div id="search-products">
     <div class="search filter module">
-        <form action="{% url admin:search-products %}"  method="get" id="search-product">
+        <form action="{% url admin:search-variants %}"  method="get" id="search-product">
             <input type="text" id="searchbar" name="q">
             <button class="search" type="submit" value="" name="search" >&nbsp;</button>
         </form>
@@ -27,6 +27,15 @@
                 </div>
                 <div class="td">
                     <a class="name" target="_blank" href="{{ product.get_absolute_url }}">{{ product }}</a>
+                </div>
+                <div class="td variants">
+        {% with product.variants.all as variants %}
+                    <ul>
+            {% for variant in variants %}
+                        <li class="variant">{{ variant }} <span class="variant-id">{{ variant.id }}</span></li>
+            {% endfor %}
+                    </ul>
+        {% endwith %}
                 </div>
             </div>
     {% endwith %}

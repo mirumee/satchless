@@ -28,7 +28,7 @@ class DiscountGroup(models.Model):
     def __unicode__(self):
         return self.name
 
-DiscountGroup.products.through._meta.verbose_name_plural = u"Product Discount"
+DiscountGroup.products.through._meta.verbose_name_plural = u"Discounted products"
 
 def _enforce_single_discountgroup(sender, instance, **kwargs):
     if isinstance(instance, DiscountGroup):

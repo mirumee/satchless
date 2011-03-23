@@ -9,7 +9,7 @@ function lookupProduct(container, onProductSelect) {
             $(this)
             .css({cursor: 'pointer'})
             .click(function() {
-                onProductSelect($(this).find('.product-id').html().trim(), $(this));
+                onProductSelect($(this).find('.product-id').html().trim());
                 return false;
             });
             $(this).find('.product-id-container').hide();

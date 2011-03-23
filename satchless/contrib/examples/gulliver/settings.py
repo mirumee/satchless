@@ -159,6 +159,10 @@ SATCHLESS_IMAGE_SIZES = {
         'size': (100, 100),
         'crop': True,
     },
+    'admin-icon': {
+        'size': (22, 22),
+        'crop': True,
+    },
     'category': {
         'size': (230, 257),
         'crop': True,

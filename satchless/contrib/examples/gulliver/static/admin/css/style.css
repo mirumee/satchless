@@ -5,7 +5,15 @@
     margin-top: 5px;
     text-align: center;
 }
-
+.dynamic-form .product {
+}
+    .dynamic-form .product {
+    }
+        .dynamic-form .product img.icon {
+            border: 1px solid;
+            border-color: #cccccc #dddddd #dddddd #cccccc;
+            vertical-align: top;
+        }
 #search-products {
 }
     #search-products #products .product .variants {

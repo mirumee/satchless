@@ -10,13 +10,6 @@ from .. import query
 register = template.Library()
 
 @register.filter
-def pre_discount_price_range(price_range_chain):
-    handlers_names = settings.SATCHLESS_PRICING_HANDLERS
-    index = handlers_names.index('sale.handler')
-    min_price, max_price = price_range_chain[handlers_names[index-1]]
-    return SortedDict((('min', min_price), ('max', max_price)))
-
-@register.filter
 def category_in_sale_url(category):
     path = list(category.get_ancestors()) + [category]
     path = [c.slug for c in path]
@@ -44,10 +37,4 @@ def product_in_category_tree_url(product, category=None):
     category = Category.objects.filter(products=product, lft__gte=category.lft,
                                        rght__lte=category.rght)[0]
     return product.get_url(category=category)
-
-@register.inclusion_tag("sale/snippets/price.html")
-def discount_price(product):
-    return {
-        'product': product
-    }
 

@@ -5,7 +5,7 @@ Writing custom Product models
 =============================
 
 Now we are going to create a simple model for your custom product. A module
-discussed here is present in ``satchless.contrib.examples.parrot``, so you
+discussed here is present in ``examples.parrot``, so you
 may refer to the code there too.
 
 Let's assume we sell different species of parrots which may be red, green or

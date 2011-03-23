@@ -1,71 +1,80 @@
 from django.conf import settings
 from django.utils.datastructures import SortedDict
 from django import template
+from django.template.base import Node
+from django.template.defaulttags import kwarg_re
+from django.utils.encoding import smart_str
 
 register = template.Library()
 
-@register.filter
-def variant_price(variant, currency=getattr(settings, 'SATCHLESS_DEFAULT_CURRENCY', None)):
-    if not currency:
-        return ''
-    try:
-        from satchless.pricing.handler import get_variant_price
-        price = get_variant_price(variant, currency)
-        if price is not None and price.has_value():
-            return price
-    except ImportError:
-        pass
-    return ''
+class BasePriceNode(Node):
+    def __init__(self, product, kwargs, asvar):
+        self.product = product
+        self.kwargs = kwargs
+        self.asvar = asvar
 
-@register.filter
-def product_price_range(product, currency=getattr(settings, 'SATCHLESS_DEFAULT_CURRENCY', None)):
-    if not currency:
-        return ''
-    try:
+    def get_price(self, product, currency, **kwargs):
+        raise NotImplementedError
+
+    def render(self, context):
+        product = self.product.resolve(context)
+        kwargs = dict([(smart_str(k, 'ascii'), v.resolve(context))
+                       for k, v in self.kwargs.items()])
+        currency = kwargs.pop('currency', getattr(settings, 'SATCHLESS_DEFAULT_CURRENCY', None))
+        result = ''
+        if currency:
+            r = self.get_price(product, currency, **kwargs)
+            if r:
+                result = r
+
+        if self.asvar:
+            context[self.asvar] = result
+            return ''
+        return result
+
+class VariantPriceNode(BasePriceNode):
+    def get_price(self, product, currency, **kwargs):
+        from satchless.pricing.handler import get_variant_price
+        return get_variant_price(product, currency, **kwargs)
+
+class ProductPriceRangeNode(BasePriceNode):
+    def get_price(self, product, currency, **kwargs):
         from satchless.pricing.handler import get_product_price_range
-        min_price, max_price = get_product_price_range(product, currency)
+        min_price, max_price = get_product_price_range(product, currency, **kwargs)
         if min_price is not None and min_price.has_value():
             return SortedDict((('min', min_price), ('max', max_price)))
-    except ImportError:
-        pass
-    return ''
 
-@register.filter
-def variant_price_chain(variant, currency=getattr(settings, 'SATCHLESS_DEFAULT_CURRENCY', None)):
-    if not currency:
-        return ''
-    try:
-        from satchless.pricing.handler import get_variant_price_chain
-        price = get_variant_price_chain(variant, currency)
-    except ImportError:
-        pass
-    return ''
+def _parse_price_tag(parser, token):
+    bits = token.split_contents()
+    if len(bits) < 3:
+        raise TemplateSyntaxError("'%s' takes at least one argument"
+                                  " (product instance)" % bits[0])
+    product = parser.compile_filter(bits[1])
+    kwargs = {}
+    asvar = None
+    bits = bits[2:]
+    if len(bits) >= 2 and bits[-2] == 'as':
+        asvar = bits[-1]
+        bits = bits[:-2]
 
-@register.filter
-def product_price_range_chain(product, currency=getattr(settings, 'SATCHLESS_DEFAULT_CURRENCY', None)):
-    if not currency:
-        return ''
-    try:
-        from satchless.pricing.handler import get_product_price_range_chain
-        return get_product_price_range_chain(product, currency)
-    except ImportError:
-        pass
-    return ''
+    if len(bits):
+        for bit in bits:
+            match = kwarg_re.match(bit)
+            if not match:
+                raise TemplateSyntaxError("Malformed arguments to url tag")
+            name, value = match.groups()
+            if name:
+                kwargs[name] = parser.compile_filter(value)
+            else:
+                raise TemplateSyntaxError("'%s' takes only named arguments" % bits[0])
 
-@register.filter
-def get_final_price(price_chain):
-    return price_chain.values()[-1]
+    return product, kwargs, asvar
 
-@register.filter
-def get_handler_price(price_chain, handler_name):
-    return price_chain[handler_name]
+@register.tag
+def variant_price(parser, token):
+    return VariantPriceNode(*_parse_price_tag(parser, token))
 
-@register.filter
-def get_final_price_range(price_chain):
-    min_price, max_price = price_chain.values()[-1]
-    return SortedDict((('min', min_price), ('max', max_price)))
+@register.tag
+def product_price_range(parser, token):
+    return ProductPriceRangeNode(*_parse_price_tag(parser, token))
 
-@register.filter
-def get_handler_price_range(price_chain, handler_name):
-    min_price, max_price = price_chain[handler_name]
-    return SortedDict((('min', min_price), ('max', max_price)))

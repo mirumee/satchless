@@ -15,11 +15,17 @@ def _discount_product(product, price):
     raise TypeError("Price must be a Price instance or tuple.")
 
 def get_variant_price(variant, currency, **context):
-    return _discount_product(variant.product, context.pop('price'))
+    if context.get('discount', True):
+        return _discount_product(variant.product, context.pop('price'))
+    return context.pop('price')
 
 def get_product_price_range(product, currency, **context):
-    return _discount_product(product, context.pop('price_range'))
+    if context.get('discount', True):
+        return _discount_product(product, context.pop('price_range'))
+    return context.pop('price_range')
 
 def get_cartitem_unit_price(cartitem, **context):
-    return _discount_product(cartitem.variant.get_subtype_instance().product,
-                             context.pop('price'))
+    if context.get('discount', True):
+        return _discount_product(cartitem.variant.get_subtype_instance().product,
+                                 context.pop('price'))
+    return context.pop('price')

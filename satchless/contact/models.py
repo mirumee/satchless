@@ -3,6 +3,8 @@ from django.db import models
 from django.utils.translation import ugettext_lazy as _
 from django.contrib.auth.models import User
 
+from ..util import countries
+
 class Address(models.Model):
     customer = models.ForeignKey('Customer')
     alias = models.CharField(_("short alias"), max_length=30,
@@ -13,7 +15,7 @@ class Address(models.Model):
     street_address_2 = models.CharField(_("street address 2"), max_length=256, blank=True)
     city = models.CharField(_("city"), max_length=256)
     postal_code = models.CharField(_("postal code"), max_length=20)
-    country = models.ForeignKey(Country)
+    country = models.CharField(_("country"), choices=countries.COUNTRY_CHOICES, max_length=2)
     tax_id = models.CharField(_("tax ID"), max_length=40, blank=True)
     phone = models.CharField(_("phone number"), max_length=30, blank=True)
 

@@ -30,7 +30,6 @@ Include neccessary applications in your ``INSTALLED_APPS`` tuple in Django
         'django.contrib.sessions',
         'django.contrib.admin',
         'mptt',
-        'countries',
         'satchless.product',
         'satchless.image',
 

@@ -62,3 +62,9 @@ Customizing your shop
       :ref:`Introduction to orders <checkout-order>` |
       :ref:`Delivery: partitioners and providers <checkout-delivery>` |
       :ref:`Payment <checkout-payment>`
+
+Reference
+=========
+
+     * :ref:`Settings <reference-settings>` – complete list of configuration
+       parameters read from the ``settings`` module.

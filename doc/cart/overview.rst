@@ -33,6 +33,8 @@ type is named ``satchless_cart``.
 Carts can be owned by registered users or anonymous. The latter ones are
 usually being used by customers who have not authorized themselves yet.
 
+.. _cart-add-to-cart:
+
 How to enable basic cart?
 -------------------------
 

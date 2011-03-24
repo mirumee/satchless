@@ -17,6 +17,8 @@ following:
     * ask customer to select the delivery method for each of the groups,
     * if needed, ask about details for the methods chosen.
 
+.. _checkout-delivery-partitioners:
+
 Partitioners: Grouping order items
 ----------------------------------
 
@@ -42,9 +44,10 @@ returns a list of groups it decided to create, and a list of remaining items
 which is passed to the next partitioner. The only requirement is to have all
 the order items grouped after the queue has been finished.
 
+.. _checkout-delivery-providers:
+
 Providers: Querying for delivery types
 --------------------------------------
-.. _checkout-delivery-providers:
 
 After the items have been grouped, it's time to ask for available delivery
 methods for each of the groups. Another queue,

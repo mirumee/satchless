@@ -128,7 +128,6 @@ INSTALLED_APPS = (
     'grappelli',
     'django.contrib.admin',
     'mptt',
-    'haystack',
     'countries',
     'satchless.product',
     'satchless.image',
@@ -138,20 +137,22 @@ INSTALLED_APPS = (
     'satchless.pricing',
     'satchless.contrib.pricing.simpleqty',
     'satchless.contrib.tax.flatgroups',
-    'satchless.contrib.search.haystack_predictive',
     #'satchless.contrib.stock.singlestore',
     'satchless.order',
     'satchless.delivery',
     'satchless.contrib.delivery.simplepost',
     'satchless.payment',
-    'satchless.contrib.payment.django_payments_provider',
-    'satchless.contrib.payment.mamona_provider',
     'products',
     'south',
     'pagination',
     'sale',
+
+    'haystack',
+    'satchless.contrib.search.haystack_predictive',
     'payments',
+    'satchless.contrib.payment.django_payments_provider',
     'mamona',
+    'satchless.contrib.payment.mamona_provider',
 )
 
 SATCHLESS_IMAGE_SIZES = {

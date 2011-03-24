@@ -1,9 +1,5 @@
-import datetime
-
-from django.conf import settings
-
 from haystack import site
-from haystack.indexes import *
+from haystack.indexes import EdgeNgramField, SearchIndex
 
 from satchless.product import models
 

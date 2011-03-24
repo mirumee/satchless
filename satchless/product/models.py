@@ -1,40 +1,22 @@
 from decimal import Decimal
-from django.conf import settings
 from django.db import models
 from django.utils.translation import ugettext_lazy as _
 from localeurl.models import reverse
-from mothertongue.models import MothertongueModelTranslate
 from mptt.models import MPTTModel
 
 from . import signals
 from ..util.models import Subtyped
 
-__all__ = ('ProductAbstract', 'Variant', 'Category', 'ProductAbstractTranslation', 'CategoryTranslation')
+__all__ = ('ProductAbstract', 'Variant', 'Category')
 
-class DescribedModel(MothertongueModelTranslate):
+class DescribedModel(models.Model):
     name = models.CharField(_('name'), max_length=128)
     description = models.TextField(_('description'), blank=True)
     meta_description = models.TextField(_('meta description'), blank=True,
             help_text=_("Description used by search and indexing engines"))
-    translated_fields = ('name', 'description', 'meta_description')
-    translation_set = 'translations'
 
     def __unicode__(self):
         return self.name
-
-    class Meta:
-        abstract = True
-
-
-class DescribedModelTranslation(models.Model):
-    language = models.CharField(max_length=5, choices=settings.LANGUAGES[1:])
-    name = models.CharField(_('name'), max_length=128)
-    description = models.TextField(_('description'), blank=True)
-    meta_description = models.TextField(_('meta description'), blank=True,
-            help_text=_("Description used by search and indexing engines"))
-
-    def __unicode__(self):
-        return "%s@%s" % (self.name, self.language)
 
     class Meta:
         abstract = True
@@ -44,6 +26,10 @@ class Category(MPTTModel, DescribedModel):
     slug = models.SlugField(max_length=50)
     parent = models.ForeignKey('self', null=True, blank=True,
                                related_name='children')
+
+    class Meta:
+        verbose_name = _("category")
+        verbose_name_plural = _("categories")
 
     def _parents_slug_path(self):
         parents = '/'.join(c.slug for c in self.get_ancestors())
@@ -77,17 +63,6 @@ class Category(MPTTModel, DescribedModel):
         """Uses reverse resolver, to force localeurl to add language code."""
         return reverse('satchless-product-category',
                 args=(self._parents_slug_path(), self.slug))
-
-    class Meta:
-        verbose_name = _("category")
-        verbose_name_plural = _("categories")
-
-
-class CategoryTranslation(DescribedModelTranslation):
-    category = models.ForeignKey(Category, related_name='translations')
-
-    class Meta(object):
-        unique_together = ('category', 'language')
 
 
 class Product(Subtyped):
@@ -138,16 +113,6 @@ class ProductAbstract(DescribedModel, Product):
     """
     Base class for every product to inherit from.
     """
-    class Meta:
-        abstract = True
-
-
-class ProductAbstractTranslation(DescribedModelTranslation):
-    """
-    Base class for product translations.
-    """
-    product = models.ForeignKey(Product, related_name='translations')
-
     class Meta:
         abstract = True
 

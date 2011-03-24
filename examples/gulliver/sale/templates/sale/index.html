@@ -1,5 +1,7 @@
 {% extends "sale/base.html" %}
 {% load pagination_tags %}
+{% load product_prices %}
+{% load prices %}
 {% load product_url %}
 {% load sale_tags %}
 {% load satchless_image %}
@@ -56,7 +58,18 @@ $(function() {
             <h3><a href="{{ product_url }}" title="{{ product.name }}">{{ product.name }}</a></h3>
         </div>
         <div class="price">
-        {% discount_price product %}
+                {% product_price_range product as price_range %}
+                {% if price_range.min != price_range.max %}
+            <span id="fullprice">
+                {{ price_range.min|currency }}{{ price_range.min|gross }} - {{ price_range.max|currency }}{{ price_range.max|gross }}
+            </span>
+                {% else %}
+                    {% product_price_range product discount=0 as undiscounted_price_range %}
+                    {% if price_range.min != undiscounted_price_range.min %}
+            <span class="strike">{{ undiscounted_price_range.min|gross }} {{ undiscounted_price_range.min|currency }}</span>
+                {% endif %}
+            <span id="fullprice">{{ price_range.min|gross }} {{ price_range.min|currency }}</span>
+            {% endif %}
         </div>
     </div>
     {% cycle '' '' '<div class="clear"></div>' %}

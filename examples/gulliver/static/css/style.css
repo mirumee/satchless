@@ -43,10 +43,19 @@ hr {
             color: #ed1c24;
         }
     #top-bar #lang-selector {
+        display: inline;
         float: right;
         text-align: right;
-        margin-bottom: 10px;
+        margin: 0 0 10px;
+        padding: 0;
     }
+        #top-bar #lang-selector li {
+            display: inline;
+            margin-left: 10px;
+        }
+        #top-bar #lang-selector li.selected {
+            font-weight: bold;
+        }
     #top-bar ul.menu {
         list-style-type: none;
         margin: 0;

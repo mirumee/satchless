@@ -13,19 +13,19 @@
 
 {% block top-bar %}
     <div id="top-bar" class="container_4">
-        <div id="lang-selector" class="grid_1 prefix_3">
+        <ul id="lang-selector" class="grid_1 prefix_3">
         {% for lang in LANGUAGES %}
             {% ifequal lang.0 LANGUAGE_CODE %}
-            <span class="selected">
-                <img src="{{ STATIC_URL }}img/buttons/{{ lang.0 }}.gif" alt="{{ lang.1 }}" title="{{ lang.1 }}" />
-            </span>
+            <li class="selected">
+                {{ lang.1 }}
+            </li>
             {% else %}
-            <span>
-                <a href="{{ request.path|chlocale:lang.0 }}"><img src="{{ STATIC_URL }}img/buttons/{{ lang.0 }}.gif" alt="{{ lang.1 }}" title="{{ lang.1 }}" /></a>
-            </span>
+            <li>
+                <a href="{{ request.path|chlocale:lang.0 }}">{{ lang.1 }}</a>
+            </li>
             {% endifequal %}
         {% endfor %}
-        </div>
+        </ul>
         <div class="clear"></div>
         <div class="grid_3">
             <ul class="menu">

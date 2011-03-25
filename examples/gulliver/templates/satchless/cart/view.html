@@ -38,8 +38,8 @@
 {% for form in formset.forms %}
     {{ form.id }}
     {% promote form.instance.variant as variant %}
-    {% with form.instance|cartitem_unit_price as unit_price %}
-    {% with form.instance|cartitem_price as item_price %}
+    {% cartitem_unit_price form.instance as unit_price %}
+    {% cartitem_price form.instance as item_price %}
             <tr class="item">
                 <td class="image">
                     <a href="{{ variant.product.get_url }}"><img src="{{ variant.product.main_image|at_size:'product-cart' }}" alt="{{ item }}" /></a>
@@ -68,8 +68,6 @@
                 </td>
                 {% endcomment %}
             </tr>
-    {% endwith %}
-    {% endwith %}
 {% endfor %}
         </tbody>
     {% if form.quantity.errors %}

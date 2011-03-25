@@ -47,17 +47,3 @@ class ParrotDiscountTest(TestCase):
         self.assertEqual(handler.get_variant_price(self.cockatoo_white_a, currency='BTW'),
                          Price(20, 20, currency='BTW'))
 
-    def test_cart_item_discounts(self):
-        # same in cart
-        cart = Cart.objects.create(typ='test')
-        cart.set_quantity(self.macaw_blue_a, 1)
-        item_macaw_blue_a = cart.items.get(variant=self.macaw_blue_a)
-        self.assertEqual(
-                handler.get_cartitem_unit_price(item_macaw_blue_a, currency='BTW'),
-                Price(7, Decimal('7.0'), currency='BTW'))
-        cart.set_quantity(self.cockatoo_white_a, 1)
-        item_cockatoo_white_a = cart.items.get(variant=self.cockatoo_white_a)
-        self.assertEqual(
-                handler.get_cartitem_unit_price(item_cockatoo_white_a, currency='BTW'),
-                Price(20, 20, currency='BTW'))
-

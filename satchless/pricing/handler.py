@@ -11,7 +11,7 @@ def get_variant_price(variant, currency, quantity=1, **context):
     price = Price()
     for handler in _handlers:
         try:
-            price = handler.get_variant_price(variant, currency=currency,
+            price = handler.get_variant_price(variant=variant, currency=currency,
                                               quantity=quantity, price=price,
                                               **context)
         except FinalValue, e:
@@ -22,7 +22,7 @@ def get_product_price_range(product, currency, **context):
     p_range = (Price(), Price())
     for handler in _handlers:
         try:
-            p_range = handler.get_product_price_range(product, currency=currency,
+            p_range = handler.get_product_price_range(product=product, currency=currency,
                                                       price_range=p_range,
                                                       **context)
         except FinalValue, e:

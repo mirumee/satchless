@@ -2,6 +2,8 @@
 import os
 import re
 
+from satchless.contrib.pricing.cache import CacheFactory
+
 PROJECT_ROOT = os.path.dirname( __file__ )
 
 DEBUG = True
@@ -190,10 +192,14 @@ SATCHLESS_DEFAULT_CURRENCY = 'GBP'
 
 INTERNAL_IPS = ['127.0.0.1']
 
+price_cache = CacheFactory()
+
 SATCHLESS_PRICING_HANDLERS = [
+    price_cache.getter, 
     'satchless.contrib.pricing.simpleqty.handler',
     'satchless.contrib.tax.flatgroups.handler',
     'sale.handler',
+    price_cache.setter,
 ]
 SATCHLESS_PRODUCT_VIEW_HANDLERS = [
     'core.handler.cart_handler',

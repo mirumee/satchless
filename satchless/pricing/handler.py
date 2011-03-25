@@ -1,7 +1,9 @@
 from django.conf import settings
 from django.utils.importlib import import_module
 
-from . import Price, StopPropagation
+from satchless.util.exceptions import FinalValue
+
+from . import Price
 
 _handlers = None
 
@@ -12,31 +14,20 @@ def get_variant_price(variant, currency, quantity=1, **context):
             price = handler.get_variant_price(variant, currency=currency,
                                               quantity=quantity, price=price,
                                               **context)
-        except StopPropagation:
-            break
+        except FinalValue, e:
+            return e.value
     return price
 
 def get_product_price_range(product, currency, **context):
     p_range = (Price(), Price())
     for handler in _handlers:
         try:
-            p_range = handler.get_product_price_range(product,
-                                                      currency=currency,
+            p_range = handler.get_product_price_range(product, currency=currency,
                                                       price_range=p_range,
                                                       **context)
-        except StopPropagation:
-            break
+        except FinalValue, e:
+            return e.value
     return p_range
-
-def get_cartitem_unit_price(cartitem, currency, **context):
-    price = Price()
-    for handler in _handlers:
-        try:
-            price = handler.get_cartitem_unit_price(cartitem, currency=currency,
-                                                    price=price, **context)
-        except StopPropagation:
-            break
-    return price
 
 def init():
     global _handlers

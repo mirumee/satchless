@@ -34,8 +34,8 @@
                 <td></td>
             </tr>
             {% endif %}
-            {% with form.instance|cartitem_unit_price as unit_price %}
-            {% with form.instance|cartitem_price as item_price %}
+            {% cartitem_unit_price form.instance as unit_price %}
+            {% cartitem_price form.instance as item_price %}
             <tr class="item">
                 <td rowspan="2">{{ forloop.counter }}</td>
                 <td rowspan="2">{% promote form.instance.variant as variant %}
@@ -65,8 +65,6 @@
                     {% with item_price|tax_name as taxname %}{% if taxname %}({{ taxname }}){% endif %}{% endwith %}
                 </td>
             </tr>
-            {% endwith %}
-            {% endwith %}
             {% endfor %}
         </tbody>
         <tfoot>

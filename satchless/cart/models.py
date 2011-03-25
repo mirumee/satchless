@@ -6,7 +6,6 @@ from django.contrib.auth.models import User
 from django.utils.translation import ugettext_lazy as _
 
 from ..product.models import Variant
-from ..pricing import Price
 
 from . import signals
 
@@ -105,12 +104,6 @@ class Cart(models.Model):
         except CartItem.DoesNotExist:
             return Decimal('0')
 
-    def get_total_price(self):
-        total = Price(0)
-        for i in self.items.all():
-            total += i.get_unit_price() * i.quantity
-        return total
-
     def is_empty(self):
         return self.items.count() == 0
 
@@ -126,12 +119,6 @@ class CartItem(models.Model):
     variant = models.ForeignKey(Variant)
     quantity = models.DecimalField(_("quantity"), max_digits=10,
                                    decimal_places=4)
-
-    def get_unit_price(self, **kwargs):
-        from ..pricing.handler import get_cartitem_unit_price
-        currency = self.cart.currency
-        return get_cartitem_unit_price(cartitem=self, currency=currency,
-                                       **kwargs)
 
     def save(self, *args, **kwargs):
         assert(self.quantity > 0)

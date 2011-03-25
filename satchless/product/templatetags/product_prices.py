@@ -8,22 +8,25 @@ from django.utils.encoding import smart_str
 register = template.Library()
 
 class BasePriceNode(Node):
-    def __init__(self, product, kwargs, asvar):
-        self.product = product
+    def __init__(self, item, kwargs, asvar):
+        self.item = item
         self.kwargs = kwargs
         self.asvar = asvar
 
-    def get_price(self, product, currency, **kwargs):
+    def get_price(self, item, currency, **kwargs):
         raise NotImplementedError
 
+    def get_currency_for_item(self, item):
+        return getattr(settings, 'SATCHLESS_DEFAULT_CURRENCY', None)
+
     def render(self, context):
-        product = self.product.resolve(context)
+        item = self.item.resolve(context)
         kwargs = dict([(smart_str(k, 'ascii'), v.resolve(context))
                        for k, v in self.kwargs.items()])
-        currency = kwargs.pop('currency', getattr(settings, 'SATCHLESS_DEFAULT_CURRENCY', None))
+        currency = kwargs.pop('currency', self.get_currency_for_item(item))
         result = ''
         if currency:
-            r = self.get_price(product, currency, **kwargs)
+            r = self.get_price(item, currency, **kwargs)
             if r:
                 result = r
 
@@ -44,7 +47,7 @@ class ProductPriceRangeNode(BasePriceNode):
         if min_price is not None and min_price.has_value():
             return SortedDict((('min', min_price), ('max', max_price)))
 
-def _parse_price_tag(parser, token):
+def parse_price_tag(parser, token):
     bits = token.split_contents()
     if len(bits) < 3:
         raise TemplateSyntaxError("'%s' takes at least one argument"
@@ -67,14 +70,13 @@ def _parse_price_tag(parser, token):
                 kwargs[name] = parser.compile_filter(value)
             else:
                 raise TemplateSyntaxError("'%s' takes only named arguments" % bits[0])
-
     return product, kwargs, asvar
 
 @register.tag
 def variant_price(parser, token):
-    return VariantPriceNode(*_parse_price_tag(parser, token))
+    return VariantPriceNode(*parse_price_tag(parser, token))
 
 @register.tag
 def product_price_range(parser, token):
-    return ProductPriceRangeNode(*_parse_price_tag(parser, token))
+    return ProductPriceRangeNode(*parse_price_tag(parser, token))
 

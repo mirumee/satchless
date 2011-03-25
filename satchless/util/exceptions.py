@@ -1,4 +1,4 @@
 class FinalValue(Exception):
-    "Break hanlders chain with given value."
+    "Force a value and break the handler chain"
     def __init__(self, value):
         self.value = value

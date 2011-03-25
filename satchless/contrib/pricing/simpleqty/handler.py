@@ -8,9 +8,13 @@ def get_variant_price(variant, currency, quantity=1, **kwargs):
         base_price = models.ProductPrice.objects.get(product=variant.product)
     except models.ProductPrice.DoesNotExist:
         return kwargs.pop('price', None)
-    if base_price.qty_mode == 'product' and kwargs.has_key('cart'):
-        quantity += kwargs['cart'].items.filter(variant__in=variant.product.variants.all())\
-                    .aggregate(Sum('quantity'))['quantity__sum']
+    if base_price.qty_mode == 'product' and 'cart' in kwargs:
+        if 'cartitem' in kwargs:
+            quantity += kwargs['cart'].items.filter(variant__in=variant.product.variants.exclude(pk=variant.pk))\
+                                                    .aggregate(Sum('quantity'))['quantity__sum']
+        else:
+            quantity += kwargs['cart'].items.filter(variant__in=variant.product.variants.all())\
+                                                    .aggregate(Sum('quantity'))['quantity__sum']
     try:
         price = base_price.qty_overrides.filter(min_qty__lte=quantity)\
                     .order_by('-min_qty')[0].price
@@ -42,25 +46,3 @@ def get_product_price_range(product, currency, **kwargs):
     return ( Price(net=min_price, gross=min_price, currency=currency),
              Price(net=max_price, gross=max_price, currency=currency) )
 
-def get_cartitem_unit_price(cartitem, currency, **kwargs):
-    product = cartitem.variant.get_subtype_instance().product
-    try:
-        base_price = models.ProductPrice.objects.get(product=product)
-    except models.ProductPrice.DoesNotExist:
-        return kwargs.pop('price', None)
-    if base_price.qty_mode == 'product':
-        quantity = cartitem.cart.items.filter(variant__in=product.variants.all())\
-                    .aggregate(Sum('quantity'))['quantity__sum']
-    else:
-        quantity = cartitem.quantity
-    try:
-        price_val = base_price.qty_overrides.filter(min_qty__lte=quantity)\
-                    .order_by('-min_qty')[0].price
-    except IndexError:
-        price_val = base_price.price
-    try:
-        offset = cartitem.variant.variantpriceoffset.price_offset
-    except models.VariantPriceOffset.DoesNotExist:
-        offset = 0
-    price = price_val + offset
-    return Price(net=price, gross=price, currency=currency)

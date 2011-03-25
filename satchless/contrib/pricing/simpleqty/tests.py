@@ -4,7 +4,8 @@ from django.test import TestCase, Client
 from django.db import models
 from satchless.cart.models import Cart
 from satchless.pricing.handler import Price, \
-        get_variant_price, get_product_price_range, get_cartitem_unit_price
+        get_variant_price, get_product_price_range
+from satchless.cart.templatetags.cart_prices import get_cartitem_unit_price
 from satchless.product.models import ProductAbstract, Variant
 from satchless.product.tests import DeadParrot, DeadParrotVariant
 from .models import ProductPrice, PriceQtyOverride, VariantPriceOffset
@@ -86,23 +87,17 @@ class ParrotTest(TestCase):
         cart.set_quantity(self.macaw_blue_d, 4)
         item_macaw_blue_a = cart.items.get(variant=self.macaw_blue_a)
         item_macaw_blue_d = cart.items.get(variant=self.macaw_blue_d)
-        self.assertEqual(get_cartitem_unit_price(item_macaw_blue_a, currency='BTC'), Price(Decimal('12.0'), currency='BTC'))
+
         self.assertEqual(get_cartitem_unit_price(item_macaw_blue_d, currency='BTC'), Price(Decimal('10.0'), currency='BTC'))
+        self.assertEqual(get_cartitem_unit_price(item_macaw_blue_a, currency='BTC'), Price(Decimal('12.0'), currency='BTC'))
         cart.add_quantity(self.macaw_blue_a, 1)
         cart.add_quantity(self.macaw_blue_d, 1)
         item_macaw_blue_a = cart.items.get(variant=self.macaw_blue_a)
         item_macaw_blue_d = cart.items.get(variant=self.macaw_blue_d)
 
-        # cartitem
-        self.assertEqual(get_cartitem_unit_price(item_macaw_blue_a, currency='BTC'), Price(Decimal('11.0'), currency='BTC'))
+        self.assertEqual(get_variant_price(item_macaw_blue_a.variant.get_subtype_instance(), currency='BTC', cart=cart),
+                         Price(Decimal('11.0'), currency='BTC'))
         # contextless product
-        self.assertEqual(get_variant_price(self.macaw_blue_a, currency='BTC'), Price(Decimal('12.0'), currency='BTC'))
-        # product in cart context
-        self.assertEqual(get_variant_price(self.macaw_blue_a, currency='BTC', cart=cart), Price(Decimal('11.0'), currency='BTC'))
+        self.assertEqual(get_variant_price(item_macaw_blue_a.variant.get_subtype_instance(), currency='BTC'),
+                         Price(Decimal('12.0'), currency='BTC'))
 
-        # cartitem
-        self.assertEqual(get_cartitem_unit_price(item_macaw_blue_d, currency='BTC'), Price(Decimal('9.0'), currency='BTC'))
-        # contextless product
-        self.assertEqual(get_variant_price(self.macaw_blue_d, currency='BTC'), Price(Decimal('10.0'), currency='BTC'))
-        # product in cart context
-        self.assertEqual(get_variant_price(self.macaw_blue_d, currency='BTC', cart=cart), Price(Decimal('9.0'), currency='BTC'))

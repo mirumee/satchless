@@ -10,15 +10,15 @@ def get_variant_price(variant, currency, quantity=1, **kwargs):
         return kwargs.pop('price', None)
     cart = kwargs.get('cart', None)
     if base_price.qty_mode == 'product' and cart:
-        cart_quantity = cart.items.filter(variant__in=variant.product.variants.filter())\
-                                                .aggregate(Sum('quantity'))['quantity__sum'] or 0
+        cart_quantity = (cart.items.filter(variant__in=variant.product.variants.all())
+                                   .aggregate(Sum('quantity'))['quantity__sum'] or 0)
         if 'cartitem' in kwargs:
             quantity = cart_quantity
         else:
             quantity += cart_quantity
     try:
-        price = base_price.qty_overrides.filter(min_qty__lte=quantity)\
-                    .order_by('-min_qty')[0].price
+        price = base_price.qty_overrides.filter(min_qty__lte=quantity) \
+                                        .order_by('-min_qty')[0].price
     except IndexError:
         price = base_price.price
     try:

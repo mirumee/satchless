@@ -1,7 +1,6 @@
 from decimal import Decimal
 from django.db import models
 from django.utils.translation import ugettext_lazy as _
-from localeurl.models import reverse
 from mptt.models import MPTTModel
 
 from . import signals
@@ -59,11 +58,6 @@ class Category(MPTTModel, DescribedModel):
         return ('satchless.product.views.category',
                 (self._parents_slug_path(), self.slug))
 
-    def get_url(self):
-        """Uses reverse resolver, to force localeurl to add language code."""
-        return reverse('satchless-product-category',
-                args=(self._parents_slug_path(), self.slug))
-
 
 class Product(Subtyped):
     """
@@ -90,13 +84,8 @@ class Product(Subtyped):
         return ('satchless-product-product', (self.slug, self.pk))
 
     @models.permalink
-    def get_absolute_url(self):
-        return self._get_url(category=None)
-
-    def get_url(self, category=None):
-        """Uses reverse resolver, to force localeurl to add language code."""
-        view, args = self._get_url(category=category)
-        return reverse(view, args=args)
+    def get_absolute_url(self, category=None):
+        return self._get_url(category=category)
 
     def sanitize_quantity(self, quantity):
         """

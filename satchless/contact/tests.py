@@ -3,7 +3,6 @@ from django.contrib.auth.models import User
 from django.core.urlresolvers import reverse
 from django.test import TestCase, Client
 from django.db import models
-from countries.models import Country
 from .models import *
 
 class ContactTest(TestCase):
@@ -36,10 +35,9 @@ class ContactTest(TestCase):
 
     def test_address_creation(self):
         c1 = Customer.objects.get_or_create_for_user(self.user1)
-        poland = Country.objects.get(iso='PL')
         a1 = c1.address_set.create(alias="Mirumee",
                 full_name="Test User", street_address_1="pl. Solny 13/42",
-                city=u"Wrocław", postal_code="50-061", country=poland)
+                city=u"Wrocław", postal_code="50-061", country='PL')
         self.assertEqual(a1.customer.user, self.user1)
         self.assertEqual(a1.alias, unicode(a1))
 
@@ -72,7 +70,7 @@ class ContactTest(TestCase):
         a2 = c2.address_set.create(alias="Biuro",
                 full_name=u"Józef Tkaczuk", company_name="Sejm RP",
                 street_address_1=u"ul. Wiejska 4/6/8", city="Warszawa",
-                postal_code="00-902", country=Country.objects.get(iso='PL'))
+                postal_code="00-902", country='PL')
 
         self._test_status(reverse('satchless-contact-address_edit', kwargs={'address_pk': a2.pk}),
                 client_instance=cli_anon, status_code=302)

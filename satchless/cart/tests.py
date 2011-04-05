@@ -126,12 +126,12 @@ class ParrotTest(TestCase):
         self._test_status(reverse('satchless-cart-view', kwargs={'typ': 'satchless_cart'}),
                 client_instance=cli_user1, status_code=200)
 
-        self._test_status(self.macaw.get_url(),
+        self._test_status(self.macaw.get_absolute_url(),
                 method='post',
                 data={'typ': 'satchless_cart', 'color': 'blue', 'looks_alive': 1, 'quantity': 1},
                 client_instance=cli_anon,
                 status_code=302)
-        self._test_status(self.cockatoo.get_url(),
+        self._test_status(self.cockatoo.get_absolute_url(),
                 method='post',
                 data={'typ': 'satchless_cart', 'color': 'white', 'looks_alive': 1, 'quantity': 10},
                 client_instance=cli_user1,

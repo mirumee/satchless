@@ -5,7 +5,7 @@
 {% block breadcrumbs %}
     {{ block.super }}
     {% for cat in path %}
-    <li><a href="{{ cat.get_url }}">{{ cat }}</a></li>
+    <li><a href="{{ cat.get_absolute_url }}">{{ cat }}</a></li>
     {% endfor %}
     <li>{{ product }}</li>
 {% endblock %}

@@ -130,7 +130,6 @@ INSTALLED_APPS = (
     'grappelli',
     'django.contrib.admin',
     'mptt',
-    'countries',
     'satchless.product',
     'satchless.image',
     'satchless.contrib.productset',

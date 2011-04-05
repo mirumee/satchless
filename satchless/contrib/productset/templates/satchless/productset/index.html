@@ -6,7 +6,7 @@
     <ul>
         {% for set in sets %}
         <li>
-            <a href="{{ set.get_url }}">{{ set.name }}</a>
+            <a href="{{ set.get_absolute_url }}">{{ set.name }}</a>
         </li>
         {% endfor %}
     </ul>

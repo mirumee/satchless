@@ -6,8 +6,6 @@ from django.utils.translation import ugettext as _
 from django.views.generic.simple import direct_to_template
 import django.forms
 
-from haystack.query import EmptySearchQuerySet, RelatedSearchQuerySet
-
 from satchless.contrib.productset.models import ProductSet, ProductSetItem
 from satchless.contrib.productset.admin import ProductSetImageInline
 from satchless.contrib.search.haystack_predictive.views import search_products

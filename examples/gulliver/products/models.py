@@ -18,6 +18,11 @@ class Category(satchless.product.models.Category,
         verbose_name = _("category")
         verbose_name_plural = _("categories")
 
+    def get_url(self):
+        """Uses reverse resolver, to force localeurl to add language code."""
+        return reverse('satchless-product-category',
+                args=(self._parents_slug_path(), self.slug))
+
 
 class CategoryImage(Image):
     category = models.OneToOneField(Category, related_name='image')
@@ -64,6 +69,11 @@ class Product(satchless.product.models.ProductAbstract,
 
     class Meta:
         abstract = True
+
+    def get_url(self, category=None):
+        """Uses reverse resolver, to force localeurl to add language code."""
+        view, args = self._get_url(category=category)
+        return reverse(view, args=args)
 
 
 class ProductTranslation(models.Model):

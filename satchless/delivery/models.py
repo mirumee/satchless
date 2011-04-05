@@ -1,10 +1,10 @@
-from countries.models import Country
 from django.conf import settings
 from django.db import models
 from django.utils.translation import ugettext_lazy as _
 from mothertongue.models import MothertongueModelTranslate
 
 from ..order.models import DeliveryGroup
+from ..util import countries
 from ..util.models import Subtyped
 
 class DeliveryVariant(MothertongueModelTranslate, Subtyped):
@@ -43,7 +43,9 @@ class PhysicalShippingVariant(DeliveryVariant):
                                                  max_length=256, blank=True)
     shipping_city = models.CharField(_("city"), max_length=256)
     shipping_postal_code = models.CharField(_("postal code"), max_length=20)
-    shipping_country = models.ForeignKey(Country, related_name='+')
+    shipping_country = models.CharField(_("country"),
+                                        choices=countries.COUNTRY_CHOICES,
+                                        max_length=2, blank=True)
     shipping_phone = models.CharField(_("phone number"),
                                       max_length=30, blank=True)
 
@@ -51,4 +53,4 @@ class PhysicalShippingVariant(DeliveryVariant):
         abstract = True
 
     def __unicode__(self):
-        return "%s for %s, %s" % (self.name, self.shipping_full_name, self.shipping_country)
+        return "%s for %s, %s" % (self.name, self.shipping_full_name, self.get_shipping_country_display())

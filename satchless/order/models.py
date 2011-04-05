@@ -1,4 +1,3 @@
-from countries.models import Country
 import datetime
 from django.conf import settings
 from django.contrib.auth.models import User
@@ -9,6 +8,7 @@ from django.utils.translation import ugettext_lazy as _
 from ..cart.models import Cart
 from ..pricing import Price
 from ..product.models import Variant
+from ..util import countries
 from . import signals
 from . import listeners
 
@@ -99,8 +99,9 @@ class Order(models.Model):
     billing_city = models.CharField(_("city"), max_length=256, blank=True)
     billing_postal_code = models.CharField(_("postal code"),
                                            max_length=20, blank=True)
-    billing_country = models.ForeignKey(Country, blank=True, null=True,
-                                        related_name='+')
+    billing_country = models.CharField(_("country"),
+                                       choices=countries.COUNTRY_CHOICES,
+                                       max_length=2, blank=True)
     billing_tax_id = models.CharField(_("tax ID"), max_length=40, blank=True)
     billing_phone = models.CharField(_("phone number"),
                                      max_length=30, blank=True)

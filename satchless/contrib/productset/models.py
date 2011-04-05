@@ -1,6 +1,5 @@
 from django.db import models
 from django.utils.translation import ugettext_lazy as _
-from localeurl.models import reverse
 
 from satchless.product.models import Variant
 from satchless.product.models import DescribedModel
@@ -12,9 +11,6 @@ class ProductSet(DescribedModel):
     @models.permalink
     def get_absolute_url(self):
         return ('satchless.contrib.productset.views.details', (self.slug,))
-
-    def get_url(self):
-        return reverse('satchless.contrib.productset.views.details', args=(self.slug,))
 
     class Meta:
         verbose_name = _("product set")

@@ -18,8 +18,8 @@ in any other way).
 Create new Django project. To learn how to do it, have a look at `great
 documentation`_ they provide.
 
-Satchless applications
-----------------------
+Applications and settings
+-------------------------
 
 Include neccessary applications in your ``INSTALLED_APPS`` tuple in Django
 ``settings.py`` file. For a basic shop, the list would look like::
@@ -36,12 +36,13 @@ Include neccessary applications in your ``INSTALLED_APPS`` tuple in Django
         # You may skip the following ones when running just a product catalog:
         'satchless.contact',
         'satchless.cart',
+        'satchless.pricing',
+        'satchless.order',
 
         # The following list depends on what kinds of products you want to sell:
         'satchless.contrib.products.dummy',
         'satchless.contrib.productset',
     )
-
 
 Add neccessary entries to your ``urls.py`` file. The prefixes used here are
 just examples and you may change them freely.::
@@ -51,6 +52,7 @@ just examples and you may change them freely.::
         url(r'^contact/', include('satchless.contact.urls')),
         url(r'^image/', include('satchless.image.urls')),
         url(r'^cart/', include('satchless.cart.urls')),
+        url(r'^checkout/', include('satchless.order.urls')),
         )
 
 Run ``./manage.py syncdb`` to create the database tables.
@@ -64,9 +66,28 @@ Put initial settings for the product image files in ``settings.py``::
         }
     }
 
-The last thing you need to do is set the default currency for your store. To do so, add SATCHLESS_DEFAULT_CURRENCY to your settings.py, setting its value to a three-letter ISO code::
+Shop, or just a product catalog?
+................................
 
-    SATCHLESS_DEFAULT_CURRENCY = 'USD'
+If you have enabled ``satchless.cart``, ``satchless.pricing`` or
+``satchless.order`` app – which means you want to have anything more than just
+a product catalog – you should also set the default currency the shop operates
+in. ISO 3-letter codes are accepted, for example::
+
+    SATCHLESS_DEFAULT_CURRENCY = 'EUR'
+
+Also, base :ref:`pricing handler <pricing-overview>` should be configured, as
+well as basic settings for :ref:`order handling <checkout-order>`::
+
+    SATCHLESS_PRICING_HANDLERS = [
+        'satchless.contrib.pricing.simpleqty.handler',
+    ]
+    SATCHLESS_ORDER_PARTITIONERS = [
+        'satchless.contrib.order.partitioner.simple',
+    ]
+    SATCHLESS_DELIVERY_PROVIDERS = [
+        'satchless.contrib.delivery.simplepost.provider',
+    ]
 
 Running
 -------

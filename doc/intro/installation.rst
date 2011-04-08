@@ -64,6 +64,10 @@ Put initial settings for the product image files in ``settings.py``::
         }
     }
 
+The last thing you need to do is set the default currency for your store. To do so, add SATCHLESS_DEFAULT_CURRENCY to your settings.py, setting its value to a three-letter ISO code::
+
+    SATCHLESS_DEFAULT_CURRENCY = 'USD'
+
 Running
 -------
 

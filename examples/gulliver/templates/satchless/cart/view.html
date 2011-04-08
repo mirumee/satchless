@@ -42,7 +42,11 @@
     {% cartitem_price form.instance as item_price %}
             <tr class="item">
                 <td class="image">
+    {% if variant.product.main_image %}
                     <a href="{{ variant.product.get_url }}"><img src="{{ variant.product.main_image|at_size:'product-cart' }}" alt="{{ item }}" /></a>
+    {% else %}
+                    <a href="{{ variant.product.get_url }}">{{ variant }}</a>
+    {% endif %}
                 </td>
                 <td class="name">
                     <a href="{{ variant.product.get_url }}">{{ variant.product }}</a>

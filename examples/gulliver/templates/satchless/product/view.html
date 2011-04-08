@@ -5,7 +5,7 @@
 {% load product_prices %}
 {% load satchless_image %}
 
-{% block title %}Oliver Spencer &mdash; {{ product.name }}{% endblock %}
+{% block title %}{{ block.super }} &mdash; {{ product.name }}{% endblock %}
 
 {% block body-class %}{{ block.super }} {% if path %}cat-{{ path.0.slug }} {% endif %}product{% endblock %}
 

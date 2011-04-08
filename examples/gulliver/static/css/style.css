@@ -200,13 +200,7 @@ body#store.product {
             margin: 15px 0 25px;
         }
             body#store.product .variant-form .add-to-cart .add-to-bag {
-                background: transparent;
-                border: 0 none;
-                color: #ed1c24;
-                cursor: pointer;
                 font: inherit;
-                height: 18px;
-                line-height: 18px;
                 margin: 0;
                 padding: 0;
             }

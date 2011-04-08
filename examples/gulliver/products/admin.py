@@ -31,7 +31,8 @@ class ProductForm(satchless.product.admin.ProductForm):
     def __init__(self, *args, **kwargs):
         super(ProductForm, self).__init__(*args, **kwargs)
         if self.instance.id:
-            self.fields['main_image'].queryset = models.ProductImage.objects.filter(product=self.instance)
+            self.fields['main_image'].queryset = (models.ProductImage.objects
+                                                        .filter(product=self.instance))
         else:
             self.fields['main_image'].queryset = EmptyQuerySet(model=models.ProductImage)
 
@@ -65,7 +66,7 @@ class CardiganTranslationInline(TranslationInline):
 
 
 class CardiganAdmin(ProductAdmin):
-    inlines = [ CardiganTranslationInline, CardiganVariantInline, ProductImageInline ]
+    inlines = [CardiganTranslationInline, CardiganVariantInline, ProductImageInline]
 
 
 class DressVariantInline(admin.TabularInline):
@@ -77,8 +78,8 @@ class DressTranslationInline(TranslationInline):
 
 
 class DressAdmin(ProductAdmin):
-    inlines = [DressTranslationInline, PriceInline, DiscountInline,
-               DressVariantInline, ProductImageInline]
+    inlines = [DressTranslationInline, DressVariantInline, PriceInline,
+               DiscountInline, ProductImageInline]
 
 
 class HatTranslationInline(TranslationInline):
@@ -112,7 +113,8 @@ class ShirtTranslationInline(TranslationInline):
 
 
 class ShirtAdmin(ProductAdmin):
-    inlines = [ ShirtTranslationInline, ShirtVariantInline, ProductImageInline ]
+    inlines = [ShirtTranslationInline, ShirtVariantInline,
+               PriceInline, DiscountInline, ProductImageInline]
 
 
 class TrousersVariantInline(admin.TabularInline):
@@ -125,7 +127,7 @@ class TrousersTranslationInline(TranslationInline):
 
 class TrousersAdmin(ProductAdmin):
     inlines = [TrousersTranslationInline, TrousersVariantInline,
-               ProductImageInline]
+               PriceInline, DiscountInline, ProductImageInline]
 
 
 class TShirtVariantInline(admin.TabularInline):
@@ -137,7 +139,8 @@ class TShirtTranslationInline(TranslationInline):
 
 
 class TShirtAdmin(ProductAdmin):
-    inlines = [TShirtTranslationInline, TShirtVariantInline, ProductImageInline]
+    inlines = [TShirtTranslationInline, TShirtVariantInline,
+               PriceInline, DiscountInline, ProductImageInline]
 
 
 class CategoryImageInline(ImageInline):

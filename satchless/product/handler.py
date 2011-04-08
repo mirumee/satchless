@@ -15,7 +15,7 @@ def product_view(instances, request):
 def init_queue():
     global _handlers_queue
     _handlers_queue = []
-    for handler in settings.SATCHLESS_PRODUCT_VIEW_HANDLERS:
+    for handler in getattr(settings, 'SATCHLESS_PRODUCT_VIEW_HANDLERS', []):
         if isinstance(handler, str):
             mod_name, han_name = handler.rsplit('.', 1)
             module = import_module(mod_name)

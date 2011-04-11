@@ -3,7 +3,7 @@ from django.utils.translation import ugettext_lazy as _
 
 COUNTRY_CHOICES = (
     ('AF', _(u'Afghanistan')),
-    ('AX', _(u'ÅLand Islands')),
+    ('AX', _(u'Åland Islands')),
     ('AL', _(u'Albania')),
     ('DZ', _(u'Algeria')),
     ('AS', _(u'American Samoa')),

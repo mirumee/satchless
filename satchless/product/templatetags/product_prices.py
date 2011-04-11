@@ -50,12 +50,15 @@ class ProductPriceRangeNode(BasePriceNode):
 def parse_price_tag(parser, token):
     bits = token.split_contents()
     if len(bits) < 3:
-        raise TemplateSyntaxError("'%s' takes at least one argument"
-                                  " (product instance)" % bits[0])
+        raise template.TemplateSyntaxError(
+                "'%s' syntax is {%% %s <instance> [currency='<iso-code>'] as <variable-name> %%}" % (
+                    bits[0], bits[0]))
     product = parser.compile_filter(bits[1])
     kwargs = {}
     asvar = None
+    print bits
     bits = bits[2:]
+    print bits
     if len(bits) >= 2 and bits[-2] == 'as':
         asvar = bits[-1]
         bits = bits[:-2]
@@ -64,12 +67,12 @@ def parse_price_tag(parser, token):
         for bit in bits:
             match = kwarg_re.match(bit)
             if not match:
-                raise TemplateSyntaxError("Malformed arguments to url tag")
+                raise template.TemplateSyntaxError("Malformed arguments to '%s' tag" % bits[0])
             name, value = match.groups()
             if name:
                 kwargs[name] = parser.compile_filter(value)
             else:
-                raise TemplateSyntaxError("'%s' takes only named arguments" % bits[0])
+                raise template.TemplateSyntaxError("'%s' takes only named arguments" % bits[0])
     return product, kwargs, asvar
 
 @register.tag

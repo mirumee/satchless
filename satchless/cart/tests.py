@@ -3,11 +3,10 @@ from decimal import Decimal
 from django.conf import settings
 from django.core.urlresolvers import reverse
 from django.test import TestCase, Client
-from django.db import models
 from django import forms
 
 from satchless.product.forms import BaseVariantForm
-from satchless.product.models import ProductAbstract, Category
+from satchless.product.models import Category
 from satchless.product.signals import variant_formclass_for_product
 from satchless.product.tests import DeadParrot, DeadParrotVariant
 

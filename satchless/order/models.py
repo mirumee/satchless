@@ -1,5 +1,4 @@
 import datetime
-from django.conf import settings
 from django.contrib.auth.models import User
 from django.core.exceptions import ObjectDoesNotExist
 from django.db import models
@@ -10,7 +9,6 @@ from ..pricing import Price
 from ..product.models import Variant
 from ..util import countries
 from . import signals
-from . import listeners
 
 class EmptyCart(Exception):
     pass
@@ -28,7 +26,6 @@ class OrderManager(models.Manager):
 
         order_pk = None
         order = None
-        safe_statuses = ['checkout', 'payment-pending', 'cancelled']
         if session:
             order_pk = session.get('satchless_order')
         previous_orders = self.filter(cart=cart)

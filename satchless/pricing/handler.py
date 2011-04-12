@@ -1,4 +1,5 @@
 from django.conf import settings
+from django.core.exceptions import ImproperlyConfigured
 from django.utils.importlib import import_module
 
 from satchless.util.exceptions import FinalValue
@@ -32,12 +33,17 @@ def get_product_price_range(product, currency, **context):
 def init():
     global _handlers
     _handlers = []
-    for handler in settings.SATCHLESS_PRICING_HANDLERS:
-        if isinstance(handler, str):
-            mod_name, han_name = handler.rsplit('.', 1)
+    for handler_setting in settings.SATCHLESS_PRICING_HANDLERS:
+        if isinstance(handler_setting, str):
+            mod_name, han_name = handler_setting.rsplit('.', 1)
             module = import_module(mod_name)
-            _handlers.append(getattr(module, han_name))
+            handler = getattr(module, han_name)
         else:
-            _handlers.append(handler)
-
+            handler = handler_setting
+        for method in ('get_variant_price', 'get_product_price_range'):
+            if not callable(getattr(handler, method, None)):
+                raise ImproperlyConfigured(
+                    '%s in SATCHLESS_PRICING_HANDLERS does not implement %s() method' % (
+                            handler_setting, method))
+        _handlers.append(handler)
 init()

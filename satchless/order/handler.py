@@ -1,4 +1,5 @@
 from django.conf import settings
+from django.core.exceptions import ImproperlyConfigured
 from django.utils.importlib import import_module
 
 _partitioners_queue = None
@@ -70,14 +71,20 @@ def init_queues():
     handlers = getattr(settings, 'SATCHLESS_ORDER_PARTITIONERS', [
         'satchless.contrib.order.partitioner.simple',
     ])
-    for handler in handlers:
-        if isinstance(handler, str):
-            mod_name, han_name = handler.rsplit('.', 1)
+    for handler_setting in handlers:
+        if isinstance(handler_setting, str):
+            mod_name, han_name = handler_setting.rsplit('.', 1)
             module = import_module(mod_name)
             handler = getattr(module, han_name)
+        else:
+            handler = handler_setting
+        if not callable(getattr(handler, 'partition', None)):
+            raise ImproperlyConfigured(
+                '%s in SATCHLESS_ORDER_PARTITIONERS does not implement partition() method' %\
+                        handler_setting)
         _partitioners_queue.append(handler)
 
-    def build_q_from_paths(setting_name):
+    def build_q_from_paths(setting_name, required_methods):
         queue = []
         elements = getattr(settings, setting_name, [])
         for e in elements:
@@ -89,11 +96,18 @@ def init_queues():
             else:
                 raise ValueError('%r in %s is not a proper Python path' % \
                         (e, setting_name))
+            for method in required_methods:
+                if not callable(getattr(e_obj, method, None)):
+                    raise ImproperlyConfigured('%s in %s does not implement %s() method' % (
+                            e, setting_name, method))
         return queue
 
     global _delivery_providers_queue
-    _delivery_providers_queue = build_q_from_paths('SATCHLESS_DELIVERY_PROVIDERS')
+    _delivery_providers_queue = build_q_from_paths(
+            'SATCHLESS_DELIVERY_PROVIDERS', ('enum_types', 'get_formclass', 'get_variant'))
     global _payment_providers_queue
-    _payment_providers_queue = build_q_from_paths('SATCHLESS_PAYMENT_PROVIDERS')
+    _payment_providers_queue = build_q_from_paths(
+            'SATCHLESS_PAYMENT_PROVIDERS',
+            ('enum_types', 'get_configuration_formclass', 'get_variant', 'get_confirmation_form'))
 
 init_queues()

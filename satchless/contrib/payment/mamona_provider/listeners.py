@@ -10,7 +10,6 @@ def return_urls_query_listener(sender, instance=None, urls=None, **kwargs):
     urls['failure'] = urls['paid'] = reverse(
                 'satchless-order-view',
                 kwargs={'order_pk': instance.order.order.pk})
-    print urls
 
 def order_items_query_listener(sender, instance=None, items=None, **kwargs):
     for item in OrderedItem.objects.filter(delivery_group__order=instance.order.order):

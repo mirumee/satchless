@@ -56,9 +56,7 @@ def parse_price_tag(parser, token):
     product = parser.compile_filter(bits[1])
     kwargs = {}
     asvar = None
-    print bits
     bits = bits[2:]
-    print bits
     if len(bits) >= 2 and bits[-2] == 'as':
         asvar = bits[-1]
         bits = bits[:-2]

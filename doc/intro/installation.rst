@@ -89,6 +89,23 @@ well as basic settings for :ref:`order handling <checkout-order>`::
         'satchless.contrib.delivery.simplepost.provider',
     ]
 
+Finally, you should enable some payment modules. Currently Satchless supports
+`django-payments`_ and `mamona`_ as payment backends. Configuring them is
+beyond the scope of this document, but once you have it done, just enable
+corresponding providers::
+
+    SATCHLESS_PAYMENT_PROVIDERS = [
+        'satchless.contrib.payment.django_payments_provider.provider',
+        'satchless.contrib.payment.mamona_provider.provider',
+    ]
+
+    # This setting specifies which payment channels of django-payments
+    # will be available to Satchless.
+    SATCHLESS_DJANGO_PAYMENT_TYPES = ('dummy',)
+
+.. _`django-payments`: http://github.com/mirumee/django-payments/
+.. _`mamona`: http://github.com/emesik/mamona/
+
 Running
 -------
 

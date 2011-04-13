@@ -100,9 +100,18 @@ The default handler
 -------------------
 
 The default handler shipped with satchless
-(``satchless.contrib.pricing.simpleqty.handler``) is a stupid one, absolutely
-unaware of currencies.  It will automatically sign the price retrieved from
-database with any currency code you ask it.
+(``satchless.contrib.pricing.simpleqty.handler``) offers quantity-based
+discount in two forms:
+    * *per variant*: variant quantity changes the price. For example,
+      you will get a discount for buying *≥n* yellow t-shirts, but adding
+      green ones will not change the price.
+    * *per product*: quantity of all product's variants counts into a
+      discount. You may get a lower price, depending on the total number
+      of t-shirts ordered, no matter what colour they have.
+
+In the currency terms, this handler is a stupid one.  It will
+automatically sign the price retrieved from database with any currency
+code you ask it.
 
 However, more advanced handlers for multi-currency shops should return a
 ``Price`` object **only** if a value is found for the currency they have been

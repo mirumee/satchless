@@ -66,5 +66,17 @@ Customizing your shop
 Reference
 =========
 
-     * :ref:`Settings <reference-settings>` – complete list of configuration
-       parameters read from the ``settings`` module.
+    * **Contrib packages**
+        * *pricing*:
+            * :ref:`simpleqty <contrib-pricing-simpleqty>` – for single-currency
+              pricing with simple quantity discounts
+            * :ref:`cache <contrib-pricing-cache>` – caching the prices when
+              query is costly
+        * *tax*:
+            * :ref:`flatgroups <contrib-tax-flatgroups>` – grouping products
+              with flat rate tax
+        * *stock*:
+            * :ref:`singlestore <contrib-stock-singlestore>` – stock management
+              for single storage space
+    * :ref:`Settings <reference-settings>` – complete list of configuration
+      parameters read from the ``settings`` module.

@@ -59,24 +59,29 @@ You have also defined:
 
 The cart contains:
     * 6 green t-shirts
-    * 10 red t-shirts
+    * 10 blue t-shirts
+    * 8 red t-shirts
 
-With **per-product** pricing, you will get:
+With **per-product** pricing all the items qualify for discount because there
+are more than 10 t-shirts:
 
 ============= === ========== =========
 Item          Qty Unit price     Price
 ============= === ========== =========
-green t-shirt   6        *8*      *48*
-red t-shirt    10        *8*      *80*
-**TOTAL**                      **128**
+green t-shirt   6          8        48
+blue t-shirt   10          8        80
+red t-shirt     8         10        80
+**TOTAL**                      **208**
 ============= === ========== =========
 
-But with **per-variant** pricing, the result would be:
+But with **per-variant** pricing, only the blue ones qualify. The result
+would be:
 
 ============= === ========== =========
 Item          Qty Unit price     Price
 ============= === ========== =========
 green t-shirt   6         10        60
-red t-shirt    10        *8*      *80*
-**TOTAL**                      **140**
+blue t-shirt   10          8        80
+red t-shirt     8         12        96
+**TOTAL**                      **236**
 ============= === ========== =========

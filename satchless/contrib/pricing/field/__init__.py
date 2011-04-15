@@ -19,13 +19,13 @@ class ProductFieldGetter(FieldGetter):
         return Price(instance_price, instance_price)
 
     def get_product_price_range(self, product, currency, **kwargs):
-        price = kwargs.pop('price')
+        price_range = kwargs.pop('price_range')
         if self.currency and self.currency != currency:
-            return price
+            return price_range
         try:
             instance_price = getattr(product, self.field_name)
         except AttributeError:
-            return price
+            return price_range
         return (Price(instance_price, instance_price),
                 Price(instance_price, instance_price))
 
@@ -42,9 +42,9 @@ class VariantFieldGetter(FieldGetter):
         return Price(instance_price, instance_price)
 
     def get_product_price_range(self, product, currency, **kwargs):
-        price = kwargs.pop('price')
+        price_range = kwargs.pop('price_range')
         if self.currency and self.currency != currency:
-            return price
+            return price_range
         minmax = product.variants.all().aggregate(
                     min_price=Min(self.field_name),
                     max_price=Max(self.field_name))

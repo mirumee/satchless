@@ -3,8 +3,8 @@ import os
 
 from django.conf import settings
 from django.db import models
-from django.db.models import permalink
 from django.utils.translation import ugettext as _
+from localeurl.models import reverse
 from mothertongue.models import MothertongueModelTranslate
 import satchless.product.models
 from satchless.image.models import Image

@@ -11,6 +11,6 @@ setup(
 	author_email="hello@mirumee.com",
 	description=""" e-commerence framework for creating storefronts in django""",
 	version = version,
-	url = "http://satchless.com/"
+	url = "http://satchless.com/",
 	packages = ["satchless",],
 )

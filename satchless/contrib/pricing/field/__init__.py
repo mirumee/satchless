@@ -1,5 +1,5 @@
 from django.db.models import Min, Max
-from ...pricing import Price
+from ....pricing import Price
 
 class FieldGetter(object):
     def __init__(self, field_name='price', currency=None):

@@ -11,38 +11,85 @@ django.jQuery.fn.relatedLookup = function(selectRelated, options) {
     };
     var opts = $.extend({}, defaults, options);
 
-    return $(this).each(function() {
-        var dialog;
+    return $(this).live('click', function() {
         var widget = $(this);
+        var dialog = $('<div></div>');
+        var url = $(this).attr("href");
+        $.ajax({
+            url: url,
+            data: {},
+            type: 'GET',
+            success: function (response, textStatus, xhr) {
+                var theCode = filterHtml(response, opts.responseContentSelector);
+                var pageTitle = filterHtml(response, 'title').text();
+                dialog.html(theCode);
+                dialog.dialog({
+                    height: 'auto',
+                    minWidth: 850,
+                    modal: true,
+                    resizable: true,
+                    title: pageTitle,
+                    zIndex: 900
+                });
+                selectRelated(dialog.find(opts.responseContentSelector), onRelatedSelect);
+            }
+        });
 
-        function onRelatedSelect(id, selectedElement) {
+        function onRelatedSelect(id, selectedElement, initWidget) {
             widget.prev('input').val(id);
             dialog.dialog("destroy");
             dialog.remove();
+            if(initWidget !== undefined)
+                initWidget(widget, selectedElement);
         };
+        return false;
+    });
+};
 
-        $(this).click(function() {
-            dialog = $('<div title=""></div>');
-            var url = $(this).attr("href");
-            $.ajax({
-                url: url,
-                data: {},
-                type: 'GET',
-                success: function (response, textStatus, xhr) {
-                    var theCode = filterHtml(response, opts.responseContentSelector);
-                    dialog.html(theCode);
-                    dialog.dialog({
-                        modal: true,
-                        resizable: true,
-                        width: '800px',
-                        zIndex: 900
-                    });
-                    selectRelated(dialog.find(opts.responseContentSelector), onRelatedSelect);
-                }
-            });
+django.jQuery.fn.multipleRelatedLookup = function(selectRelated, options) {
+    var $ = django.jQuery;
+    var defaults = {
+        responseContentSelector: '#related-lookup'
+    };
+    var opts = $.extend({}, defaults, options);
 
-            return false;
+    return $(this).live('click', function() {
+        var widget = $(this);
+        var dialog = $('<div></div>');
+        var url = $(this).attr("href");
+        $.ajax({
+            url: url,
+            data: {},
+            type: 'GET',
+            success: function (response, textStatus, xhr) {
+                var theCode = filterHtml(response, opts.responseContentSelector);
+                var pageTitle = filterHtml(response, 'title').text();
+                dialog.html(theCode);
+                dialog.dialog({
+                    height: 'auto',
+                    minWidth: 500,
+                    modal: true,
+                    resizable: true,
+                    title: pageTitle,
+                    zIndex: 900
+                });
+                selectRelated(dialog.find(opts.responseContentSelector), onRelatedSelect);
+            }
         });
+
+        function onRelatedSelect(id, selectedElement, initWidget) {
+            var val = widget.prev('input').val();
+            if(val !== '') {
+                widget.prev('input').val(val + ',' + id);
+            } else {
+                widget.prev('input').val(id);
+            }
+            dialog.dialog("destroy");
+            dialog.remove();
+            if(initWidget !== undefined)
+                initWidget(widget, selectedElement);
+        };
+        return false;
     });
 };
 

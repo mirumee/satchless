@@ -3,6 +3,13 @@ import os
 import re
 
 from satchless.contrib.pricing.cache import CacheFactory
+import satchless.contrib.pricing.cache
+def get_cache_key(*args, **kwargs):
+
+    key = satchless.contrib.pricing.cache.get_cache_key(*args, **kwargs)
+    key['discount'] = bool(kwargs.get('discount', True))
+    return key
+
 
 PROJECT_ROOT = os.path.dirname( __file__ )
 
@@ -125,6 +132,7 @@ INSTALLED_APPS = (
     'django.contrib.sites',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django.contrib.humanize',
 
     'mothertongue',
     'grappelli',
@@ -154,6 +162,7 @@ INSTALLED_APPS = (
     'satchless.contrib.payment.django_payments_provider',
     'mamona',
     'satchless.contrib.payment.mamona_provider',
+    'core',
 )
 
 SATCHLESS_IMAGE_SIZES = {
@@ -174,11 +183,11 @@ SATCHLESS_IMAGE_SIZES = {
         'crop': True,
     },
     'product-detail': {
-        'size': (460, 900),
+        'size': (304, 304),
         'crop': False,
     },
     'product-thumb': {
-        'size': (55, 74),
+        'size': (71, 71),
         'crop': True,
     },
     'product-cart': {
@@ -190,11 +199,10 @@ SATCHLESS_IMAGE_SIZES = {
 SATCHLESS_DEFAULT_CURRENCY = 'GBP'
 
 INTERNAL_IPS = ['127.0.0.1']
-
-price_cache = CacheFactory()
+price_cache = CacheFactory(get_cache_key)
 
 SATCHLESS_PRICING_HANDLERS = [
-    price_cache.getter, 
+    price_cache.getter,
     'satchless.contrib.pricing.simpleqty.handler',
     'satchless.contrib.tax.flatgroups.handler',
     'sale.handler',

@@ -2,9 +2,10 @@ from django.conf import settings
 from django.conf.urls.defaults import *
 from core.forms import CartItemFormSet
 from core.admin import gulliver_admin
+import core.views
 
 urlpatterns = patterns('',
-    url(r'^$', 'django.views.generic.simple.redirect_to', {'url': '/products/'}),
+    url(r'^$', core.views.home_page, name='home-page'),
     url(r'^products/', include('satchless.product.urls')),
     url(r'^contact/', include('satchless.contact.urls')),
     url(r'^image/', include('satchless.image.urls')),

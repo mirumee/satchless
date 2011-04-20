@@ -1,5 +1,3 @@
-from django.db.models import Sum, Min, Max
-
 from satchless.pricing import Price
 from . import models
 

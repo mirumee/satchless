@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block body-class %}{{ block.super }} home-page{% endblock %}
+{% block content %}
+<img src="{{ STATIC_URL }}img/frontpage.png" />
+<div class="info">
+    <div class="contact">
+        IF YOU NEED GREAT, FAST & MODERN ECOMMERCE SOLUTION OR CONSULTING <a href="#">TALK TO US</a><br />
+        <span class="quality">Best quality guqrantee</span>
+    </div>
+    <div class="footer">
+        Copyright © 2009-2011 Mirumee Labs. <br />
+        <img class="motto" src="{{ STATIC_URL }}img/motto.png" alt="Mirumee Software - We build WebApps. Better" />
+    </div>
+</div>
+{% endblock %}

@@ -1,5 +1,7 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
-{% load i18n localeurl_tags %}
+{% load core_tags %}
+{% load i18n %}
+{% load localeurl_tags %}
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="pl-PL" lang="pl-PL">
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
@@ -12,49 +14,63 @@
 <body id="{% block body-id %}{% endblock %}" class="{% block body-class %}{% endblock %}">
 
 {% block top-bar %}
-    <div id="top-bar" class="container_4">
-        <ul id="lang-selector" class="grid_1 prefix_3">
-        {% for lang in LANGUAGES %}
-            {% ifequal lang.0 LANGUAGE_CODE %}
-            <li class="selected">
-                {{ lang.1 }}
+    <div id="header">
+        <a class="logo" href="{% url home-page %}"><img src="{{ STATIC_URL }}img/logo.png" alt="{% trans "Satchless Demo" %}" /></a>
+        <ul class="menu">
+{% with 'mens,womens'|get_categories as menu_categories %}
+            <li class="mens">
+                <a href="{% url satchless-product-category 'mens' %}">MEN'S</a>
+                <ul class="submenu">
+    {% for child in menu_categories.mens.get_children %}
+                    <li><a href="{{ child.get_absolute_url }}">{{ child }}</a></li>
+    {% endfor %}
+                </ul>
             </li>
-            {% else %}
-            <li>
-                <a href="{{ request.path|chlocale:lang.0 }}">{{ lang.1 }}</a>
+            <li class="womens">
+                <a href="{% url satchless-product-category 'womens' %}">WOMEN'S</a>
+                <ul class="submenu">
+    {% for child in menu_categories.womens.get_children %}
+                    <li><a href="{{ child.get_absolute_url }}">{{ child }}</a></li>
+    {% endfor %}
+                </ul>
             </li>
-            {% endifequal %}
-        {% endfor %}
+{% endwith %}
+            <li class="sale">
+                <a href="{% url sale %}">SALE</a>
+            </li>
+            <li class="about-us">
+                <a href="{# url sale #}">ABOUT US</a>
+            </li>
+            <li class="contact">
+                <a href="{# url sale #}">CONTACT</a>
+            </li>
         </ul>
-        <div class="clear"></div>
-        <div class="grid_3">
-            <ul class="menu">
-                <li class="mens">
-                    <a href="{% url satchless-product-category 'mens' %}">Mens</a>
-                </li>
-                <li class="womens">
-                    <a href="{% url satchless-product-category 'womens' %}">Womens</a>
-                </li>
-                <li class="other-brands">
-                    <a href="{% url satchless-product-category 'other-brands' %}">Other Brands</a>
-                </li>
-                <li class="product-set">
-                    <a href="{% url satchless-product-set-index %}">Collections</a>
-                </li>
-                <li class="sale">
-                    <a href="{% url sale %}">Sale</a>
-                </li>
-            </ul>
-            <div class="clear"></div>
-        </div>
-        <div class="grid_1 omega right-menu">
+        <div class="shortcuts">
             <form class="search" method="get" action="{% url satchless-search-haystack-predictive %}">
-                Search
-                <input class="keywords" type="text" name="q" value="{{ request.GET.keywords }}" />
+                <input class="q" type="text" name="q" value="{{ request.GET.keywords }}" />
                 <input class="submit" type="submit" value="Search" />
             </form>
+            <ul class="languages">
+            {% spaceless %}
+{% for lang in LANGUAGES %}
+                <li class="{% if forloop.first %}first{% endif %}">{% if lang.0  == LANGUAGE_CODE %}{{ lang.1 }}{% else %}<a href="{{ request.path|chlocale:lang.0 }}">{{ lang.1 }}</a>{% endif %}</li>
+{% endfor %}
+            {% endspaceless %}
+            </ul>
+            <div class="carts">
+                    <a class="whishlist" href="{% url satchless-cart-view %}">10{% if cart_count %}{{ cart_count|floatformat }}{% endif %}<img src="{{ STATIC_URL }}img/icons/whishlist.png" alt="whish list" /></a>
+                    <a id="cart" href="{% url satchless-cart-view %}">8{% if cart_count %}{{ cart_count|floatformat }}{% endif %}<img src="{{ STATIC_URL }}img/icons/cart.png" alt="cart" /></a>
+            </div>
+        </div>
+        <div class="clear"></div>
+    </div>
+    {% comment %}
+    <div id="top-bar" class="container_4">
+        <div class="clear"></div>
+        <div class="grid_3">
+        </div>
+        <div class="grid_1 omega right-menu">
 
-            <a id="cart" href="{% url satchless-cart-view %}">{% trans "Shopping Bag" %}{% if cart_count %} (<span>{{ cart_count|floatformat }}</span>){% endif %}</a>
         </div>
         <div class="clear"></div>
         <div class="grid_4">
@@ -62,6 +78,7 @@
         </div>
         <div class="clear"></div>
     </div> {# top-bar #}
+    {% endcomment %}
     {% comment %}
     <div class="container_4">
     {% if messages %}
@@ -78,24 +95,26 @@
     {% endcomment %}
 {% endblock %}
 
-{% block page %}
+<div id="content">
     <div class="container_4">
-    {% if messages %}
+{% if messages %}
         <div id="messages" class="grid_3 prefix_1">
-        {% for m in messages %}
+    {% for m in messages %}
             <div class="message {{ m.tags }}">{{ m|safe }}</div>
-        {% endfor %}
+    {% endfor %}
         </div>
-    {% else %}
+{% else %}
         <div id="messages" class="grid_3 prefix_1 placeholder"></div>
-    {% endif %}
+{% endif %}
     </div>
-    <div class="clear"></div>
-    <div id="content" class="container_4">
+{% block breadcrumbs %}
+{% endblock %}
+
 {% block content %}
 {% endblock %}
-    </div>
-{% endblock %}
+    <div class="clear"></div>
+</div> {# #page #}
+
 {% if debug %}
 <div id="debug">
   <h2>Queries</h2>

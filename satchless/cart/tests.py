@@ -7,6 +7,7 @@ from django import forms
 
 from satchless.product.forms import BaseVariantForm
 from satchless.product.models import Category
+from satchless.product import handler
 from satchless.product.signals import variant_formclass_for_product
 from satchless.product.tests import DeadParrot, DeadParrotVariant
 
@@ -61,9 +62,11 @@ class ParrotTest(TestCase):
         settings.SATCHLESS_PRODUCT_VIEW_HANDLERS = [
             'satchless.cart.add_to_cart_handler',
         ]
+        handler.init_queue()
 
     def tearDown(self):
         settings.SATCHLESS_PRODUCT_VIEW_HANDLERS = self.original_product_view_handlers
+        handler.init_queue()
 
     def _test_status(self, url, method='get', *args, **kwargs):
         status_code = kwargs.pop('status_code', 200)

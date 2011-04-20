@@ -1,14 +1,15 @@
 from decimal import Decimal
+
 from django.conf import settings
-from django.test import TestCase, Client
-from django.db import models
+from django.test import TestCase
+
 from satchless.cart.models import Cart
-from satchless.pricing.handler import Price, \
-        get_variant_price, get_product_price_range
+from satchless.pricing.handler import Price, get_variant_price, get_product_price_range
 from satchless.cart.templatetags.cart_prices import get_cartitem_unit_price
-from satchless.product.models import ProductAbstract, Variant
-from satchless.product.tests import DeadParrot, DeadParrotVariant
-from .models import ProductPrice, PriceQtyOverride, VariantPriceOffset
+from satchless.product.tests import DeadParrot
+from .models import ProductPrice
+
+import satchless.pricing.handler
 
 class ParrotTest(TestCase):
     def setUp(self):
@@ -27,10 +28,12 @@ class ParrotTest(TestCase):
 
         self.original_pricing_handlers = settings.SATCHLESS_PRICING_HANDLERS
         settings.SATCHLESS_PRICING_HANDLERS = ['satchless.contrib.pricing.simpleqty.handler']
+        satchless.pricing.handler.init()
 
     def tearDown(self):
         ProductPrice.objects.all().delete()
         settings.SATCHLESS_PRICING_HANDLERS = self.original_pricing_handlers
+        satchless.pricing.handler.init()
 
     def test_price(self):
         p1 = Price(10)

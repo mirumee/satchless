@@ -58,7 +58,6 @@ class Category(MPTTModel, DescribedModel):
         return ('satchless.product.views.category',
                 (self._parents_slug_path(), self.slug))
 
-
 class Product(Subtyped):
     """
     The base Product to rule them all. Provides slug, a powerful item to

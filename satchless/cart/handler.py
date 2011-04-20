@@ -2,7 +2,7 @@ from django.shortcuts import redirect
 
 from ..product.forms import NonConfigurableVariantForm
 from ..product.models import ProductAbstract, Variant
-from ..product.signals import product_view, variant_formclass_for_product
+from ..product.signals import variant_formclass_for_product
 from . import forms
 from . import models
 

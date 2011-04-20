@@ -1,2 +1,2 @@
-django              http://www.djangoproject.com/download/
-django-mptt         http://github.com/django-mptt/django-mptt
+Django>=1.1
+-e git+git://github.com/django-mptt/django-mptt.git#egg=django-mptt

@@ -17,7 +17,7 @@ class CartItemPriceNode(BasePriceNode):
         return item.cart.currency
 
     def get_price(self, cartitem, currency, **kwargs):
-        price = get_cartitem_unit_price(cartitem, currency=currency)
+        price = get_cartitem_unit_price(cartitem, currency=currency, **kwargs)
         if price.has_value():
             return price * cartitem.quantity
 
@@ -26,7 +26,7 @@ class CartItemUnitPriceNode(BasePriceNode):
         return item.cart.currency
 
     def get_price(self, cartitem, currency, **kwargs):
-        price = get_cartitem_unit_price(cartitem, currency=currency)
+        price = get_cartitem_unit_price(cartitem, currency=currency, **kwargs)
         if price.has_value():
             return price
 

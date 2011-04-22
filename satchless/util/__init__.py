@@ -1,5 +1,4 @@
 from decimal import Decimal
-import locale
 
 def decimal_format(value, min_decimal_places=0):
     decimal_tuple = value.as_tuple()

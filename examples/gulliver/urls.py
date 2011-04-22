@@ -1,7 +1,8 @@
 from django.conf import settings
 from django.conf.urls.defaults import *
-from core.forms import CartItemFormSet
+
 from core.admin import gulliver_admin
+import satchless.cart.views
 import core.views
 
 urlpatterns = patterns('',
@@ -9,8 +10,9 @@ urlpatterns = patterns('',
     url(r'^products/', include('satchless.product.urls')),
     url(r'^contact/', include('satchless.contact.urls')),
     url(r'^image/', include('satchless.image.urls')),
-    url(r'^view/(?P<typ>satchless_cart|satchless_wishlist)/$', 'satchless.cart.views.cart', name='satchless-cart-view'),
-    url(r'^cart/', include('satchless.cart.urls'), {'formset_class': CartItemFormSet}),
+    url(r'^cart/view/(?P<typ>(satchless_cart|satchless_wishlist))/$',
+         satchless.cart.views.cart, name='satchless-cart-view'),
+    url('carts/', include('carts.urls')),
     url(r'^order/', include('satchless.order.urls')),
     url(r'^product-set/', include('satchless.contrib.productset.urls')),
     url(r'^sale/', include('sale.urls')),

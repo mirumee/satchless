@@ -92,7 +92,7 @@ class ProductTranslation(models.Model):
 
 
 class ColoredVariant(satchless.product.models.Variant):
-    COLOR_CHOICES = (('red', _("red")), ('green', _("green")), ('blue', _("blue")))
+    COLOR_CHOICES = (('red', _("Red")), ('green', _("Green")), ('blue', _("Blue")))
     color = models.CharField(max_length=32, choices=COLOR_CHOICES)
     class Meta:
         abstract = True

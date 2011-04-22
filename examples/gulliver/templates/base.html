@@ -17,24 +17,16 @@
     <div id="header" class="container_24">
         <a class="logo grid_3" href="{% url home-page %}"><img src="{{ STATIC_URL }}img/logo.png" alt="{% trans "Satchless Demo" %}" /></a>
         <ul class="menu grid_15">
-{% with 'mens,womens'|get_categories as menu_categories %}
-            <li class="mens">
-                <a href="{% url satchless-product-category 'mens' %}">MEN'S</a>
+{% for category in root_categories %}
+            <li>
+                <a href="{{ category.get_absolute_url }}">{{ category }}</a>
                 <ul class="submenu">
-    {% for child in menu_categories.mens.get_children %}
+    {% for child in category.get_children %}
                     <li><a href="{{ child.get_absolute_url }}">{{ child }}</a></li>
     {% endfor %}
                 </ul>
             </li>
-            <li class="womens">
-                <a href="{% url satchless-product-category 'womens' %}">WOMEN'S</a>
-                <ul class="submenu">
-    {% for child in menu_categories.womens.get_children %}
-                    <li><a href="{{ child.get_absolute_url }}">{{ child }}</a></li>
-    {% endfor %}
-                </ul>
-            </li>
-{% endwith %}
+{% endfor %}
             <li class="sale">
                 <a href="{% url sale %}">SALE</a>
             </li>

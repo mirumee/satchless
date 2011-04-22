@@ -112,6 +112,7 @@ TEMPLATE_CONTEXT_PROCESSORS = (
     'django.contrib.messages.context_processors.messages',
     'mothertongue.context_processors.router',
     'carts.context_processors.carts_sizes',
+    'core.context_processors.root_categories',
 )
 STATICFILES_DIRS = (
     os.path.join(PROJECT_ROOT, "static"),

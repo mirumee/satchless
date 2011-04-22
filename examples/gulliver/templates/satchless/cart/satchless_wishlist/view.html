@@ -1,0 +1,87 @@
+{% extends 'satchless/cart/base.html' %}
+{% load cart_prices %}
+{% load i18n %}
+{% load prices %}
+{% load product_prices %}
+{% load products_tags %}
+{% load promote %}
+{% load satchless_image %}
+
+{% block title %}{% trans "Shopping Bag" %} || {{ block.super }}{% endblock %}
+{% block body-class %}{{ block.super }} wishlist{% endblock %}
+
+{% block content %}
+<div class="grid_4">
+    <div class="my-account">
+    {% trans "My account" %}
+    </div>
+</div>
+<div class="clear"></div>
+<div class="grid_4">
+<a href="#">{% trans "Wishlists" %}</a>
+</div>
+<div class="grid_20">
+    <div class="products">
+{% if cart_items %}
+        <ul>
+    {% for cart_item in cart_items %}
+        {% promote cart_item.variant as variant %}
+        {% with variant.product as product %}
+            <li class="product{% if forloop.last %} last{% endif %}">
+                <div class="image">
+        {% if variant.product.main_image %}
+                    <img src="{{ variant.product.main_image|at_size:'cart-product' }}" alt="{{ image.caption }}"{% if forloop.first %} class="active"{% endif %} />
+        {% endif %}
+                </div>
+                <div class="product-description">
+                {% if variant.product.manufacture %}
+                    <span class="manufacture">{{ variant.product.manufacture }}</span>
+                {% endif %}
+                    <h2><a href="{{ product.get_absolute_url }}">{{ variant.product.name }}</a></h2>
+                {% with variant|variant_attrs as va %}
+                {% if va %}
+                    <ul class="variant-attrs">
+                    {% for attr in va %}
+                        <li>{{ attr.name }}: <strong>{{ attr.value }}</strong></li>
+                    {% endfor %}
+                    </ul>
+                {% endif %}
+                {% endwith %}
+                </div>
+                <div class="product-price">
+        {% product_price_range product as price_range %}
+        {% product_price_range product discount=0 as undiscounted_price_range %}
+        {% if price_range.min != price_range.max %}
+            {% if price_range.min != undiscounted_price_range.min or price_range.max != undiscounted_price_range.max %}
+                    <span class="strike">{{ undiscounted_price_range.min|gross|floatformat:2 }} - {{ undiscounted_price_range.max|gross|floatformat:2 }}</span>
+            {% endif %}
+                    <span class="fullprice">{{ price_range.min|gross|floatformat:2 }}</span><span class="currency">{{ price_range.min|currency }}</span> - <span class="fullprice">{{ price_range.max|gross|floatformat:2 }}</span><span class="currency">{{ price_range.max|currency }}</span>
+        {% else %}
+            {% if price_range.max != undiscounted_price_range.max %}
+                    <span class="strike">{{ undiscounted_price_range.max|gross|floatformat:2 }}</span>
+            {% endif %}
+                    <span class="fullprice">{{ price_range.min|gross|floatformat:2 }}</span><span class="currency">{{ price_range.min|currency }}</span>
+        {% endif %}
+                    <p class="info">
+                        Inclusive VAT <br />
+                        Exclusive shipping costs<br />
+                    </p>
+                    <form action="{% url carts-from-wishlist-to-cart cart_item.id %}" method="post">
+                        {% csrf_token %}
+                        <input class="cart" name="satchless_cart" type="submit" value="{% trans "Add to cart" %}" />
+                    </form>
+                </div>
+                <div class="clear"></div>
+            </li>
+        {% endwith %}
+    {% endfor %}
+        </ul>
+{% else %}
+        <p class="no-items">
+            {% trans "Your wishlist is empty" %}
+        </p>
+{% endif %}
+    </div>
+</div>
+{% endblock %}
+

@@ -19,6 +19,7 @@ $(function() {
 {% endblock %}
 
 {% block content %}
+{% comment %}
 {% if category %}
     {% if category.is_root_node %}
         {% with category.get_children as subcategories %}
@@ -50,6 +51,7 @@ $(function() {
         {% endwith %}
 </div>
 {% endif %}
+{% endcomment %}
 
 <div id="products" class="grid_3">
     {% with category.products.all as products %}
@@ -62,7 +64,7 @@ $(function() {
     <div class="product grid_1 {% cycle 'alpha' '' 'omega' %}">
         <a href="{{ product_url }}" class="product-photo">
                     {% if product.main_image %}
-            <img src="{{ product.main_image|at_size:'category-product' }}" alt="{{ product.name }} image" />
+            <img src="{{ product.main_image|at_size:'product-detail' }}" alt="{{ product.name }} image" />
                     {% endif %}
         </a>
         <h3><a href="{{ product_url }}" title="{{ product.name }}">{{ product.name }}</a></h3>
@@ -78,6 +80,6 @@ $(function() {
     <div class="clear"></div>
     {% endwith %}
 </div>
-{% endif %}
+{# {% endif %} #}
 <div class="clear"></div>
 {% endblock %}

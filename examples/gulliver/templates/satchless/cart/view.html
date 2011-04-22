@@ -3,6 +3,7 @@
 {% load i18n %}
 {% load prices %}
 {% load product_prices %}
+{% load products_tags %}
 {% load promote %}
 {% load satchless_image %}
 
@@ -10,10 +11,110 @@
 {% block body-class %}{{ block.super }} cart{% endblock %}
 
 {% block content %}
-<h1>{% trans "Shopping Bag" %}</h1>
 
-<hr />
+{% if cart_items %}
+    <table class="cart-contents">
+        <col class="image" />
+        <col class="name" />
+        <col class="price" />
+        <col class="qty" />
+        <col class="total" />
+        <thead>
+            <tr>
+                <th class="image"></th>
+                <th class="name">{% trans "Description" %}</th>
+                <th class="price">{% trans 'Unit Price' %}</th>
+                <th class="qty">{% trans 'Quantity' %}</th>
+                <th class="total">{% trans 'Total' %}</th>
+            </tr>
+        </thead>
+        <tbody>
+    {% for cart_item in cart_items %}
+        {% promote cart_item.variant as variant %}
+        {% cartitem_unit_price cart_item as unit_price %}
+        {% cartitem_unit_price cart_item discount=0 as undiscounted_unit_price %}
+        {% cartitem_price cart_item as item_price %}
+        {% cartitem_price cart_item discount=0 as undiscounted_item_price %}
+            <tr>
+                <td class="image">
+    {% if variant.product.main_image %}
+                    <a href="{{ variant.product.get_url }}"><img src="{{ variant.product.main_image|at_size:'cart-product' }}" alt="{{ item }}" /></a>
+    {% else %}
+                    <a href="{{ variant.product.get_url }}">{{ variant }}</a>
+    {% endif %}
+                </td>
+                <td class="name product-description">
+    {% if variant.product.manufacture %}
+                    <span class="manufacture">{{ variant.product.manufacture }}</span>
+    {% endif %}
+                    <h2><a href="{{ variant.product.get_absolute_url }}">{{ variant.product.name }}</a></h2>
+    {% with variant|variant_attrs as va %}
+    {% if va %}
+                        <ul class="variant-attrs">
+        {% for attr in va %}
+                            <li>{{ attr.name }}: <strong>{{ attr.value }}</strong></li>
+        {% endfor %}
+                        </ul>
+    {% endif %}
+    {% endwith %}
+                </td>
+                <td class="product-price">
+                    <div class="amounts">
+    {% if undiscounted_unit_price != unit_price %}
+                        <span class="strike">{{ undiscounted_unit_price|gross|floatformat:2 }}</span><br />
+    {% endif %}
+                        <span class="fullprice">{{ unit_price|gross|floatformat:2 }}</span>
+                    </div>
+                    <span class="currency">{{ cart.currency }}</span>
+                </td>
+                <td class="qty">
+                    <form action="" method="post">
+                        &times; {% for field in cart_item.form %}{{ field }}{% endfor %}
+                        <input type="submit" value="{% trans "update" %}" name="update" />
+                        {% csrf_token %}
+                    </form>
+                </td>
+                <td class="product-price">
+                    <div class="amounts">
+    {% if undiscounted_item_price != item_price %}
+                        <span class="strike">{{ undiscounted_item_price|gross|floatformat:2 }}</span><br />
+    {% endif %}
+                        <span class="fullprice">{{ item_price|gross|floatformat:2 }}</span>
+                    </div>
+                    <span class="currency">{{ cart.currency }}</span>
+                </td>
+                {% comment %}
+                <td class="numerical tax">
+                    {{ item_price|tax|floatformat:2 }} <span class="currency">{{ cart.currency }}</span>
+                </td>
+                <td rowspan="2">{{ form.DELETE }}</td>
+                <td class="numerical taxName">
+                    {% with item_price|tax_name as taxname %}{% if taxname %}({{ taxname }}){% endif %}{% endwith %}
+                </td>
+                {% endcomment %}
+            </tr>
+    {% endfor %}
+        </tbody>
+        {% comment %}
+        <tfoot>
+            <tr class="total">
+                <th colspan="5">{% trans "Total" %}:</th>
+                <td class="numerical">
+                    {{ cart|cart_total|gross|floatformat:2 }} <span class="currency">{{ cart.currency }}</span><br />
+                </td>
+                <td colspan="2" rowspan="2"></td>
+            </tr>
+        </tfoot>
+        {% endcomment %}
+    </table>
+{% else %}
+<p class="no-items">
+    {% trans "Your shopping bag is empty." %}
+</p>
+{% endif %}
 
+{% endblock %}
+{% comment %}
 {% if formset.forms %}
 <form method="post">
     {% csrf_token %}
@@ -21,7 +122,7 @@
     <table class="cart-contents">
         <col class="image" />
         <col class="name" />
-        <col class="size" />
+        <col class="variant" />
         <col class="price" />
         <col class="qty" />
         <col class="total" />
@@ -62,7 +163,6 @@
                 <td class="numerical itemPrice">
                      <span class="currency">{{ cart.currency }}</span>{{ item_price|gross|floatformat:2 }}
                 </td>
-                {% comment %}
                 <td class="numerical tax">
                     {{ item_price|tax|floatformat:2 }} <span class="currency">{{ cart.currency }}</span>
                 </td>
@@ -70,7 +170,6 @@
                 <td class="numerical taxName">
                     {% with item_price|tax_name as taxname %}{% if taxname %}({{ taxname }}){% endif %}{% endwith %}
                 </td>
-                {% endcomment %}
             </tr>
 {% endfor %}
         </tbody>
@@ -107,4 +206,4 @@
     {% trans "Your shopping bag is empty." %}
 </p>
 {% endif %}
-{% endblock %}
+{% endcomment %}

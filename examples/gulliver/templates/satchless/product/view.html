@@ -1,5 +1,4 @@
 {% extends "satchless/base.html" %}
-{% load humanize %}
 {% load i18n %}
 {% load pagination_tags %}
 {% load prices %}
@@ -30,31 +29,19 @@
 {% endblock %}
 
 {% block content %}
-{% comment %}
-<div id="sidebar" class="grid_1 {% if not path %}placeholder{% endif %}">
-{% if path %}
-    {% with path.0.get_children as categories %}
-    <ul class="categories">
-        {% for cat in categories %}
-        <li{% if cat == path.1 %} class="active"{% endif %}><a href="{{ cat.get_url }}">{{ cat.name }}</a></li>
-        {% endfor %}
-    </ul>
-    {% endwith %}
-{% endif %}
-</div>
-<div class="clear"></div>
-{% endcomment %}
-
 <div class="clear"></div>
 
-<div class="main-photo">
-{% if product.main_image %}
-    <a href="{{ product.main_image.image.url }}" class="cloud-zoom" rel="position: 'inside', showTitle: false"><img src="{{ product.main_image|at_size:'product-detail' }}" /></a>
-{% endif %}
+<div class="grid_8">
+    <div class="main-photo">
+    {% if product.main_image %}
+        <a href="{{ product.main_image.image.url }}" class="cloud-zoom" rel="position: 'inside', showTitle: false"><img src="{{ product.main_image|at_size:'product-detail' }}" /></a>
+    {% endif %}
+    </div>
 </div>
 
+<div class="grid_16">
 <form action="" method="post">
-    <div class="variants">
+    <div class="product-description">
 {% if product.manufacture %}
         <span class="manufacture">{{ product.manufacture }}</span>
 {% endif %}
@@ -66,42 +53,42 @@
 
     </div>
 
-    <div class="description">
-        <div class="price">
+    <div class="add-to-cart">
+        <div class="product-price">
 {% product_price_range product as price_range %}
 {% product_price_range product discount=0 as undiscounted_price_range %}
 {% if price_range.min != price_range.max %}
     {% if price_range.min != undiscounted_price_range.min or price_range.max != undiscounted_price_range.max %}
-            <span class="strike">{{ undiscounted_price_range.min|gross }} - {{ undiscounted_price_range.max|gross }}</span>
+            <span class="strike">{{ undiscounted_price_range.min|gross|floatformat:2 }} - {{ undiscounted_price_range.max|gross|floatformat:2 }}</span>
     {% endif %}
-            <span class="fullprice">{{ price_range.min|gross|intcomma }}</span><span class="currency">{{ price_range.min|currency }}</span> - <span class="fullprice">{{ price_range.max|currency }}</span><span class="currency">{{ price_range.max|gross }}</span>
+            <span class="fullprice">{{ price_range.min|gross|floatformat:2 }}</span><span class="currency">{{ price_range.min|currency }}</span> - <span class="fullprice">{{ price_range.max|gross|floatformat:2 }}</span><span class="currency">{{ price_range.max|currency }}</span>
 {% else %}
     {% if price_range.max != undiscounted_price_range.max %}
-            <span class="strike">{{ undiscounted_price_range.max|gross }}</span>
+            <span class="strike">{{ undiscounted_price_range.max|gross|floatformat:2 }}</span>
     {% endif %}
-            <span class="fullprice">{{ price_range.min|gross }}</span><span class="currency">{{ price_range.min|currency }}</span>
+            <span class="fullprice">{{ price_range.min|gross|floatformat:2 }}</span><span class="currency">{{ price_range.min|currency }}</span>
 {% endif %}
             <p class="info">
                 Inclusive VAT <br />
                 Exclusive shipping costs<br />
             </p>
         </div>
-        <div class="add-to-cart">
-            <input class="cart" name="cart" type="submit" value="{% trans "Add to cart" %}" />
-            <input class="whishlist" name="whishlist" type="submit" value="{% trans "Add to whishlist" %}" />
-        </div>
+        <input class="cart" name="satchless_cart" type="submit" value="{% trans "Add to cart" %}" />
+        <input class="wishlist" name="satchless_wishlist" type="submit" value="{% trans "Add to whishlist" %}" />
         <div class="text">
         {{ product.description|linebreaks }}
         </div>
     </div>
 </form>
+</div>
+<div class="clear"></div>
 
-<div class="thumbs">
+<div class="thumbs grid_8">
 {% spaceless %}
 {% for image in product.images.all %}
     {% with image|at_size:'product-thumb' as thumb %}
         {% with image|at_size:'product-detail' as detail %}
-    <a href="{{ detail }}" data-big-picture="{{ image.image.url }}" title="Click to see this image enlarged"><img src="{{ thumb }}" alt="{{ image.caption }}"{% if forloop.first %} class="active"{% endif %} /></a>
+    <a class="grid_2 {% if not forloop.counter0 or forloop.counter|divisibleby:5 %}alpha{% endif %}{% if forloop.counter0 and forloop.counter|divisibleby:4 %}omega{% endif %}" href="{{ detail }}" data-big-picture="{{ image.image.url }}" title="Click to see this image enlarged"><img src="{{ thumb }}" alt="{{ image.caption }}"{% if forloop.first %} class="active"{% endif %} /></a>
         {% endwith %}
     {% endwith %}
 {% endfor %}

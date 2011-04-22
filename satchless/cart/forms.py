@@ -10,7 +10,6 @@ class QuantityForm(object):
             raise forms.ValidationError(_("Quantity cannot be negative"))
         return val
 
-
 class AddToCartForm(forms.Form, QuantityForm):
     """Form that adds a Variant quantity to a Cart.
     It may be replaced by more advanced one, performing some checks, e.g.
@@ -39,8 +38,9 @@ class AddToCartForm(forms.Form, QuantityForm):
 
 
 class EditCartItemForm(forms.ModelForm, QuantityForm):
-    model = models.CartItem
-    fields = ('quantity',)
+    class Meta:
+        model = models.CartItem
+        fields = ('quantity',)
 
     def clean_quantity(self):
         qty = super(EditCartItemForm, self).clean_quantity()
@@ -54,4 +54,3 @@ class EditCartItemForm(forms.ModelForm, QuantityForm):
         """Do not call the original save() method, but use cart.set_quantity() instead."""
         self.instance.cart.set_quantity(self.instance.variant, self.cleaned_data['quantity'])
 
-CartItemFormSet = inlineformset_factory(models.Cart, models.CartItem, form=EditCartItemForm, fields=('quantity',), extra=0)

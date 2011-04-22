@@ -1,22 +1,33 @@
 # -*- coding:utf-8 -*-
-import decimal
-
 from django import forms
 from django.forms.models import inlineformset_factory
-from django.utils.translation import ugettext as _
 
 import satchless.cart.forms
 import satchless.cart.models
 
-MAX_VARIANT_QUANTITY = 10
+class AddToCartForm(forms.Form):
+    quantity = forms.DecimalField(initial=1)
 
-class AddToCartForm(satchless.cart.forms.AddToCartForm):
-    quantity = forms.TypedChoiceField(choices=([(v,v) for v in range(MAX_VARIANT_QUANTITY)]),
-                                      coerce=lambda v: decimal.Decimal(v), initial=1)
+    def __init__(self, data=None, *args, **kwargs):
+        typ = kwargs.pop('typ')
+        # validate only when correct button was pressed
+        if data and not typ in data:
+            data = None
+        self.cart = kwargs.pop('cart', None)
+        super(AddToCartForm, self).__init__(data=data, *args, **kwargs)
 
-class EditCartItemForm(satchless.cart.forms.EditCartItemForm):
-    quantity = forms.TypedChoiceField(choices=([(v,v) for v in range(MAX_VARIANT_QUANTITY)]),
-                                      coerce=lambda v: decimal.Decimal(v), initial=1)
+    def clean(self):
+        data = super(AddToCartForm, self).clean()
+        qty = data['quantity']
+        cart_qty, qty_change, reason = self.cart.add_quantity(self.get_variant(), qty, dry_run=True)
+        if qty_change < qty:
+            raise forms.ValidationError(reason)
+        return data
 
-CartItemFormSet = inlineformset_factory(satchless.cart.models.Cart, satchless.cart.models.CartItem,
-                                        form=EditCartItemForm, fields=('quantity',), extra=0)
+    def save(self):
+        self.cart.add_quantity(self.get_variant(), self.cleaned_data['quantity'])
+
+class AddToWishlistForm(AddToCartForm):
+    def save(self):
+        self.cart.add_quantity(self.get_variant(), 1)
+

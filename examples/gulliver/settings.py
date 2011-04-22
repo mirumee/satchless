@@ -1,15 +1,8 @@
 # -*- coding:utf-8 -*-
 import os
 import re
-
-from satchless.contrib.pricing.cache import CacheFactory
-import satchless.contrib.pricing.cache
-def get_cache_key(*args, **kwargs):
-
-    key = satchless.contrib.pricing.cache.get_cache_key(*args, **kwargs)
-    key['discount'] = bool(kwargs.get('discount', True))
-    return key
-
+from localeurl.models import patch_reverse
+patch_reverse()
 
 PROJECT_ROOT = os.path.dirname( __file__ )
 
@@ -118,6 +111,7 @@ TEMPLATE_CONTEXT_PROCESSORS = (
     'django.core.context_processors.request',
     'django.contrib.messages.context_processors.messages',
     'mothertongue.context_processors.router',
+    'carts.context_processors.carts_sizes',
 )
 STATICFILES_DIRS = (
     os.path.join(PROJECT_ROOT, "static"),
@@ -132,7 +126,6 @@ INSTALLED_APPS = (
     'django.contrib.sites',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'django.contrib.humanize',
 
     'mothertongue',
     'grappelli',
@@ -163,6 +156,7 @@ INSTALLED_APPS = (
     'mamona',
     'satchless.contrib.payment.mamona_provider',
     'core',
+    'carts',
 )
 
 SATCHLESS_IMAGE_SIZES = {
@@ -187,19 +181,26 @@ SATCHLESS_IMAGE_SIZES = {
         'crop': False,
     },
     'product-thumb': {
-        'size': (71, 71),
+        'size': (68, 68),
         'crop': True,
     },
-    'product-cart': {
-        'size': ('98', '135'),
-        'crop': True,
+    'cart-product': {
+        'size': ('156', '156'),
+        'crop': False,
     }
 }
 
 SATCHLESS_DEFAULT_CURRENCY = 'GBP'
 
 INTERNAL_IPS = ['127.0.0.1']
-price_cache = CacheFactory(get_cache_key)
+
+import satchless.contrib.pricing.cache
+
+def get_cache_key(*args, **kwargs):
+    key = satchless.contrib.pricing.cache.get_cache_key(*args, **kwargs)
+    key['discount'] = bool(kwargs.get('discount', True))
+    return key
+price_cache = satchless.contrib.pricing.cache.CacheFactory(get_cache_key)
 
 SATCHLESS_PRICING_HANDLERS = [
     price_cache.getter,
@@ -209,7 +210,7 @@ SATCHLESS_PRICING_HANDLERS = [
     price_cache.setter,
 ]
 SATCHLESS_PRODUCT_VIEW_HANDLERS = [
-    'core.handler.cart_handler',
+    'carts.handler.carts_handler',
 ]
 SATCHLESS_ORDER_PARTITIONERS = [
     'satchless.contrib.order.partitioner.simple',

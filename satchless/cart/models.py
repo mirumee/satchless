@@ -15,19 +15,24 @@ def get_default_currency():
     return settings.SATCHLESS_DEFAULT_CURRENCY
 
 class CartManager(models.Manager):
-    def get_or_create_from_request(self, request, typ):
+    def get_from_request(self, request, typ):
         try:
             cart = self.get(typ=typ, pk=request.session[CART_SESSION_KEY % typ])
             if cart.owner is None and request.user.is_authenticated():
                 cart.owner = request.user
                 cart.save()
-            return cart
+        except (Cart.DoesNotExist, KeyError):
+            raise Cart.DoesNotExist()
+        return cart
+
+    def get_or_create_from_request(self, request, typ):
+        try:
+            return self.get_from_request(request, typ)
         except (Cart.DoesNotExist, KeyError):
             owner = request.user if request.user.is_authenticated() else None
             cart = self.create(typ=typ, owner=owner)
             request.session[CART_SESSION_KEY % typ] = cart.pk
             return cart
-
 
 class Cart(models.Model):
     owner = models.ForeignKey(User, null=True, blank=True)

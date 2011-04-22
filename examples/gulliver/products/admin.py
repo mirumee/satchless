@@ -50,6 +50,7 @@ class ProductImageInline(ImageInline):
 
 class PriceInline(admin.TabularInline):
     model = simpleqty.models.ProductPrice
+    form = simpleqty.admin.ProductPriceForm
 
 
 class DiscountInline(admin.TabularInline):

@@ -387,6 +387,9 @@ body.store.checkout {
                 }
 body.store.wishlist {
 }
+    body.store.wishlist #sidebar {
+        padding: 10px;
+    }
     body.store.wishlist .my-account {
         background: #fff;
         color: #474747;
@@ -436,7 +439,7 @@ body.store.wishlist {
                         margin-top: 5px;
                     }
                 body.store.wishlist .products ul li.product.last .product-price,
-                body.store.wishlist .products ul li.product.last .description,
+                body.store.wishlist .products ul li.product.last .product-description,
                 body.store.wishlist .products ul li.product.last .image {
                     border-bottom: 0 none;
                 }

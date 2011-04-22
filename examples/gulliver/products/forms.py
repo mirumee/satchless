@@ -9,11 +9,15 @@ def _get_existing_variants_choices(queryset, field_names):
     existing_choices = {}
     existing_variants = queryset.values_list(*field_names)
 
-    for index, existing_field_choices in enumerate(zip(*existing_variants)):
-        field_name = field_names[index]
-        original_choices = queryset.model._meta.get_field(field_name).choices
-        existing_choices[field_names[index]] = filter(lambda choice: choice[0] in existing_field_choices,
-                                                     original_choices)
+    if existing_variants:
+        for index, existing_field_choices in enumerate(zip(*existing_variants)):
+            field_name = field_names[index]
+            original_choices = queryset.model._meta.get_field(field_name).choices
+            existing_choices[field_names[index]] = filter(lambda choice: choice[0] in existing_field_choices,
+                                                         original_choices)
+    else:
+        for field_name in field_names:
+            existing_choices[field_name] = []
     return existing_choices
 
 class VariantWithSizeAndColorForm(BaseVariantForm):

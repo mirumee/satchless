@@ -14,9 +14,9 @@
 <body id="{% block body-id %}{% endblock %}" class="{% block body-class %}{% endblock %}">
 
 {% block top-bar %}
-    <div id="header">
-        <a class="logo" href="{% url home-page %}"><img src="{{ STATIC_URL }}img/logo.png" alt="{% trans "Satchless Demo" %}" /></a>
-        <ul class="menu">
+    <div id="header" class="container_24">
+        <a class="logo grid_3" href="{% url home-page %}"><img src="{{ STATIC_URL }}img/logo.png" alt="{% trans "Satchless Demo" %}" /></a>
+        <ul class="menu grid_15">
 {% with 'mens,womens'|get_categories as menu_categories %}
             <li class="mens">
                 <a href="{% url satchless-product-category 'mens' %}">MEN'S</a>
@@ -45,58 +45,27 @@
                 <a href="{# url sale #}">CONTACT</a>
             </li>
         </ul>
-        <div class="shortcuts">
+        <div class="shortcuts grid_6">
             <form class="search" method="get" action="{% url satchless-search-haystack-predictive %}">
                 <input class="q" type="text" name="q" value="{{ request.GET.keywords }}" />
                 <input class="submit" type="submit" value="Search" />
             </form>
-            <ul class="languages">
-            {% spaceless %}
+            <ul class="languages">{% spaceless %}
 {% for lang in LANGUAGES %}
                 <li class="{% if forloop.first %}first{% endif %}">{% if lang.0  == LANGUAGE_CODE %}{{ lang.1 }}{% else %}<a href="{{ request.path|chlocale:lang.0 }}">{{ lang.1 }}</a>{% endif %}</li>
 {% endfor %}
-            {% endspaceless %}
-            </ul>
+            {% endspaceless %}</ul>
             <div class="carts">
-                    <a class="whishlist" href="{% url satchless-cart-view %}">10{% if cart_count %}{{ cart_count|floatformat }}{% endif %}<img src="{{ STATIC_URL }}img/icons/whishlist.png" alt="whish list" /></a>
-                    <a id="cart" href="{% url satchless-cart-view %}">8{% if cart_count %}{{ cart_count|floatformat }}{% endif %}<img src="{{ STATIC_URL }}img/icons/cart.png" alt="cart" /></a>
+                <a class="wishlist" href="{% url satchless-cart-view 'satchless_wishlist' %}">{{ wishlist_size|floatformat:0 }}<img src="{{ STATIC_URL }}img/icons/wishlist.png" alt="wishlist" /></a>
+                <a href="{% url satchless-cart-view 'satchless_cart' %}">{{ cart_size|floatformat:0 }}<img src="{{ STATIC_URL }}img/icons/cart.png" alt="cart" /></a>
             </div>
         </div>
         <div class="clear"></div>
-    </div>
-    {% comment %}
-    <div id="top-bar" class="container_4">
-        <div class="clear"></div>
-        <div class="grid_3">
-        </div>
-        <div class="grid_1 omega right-menu">
-
-        </div>
-        <div class="clear"></div>
-        <div class="grid_4">
-            <hr />
-        </div>
-        <div class="clear"></div>
-    </div> {# top-bar #}
-    {% endcomment %}
-    {% comment %}
-    <div class="container_4">
-    {% if messages %}
-    <div id="messages" class="grid_3 prefix_1">
-        {% for m in messages %}
-            <div class="message {{ m.tags }}">{{ m|safe }}</div>
-        {% endfor %}
-    </div>
-    {% else %}
-    <div id="messages" class="grid_3 prefix_1 placeholder"></div>
-    {% endif %}
-    <div class="clear"></div>
-    </div>
-    {% endcomment %}
+    </div> {# #header #}
 {% endblock %}
 
-<div id="content">
-    <div class="container_4">
+<div id="content" class="container_24">
+    <div>
 {% if messages %}
         <div id="messages" class="grid_3 prefix_1">
     {% for m in messages %}
@@ -113,10 +82,10 @@
 {% block content %}
 {% endblock %}
     <div class="clear"></div>
-</div> {# #page #}
+</div> {# #content #}
 
 {% if debug %}
-<div id="debug">
+<div id="debug" class="container_24">
   <h2>Queries</h2>
   <p>
     {{ sql_queries|length }} Quer{{ sql_queries|pluralize:"y,ies" }}

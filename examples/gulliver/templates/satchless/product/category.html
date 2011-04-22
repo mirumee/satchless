@@ -53,7 +53,7 @@ $(function() {
 {% endif %}
 {% endcomment %}
 
-<div id="products" class="grid_3">
+<div id="products" class="grid_24">
     {% with category.products.all as products %}
         {% autopaginate products 21 %}
         {% if products %}
@@ -61,7 +61,7 @@ $(function() {
             {% for product in products %}
                 {% with product.get_subtype_instance as product %}
                 {% with product|product_in_category_url:category as product_url %}
-    <div class="product grid_1 {% cycle 'alpha' '' 'omega' %}">
+    <div class="product grid_6 {% cycle 'alpha' '' 'omega' %}">
         <a href="{{ product_url }}" class="product-photo">
                     {% if product.main_image %}
             <img src="{{ product.main_image|at_size:'product-detail' }}" alt="{{ product.name }} image" />

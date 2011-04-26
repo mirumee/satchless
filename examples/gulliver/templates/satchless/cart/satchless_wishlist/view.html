@@ -24,9 +24,10 @@
 </div>
 <div class="grid_20">
     <div class="products">
-{% if cart_items %}
+{% if cart_item_forms %}
         <ul>
-    {% for cart_item in cart_items %}
+    {% for form in cart_item_forms %}
+        {% with form.instance as cart_item %}
         {% promote cart_item.variant as variant %}
         {% with variant.product as product %}
             <li class="product{% if forloop.last %} last{% endif %}">
@@ -75,6 +76,7 @@
                 </div>
                 <div class="clear"></div>
             </li>
+        {% endwith %}
         {% endwith %}
     {% endfor %}
         </ul>

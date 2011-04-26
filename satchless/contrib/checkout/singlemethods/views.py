@@ -36,7 +36,9 @@ def checkout(request, typ):
         PaymentForm = handler.get_payment_formclass(order, ptyp)
         pform = PaymentForm(data=request.POST or None, instance=order)
         if request.method == 'POST':
-            if dform.is_valid() and pform.is_valid():
+            dvalid = dform.is_valid()
+            pvalid = pform.is_valid()
+            if dvalid and pvalid:
                 dvariant = handler.get_delivery_variant(dgroup, dtyp, dform)
                 pvariant = handler.get_payment_variant(order, ptyp, pform)
                 return redirect('satchless-checkout-confirmation')

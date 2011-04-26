@@ -82,7 +82,7 @@ def get_payment_details_form(order, request):
     typ = request.session['satchless_payment_method']
     Form = handler.get_payment_formclass(order, typ)
     if Form:
-        return Form(data=request.POST or None)
+        return Form(data=request.POST or None, instance=order)
     return None
 
 class PaymentDetailsBaseForm(forms.ModelForm):

@@ -9,18 +9,18 @@ from . import forms
 def cart(request, typ, form_class=forms.EditCartItemForm):
     cart = models.Cart.objects.get_or_create_from_request(request, typ)
 
-    cart_items = []
+    cart_item_forms = []
     for item in cart.items.all():
-        item.form = form_class(data=request.POST or None, instance=item,
+        form = form_class(data=request.POST or None, instance=item,
                           prefix='%s-%i'%(typ, item.id))
-        if item.form.is_valid():
-            item.form.save()
+        if request.method == 'POST' and form.is_valid():
+            form.save()
             return HttpResponseRedirect(request.path)
-        cart_items.append(item)
+        cart_item_forms.append(form)
 
     return render_to_response(
             ['satchless/cart/%s/view.html' % typ, 'satchless/cart/view.html'],
-            {'cart': cart, 'cart_items': cart_items},
+            {'cart': cart, 'cart_item_forms': cart_item_forms},
             context_instance=RequestContext(request))
 
 @require_POST

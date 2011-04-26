@@ -9,7 +9,6 @@
     <h1>{% trans "My cart" %}</h1>
     <form method="post">
     {% csrf_token %}
-    {{ formset.management_form }}
     <table class="cart">
         <thead>
             <tr>
@@ -23,8 +22,7 @@
             </tr>
         </thead>
         <tbody>
-            {% for form in formset.forms %}
-            {{ form.id }}
+            {% for form in cart_item_forms %}
             {% if form.quantity.errors %}
             <tr class="errors">
                 <td></td>

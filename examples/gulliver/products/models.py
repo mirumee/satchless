@@ -58,10 +58,17 @@ class ProductImage(Image):
             self.order = self.product.images.aggregate(max_order=models.Max("order"))['max_order'] or 0
         return super(ProductImage, self).save(*args, **kwargs)
 
+class Make(models.Model):
+    name = models.TextField(_("manufacturer"), default='', blank=True)
+    logo = models.ImageField(upload_to="make/logo/")
+
+    def __unicode__(self):
+        return self.name
 
 class Product(satchless.product.models.ProductAbstract,
               MothertongueModelTranslate):
-    manufacture = models.TextField(_("Manufacture"), default='', blank=True)
+    make = models.ForeignKey(Make, null=True, blank=True, on_delete=models.SET_NULL,
+        help_text=_("Product manufacturer"))
     main_image = models.ForeignKey(ProductImage, null=True, blank=True, on_delete=models.SET_NULL,
             help_text=_("Main product image (first image by default)"))
     translated_fields = ('name', 'description', 'meta_description', 'manufacture')

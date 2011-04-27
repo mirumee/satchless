@@ -165,3 +165,5 @@ admin.site.register(models.TShirt, TShirtAdmin)
 
 admin.site.unregister(satchless.product.models.Category)
 admin.site.register(models.Category, CategoryWithImageAdmin)
+
+admin.site.register(models.Make)

@@ -2,10 +2,10 @@
 {% load i18n %}
 {% load localeurl_tags %}
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="pl-PL" lang="pl-PL">
-<head>
+<head
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
-    <title>{% block title %}Gulliver{% endblock %}</title>
-    <meta name="description" content="{% block meta-description %}{% trans "Gulliver not dead!" %}{% endblock %}" />
+    <title>{% block title %}Satchless Demo Store{% endblock %}</title>
+    <meta name="description" content="{% block meta-description %}{% trans "For Python perfectionists with real deadlines" %}{% endblock %}" />
     <link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}css/grid.css" />
     <link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}css/style.css" />
 </head>
@@ -30,10 +30,10 @@
                 <a href="{% url sale %}">SALE</a>
             </li>
             <li class="about-us">
-                <a href="{# url sale #}">ABOUT US</a>
+                <a href="{# url sale #}">About us</a>
             </li>
             <li class="contact">
-                <a href="{# url sale #}">CONTACT</a>
+                <a href="{# url sale #}">Contact</a>
             </li>
         </ul>
         <div class="shortcuts grid_6">
@@ -51,29 +51,47 @@
                 <a href="{% url satchless-cart-view 'satchless_cart' %}">{{ cart_size|floatformat:0 }}<img src="{{ STATIC_URL }}img/icons/cart.png" alt="cart" /></a>
             </div>
         </div>
+        <div class="grid_24">
+            <hr/>
+        </div>
         <div class="clear"></div>
-    </div> {# #header #}
-{% endblock %}
-
-<div id="content" class="container_24">
     <div>
 {% if messages %}
-        <div id="messages" class="grid_3 prefix_1">
+        <div id="messages" class="grid_10"><span class="tip"></span>
     {% for m in messages %}
             <div class="message {{ m.tags }}">{{ m|safe }}</div>
     {% endfor %}
         </div>
-{% else %}
-        <div id="messages" class="grid_3 prefix_1 placeholder"></div>
 {% endif %}
     </div>
+
+    </div> {# #header #}
+{% endblock %}
+
+<div id="content" class="container_24">
+    <div class="grid_24">
 {% block breadcrumbs %}
 {% endblock %}
 
 {% block content %}
 {% endblock %}
     <div class="clear"></div>
+    </div>
 </div> {# #content #}
+
+<div id="content" class="container_24">
+<div class="grid_24 footer">
+    <div class="info">
+        <div class="contact">
+            IF YOU NEED GREAT, FAST & MODERN ECOMMERCE SOLUTION OR CONSULTING <a href="http://mirumee.com/contact">TALK TO US</a><br />
+            <span class="quality">Best quality guqrantee</span>
+        </div>
+        <div class="copyright">
+            Copyright © 2009-2011 Mirumee Labs. <br />
+            <a href="http://mirumee.com"><img class="motto" src="{{ STATIC_URL }}img/motto.png" alt="Mirumee Software - We build WebApps. Better" /></a>
+        </div>
+    </div>
+</div>
 
 {% if debug %}
 <div id="debug" class="container_24">
@@ -107,6 +125,15 @@
 {% endif %}
 {% block extra-body %}
 <script type="text/javascript" src="{{ STATIC_URL }}js/jquery.js"></script>
+<script>
+    $(function() {
+        $('#messages').fadeIn('slow');
+        var hide = setTimeout("hideCallback()", 6000);
+    });
+    var hideCallback = function() {
+        $('#messages').fadeOut('slow');
+    }
+</script>
 {% endblock %}
 </body>
 </html>

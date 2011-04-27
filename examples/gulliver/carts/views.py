@@ -13,7 +13,7 @@ def from_wishlist_to_cart(request, wishlist_item_id):
 
     cart = Cart.objects.get_or_create_from_request(request, 'satchless_cart')
     cart.add_quantity(variant=item.variant, quantity=1)
-    messages.success(request, _(u'Product added to cart.'))
+    messages.success(request, _(u'<strong>Sweet!</strong> Product successfuly added to the cart.'))
 
     return HttpResponseRedirect(reverse('satchless-cart-view', args=('satchless_wishlist',)))
 

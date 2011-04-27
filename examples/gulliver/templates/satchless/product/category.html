@@ -2,10 +2,13 @@
 {% load pagination_tags %}
 {% load product_url %}
 {% load satchless_image %}
+{% load prices %}
+{% load product_prices %}
 
 {% block body-class %}category{% if path %} cat-{{ path.0.slug }}{% endif %}{% endblock %}
 {% block extra-body %}
 {{ block.super }}
+{% comment %}
 <script>
 $(function() {
     $('.product h3').hide();
@@ -16,44 +19,13 @@ $(function() {
     });
 });
 </script>
+{% endcomment %}
 {% endblock %}
 
 {% block content %}
-{% comment %}
-{% if category %}
-    {% if category.is_root_node %}
-        {% with category.get_children as subcategories %}
-        {% autopaginate subcategories 21 %}
-            {% if subcategories %}
-                {% for child in subcategories %}
-<div class="category grid_1">
-                    {% if child.image %}
-    <a href="{{ child.get_url }}"><img src="{{ child.image|at_size:'category' }}" alt="" /></a>
-                    {% endif %}
-    <h3><a href="{{ child.get_url }}" title="{{ child.name }}">{{ child.name }}</a></h3>
-</div>
-{% cycle '' '' '' '<div class="clear"></div>' %}
-                {% endfor %}
-<div class="clear"></div>
-{% paginate %}
-            {% else %}
-            <p class="no-items">Coming soon&hellip;</p>
-            {% endif %}
-        {% endwith %}
-    {% else %}
-<div id="sidebar" class="grid_1">
-        {% with path.0.get_children as siblings %}
-    <ul class="categories">
-            {% for cat in siblings %}
-        <li{% if cat == category %} class="active"{% endif %}><a href="{{ cat.get_url }}">{{ cat.name }}</a></li>
-            {% endfor %}
-    </ul>
-        {% endwith %}
-</div>
-{% endif %}
-{% endcomment %}
-
-<div id="products" class="grid_24">
+<div class="grid_4 alpha"><div class="sidebar">&nbsp;</div></div>
+<div class="grid_20 omega products">
+{% if category.is_leaf_node %}
     {% with category.products.all as products %}
         {% autopaginate products 21 %}
         {% if products %}
@@ -61,13 +33,28 @@ $(function() {
             {% for product in products %}
                 {% with product.get_subtype_instance as product %}
                 {% with product|product_in_category_url:category as product_url %}
-    <div class="product grid_6 {% cycle 'alpha' '' 'omega' %}">
+    <div class="product grid_5 {% cycle 'alpha' '' 'omega' %}">
         <a href="{{ product_url }}" class="product-photo">
                     {% if product.main_image %}
-            <img src="{{ product.main_image|at_size:'product-detail' }}" alt="{{ product.name }} image" />
+            <img src="{{ product.main_image|at_size:'product-detail' }}" alt="{{ product.name }} image"/>
                     {% endif %}
         </a>
-        <h3><a href="{{ product_url }}" title="{{ product.name }}">{{ product.name }}</a></h3>
+        <div class="description">
+            <span class="manufacture">
+                {% if product.make %}
+                {{ product.make }}
+                {% endif %}
+            </span>
+            <h3>{{ product.name }}</h3>
+            <div class="price">
+                {% product_price_range product as price_range %}
+                {% product_price_range product discount=0 as undiscounted_price_range %}
+                {% if price_range.min != undiscounted_price_range.min %}
+                        <span class="strike">{{ undiscounted_price_range.min|gross|floatformat:2 }}</span>
+                {% endif %}
+                <span class="fullprice">{{ price_range.min|gross|floatformat:2 }}</span> <span class="currency">{{ price_range.min|currency }}</span>
+            </div>
+        </div>
     </div>
     {% cycle '' '' '<div class="clear"></div>' %}
                 {% endwith %}
@@ -75,11 +62,26 @@ $(function() {
             {% endfor %}
     {% paginate %}
         {% else %}
-
+        <div class="no-items">No products yet!</div>
         {% endif %}
     <div class="clear"></div>
     {% endwith %}
+{% else %}
+    {% with category.get_children as subcategories %}
+        {% if subcategories %}
+            {% for child in subcategories %}
+                <div class="grid_5">
+                    <div class="category">
+                    {% if child.image %}
+                        <a href="{{ child.get_absolute_url }}"><img src="{{ child.image|at_size:'category' }}" alt="" /></a>
+                    {% endif %}
+                        <h3><a href="{{ child.get_absolute_url }}">{{ child }}</a></h3>
+                    </div>
+                </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+{% endif %}
 </div>
-{# {% endif %} #}
 <div class="clear"></div>
 {% endblock %}

@@ -1,5 +1,7 @@
 from django import forms
 
+from .signals import variant_formclass_for_product
+
 class BaseVariantForm(forms.Form):
     product = None
 
@@ -19,3 +21,15 @@ class BaseVariantForm(forms.Form):
 class NonConfigurableVariantForm(BaseVariantForm):
     def get_variant(self):
         return self.product.variants.get()
+
+def variant_form_for_product(product):
+    formclass = []
+    variant_formclass_for_product.send(sender=type(product),
+                                       instance=product,
+                                       formclass=formclass)
+    if len(formclass) > 1:
+        raise ValueError("Multiple form classes returned for %s: %s." %
+                         (product._meta.object_name, formclass))
+    elif not len(formclass):
+        formclass = [NonConfigurableVariantForm]
+    return formclass[0]

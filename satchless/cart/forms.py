@@ -1,7 +1,8 @@
 from django import forms
-from django.forms.models import inlineformset_factory
 from django.utils.translation import ugettext as _
+
 from . import models
+from ..product.forms import variant_form_for_product
 
 class QuantityForm(object):
     def clean_quantity(self):
@@ -54,3 +55,9 @@ class EditCartItemForm(forms.ModelForm, QuantityForm):
         """Do not call the original save() method, but use cart.set_quantity() instead."""
         self.instance.cart.set_quantity(self.instance.variant, self.cleaned_data['quantity'])
 
+def add_to_cart_variant_form_for_product(product,
+                                         addtocart_formclass=forms.AddToCartForm):
+    variant_formclass = variant_form_for_product(product)
+    class AddVariantToCartForm(addtocart_formclass, variant_formclass):
+        pass
+    return AddVariantToCartForm

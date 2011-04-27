@@ -56,7 +56,7 @@ class EditCartItemForm(forms.ModelForm, QuantityForm):
         self.instance.cart.set_quantity(self.instance.variant, self.cleaned_data['quantity'])
 
 def add_to_cart_variant_form_for_product(product,
-                                         addtocart_formclass=forms.AddToCartForm):
+                                         addtocart_formclass=AddToCartForm):
     variant_formclass = variant_form_for_product(product)
     class AddVariantToCartForm(addtocart_formclass, variant_formclass):
         pass

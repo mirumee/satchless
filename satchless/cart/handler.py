@@ -1,6 +1,7 @@
 from django.shortcuts import redirect
 
 from ..product.models import ProductAbstract, Variant
+from ..utils import JSONResponse
 from . import forms
 from . import models
 
@@ -59,11 +60,16 @@ class AddToCartHandler(object):
                             variant=variant, typ=self.typ)
                 if form.is_valid():
                     form.save()
+                    if request.is_ajax():
+                        # FIXME: add cart details like number of items and new total
+                        return JSONResponse({})
                     return redirect('satchless-cart-view', typ=self.typ)
+                elif request.is_ajax() and form.errors:
+                    data = dict(form.errors)
+                    return JSONResponse(data, status=400)
             else:
                 form = Form(data=None, product=product, variant=variant,
                             typ=self.typ)
             # Attach the form to instance
             setattr(instance, self.form_attribute, form)
         return extra_context
-

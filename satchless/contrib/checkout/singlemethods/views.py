@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from django.core.exceptions import ObjectDoesNotExist
 from django.shortcuts import redirect
 from django.views.generic.simple import direct_to_template
 from ....cart.models import Cart
@@ -27,7 +28,11 @@ def checkout(request, typ):
                     "methods. Methods for this order: %s" % dtypes)
         dtyp = dtypes[0][0]
         DeliveryForm = handler.get_delivery_formclass(dgroup, dtyp)
-        dform = DeliveryForm(data=request.POST or None, prefix='delivery_details')
+        try:
+            dvariant = dgroup.deliveryvariant
+        except ObjectDoesNotExist:
+            dvariant = None
+        dform = DeliveryForm(data=request.POST or None, instance=dvariant, prefix='delivery_details')
         ptypes = handler.get_payment_types(order)
         if len(ptypes) > 1:
             raise ValueError("The singlemethods checkout cannot handle multiple payment "
@@ -41,6 +46,8 @@ def checkout(request, typ):
             if dvalid and pvalid:
                 dvariant = handler.get_delivery_variant(dgroup, dtyp, dform)
                 pvariant = handler.get_payment_variant(order, ptyp, pform)
+                request.session['satchless_order'] = order.pk
+                request.session['satchless_payment_method'] = ptyp
                 return redirect('satchless-checkout-confirmation')
     return direct_to_template(request, 'satchless/checkout/checkout.html',
             {'order': order, 'delivery_form': dform, 'payment_form': pform})
@@ -57,5 +64,5 @@ def confirmation(request):
     order.set_status('payment-pending')
     # TODO: get rid of typ here. We have the variant already.
     formdata = handler.get_confirmation_formdata(order, request.session['satchless_payment_method'])
-    return direct_to_template(request, 'satchless/order/confirmation.html',
+    return direct_to_template(request, 'satchless/checkout/confirmation.html',
             {'order': order, 'formdata': formdata})

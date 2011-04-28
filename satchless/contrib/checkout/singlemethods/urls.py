@@ -3,4 +3,5 @@ from . import views
 
 urlpatterns = patterns('',
     url(r'^$', views.checkout, {'typ': 'satchless_cart'}, name='satchless-checkout'),
+    url(r'^confirmation/$', views.confirmation, name='satchless-checkout-confirmation'),
     )

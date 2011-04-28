@@ -61,9 +61,11 @@ def get_payment_variant(order, typ, form):
     provider, typ_short = get_payment_provider(typ)
     return provider.get_variant(order, typ_short, form)
 
-def get_confirmation_formdata(order, typ):
+def confirm(order, typ):
     provider, typ_short = get_payment_provider(typ)
-    return provider.get_confirmation_formdata(order)
+    result = provider.confirm(order)
+    order.set_status('payment-complete')
+    return result
 
 def init_queues():
     global _partitioners_queue
@@ -108,6 +110,6 @@ def init_queues():
     global _payment_providers_queue
     _payment_providers_queue = build_q_from_paths(
             'SATCHLESS_PAYMENT_PROVIDERS',
-            ('enum_types', 'get_configuration_formclass', 'get_variant', 'get_confirmation_formdata'))
+            ('enum_types', 'get_configuration_formclass', 'get_variant', 'confirm'))
 
 init_queues()

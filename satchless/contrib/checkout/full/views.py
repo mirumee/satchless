@@ -2,6 +2,7 @@
 from django.shortcuts import redirect
 from django.views.generic.simple import direct_to_template
 from ....cart.models import Cart
+from ....payment import PaymentFailure, ConfirmationFormNeeded
 from ....order import models
 from ....order import forms
 from ....order import handler
@@ -108,6 +109,11 @@ def confirmation(request):
         return redirect('satchless-checkout')
     order.set_status('payment-pending')
     # TODO: get rid of typ here. We have the variant already.
-    formdata = handler.get_confirmation_formdata(order, request.session['satchless_payment_method'])
-    return direct_to_template(request, 'satchless/checkout/confirmation.html',
-            {'order': order, 'formdata': formdata})
+    try:
+        handler.confirm(order, request.session['satchless_payment_method'])
+    except PaymentFailure:
+        raise
+    except ConfirmationFormNeeded, e:
+        return direct_to_template(request, 'satchless/checkout/confirmation.html',
+            {'order': order, 'formdata': e})
+    return redirect('satchless-order-view', order.pk)

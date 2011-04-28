@@ -1,3 +1,17 @@
+class PaymentFailure(Exception):
+    def __init__(self, error_message):
+        super(PaymentFailure, self).__init__(error_message)
+        self.error_message = error_message
+
+
+class ConfirmationFormNeeded(Exception):
+    def __init__(self, form=None, action='', method='post'):
+        super(ConfirmationFormNeeded, self).__init__()
+        self.form = form
+        self.action = action
+        self.method = method
+
+
 class PaymentProvider(object):
     def enum_types(self, order=None, customer=None):
         '''
@@ -20,10 +34,10 @@ class PaymentProvider(object):
         '''
         raise NotImplementedError()
 
-    def get_confirmation_formdata(self, order):
+    def confirm(self, order):
         '''
-        Build a form that can be used on the order confirmation page to start
-        payment processing. Returns a dict with 'form', 'action' and 'method'
-        fields.
+        Confirm the payment, raise PaymentFailure on errors.
+        Backends which need a confirmation form should raise
+        ConfirmationFormNeeded.
         '''
         raise NotImplementedError()

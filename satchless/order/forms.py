@@ -89,6 +89,6 @@ class PaymentDetailsBaseForm(forms.ModelForm):
     class Meta:
         model = models.Order
         fields = ('billing_full_name', 'billing_company_name',
-                'billing_street_address_1', 'billing_street_address_2',
-                'billing_city', 'billing_postal_code', 'billing_country',
-                'billing_tax_id', 'billing_phone')
+                  'billing_street_address_1', 'billing_street_address_2',
+                  'billing_city', 'billing_postal_code', 'billing_country',
+                  'billing_tax_id', 'billing_phone')

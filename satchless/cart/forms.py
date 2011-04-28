@@ -44,8 +44,8 @@ class EditCartItemForm(forms.ModelForm, QuantityForm):
         model = models.CartItem
         fields = ('quantity',)
         widgets = {
-                'quantity': DecimalInput(min_decimal_places=0),
-                }
+            'quantity': DecimalInput(min_decimal_places=0),
+        }
 
     def clean_quantity(self):
         qty = super(EditCartItemForm, self).clean_quantity()

@@ -9,6 +9,6 @@ def payment_status_changed_listener(sender, instance=None, **kwargs):
     if instance.status == 'confirmed':
         variant.order.set_status('payment-complete')
     elif instance.status == 'rejected':
-        variant.order.set_status('cancelled')
+        variant.order.set_status('payment-failed')
 
 signals.status_changed.connect(payment_status_changed_listener)

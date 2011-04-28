@@ -5,6 +5,8 @@ from satchless.order.models import OrderedItem
 def payment_status_changed_listener(sender, instance=None, old_status=None, new_status=None, **kwargs):
     if new_status == 'paid':
         instance.order.order.set_status('payment-complete')
+    elif new_status == 'failed':
+        instance.order.order.set_status('payment-failed')
 
 def return_urls_query_listener(sender, instance=None, urls=None, **kwargs):
     urls['failure'] = urls['paid'] = reverse(

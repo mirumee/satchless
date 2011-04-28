@@ -3,6 +3,7 @@ from django.utils.translation import ugettext as _
 
 from . import models
 from ..product.forms import variant_form_for_product
+from satchless.forms.widgets import DecimalInput
 
 class QuantityForm(object):
     def clean_quantity(self):
@@ -42,6 +43,9 @@ class EditCartItemForm(forms.ModelForm, QuantityForm):
     class Meta:
         model = models.CartItem
         fields = ('quantity',)
+        widgets = {
+                'quantity': DecimalInput(min_decimal_places=0),
+                }
 
     def clean_quantity(self):
         qty = super(EditCartItemForm, self).clean_quantity()

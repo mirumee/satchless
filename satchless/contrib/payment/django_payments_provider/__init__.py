@@ -1,7 +1,7 @@
 from django.conf import settings
 import payments
 
-from satchless.payment import PaymentProvider
+from satchless.payment import PaymentProvider, ConfirmationFormNeeded
 from . import models
 
 class DjangoPaymentsProvider(PaymentProvider):
@@ -20,10 +20,8 @@ class DjangoPaymentsProvider(PaymentProvider):
                                 .create(payment=payment, order=order, price=0)
         return payment_variant
 
-    def get_confirmation_formdata(self, order):
+    def confirm(self, order):
         form = order.paymentvariant.get_subtype_instance().payment.get_form()
-        return {'form': form,
-                'action': form.action,
-                'method': form.method}
+        raise ConfirmationFormNeeded(form, form.action, form.method)
 
 provider = DjangoPaymentsProvider()

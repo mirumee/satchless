@@ -20,9 +20,10 @@ class PaymentProvider(object):
         '''
         raise NotImplementedError()
 
-    def get_confirmation_form(self, order):
+    def get_confirmation_formdata(self, order):
         '''
         Build a form that can be used on the order confirmation page to start
-        payment processing.
+        payment processing. Returns a dict with 'form', 'action' and 'method'
+        fields.
         '''
         raise NotImplementedError()

@@ -3,7 +3,6 @@ import payments
 
 from satchless.payment import PaymentProvider
 from . import models
-from . import listeners
 
 class DjangoPaymentsProvider(PaymentProvider):
     def enum_types(self, order=None, customer=None):
@@ -21,7 +20,7 @@ class DjangoPaymentsProvider(PaymentProvider):
                                 .create(payment=payment, order=order, price=0)
         return payment_variant
 
-    def get_confirmation_form(self, order):
+    def get_confirmation_formdata(self, order):
         form = order.paymentvariant.get_subtype_instance().payment.get_form()
         return {'form': form,
                 'action': form.action,

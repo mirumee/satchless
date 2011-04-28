@@ -63,9 +63,7 @@ def get_payment_variant(order, typ, form):
 
 def confirm(order, typ):
     provider, typ_short = get_payment_provider(typ)
-    result = provider.confirm(order)
-    order.set_status('payment-complete')
-    return result
+    return provider.confirm(order)
 
 def init_queues():
     global _partitioners_queue

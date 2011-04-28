@@ -2,8 +2,8 @@ from django import forms
 from django.utils.translation import ugettext as _
 
 from . import models
+from ..forms.widgets import DecimalInput
 from ..product.forms import variant_form_for_product
-from satchless.forms.widgets import DecimalInput
 
 class QuantityForm(object):
     def clean_quantity(self):

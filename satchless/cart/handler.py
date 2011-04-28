@@ -1,8 +1,7 @@
 from django.shortcuts import redirect
 
-from ..product.forms import NonConfigurableVariantForm
 from ..product.models import ProductAbstract, Variant
-from ..product.signals import variant_formclass_for_product
+from ..util import JSONResponse
 from . import forms
 from . import models
 
@@ -27,11 +26,6 @@ class AddToCartHandler(object):
         self.form_attribute = form_attribute
         self.addtocart_formclass = addtocart_formclass
 
-    def build_formclass(self, variant_formclass):
-        class AddVariantToCartForm(self.addtocart_formclass, variant_formclass):
-            pass
-        return AddVariantToCartForm
-
     def __call__(self, instances=None, request=None, extra_context=None, **kwargs):
         """
         Accepts a list of Product or Variant instances. For every of them finds
@@ -48,7 +42,6 @@ class AddToCartHandler(object):
             * `extra_context`: extra context that will be passed to template
         """
         for instance in instances:
-            formclass = []
             if isinstance(instance, ProductAbstract):
                 product = instance
                 variant = None
@@ -58,15 +51,8 @@ class AddToCartHandler(object):
             else:
                 raise ValueError("Received unknown type: %s" %
                                  type(instance).__name__)
-            variant_formclass_for_product.send(sender=type(product),
-                                               instance=product,
-                                               formclass=formclass)
-            if len(formclass) > 1:
-                raise ValueError("Multiple form classes returned for %s : %s." %
-                                 (product._meta.object_name, formclass))
-            elif not len(formclass):
-                formclass = [NonConfigurableVariantForm]
-            Form = self.build_formclass(formclass[0])
+            Form = forms.add_to_cart_variant_form_for_product(product,
+                    addtocart_formclass=self.addtocart_formclass)
             if request.method == 'POST':
                 cart = models.Cart.objects.get_or_create_from_request(request,
                                                                       self.typ)
@@ -74,11 +60,16 @@ class AddToCartHandler(object):
                             variant=variant, typ=self.typ)
                 if form.is_valid():
                     form.save()
+                    if request.is_ajax():
+                        # FIXME: add cart details like number of items and new total
+                        return JSONResponse({})
                     return redirect('satchless-cart-view', typ=self.typ)
+                elif request.is_ajax() and form.errors:
+                    data = dict(form.errors)
+                    return JSONResponse(data, status=400)
             else:
                 form = Form(data=None, product=product, variant=variant,
                             typ=self.typ)
             # Attach the form to instance
             setattr(instance, self.form_attribute, form)
         return extra_context
-

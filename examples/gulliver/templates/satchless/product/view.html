@@ -31,7 +31,7 @@
 {% block content %}
 <div class="clear"></div>
 
-<div class="grid_8">
+<div class="grid_8 alpha">
     <div class="main-photo">
     {% if product.main_image %}
         <a href="{{ product.main_image.image.url }}" class="cloud-zoom" rel="position: 'inside', showTitle: false"><img src="{{ product.main_image|at_size:'product-detail' }}" /></a>
@@ -39,51 +39,57 @@
     </div>
 </div>
 
-<div class="grid_16">
-<form action="" method="post">
-    <div class="product-description">
-{% if product.manufacture %}
-        <span class="manufacture">{{ product.manufacture }}</span>
-{% endif %}
-        <h1>{{ product.name }}</h1>
-        {% csrf_token %}
-        <table>
-        {{ product.cart_form.as_table }}
-        </table>
-
+<div class="grid_16 omega product-details">
+    <div class="grid_11 alpha">
+        <form action="" method="post">
+            <div class="product-description">
+                {% if product.make %}
+                    <span class="manufacture">{{ product.make }}</span>
+                {% endif %}
+                    <h1>{{ product.name }}</h1>
+                    <div class="text">
+                        {{ product.description|linebreaks }}
+                    </div>
+            </div>
+            <div class="grid_11 alpha">
+                {% csrf_token %}
+                <table>
+                    {{ product.cart_form.as_table }}
+                </table>
+            </div>
     </div>
-
-    <div class="add-to-cart">
-        <div class="product-price">
-{% product_price_range product as price_range %}
-{% product_price_range product discount=0 as undiscounted_price_range %}
-{% if price_range.min != price_range.max %}
-    {% if price_range.min != undiscounted_price_range.min or price_range.max != undiscounted_price_range.max %}
-            <span class="strike">{{ undiscounted_price_range.min|gross|floatformat:2 }} - {{ undiscounted_price_range.max|gross|floatformat:2 }}</span>
-    {% endif %}
-            <span class="fullprice">{{ price_range.min|gross|floatformat:2 }}</span><span class="currency">{{ price_range.min|currency }}</span> - <span class="fullprice">{{ price_range.max|gross|floatformat:2 }}</span><span class="currency">{{ price_range.max|currency }}</span>
-{% else %}
-    {% if price_range.max != undiscounted_price_range.max %}
-            <span class="strike">{{ undiscounted_price_range.max|gross|floatformat:2 }}</span>
-    {% endif %}
-            <span class="fullprice">{{ price_range.min|gross|floatformat:2 }}</span><span class="currency">{{ price_range.min|currency }}</span>
-{% endif %}
-            <p class="info">
-                Inclusive VAT <br />
-                Exclusive shipping costs<br />
-            </p>
+    <div class="grid_5 omega">
+        <div class="sidebar">
+            <div class="add-to-cart">
+                <div class="product-price">
+            {% product_price_range product as price_range %}
+            {% product_price_range product discount=0 as undiscounted_price_range %}
+            {% if price_range.min != price_range.max %}
+                {% if price_range.min != undiscounted_price_range.min or price_range.max != undiscounted_price_range.max %}
+                        <span class="strike">{{ undiscounted_price_range.min|gross|floatformat:2 }} - {{ undiscounted_price_range.max|gross|floatformat:2 }}</span>
+                {% endif %}
+                        <span class="fullprice">{{ price_range.min|gross|floatformat:2 }}</span><span class="currency">{{ price_range.min|currency }}</span> - <span class="fullprice">{{ price_range.max|gross|floatformat:2 }}</span><span class="currency">{{ price_range.max|currency }}</span>
+            {% else %}
+                {% if price_range.max != undiscounted_price_range.max %}
+                        <span class="strike">{{ undiscounted_price_range.max|gross|floatformat:2 }}</span>
+                {% endif %}
+                        <span class="fullprice">{{ price_range.min|gross|floatformat:2 }}</span><span class="currency">{{ price_range.min|currency }}</span>
+            {% endif %}
+                        <p class="info">
+                            Inclusive VAT <br />
+                            Exclusive shipping costs<br />
+                        </p>
+                    </div>
+                    <input class="cart" name="satchless_cart" type="submit" value="{% trans "Add to cart" %}" />
+                    <input class="wishlist" name="satchless_wishlist" type="submit" value="{% trans "Add to whishlist" %}" />
+            </div>
         </div>
-        <input class="cart" name="satchless_cart" type="submit" value="{% trans "Add to cart" %}" />
-        <input class="wishlist" name="satchless_wishlist" type="submit" value="{% trans "Add to whishlist" %}" />
-        <div class="text">
-        {{ product.description|linebreaks }}
-        </div>
+        </form>
     </div>
-</form>
 </div>
 <div class="clear"></div>
 
-<div class="thumbs grid_8">
+<div class="thumbs grid_8 alpha">
 {% spaceless %}
 {% for image in product.images.all %}
     {% with image|at_size:'product-thumb' as thumb %}

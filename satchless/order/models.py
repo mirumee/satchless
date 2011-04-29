@@ -100,6 +100,8 @@ class Order(models.Model):
     billing_country = models.CharField(_("country"),
                                        choices=countries.COUNTRY_CHOICES,
                                        max_length=2, blank=True)
+    billing_country_area = models.CharField(_("country administrative area"),
+                                            max_length=128, blank=True)
     billing_tax_id = models.CharField(_("tax ID"), max_length=40, blank=True)
     billing_phone = models.CharField(_("phone number"),
                                      max_length=30, blank=True)

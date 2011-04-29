@@ -15,6 +15,7 @@ class Address(models.Model):
     city = models.CharField(_("city"), max_length=256)
     postal_code = models.CharField(_("postal code"), max_length=20)
     country = models.CharField(_("country"), choices=countries.COUNTRY_CHOICES, max_length=2)
+    country_area = models.CharField(_("country administrative area"), max_length=128)
     tax_id = models.CharField(_("tax ID"), max_length=40, blank=True)
     phone = models.CharField(_("phone number"), max_length=30, blank=True)
 

@@ -19,15 +19,15 @@ class AddToCartForm(forms.Form):
     def clean(self):
         data = super(AddToCartForm, self).clean()
         qty = data['quantity']
-        cart_qty, qty_change, reason = self.cart.add_quantity(self.get_variant(), qty, dry_run=True)
-        if qty_change < qty:
-            raise forms.ValidationError(reason)
+        add_result = self.cart.add_quantity(self.get_variant(), qty, dry_run=True)
+        if add_result.quantity_delta < qty:
+            raise forms.ValidationError(add_result.reason)
         return data
 
     def save(self):
-        self.cart.add_quantity(self.get_variant(), self.cleaned_data['quantity'])
+        return self.cart.add_quantity(self.get_variant(), self.cleaned_data['quantity'])
 
 class AddToWishlistForm(AddToCartForm):
     def save(self):
-        self.cart.add_quantity(self.get_variant(), 1)
+        return self.cart.add_quantity(self.get_variant(), 1)
 

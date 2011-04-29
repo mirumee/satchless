@@ -13,3 +13,8 @@ cart_content_changed = dispatch.Signal()
 cart_content_changed.__doc__ = """
 Sent whenever cart'scontent has been changed.
 """
+
+cart_item_added = dispatch.Signal()
+cart_item_added.__doc__ = """
+Sent whenever new items is added to the cart.
+"""

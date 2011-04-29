@@ -4,6 +4,7 @@ from ..product.models import ProductAbstract, Variant
 from ..util import JSONResponse
 from . import forms
 from . import models
+from . import signals
 
 class AddToCartHandler(object):
     """
@@ -51,6 +52,7 @@ class AddToCartHandler(object):
             else:
                 raise ValueError("Received unknown type: %s" %
                                  type(instance).__name__)
+
             Form = forms.add_to_cart_variant_form_for_product(product,
                     addtocart_formclass=self.addtocart_formclass)
             if request.method == 'POST':
@@ -59,7 +61,11 @@ class AddToCartHandler(object):
                 form = Form(data=request.POST, cart=cart, product=product,
                             variant=variant, typ=self.typ)
                 if form.is_valid():
-                    form.save()
+                    form_result = form.save()
+                    signals.cart_item_added.send(sender=type(form_result.cart_item),
+                                                 instance=form_result.cart_item,
+                                                 result=form_result,
+                                                 request=request)
                     if request.is_ajax():
                         # FIXME: add cart details like number of items and new total
                         return JSONResponse({})

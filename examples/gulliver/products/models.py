@@ -213,6 +213,9 @@ class TShirtVariant(ColoredVariant):
     SIZE_CHOICES = (('S', 'S'), ('XS', 'XS'), ('M', 'M'), ('L', 'L'), ('XL', 'XL'))
     size = models.CharField(choices=SIZE_CHOICES, max_length=2)
 
+    def __unicode__(self):
+        return '<em>%s / %s / %s</em>' % (self.product, self.get_color_display(), self.get_size_display())
+
 
 class Trousers(Product):
     class Meta:

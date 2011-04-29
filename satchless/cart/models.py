@@ -34,6 +34,13 @@ class CartManager(models.Manager):
             request.session[CART_SESSION_KEY % typ] = cart.pk
             return cart
 
+class QuantityResult(object):
+    def __init__(self, cart_item, new_quantity, quantity_delta, reason=None):
+        self.cart_item = cart_item
+        self.new_quantity = new_quantity
+        self.quantity_delta =  quantity_delta
+        self.reason = reason
+
 class Cart(models.Model):
     owner = models.ForeignKey(User, null=True, blank=True)
     typ = models.CharField(_("type"), max_length=100)
@@ -71,7 +78,7 @@ class Cart(models.Model):
                 item.quantity = new_qty
                 item.save()
             signals.cart_content_changed.send(sender=type(self), instance=self)
-        return (new_qty, new_qty - old_qty, reason)
+        return QuantityResult(item, new_qty, new_qty - old_qty, reason)
 
     def set_quantity(self, variant, quantity, dry_run=False):
         variant = variant.get_subtype_instance()
@@ -101,7 +108,7 @@ class Cart(models.Model):
                 item.quantity = quantity
                 item.save()
             signals.cart_content_changed.send(sender=type(self), instance=self)
-        return (quantity, reason)
+        return QuantityResult(item, quantity, quantity - old_qty, reason)
 
     def get_quantity(self, variant):
         try:

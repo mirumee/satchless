@@ -74,6 +74,7 @@ class Order(models.Model):
         ('checkout', _('undergoing checkout')),
         ('payment-pending', _('waiting for payment')),
         ('payment-complete', _('paid')),
+        ('payment-failed', _('payment failed')),
         ('delivery', _('shipped')),
         ('cancelled', _('cancelled')),
     )

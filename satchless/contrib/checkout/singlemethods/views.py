@@ -51,18 +51,3 @@ def checkout(request, typ):
                 return redirect('satchless-checkout-confirmation')
     return direct_to_template(request, 'satchless/checkout/checkout.html',
             {'order': order, 'delivery_form': dform, 'payment_form': pform})
-
-def confirmation(request):
-    """
-    Checkout step 2 of 2
-    The final summary, where user is asked to review and confirm the order.
-    Confirmation will redirect to the payment gateway.
-    """
-    order = models.Order.objects.get_from_session(request.session)
-    if not order:
-        return redirect('satchless-checkout')
-    order.set_status('payment-pending')
-    # TODO: get rid of typ here. We have the variant already.
-    formdata = handler.get_confirmation_formdata(order, request.session['satchless_payment_method'])
-    return direct_to_template(request, 'satchless/checkout/confirmation.html',
-            {'order': order, 'formdata': formdata})

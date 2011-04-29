@@ -1,8 +1,8 @@
-from django.conf import settings
 from mamona.utils import get_backend_choices
 
-from satchless.payment import PaymentProvider
+from satchless.payment import PaymentProvider, ConfirmationFormNeeded
 from . import models
+from .listeners import connect_listeners
 
 class MamonaProvider(PaymentProvider):
     def enum_types(self, order=None, customer=None):
@@ -16,8 +16,11 @@ class MamonaProvider(PaymentProvider):
                         currency=order.currency, backend=typ)
         return variant
 
-    def get_confirmation_formdata(self, order):
+    def confirm(self, order):
         payment = order.paymentvariant.get_subtype_instance().payments.get()
-        return payment.get_processor().get_confirmation_form(payment)
+        form = payment.get_processor().get_confirmation_form(payment)
+        raise ConfirmationFormNeeded(**form)
 
 provider = MamonaProvider()
+
+connect_listeners()

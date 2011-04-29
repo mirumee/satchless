@@ -116,5 +116,6 @@ def confirmation(request):
     except ConfirmationFormNeeded, e:
         return direct_to_template(request, 'satchless/checkout/confirmation.html',
             {'order': order, 'formdata': e})
-    order.set_status('payment-complete')
-    return redirect('satchless-order-view', order.pk)
+    else:
+        order.set_status('payment-complete')
+        return redirect('satchless-order-view', order.pk)

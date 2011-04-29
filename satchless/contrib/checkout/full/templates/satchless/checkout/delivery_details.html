@@ -12,7 +12,7 @@
         <h2>{% trans "Delivery method" %}: {{ typ|delivery_type }}</h2>
         <h3>{% trans "Items deliverd using this method" %}:</h3>
         <ul>
-        {% include 'satchless/order/snippets/delivery_group.html' %}
+        {% include 'satchless/checkout/snippets/delivery_group.html' %}
         </ul>
         <h3>{% trans "Delivery details" %}:</h3>
         {{ form.as_p }}

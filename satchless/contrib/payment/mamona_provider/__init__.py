@@ -15,7 +15,7 @@ class MamonaProvider(PaymentProvider):
                         currency=order.currency, backend=typ)
         return variant
 
-    def get_confirmation_formdata(self, order):
+    def confirm(self, order):
         payment = order.paymentvariant.get_subtype_instance().payments.get()
         form = payment.get_processor().get_confirmation_form(payment)
         raise ConfirmationFormNeeded(**form)

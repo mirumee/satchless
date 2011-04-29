@@ -2,6 +2,7 @@ from mamona.utils import get_backend_choices
 
 from satchless.payment import PaymentProvider, ConfirmationFormNeeded
 from . import models
+from .listeners import connect_listeners
 
 class MamonaProvider(PaymentProvider):
     def enum_types(self, order=None, customer=None):
@@ -21,3 +22,5 @@ class MamonaProvider(PaymentProvider):
         raise ConfirmationFormNeeded(**form)
 
 provider = MamonaProvider()
+
+connect_listeners()

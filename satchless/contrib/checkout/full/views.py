@@ -6,6 +6,7 @@ from ....payment import PaymentFailure, ConfirmationFormNeeded
 from ....order import models
 from ....order import forms
 from ....order import handler
+from ....order import signals
 
 def checkout(request, typ):
     """
@@ -108,8 +109,9 @@ def confirmation(request):
     if not order:
         return redirect('satchless-checkout')
     order.set_status('payment-pending')
-    # TODO: get rid of typ here. We have the variant already.
+    signals.order_pre_confirm.send(sender=models.Order, instance=order, request=request)
     try:
+        # TODO: get rid of typ here. We have the variant already.
         handler.confirm(order, request.session['satchless_payment_method'])
     except PaymentFailure:
         raise

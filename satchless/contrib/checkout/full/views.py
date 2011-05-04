@@ -111,13 +111,12 @@ def confirmation(request):
     order.set_status('payment-pending')
     signals.order_pre_confirm.send(sender=models.Order, instance=order, request=request)
     try:
-        # TODO: get rid of typ here. We have the variant already.
         handler.confirm(order, request.session['satchless_payment_method'])
-    except PaymentFailure:
-        raise
     except ConfirmationFormNeeded, e:
         return direct_to_template(request, 'satchless/checkout/confirmation.html',
             {'order': order, 'formdata': e})
+    except PaymentFailure:
+        order.set_status('payment-failed')
     else:
         order.set_status('payment-complete')
-        return redirect('satchless-order-view', order.pk)
+    return redirect('satchless-order-view', order.pk)

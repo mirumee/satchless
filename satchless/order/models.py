@@ -49,7 +49,7 @@ class OrderManager(models.Manager):
                                                 quantity=item.quantity,
                                                 unit_price_net=price.net,
                                                 unit_price_gross=price.gross)
-        previous_orders = previous_orders.exclude(pk=order.pk)
+        previous_orders = previous_orders.exclude(pk=order.pk).filter(status='checkout')
         previous_orders.delete()
         if session:
             session['satchless_order'] = order.pk

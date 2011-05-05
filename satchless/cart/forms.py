@@ -49,11 +49,10 @@ class EditCartItemForm(forms.ModelForm, QuantityForm):
 
     def clean_quantity(self):
         qty = super(EditCartItemForm, self).clean_quantity()
-        cart_qty, reason = \
-            self.instance.cart.set_quantity(self.instance.variant, qty, dry_run=True)
-        if cart_qty < qty:
-            raise forms.ValidationError(reason)
-        return cart_qty
+        qty_result = self.instance.cart.set_quantity(self.instance.variant, qty, dry_run=True)
+        if qty_result.new_quantity < qty:
+            raise forms.ValidationError(qty_result.reason)
+        return qty_result.new_quantity
 
     def save(self, commit=True):
         """Do not call the original save() method, but use cart.set_quantity() instead."""

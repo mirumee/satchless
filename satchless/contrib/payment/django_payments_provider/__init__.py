@@ -2,6 +2,7 @@ from django.conf import settings
 import payments
 
 from satchless.payment import PaymentProvider, ConfirmationFormNeeded
+from .listeners import connect_listeners
 from . import models
 
 class DjangoPaymentsProvider(PaymentProvider):
@@ -25,3 +26,5 @@ class DjangoPaymentsProvider(PaymentProvider):
         raise ConfirmationFormNeeded(form, form.action, form.method)
 
 provider = DjangoPaymentsProvider()
+
+connect_listeners()

@@ -37,10 +37,7 @@
             </li>
         </ul>
         <div class="shortcuts grid_6">
-            <form class="search" method="get" action="{% url satchless-search-haystack-predictive %}">
-                <input class="q" type="text" name="q" value="{{ request.GET.keywords }}" />
-                <input class="submit" type="submit" value="Search" />
-            </form>
+            <form class="search" method="get" action="{% url satchless-search-haystack-predictive %}"><input class="q" type="text" name="q" value="{{ request.GET.keywords }}" /><input class="submit" type="submit" value="Search" /></form>
             <ul class="languages">{% spaceless %}
 {% for lang in LANGUAGES %}
                 <li class="{% if forloop.first %}first{% endif %}">{% if lang.0  == LANGUAGE_CODE %}{{ lang.1 }}{% else %}<a href="{{ request.path|chlocale:lang.0 }}">{{ lang.1 }}</a>{% endif %}</li>

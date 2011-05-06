@@ -46,7 +46,7 @@ def checkout(request, typ):
             pform = PaymentForm(data=request.POST or None, instance=order)
         else:
             pform = None
-        if request.method == 'POST':
+        if request.method == 'POST' or (pform is None and dform is None):
             dvalid = dform.is_valid() if dform else True
             pvalid = pform.is_valid() if pform else True
             if dvalid and pvalid:

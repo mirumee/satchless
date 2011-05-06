@@ -76,9 +76,8 @@ class ParrotTest(TestCase):
         response = getattr(client, method)(url, data=data)
         self.assertEqual(response.status_code, status_code,
             'Incorrect status code for: %s, (%s, %s)! Expected: %s, received: %s. HTML:\n\n%s' % (
-                url, args, kwargs, status_code, response.status_code, response.content
-            )
-        )
+                url.decode('utf-8'), args, kwargs, status_code, response.status_code,
+                response.content.decode('utf-8')))
         return response
 
     def test_basic_cart_ops(self):
@@ -151,33 +150,39 @@ class ParrotTest(TestCase):
 
         cart = Cart.objects.create(typ='satchless.test_cart_with_signals')
         signals.cart_quantity_change_check.connect(modify_qty)
+        result = cart.set_quantity(self.macaw_blue, 10, dry_run=True)
         self.assertEqual(
-            cart.set_quantity(self.macaw_blue, 10, dry_run=True),
+            (result.new_quantity, result.reason),
             (0, u"Out of stock")
             )
         self.assertEqual(0, cart.get_quantity(self.macaw_blue))
+        result = cart.set_quantity(self.macaw_blue, 10)
         self.assertEqual(
-            cart.set_quantity(self.macaw_blue, 10),
+            (result.new_quantity, result.reason),
             (0, u"Out of stock")
             )
         self.assertEqual(0, cart.get_quantity(self.macaw_blue))
+        result = cart.add_quantity(self.macaw_blue, 10)
         self.assertEqual(
-            cart.add_quantity(self.macaw_blue, 10),
+            (result.new_quantity, result.quantity_delta, result.reason),
             (0, 0, u"Out of stock")
             )
         self.assertEqual(0, cart.get_quantity(self.macaw_blue))
+        result = cart.set_quantity(self.cockatoo_white_d, 10, dry_run=True)
         self.assertEqual(
-            cart.set_quantity(self.cockatoo_white_d, 10, dry_run=True),
+            (result.new_quantity, result.reason),
             (1, u"Parrots don't rest in groups")
             )
         self.assertEqual(0, cart.get_quantity(self.cockatoo_white_d))
+        result = cart.set_quantity(self.cockatoo_white_d, 10)
         self.assertEqual(
-            cart.set_quantity(self.cockatoo_white_d, 10),
+            (result.new_quantity, result.reason),
             (1, u"Parrots don't rest in groups")
             )
         self.assertEqual(1, cart.get_quantity(self.cockatoo_white_d))
+        result = cart.add_quantity(self.cockatoo_white_d, 10)
         self.assertEqual(
-            cart.add_quantity(self.cockatoo_white_d, 10),
+            (result.new_quantity, result.quantity_delta, result.reason),
             (1, 0, u"Parrots don't rest in groups")
             )
         self.assertEqual(1, cart.get_quantity(self.cockatoo_white_d))

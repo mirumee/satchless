@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from django.core.urlresolvers import reverse
 from django.test import TestCase, Client
 
@@ -86,7 +87,8 @@ class ParrotTest(TestCase):
         response = getattr(client, method)(url, data=data)
         self.assertEqual(response.status_code, status_code,
             'Incorrect status code for: %s, (%s, %s)! Expected: %s, received: %s. HTML:\n\n%s' % (
-                url, args, kwargs, status_code, response.status_code, response.content
+                url.decode('utf-8'), args, kwargs, status_code, response.status_code,
+                response.content.decode('utf-8')
             )
         )
         return response

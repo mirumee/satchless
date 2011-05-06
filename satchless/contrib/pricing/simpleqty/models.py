@@ -39,6 +39,7 @@ class VariantPriceOffset(models.Model):
     price_offset = models.DecimalField(_("unit price offset"), max_digits=12, decimal_places=4)
 
     def clean(self):
-        if self.variant.product != self.base_price.product.get_subtype_instance():
+        if self.variant.get_subtype_instance().product \
+            != self.base_price.product.get_subtype_instance():
             raise ValidationError("Price offsets must refer to a variant of the same "\
                     "product as the base price does.")

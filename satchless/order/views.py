@@ -21,7 +21,7 @@ def view(request, order_pk):
         return HttpResponseNotFound()
     try:
         order = orders.get(pk=order_pk)
-    except models.Order.DoesnotExist:
+    except models.Order.DoesNotExist:
         return HttpResponseNotFound()
     return direct_to_template(request, 'satchless/order/view.html',
             {'order': order})

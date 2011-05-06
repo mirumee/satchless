@@ -18,7 +18,7 @@ class JSONResponse(HttpResponse):
     def __init__(self, content='', mimetype=None, status=None,
                  content_type='application/json'):
         content = simplejson.dumps(content)
-        return super(HttpResponse, self).__init__(content=content,
+        return super(JSONResponse, self).__init__(content=content,
                                                   mimetype=mimetype,
                                                   status=status,
                                                   content_type=content_type)

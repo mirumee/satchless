@@ -32,17 +32,23 @@ def checkout(request, typ):
             dvariant = dgroup.deliveryvariant
         except ObjectDoesNotExist:
             dvariant = None
-        dform = DeliveryForm(data=request.POST or None, instance=dvariant, prefix='delivery_details')
+        if DeliveryForm:
+            dform = DeliveryForm(data=request.POST or None, instance=dvariant, prefix='delivery_details')
+        else:
+            dform = None
         ptypes = handler.get_payment_types(order)
         if len(ptypes) > 1:
             raise ValueError("The singlemethods checkout cannot handle multiple payment "
                     "methods. Methods for this order: %s" % ptypes)
         ptyp = ptypes[0][0]
         PaymentForm = handler.get_payment_formclass(order, ptyp)
-        pform = PaymentForm(data=request.POST or None, instance=order)
+        if PaymentForm:
+            pform = PaymentForm(data=request.POST or None, instance=order)
+        else:
+            pform = None
         if request.method == 'POST':
-            dvalid = dform.is_valid()
-            pvalid = pform.is_valid()
+            dvalid = dform.is_valid() if dform else True
+            pvalid = pform.is_valid() if pform else True
             if dvalid and pvalid:
                 dvariant = handler.get_delivery_variant(dgroup, dtyp, dform)
                 pvariant = handler.get_payment_variant(order, ptyp, pform)

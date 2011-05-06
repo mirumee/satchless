@@ -8,10 +8,14 @@
     <h1>{% trans "Order (business)" %}</h1>
     {% if order %}
     <form method="post" action="">{% csrf_token %}
+        {% if delivery_form %}
         <h2>{% trans "Delivery details" %}</h2>
         {{ delivery_form.as_p }}
+        {% endif %}
+        {% if payment_form %}
         <h2>{% trans "Payment details" %}</h2>
         {{ payment_form.as_p }}
+        {% endif %}
         <button type="submit">{% trans "Proceed" %}</button>
     </form>
     {% else %}

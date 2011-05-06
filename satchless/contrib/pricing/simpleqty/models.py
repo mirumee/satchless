@@ -5,13 +5,19 @@ from django.utils.translation import ugettext_lazy as _
 from satchless.product.models import Product, Variant
 
 class ProductPrice(models.Model):
+    QTY_MODE_CHOICES = (
+        ('product', _("per product")),
+        ('variant', _("per variant"))
+    )
     product = models.OneToOneField(Product)
     qty_mode = models.CharField(_("Quantity pricing mode"), max_length=10,
-            choices=(('product', _("per product")), ('variant', _("per variant"))),
-            default='variant',
-            help_text=_("In 'per variant' mode the unit price will depend on quantity "\
-                "of single variant being sold. In 'per product' mode, total quantity of "\
-                "all product's variants will be used."))
+                                choices=QTY_MODE_CHOICES, default='variant',
+                                help_text=_("In 'per variant' mode the unit "
+                                            "price will depend on quantity "
+                                            "of single variant being sold. In "
+                                            "'per product' mode, total "
+                                            "quantity of all product's "
+                                            "variants will be used."))
     price = models.DecimalField(_("base price"), max_digits=12, decimal_places=4)
 
     def __unicode__(self):
@@ -39,7 +45,7 @@ class VariantPriceOffset(models.Model):
     price_offset = models.DecimalField(_("unit price offset"), max_digits=12, decimal_places=4)
 
     def clean(self):
-        if self.variant.get_subtype_instance().product \
-            != self.base_price.product.get_subtype_instance():
-            raise ValidationError("Price offsets must refer to a variant of the same "\
-                    "product as the base price does.")
+        if (self.variant.get_subtype_instance().product !=
+            self.base_price.product.get_subtype_instance()):
+            raise ValidationError("Price offsets must refer to a variant of "
+                                  "the same product as the base price does.")

@@ -1,8 +1,12 @@
+# -*- coding: utf-8 -*-
+from django.contrib import messages
 from django.core.urlresolvers import reverse
 from django.http import HttpResponseRedirect, Http404
 from django.shortcuts import render_to_response
 from django.template import RequestContext
+from django.utils.translation import ugettext
 from django.views.decorators.http import require_POST
+
 from . import models
 from . import forms
 
@@ -14,6 +18,7 @@ def cart(request, typ, form_class=forms.EditCartItemForm):
         form = form_class(data=request.POST or None, instance=item,
                           prefix='%s-%i'%(typ, item.id))
         if request.method == 'POST' and form.is_valid():
+            messages.success(request, ugettext("Cart's content updated successfully."))
             form.save()
             return HttpResponseRedirect(request.path)
         cart_item_forms.append(form)

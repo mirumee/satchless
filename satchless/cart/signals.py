@@ -11,7 +11,7 @@ user."""
 
 cart_content_changed = dispatch.Signal()
 cart_content_changed.__doc__ = """
-Sent whenever cart'scontent has been changed.
+Sent whenever cart's content has been changed.
 """
 
 cart_item_added = dispatch.Signal()

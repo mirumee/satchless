@@ -31,9 +31,9 @@ def _order_from_request(request):
 def prepare_order(request, typ):
     cart = Cart.objects.get_or_create_from_request(request, typ)
     order_pk = request.session.get('satchless_order')
-    if not order_pk:
+    if not order_pk or not models.Order.objects.filter(pk=order_pk, cart=cart, status='checkout').exists():
         try:
-            order = models.Order.objects.get_from_cart(cart, instance=order_pk)
+            order = models.Order.objects.get_from_cart(cart)
             request.session['satchless_order'] = order.pk
         except models.EmptyCart:
             return HttpResponseRedirect(reverse('satchless-cart-view', args=(typ,)))
@@ -46,19 +46,24 @@ def checkout(request, typ):
     for each of the groups.
     """
     cart = Cart.objects.get_or_create_from_request(request, typ)
-    try:
-        order = models.Order.objects.create_for_cart(cart, session=request.session)
-    except models.EmptyCart:
-        order = None
-        delivery_formset = None
-    if order:
-        delivery_formset = forms.DeliveryMethodFormset(
-                data=request.POST or None, queryset=order.groups.all(),
-                session=request.session)
-        if request.method == 'POST':
-            if delivery_formset.is_valid():
-                delivery_formset.save(session=request.session)
-                return redirect('satchless-checkout-delivery_details')
+    order_pk = request.session.get('satchless_order')
+    order = None
+    if order_pk:
+        try:
+            cart = Cart.objects.get_or_create_from_request(request, typ)
+            order = models.Order.objects.get(pk=order_pk, cart=cart, status='checkout')
+        except models.Order.DoesNotExist:
+            pass
+    if not order:
+        return HttpResponseRedirect(reverse('satchless-cart-view', args=(typ,)))
+
+    delivery_formset = forms.DeliveryMethodFormset(
+            data=request.POST or None, queryset=order.groups.all(),
+            session=request.session)
+    if request.method == 'POST':
+        if delivery_formset.is_valid():
+            delivery_formset.save(session=request.session)
+            return redirect('satchless-checkout-delivery_details')
     return direct_to_template(request, 'satchless/checkout/checkout.html',
             {'order': order, 'delivery_formset': delivery_formset})
 

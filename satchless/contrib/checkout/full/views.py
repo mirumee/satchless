@@ -12,6 +12,21 @@ from ....order import forms
 from ....order import handler
 from ....order import signals
 
+def _order_from_request(request):
+    '''
+    Get the order from session, possibly invalidating the variable if the
+    order has been processed already.
+    '''
+    session = request.session
+    try:
+        order = models.Order.objects.get(pk=session['satchless_order'], status='checkout')
+        return order
+    except KeyError:
+        return None
+    except models.Order.DoesNotExist:
+        del session['satchless_order']
+        return None
+
 @require_POST
 def prepare_order(request, typ):
     cart = Cart.objects.get_or_create_from_request(request, typ)
@@ -53,7 +68,7 @@ def delivery_details(request):
     If there are any delivery details needed (e.g. the shipping address),
     user will be asked for them. Otherwise we redirect to step 2.
     """
-    order = models.Order.objects.get_from_session(request.session)
+    order = _order_from_request(request)
     if not order:
         return redirect('satchless-checkout')
     delivery_groups_forms = forms.get_delivery_details_forms_for_groups(order, request)
@@ -77,7 +92,7 @@ def payment_choice(request):
     Checkout step 2
     User will choose the payment method.
     """
-    order = models.Order.objects.get_from_session(request.session)
+    order = _order_from_request(request)
     if not order:
         return redirect('satchless-checkout')
     payment_form = forms.PaymentMethodForm(data=request.POST or None, instance=order)
@@ -94,7 +109,7 @@ def payment_details(request):
     If any payment details are needed, user will be asked for them. Otherwise
     we redirect to step 3.
     """
-    order = models.Order.objects.get_from_session(request.session)
+    order = _order_from_request(request)
     if not order:
         return redirect('satchless-checkout')
     form = forms.get_payment_details_form(order, request)
@@ -121,7 +136,7 @@ def confirmation(request):
     The final summary, where user is asked to review and confirm the order.
     Confirmation will redirect to the payment gateway.
     """
-    order = models.Order.objects.get_from_session(request.session)
+    order = _order_from_request(request)
     if not order:
         return redirect('satchless-checkout')
     order.set_status('payment-pending')

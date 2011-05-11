@@ -47,20 +47,6 @@ class OrderManager(models.Manager):
         previous_orders.delete()
         return order
 
-    def get_from_session(self, session):
-        '''
-        Get the order from session, possibly invalidating the variable if the
-        order has been processed already.
-        '''
-        try:
-            order = Order.objects.get(pk=session['satchless_order'], status='checkout')
-            return order
-        except KeyError:
-            return None
-        except Order.DoesNotExist:
-            del session['satchless_order']
-            return None
-
 class Order(models.Model):
     STATUS_CHOICES = (
         ('checkout', _('undergoing checkout')),

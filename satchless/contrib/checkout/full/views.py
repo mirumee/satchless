@@ -63,7 +63,7 @@ def checkout(request, typ):
     if request.method == 'POST':
         if delivery_formset.is_valid():
             delivery_formset.save(session=request.session)
-            return redirect('satchless-checkout-delivery_details')
+            return redirect('satchless-checkout-delivery-details')
     return direct_to_template(request, 'satchless/checkout/checkout.html',
             {'order': order, 'delivery_formset': delivery_formset})
 
@@ -80,7 +80,7 @@ def delivery_details(request):
     groups_with_forms = filter(lambda gf: gf[2], delivery_groups_forms)
     if len(groups_with_forms) == 0:
         # all forms are None, no details needed
-        return redirect('satchless-checkout-payment_choice')
+        return redirect('satchless-checkout-payment-choice')
     if request.method == 'POST':
         are_valid = True
         for group, typ, form in delivery_groups_forms:
@@ -88,7 +88,7 @@ def delivery_details(request):
         if are_valid:
             for group, typ, form in delivery_groups_forms:
                 variant = handler.get_delivery_variant(group, typ, form)
-            return redirect('satchless-checkout-payment_choice')
+            return redirect('satchless-checkout-payment-choice')
     return direct_to_template(request, 'satchless/checkout/delivery_details.html',
             {'order': order, 'delivery_groups_forms': groups_with_forms})
 
@@ -104,7 +104,7 @@ def payment_choice(request):
     if request.method == 'POST':
         if payment_form.is_valid():
             payment_form.save(request.session)
-            return redirect('satchless-checkout-payment_details')
+            return redirect('satchless-checkout-payment-details')
     return direct_to_template(request, 'satchless/checkout/payment_choice.html',
             {'order': order, 'payment_form': payment_form})
 

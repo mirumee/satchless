@@ -88,5 +88,8 @@
             </tr>
         </tfoot>
     </table>
-    <a href="{% url satchless-checkout %}">{% trans "Check out" %}</a>
+    <form action="{% url satchless-order-from-cart %}" method="post">
+        {% csrf_token %}
+        <button type="submit">{% trans "Check out" %}</button>
+    </form>
 {% endblock %}

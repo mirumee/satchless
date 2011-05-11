@@ -1,8 +1,10 @@
-from django.conf.urls.defaults import *
+from django.conf.urls.defaults import url, patterns
 from . import views
 
 urlpatterns = patterns('',
     url(r'^$', views.checkout, {'typ': 'satchless_cart'}, name='satchless-checkout'),
+    url(r'^order-from-cart/$', views.order_from_cart, {'typ': 'satchless_cart'},
+        name='satchless-order-from-cart'),
     url(r'^delivery_details/$', views.delivery_details,
             name='satchless-checkout-delivery_details'),
     url(r'^payment_choice/$', views.payment_choice,

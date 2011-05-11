@@ -1,12 +1,27 @@
 # -*- coding: utf-8 -*-
+from django.http import HttpResponseRedirect
 from django.shortcuts import redirect
 from django.views.generic.simple import direct_to_template
+from django.views.decorators.http import require_POST
+
 from ....cart.models import Cart
 from ....payment import PaymentFailure, ConfirmationFormNeeded
 from ....order import models
 from ....order import forms
 from ....order import handler
 from ....order import signals
+
+@require_POST
+def order_from_cart(request, typ):
+    cart = Cart.objects.get_or_create_from_request(request, typ)
+    order_pk = request.session.get('satchless_order')
+    if not order_pk:
+        try:
+            order = models.Order.objects.get_from_cart(cart, instance=order_pk)
+            request.session['satchless_order'] = order.pk
+        except models.EmptyCart:
+            return HttpResponseRedirect(reverse('satchless-cart-view', args=(typ,)))
+    return HttpResponseRedirect(reverse('satchless-checkout'))
 
 def checkout(request, typ):
     """

@@ -8,13 +8,14 @@ from ..cart.models import Cart
 from ..pricing import Price
 from ..product.models import Variant
 from ..util import countries
+from . import listeners
 from . import signals
 
 class EmptyCart(Exception):
     pass
 
 class OrderManager(models.Manager):
-    def create_for_cart(self, cart, session=None):
+    def get_from_cart(self, cart, instance=None):
         '''
         Create an order from the user's cart, possibly discarding any previous
         orders created for this cart. If session is given, the order ID will be
@@ -24,35 +25,27 @@ class OrderManager(models.Manager):
         if cart.is_empty():
             raise EmptyCart("Cannot create empty order.")
 
-        order_pk = None
-        order = None
-        if session:
-            order_pk = session.get('satchless_order')
         previous_orders = self.filter(cart=cart)
-        if order_pk:
-            try:
-                order = Order.objects.get(pk=order_pk, cart=cart, status='checkout')
-            except Order.DoesNotExist:
-                order = None
-        if not order:
+        if not instance:
             order = Order.objects.create(cart=cart, user=cart.owner,
                                          currency=cart.currency)
-            groups = partition(cart)
-            for group in groups:
-                delivery_group = order.groups.create(order=order)
-                for item in group:
-                    price = item.get_unit_price()
-                    variant = item.variant.get_subtype_instance()
-                    name = u"%s: %s" % (variant.product, variant)
-                    delivery_group.items.create(product_variant=item.variant,
-                                                product_name=name,
-                                                quantity=item.quantity,
-                                                unit_price_net=price.net,
-                                                unit_price_gross=price.gross)
+        else:
+            order = instance
+            order.groups.all().delete()
+        groups = partition(cart)
+        for group in groups:
+            delivery_group = order.groups.create(order=order)
+            for item in group:
+                price = item.get_unit_price()
+                variant = item.variant.get_subtype_instance()
+                name = u"%s: %s" % (variant.product, variant)
+                delivery_group.items.create(product_variant=item.variant,
+                                            product_name=name,
+                                            quantity=item.quantity,
+                                            unit_price_net=price.net,
+                                            unit_price_gross=price.gross)
         previous_orders = previous_orders.exclude(pk=order.pk).filter(status='checkout')
         previous_orders.delete()
-        if session:
-            session['satchless_order'] = order.pk
         return order
 
     def get_from_session(self, session):
@@ -157,3 +150,5 @@ class OrderedItem(models.Model):
     def price(self):
         return Price(net=self.unit_price_net * self.quantity,
                     gross=self.unit_price_gross * self.quantity)
+
+listeners.init()

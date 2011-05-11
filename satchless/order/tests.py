@@ -1,23 +1,44 @@
-"""
-This file demonstrates two different styles of tests (one doctest and one
-unittest). These will both pass when you run "manage.py test".
+# -*- coding: utf-8 -*-
+from decimal import Decimal
+from django.conf import settings
+from django.core.urlresolvers import reverse
+from django.test import TestCase, Client
 
-Replace these with more appropriate tests for your application.
-"""
+from satchless.product.models import Category
+from satchless.product.tests import DeadParrot
+from satchless.cart.models import Cart
 
-from django.test import TestCase
+from . import models
 
-class SimpleTest(TestCase):
-    def test_basic_addition(self):
-        """
-        Tests that 1 + 1 always equals 2.
-        """
-        self.failUnlessEqual(1 + 1, 2)
+class OrderTest(TestCase):
+    def setUp(self):
+        category = Category.objects.create(name='parrot')
+        self.macaw = DeadParrot.objects.create(slug='macaw',
+                species="Hyacinth Macaw")
+        self.macaw.categories.add(category)
+        self.cockatoo = DeadParrot.objects.create(slug='cockatoo',
+                species="White Cockatoo")
+        self.cockatoo.categories.add(category)
+        self.macaw_blue = self.macaw.variants.create(color='blue', looks_alive=False)
+        self.macaw_blue_fake = self.macaw.variants.create(color='blue', looks_alive=True)
+        self.cockatoo_white_a = self.cockatoo.variants.create(color='white', looks_alive=True)
+        self.cockatoo_white_d = self.cockatoo.variants.create(color='white', looks_alive=False)
+        self.cockatoo_blue_a = self.cockatoo.variants.create(color='blue', looks_alive=True)
+        self.cockatoo_blue_d = self.cockatoo.variants.create(color='blue', looks_alive=False)
 
-__test__ = {"doctest": """
-Another way to test that 1 + 1 is equal to 2.
+        self.anon_client = Client()
 
->>> 1 + 1 == 2
-True
-"""}
+    def test_order_is_updated_when_cart_content_changes(self):
+        cart = Cart.objects.create(typ='satchless.test_cart')
+        cart.set_quantity(self.macaw_blue, 1)
+
+        order = models.Order.objects.get_from_cart(cart)
+
+        cart.set_quantity(self.macaw_blue_fake, Decimal('2.45'))
+        cart.set_quantity(self.cockatoo_white_a, Decimal('2.45'))
+
+        order_items = set()
+        for group in order.groups.all():
+            order_items.update(group.items.values_list('product_variant', 'quantity'))
+        self.assertEqual(set(cart.items.values_list('variant', 'quantity')), order_items)
 

@@ -89,7 +89,7 @@
     {% endfor %}
         </tbody>
     </table>
-    <form action="{% url satchless-order-from-cart %}" method="post">
+    <form action="{% url satchless-checkout-prepare-order %}" method="post">
         {% csrf_token %}
         <button type="submit">{% trans "Check out" %}</button>
     </form>

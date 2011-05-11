@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from django.core.urlresolvers import reverse
 from django.http import HttpResponseRedirect
 from django.shortcuts import redirect
 from django.views.generic.simple import direct_to_template
@@ -12,7 +13,7 @@ from ....order import handler
 from ....order import signals
 
 @require_POST
-def order_from_cart(request, typ):
+def prepare_order(request, typ):
     cart = Cart.objects.get_or_create_from_request(request, typ)
     order_pk = request.session.get('satchless_order')
     if not order_pk:

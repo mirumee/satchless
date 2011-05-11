@@ -8,7 +8,6 @@ from ..cart.models import Cart
 from ..pricing import Price
 from ..product.models import Variant
 from ..util import countries
-from . import listeners
 from . import signals
 
 class EmptyCart(Exception):
@@ -151,4 +150,3 @@ class OrderedItem(models.Model):
         return Price(net=self.unit_price_net * self.quantity,
                     gross=self.unit_price_gross * self.quantity)
 
-listeners.init()

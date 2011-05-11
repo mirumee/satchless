@@ -72,7 +72,7 @@ class CheckoutTest(TestCase):
         cart.set_quantity(self.macaw_blue_fake, Decimal('2.45'))
         cart.set_quantity(self.cockatoo_white_a, Decimal('2.45'))
 
-        self._test_status(reverse('satchless-order-from-cart'), method='post',
+        self._test_status(reverse('satchless-checkout-prepare-order'), method='post',
                           client_instance=self.anon_client, status_code=302)
 
         order = self._get_order_from_session(self.anon_client.session)
@@ -87,7 +87,7 @@ class CheckoutTest(TestCase):
         cart.set_quantity(self.macaw_blue_fake, Decimal('2.45'))
         cart.set_quantity(self.cockatoo_white_a, Decimal('2.45'))
 
-        self._test_status(reverse('satchless-order-from-cart'), method='post',
+        self._test_status(reverse('satchless-checkout-prepare-order'), method='post',
                           client_instance=self.anon_client, status_code=302)
 
         order = self._get_order_from_session(self.anon_client.session)
@@ -98,7 +98,7 @@ class CheckoutTest(TestCase):
         # update cart
         cart.add_quantity(self.macaw_blue, 100)
         cart.add_quantity(self.macaw_blue_fake, 100)
-        self._test_status(reverse('satchless-order-from-cart'), method='post',
+        self._test_status(reverse('satchless-checkout-prepare-order'), method='post',
                           client_instance=self.anon_client, status_code=302)
 
         old_order = order

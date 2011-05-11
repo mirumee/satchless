@@ -1,7 +1,7 @@
 from payments import signals
+from . import models
 
 def payment_status_changed_listener(sender, instance=None, **kwargs):
-    from . import models
     try:
         variant = instance.satchless_payment_variant
     except models.DjangoPaymentsVariant.DoesNotExist:
@@ -11,5 +11,5 @@ def payment_status_changed_listener(sender, instance=None, **kwargs):
     elif instance.status == 'rejected':
         variant.order.set_status('payment-failed')
 
-def connect_listeners():
+def start_listening():
     signals.status_changed.connect(payment_status_changed_listener)

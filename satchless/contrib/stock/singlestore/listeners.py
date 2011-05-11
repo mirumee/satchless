@@ -17,4 +17,5 @@ def max_stock_level_to_cart(sender, instance=None,
         reason = _("You have ordered more %s than we have currently in stock.") % variant
     result.append((level.quantity, reason))
 
-cart_quantity_change_check.connect(max_stock_level_to_cart)
+def start_listening():
+    cart_quantity_change_check.connect(max_stock_level_to_cart)

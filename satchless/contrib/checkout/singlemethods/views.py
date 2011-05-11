@@ -11,7 +11,7 @@ from ....order import models
 from ....order import handler
 
 @require_POST
-def order_from_cart(request, typ):
+def prepare_order(request, typ):
     cart = Cart.objects.get_or_create_from_request(request, typ)
     order_pk = request.session.get('satchless_order')
     if not order_pk or not models.Order.objects.filter(pk=order_pk, cart=cart, status='checkout').exists():

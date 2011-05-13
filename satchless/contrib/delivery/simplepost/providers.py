@@ -18,7 +18,7 @@ class PostDeliveryProvider(DeliveryProvider):
     def get_formclass(self, delivery_group, typ):
         return forms.PostShippingVariantForm
 
-    def get_variant(self, delivery_group, typ, form):
+    def create_variant(self, delivery_group, typ, form):
         typ = models.PostShippingType.objects.get(typ=typ)
         form.save(commit=False)
         variant = form.instance

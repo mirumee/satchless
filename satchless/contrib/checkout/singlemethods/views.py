@@ -40,9 +40,6 @@ def checkout(request, typ):
     if not order:
         return HttpResponseRedirect(reverse('satchless-cart-view', args=(typ,)))
 
-    if order.groups.count() != 1:
-        raise ValueError("The singlemethods checkout cannot handle multiple delivery "
-                         "groups. Groups in this order: %s" % order.groups.all())
     delivery_groups = order.groups.all()
     for group in delivery_groups:
         delivery_types = handler.get_delivery_types(group)

@@ -14,8 +14,8 @@ class DeliveryProvider(object):
         '''
         return None
 
-    def get_variant(self, delivery_group, typ, form):
+    def create_variant(self, delivery_group, typ, form):
         '''
-        Take a valid form instance if any and return a DeliveryVariant instance.
+        Take a valid form instance if any and creates a DeliveryVariant instance.
         '''
         raise NotImplementedError()

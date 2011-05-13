@@ -35,9 +35,9 @@ def get_delivery_formclass(delivery_group, typ):
     provider, typ_short = get_delivery_provider(typ)
     return provider.get_formclass(delivery_group, typ_short)
 
-def get_delivery_variant(delivery_group, typ, form):
+def create_delivery_variant(delivery_group, typ, form):
     provider, typ_short = get_delivery_provider(typ)
-    return provider.get_variant(delivery_group, typ_short, form)
+    return provider.create_variant(delivery_group, typ_short, form)
 
 def get_payment_types(order):
     types = []
@@ -104,7 +104,7 @@ def init_queues():
 
     global _delivery_providers_queue
     _delivery_providers_queue = build_q_from_paths(
-            'SATCHLESS_DELIVERY_PROVIDERS', ('enum_types', 'get_formclass', 'get_variant'))
+            'SATCHLESS_DELIVERY_PROVIDERS', ('enum_types', 'get_formclass', 'create_variant'))
     global _payment_providers_queue
     _payment_providers_queue = build_q_from_paths(
             'SATCHLESS_PAYMENT_PROVIDERS',

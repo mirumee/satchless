@@ -111,6 +111,7 @@ class Order(models.Model):
 
 class DeliveryGroup(models.Model):
     order = models.ForeignKey(Order, related_name='groups')
+    delivery_type = models.CharField(max_length=256, blank=True)
 
     def total(self):
         try:

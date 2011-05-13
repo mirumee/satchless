@@ -44,7 +44,7 @@ def checkout(request, typ):
     for group in delivery_groups:
         delivery_types = handler.get_delivery_types(group)
         if len(delivery_types) != 1:
-            raise ImproperlyConfigured("The singlemethods checkout requires"
+            raise ImproperlyConfigured("The singlestep checkout requires "
                                        "exactly one delivery type per group.")
         group.delivery_type = delivery_types[0][0]
 
@@ -58,7 +58,7 @@ def checkout(request, typ):
 
     payment_types = handler.get_payment_types(order)
     if len(payment_types) > 1:
-        raise ImproperlyConfigured("The singlemethods checkout cannot handle multiple payment "
+        raise ImproperlyConfigured("The singlestep checkout cannot handle multiple payment "
                                    "methods. Methods for this order: %s" % payment_types)
     payment_type = payment_types[0][0]
     PaymentForm = handler.get_payment_formclass(order, payment_type)

@@ -142,7 +142,7 @@ INSTALLED_APPS = (
     'satchless.contrib.tax.flatgroups',
     #'satchless.contrib.stock.singlestore',
     'satchless.order',
-    'satchless.contrib.checkout.singlemethods',
+    'satchless.contrib.checkout.multistep',
     'satchless.delivery',
     'satchless.contrib.delivery.simplepost',
     'satchless.payment',

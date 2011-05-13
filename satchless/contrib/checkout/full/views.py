@@ -123,7 +123,7 @@ def payment_details(request):
     typ = request.session['satchless_payment_method']
 
     def proceed(order, typ, form):
-        variant = handler.get_payment_variant(order, typ, form)
+        variant = handler.create_payment_variant(order, typ, form)
         order.payment_variant = variant
         order.save()
         return redirect('satchless-checkout-confirmation')

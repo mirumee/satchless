@@ -28,9 +28,9 @@ class PaymentProvider(object):
         '''
         return None
 
-    def get_variant(self, order, typ, form):
+    def create_variant(self, order, typ, form):
         '''
-        Take a valid form instance if any and return a PaymentVariant instance.
+        Take a valid form instance if any and create a PaymentVariant instance.
         '''
         raise NotImplementedError()
 

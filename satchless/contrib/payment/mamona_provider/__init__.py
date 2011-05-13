@@ -8,12 +8,11 @@ class MamonaProvider(PaymentProvider):
     def enum_types(self, order=None, customer=None):
         return get_backend_choices()
 
-    def get_variant(self, order, typ, form):
+    def create_variant(self, order, typ, form):
         variant = models.MamonaPaymentVariant.objects\
                 .get_or_create(order=order, price=0)[0]
-        payment = models.Payment.objects\
-                .create(order=variant, amount=order.total().gross,
-                        currency=order.currency, backend=typ)
+        models.Payment.objects.create(order=variant, amount=order.total().gross,
+                                      currency=order.currency, backend=typ)
         return variant
 
     def confirm(self, order):

@@ -14,7 +14,7 @@ class DjangoPaymentsProvider(PaymentProvider):
             payment_types = ()
         return payment_types
 
-    def get_variant(self, order, typ, form):
+    def create_variant(self, order, typ, form):
         factory = payments.factory(typ)
         payment = factory.create_payment(currency=order.currency, total=order.total().gross)
         payment_variant = models.DjangoPaymentsVariant.objects \

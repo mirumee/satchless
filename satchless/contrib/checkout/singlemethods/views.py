@@ -72,7 +72,7 @@ def checkout(request, typ):
         if delivery_valid and payment_valid:
             for group, typ, form in delivery_groups_forms:
                 handler.create_delivery_variant(group, typ, form)
-            pvariant = handler.get_payment_variant(order, payment_type, payment_form)
+            handler.create_payment_variant(order, payment_type, payment_form)
             request.session['satchless_order'] = order.pk
             request.session['satchless_payment_method'] = payment_type
             return redirect('satchless-checkout-confirmation')

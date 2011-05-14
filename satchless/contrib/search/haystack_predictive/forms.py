@@ -1,14 +1,8 @@
 # -*- coding:utf-8 -*-
-from django.db.models import Q
-from django.utils.translation import ugettext as _
-from django.utils import translation
-
 from haystack.forms import SearchForm
 from haystack.query import RelatedSearchQuerySet
 
 from satchless.product.models import Product
-
-from . import search_indexes
 
 class ProductPredictiveSearchForm(SearchForm):
     def __init__(self, *args, **kwargs):

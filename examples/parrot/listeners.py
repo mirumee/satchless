@@ -5,4 +5,5 @@ from . import models
 def get_variantformclass(sender=None, instance=None, formclass=None, **kwargs):
     formclass.append(forms.ParrotVariantForm)
 
-variant_formclass_for_product.connect(get_variantformclass, sender=models.Parrot)
+def start_listening():
+    variant_formclass_for_product.connect(get_variantformclass, sender=models.Parrot)

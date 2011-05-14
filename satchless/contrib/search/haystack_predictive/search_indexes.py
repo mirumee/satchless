@@ -21,4 +21,5 @@ class ProductPredictiveSearchIndex(SearchIndex):
     def get_queryset(self):
         return models.Product.objects.all()
 
-site.register(models.Product, ProductPredictiveSearchIndex)
+def register_indexes():
+    site.register(models.Product, ProductPredictiveSearchIndex)

@@ -1,11 +1,8 @@
 # -*- coding:utf-8 -*-
 from django.conf import settings
 
-from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator, InvalidPage
-from django.core.urlresolvers import reverse
-from django.http import HttpResponse, HttpResponseRedirect, HttpResponseForbidden
-from django.shortcuts import get_object_or_404
+from django.http import Http404
 from django.views.generic.simple import direct_to_template
 
 from haystack.query import RelatedSearchQuerySet

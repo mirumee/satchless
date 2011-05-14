@@ -1,5 +1,4 @@
 from django.core.exceptions import ObjectDoesNotExist
-from django.db import models
 from mamona.models import build_payment_model
 from satchless.payment.models import PaymentVariant
 

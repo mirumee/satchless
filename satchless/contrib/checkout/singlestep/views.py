@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 from django.core.exceptions import ImproperlyConfigured
-from django.core.urlresolvers import reverse
 from django.shortcuts import redirect
 from django.views.decorators.http import require_POST
 from django.views.generic.simple import direct_to_template

@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 from django.core.urlresolvers import reverse
-from django.http import HttpResponseRedirect
 from django.shortcuts import redirect
 from django.views.generic.simple import direct_to_template
 from django.views.decorators.http import require_POST
@@ -18,26 +17,28 @@ def _order_from_request(request):
     order has been processed already.
     '''
     session = request.session
-    try:
-        order = models.Order.objects.get(pk=session['satchless_order'], status='checkout')
-        return order
-    except KeyError:
-        return None
-    except models.Order.DoesNotExist:
-        del session['satchless_order']
-        return None
+    if 'satchless_order' in session:
+        try:
+            return models.Order.objects.get(pk=session['satchless_order'],
+                                            status='checkout')
+        except models.Order.DoesNotExist:
+            del session['satchless_order']
+    return None
 
 @require_POST
 def prepare_order(request, typ):
     cart = Cart.objects.get_or_create_from_request(request, typ)
     order_pk = request.session.get('satchless_order')
-    if not order_pk or not models.Order.objects.filter(pk=order_pk, cart=cart, status='checkout').exists():
+    previous_orders = models.Order.objects.filter(pk=order_pk, cart=cart,
+                                                  status='checkout')
+    if not order_pk or not previous_orders.exists():
         try:
             order = models.Order.objects.get_from_cart(cart)
-            request.session['satchless_order'] = order.pk
         except models.EmptyCart:
-            return HttpResponseRedirect(reverse('satchless-cart-view', args=(typ,)))
-    return HttpResponseRedirect(reverse('satchless-checkout'))
+            return redirect('satchless-cart-view', typ=typ)
+        else:
+            request.session['satchless_order'] = order.pk
+    return redirect('satchless-checkout')
 
 def checkout(request, typ):
     """
@@ -49,14 +50,14 @@ def checkout(request, typ):
     order_pk = request.session.get('satchless_order')
     order = None
     if order_pk:
+        cart = Cart.objects.get_or_create_from_request(request, typ)
         try:
-            cart = Cart.objects.get_or_create_from_request(request, typ)
-            order = models.Order.objects.get(pk=order_pk, cart=cart, status='checkout')
+            order = models.Order.objects.get(pk=order_pk, cart=cart,
+                                             status='checkout')
         except models.Order.DoesNotExist:
             pass
     if not order:
-        return HttpResponseRedirect(reverse('satchless-cart-view', args=(typ,)))
-
+        return redirect('satchless-cart-view', typ=typ)
     delivery_formset = forms.DeliveryMethodFormset(
             data=request.POST or None, queryset=order.groups.all())
     if request.method == 'POST':

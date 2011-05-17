@@ -31,6 +31,7 @@ ALWAYS_INSTALLED_APPS = [
 
 TESTED_APPS = [
     'satchless.cart',
+    'satchless.contact',
     'satchless.delivery',
     'satchless.order',
     'satchless.payment',

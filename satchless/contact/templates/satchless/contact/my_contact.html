@@ -26,18 +26,18 @@
             {% endif %}
             </p>
             <p>
-                <a href="{% url satchless-contact-address_edit address.pk %}">{% trans "edit" %}</a>
+                <a href="{% url satchless-contact-address-edit address.pk %}">{% trans "edit" %}</a>
             </p>
             </li>
             {% endfor %}
         </ul>
         <p>
-        <a href="{% url satchless-contact-address_new %}">{% trans "Add new address" %}</a>
+        <a href="{% url satchless-contact-address-new %}">{% trans "Add new address" %}</a>
         </p>
     {% else %}
         <p>
         {% trans "You have no address defined." %}
-        <a href="{% url satchless-contact-address_new %}">{% trans "Add a new one." %}</a>
+        <a href="{% url satchless-contact-address-new %}">{% trans "Add a new one." %}</a>
         </p>
     {% endif %}
 {% endblock %}

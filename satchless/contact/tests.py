@@ -48,20 +48,20 @@ class ContactTest(TestCase):
         cli_user2 = Client()
         self.assert_(cli_user2.login(username="testlooser", password=u"hasword"))
 
-        self._test_status(reverse('satchless-contact-my_contact'),
+        self._test_status(reverse('satchless-contact-my-contact'),
                 client_instance=cli_anon, status_code=302)
-        self._test_status(reverse('satchless-contact-my_contact'),
+        self._test_status(reverse('satchless-contact-my-contact'),
                 client_instance=cli_user1, status_code=200)
-        self._test_status(reverse('satchless-contact-my_contact'),
+        self._test_status(reverse('satchless-contact-my-contact'),
                 client_instance=cli_user2, status_code=200)
 
 
-        self._test_status(reverse('satchless-contact-address_new'),
+        self._test_status(reverse('satchless-contact-address-new'),
                 client_instance=cli_user1, status_code=200)
-        self._test_status(reverse('satchless-contact-address_new'),
+        self._test_status(reverse('satchless-contact-address-new'),
                 client_instance=cli_user1, method='post', status_code=302,
                 data={'alias': "Mirumee", 'full_name': "Test User",
-                    'street_address_1': "pl. Solny 13/42",
+                    'street_address_1': "pl. Solny 13/42", 'country_area': u'Dolnośląskie',
                     'city': u"Wrocław", 'postal_code': "50-061", 'country': 'PL',
                     'set_as_default_billing': '1', 'set_as_default_shipping': '1'})
 
@@ -71,11 +71,11 @@ class ContactTest(TestCase):
                 street_address_1=u"ul. Wiejska 4/6/8", city="Warszawa",
                 postal_code="00-902", country='PL')
 
-        self._test_status(reverse('satchless-contact-address_edit', kwargs={'address_pk': a2.pk}),
+        self._test_status(reverse('satchless-contact-address-edit', kwargs={'address_pk': a2.pk}),
                 client_instance=cli_anon, status_code=302)
-        self._test_status(reverse('satchless-contact-address_edit', kwargs={'address_pk': a2.pk}),
+        self._test_status(reverse('satchless-contact-address-edit', kwargs={'address_pk': a2.pk}),
                 client_instance=cli_user1, status_code=404)
-        self._test_status(reverse('satchless-contact-address_edit', kwargs={'address_pk': a2.pk}),
+        self._test_status(reverse('satchless-contact-address-edit', kwargs={'address_pk': a2.pk}),
                 client_instance=cli_user2, status_code=200)
 
 

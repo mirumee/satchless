@@ -26,7 +26,7 @@ def address_edit(request, address_pk=None,
             customer = models.Customer.objects.get_or_create_for_user(user)
             form.instance.customer = customer
             form.save()
-            return redirect('satchless-contact-my_contact')
+            return redirect('satchless-contact-my-contact')
     else:
         form = formclass(instance=address)
     return TemplateResponse(request, 'satchless/contact/address_edit.html', {

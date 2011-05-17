@@ -3,7 +3,7 @@ from django.conf import settings
 
 from django.core.paginator import Paginator, InvalidPage
 from django.http import Http404
-from django.views.generic.simple import direct_to_template
+from django.template.response import TemplateResponse
 
 from haystack.query import RelatedSearchQuerySet
 
@@ -23,18 +23,15 @@ def search_products(request, template_name='satchless/search/haystack_predictive
         results = results.load_all()
         results = results.models(Product)
         query = ''
-
     products_per_page = getattr(settings, 'HAYSTACK_PREDICTIVE_PRODUCTS_PER_PAGE', PRODUCTS_PER_PAGE)
     paginator = Paginator(results, products_per_page)
     try:
         page = paginator.page(request.GET.get('page', 1))
     except InvalidPage:
         raise Http404()
-
-    return direct_to_template(request, template_name, {
+    return TemplateResponse(request, template_name, {
         'form': form,
         'page': page,
         'paginator': paginator,
         'query': query,
     })
-

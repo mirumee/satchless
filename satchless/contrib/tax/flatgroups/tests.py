@@ -1,9 +1,8 @@
 from decimal import Decimal
 from django.conf import settings
 from django.test import TestCase
-from satchless.cart.models import Cart
 from satchless.contrib.pricing.simpleqty.models import ProductPrice
-from satchless.product.tests import DeadParrot, DeadParrotVariant
+from satchless.product.tests import DeadParrot
 from satchless.pricing import Price, handler
 
 from . import models

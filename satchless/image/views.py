@@ -6,8 +6,8 @@ except:
     from StringIO import StringIO
 
 from django.core.files.uploadedfile import InMemoryUploadedFile
-from django.http import HttpResponseNotFound, HttpResponseRedirect
-from django.shortcuts import get_object_or_404
+from django.http import HttpResponseNotFound
+from django.shortcuts import get_object_or_404, redirect
 
 from . import IMAGE_SIZES
 from . import models
@@ -69,4 +69,4 @@ def thumbnail(request, image_id, size):
         original_dir, original_file = os.path.split(image.image.name)
         thumb_file = InMemoryUploadedFile(buf, "image", original_file, None, buf.tell(), None)
         thumbnail = image.thumbnail_set.create(size=size, image=thumb_file)
-    return HttpResponseRedirect(thumbnail.image.url)
+    return redirect(thumbnail)

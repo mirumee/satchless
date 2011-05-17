@@ -3,7 +3,6 @@ from django.db import models
 from django.utils.translation import ugettext_lazy as _
 from mptt.models import MPTTModel
 
-from . import signals
 from ..util.models import Subtyped
 
 __all__ = ('ProductAbstract', 'Variant', 'Category')

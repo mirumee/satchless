@@ -2,7 +2,7 @@
 from django.core.exceptions import ImproperlyConfigured
 from django.shortcuts import redirect
 from django.views.decorators.http import require_POST
-from django.views.generic.simple import direct_to_template
+from django.template.response import TemplateResponse
 
 from ....cart.models import Cart
 from ....order import forms
@@ -74,6 +74,8 @@ def checkout(request, typ):
             request.session['satchless_order'] = order.pk
             request.session['satchless_payment_method'] = payment_type
             return redirect('satchless-checkout-confirmation')
-    return direct_to_template(request, 'satchless/checkout/checkout.html',
-            {'order': order, 'delivery_groups_forms': delivery_groups_forms,
-             'payment_form': payment_form})
+    return TemplateResponse(request, 'satchless/checkout/checkout.html', {
+        'delivery_groups_forms': delivery_groups_forms,
+        'order': order,
+        'payment_form': payment_form,
+    })

@@ -53,6 +53,9 @@ class Thumbnail(models.Model):
     class Meta:
         unique_together = ('image', 'size')
 
+    def get_absolute_url(self):
+        return self.image.url
+
 def original_changed(sender, instance, created, **kwargs):
     if isinstance(instance, Image):
         instance.thumbnail_set.all().delete()

@@ -175,7 +175,7 @@ class PricingTagsTest(TestCase):
         node = product_prices.product_price_range(parser, token)
 
         context = {'product': 'product', 'PLN': 'PLN', '0': 0}
-        result = node.render(context)
+        node.render(context)
         self.assertEqual(context['price']['min'],
                          Price(net=5, gross=5*decimal.Decimal('1.9'), currency=u'PLN'))
         self.assertEqual(context['price']['max'],

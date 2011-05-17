@@ -2,7 +2,6 @@
 from django.contrib.auth.models import User
 from django.core.urlresolvers import reverse
 from django.test import TestCase, Client
-from django.db import models
 from .models import *
 
 class ContactTest(TestCase):
@@ -42,7 +41,7 @@ class ContactTest(TestCase):
         self.assertEqual(a1.alias, unicode(a1))
 
     def test_views(self):
-        c1 = Customer.objects.get_or_create_for_user(self.user1)
+        Customer.objects.get_or_create_for_user(self.user1)
         cli_anon = Client()
         cli_user1 = Client()
         self.assert_(cli_user1.login(username="testuser", password=u"pasło"))

@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 from django.shortcuts import redirect
-from django.views.generic.simple import direct_to_template
+from django.template.response import TemplateResponse
 from django.views.decorators.http import require_POST
 
 from ....cart.models import Cart
@@ -63,8 +63,10 @@ def checkout(request, typ):
         if delivery_formset.is_valid():
             delivery_formset.save()
             return redirect('satchless-checkout-delivery-details')
-    return direct_to_template(request, 'satchless/checkout/checkout.html',
-            {'order': order, 'delivery_formset': delivery_formset})
+    return TemplateResponse(request, 'satchless/checkout/checkout.html', {
+        'delivery_formset': delivery_formset,
+        'order': order,
+    })
 
 def delivery_details(request):
     """
@@ -91,8 +93,10 @@ def delivery_details(request):
             for group, typ, form in delivery_groups_forms:
                 handler.create_delivery_variant(group, typ, form)
             return redirect('satchless-checkout-payment-choice')
-    return direct_to_template(request, 'satchless/checkout/delivery_details.html',
-            {'order': order, 'delivery_groups_forms': groups_with_forms})
+    return TemplateResponse(request, 'satchless/checkout/delivery_details.html', {
+        'delivery_groups_forms': groups_with_forms,
+        'order': order,
+    })
 
 def payment_choice(request):
     """
@@ -107,8 +111,10 @@ def payment_choice(request):
         if payment_form.is_valid():
             payment_form.save(request.session)
             return redirect('satchless-checkout-payment-details')
-    return direct_to_template(request, 'satchless/checkout/payment_choice.html',
-            {'order': order, 'payment_form': payment_form})
+    return TemplateResponse(request, 'satchless/checkout/payment_choice.html', {
+        'order': order,
+        'payment_form': payment_form,
+    })
 
 def payment_details(request):
     """
@@ -132,8 +138,10 @@ def payment_details(request):
         if request.method == 'POST':
             if form.is_valid():
                 return proceed(order, typ, form)
-        return direct_to_template(request, 'satchless/checkout/payment_details.html',
-                {'order': order, 'form': form})
+        return TemplateResponse(request, 'satchless/checkout/payment_details.html', {
+            'form': form,
+            'order': order,
+        })
     else:
         return proceed(order, typ, form)
 
@@ -151,8 +159,10 @@ def confirmation(request):
     try:
         handler.confirm(order, request.session['satchless_payment_method'])
     except ConfirmationFormNeeded, e:
-        return direct_to_template(request, 'satchless/checkout/confirmation.html',
-            {'order': order, 'formdata': e})
+        return TemplateResponse(request, 'satchless/checkout/confirmation.html', {
+            'formdata': e,
+            'order': order,
+        })
     except PaymentFailure:
         order.set_status('payment-failed')
     else:

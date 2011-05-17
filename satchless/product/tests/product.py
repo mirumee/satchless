@@ -28,11 +28,11 @@ class ParrotTest(TestCase):
                 self.macaw.get_absolute_url,
                 category=self.storks)
         forks = Category.objects.create(slug='forks', name=u"Forks", parent=self.storks)
-        porks = Category.objects.create(slug='porks', name=u"Porks", parent=forks)
+        Category.objects.create(slug='porks', name=u"Porks", parent=forks)
         borks = Category.objects.create(slug='borks', name=u"Borks", parent=forks)
         forks2 = Category.objects.create(slug='forks', name=u"Forks", parent=borks)
         yorks = Category.objects.create(slug='yorks', name=u"Yorks", parent=forks2)
-        orcs = Category.objects.create(slug='orcs', name=u"Orcs", parent=forks2)
+        Category.objects.create(slug='orcs', name=u"Orcs", parent=forks2)
         self.assertEqual(
                 [self.birds, self.storks, forks],
                 Category.path_from_slugs(['birds', 'storks', 'forks']))
@@ -61,14 +61,14 @@ class ParrotTest(TestCase):
             self.assertEqual(type(product.get_subtype_instance()), DeadParrot)
 
     def test_variants(self):
-        macaw_blue = self.macaw.variants.create(color='blue', looks_alive=False)
-        macaw_blue_fake = self.macaw.variants.create(color='blue', looks_alive=True)
+        self.macaw.variants.create(color='blue', looks_alive=False)
+        self.macaw.variants.create(color='blue', looks_alive=True)
         self.assertEqual(2, self.macaw.variants.count())
 
-        cockatoo_white_a = self.cockatoo.variants.create(color='white', looks_alive=True)
-        cockatoo_white_d = self.cockatoo.variants.create(color='white', looks_alive=False)
-        cockatoo_blue_a = self.cockatoo.variants.create(color='blue', looks_alive=True)
-        cockatoo_blue_d = self.cockatoo.variants.create(color='blue', looks_alive=False)
+        self.cockatoo.variants.create(color='white', looks_alive=True)
+        self.cockatoo.variants.create(color='white', looks_alive=False)
+        self.cockatoo.variants.create(color='blue', looks_alive=True)
+        self.cockatoo.variants.create(color='blue', looks_alive=False)
         self.assertEqual(4, self.cockatoo.variants.count())
 
         for variant in Variant.objects.all():

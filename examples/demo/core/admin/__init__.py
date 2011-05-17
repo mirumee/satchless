@@ -1,9 +1,6 @@
 # -*- coding:utf-8 -*-
 from django.contrib import admin
-from django.contrib import admin
-from django.http import HttpResponse, Http404
 from django.utils.translation import ugettext as _
-from django.views.generic.simple import direct_to_template
 import django.forms
 
 from satchless.contrib.productset.models import ProductSet, ProductSetItem
@@ -14,9 +11,6 @@ from satchless.product.models import Product, Variant
 from sale.models import DiscountGroup
 from . import widgets
 
-def search_variants(request, pk):
-    product = get_object_or_404(Product, pk=pk)
-
 class GulliverAdminSite(admin.AdminSite):
     def get_urls(self):
         from django.conf.urls.defaults import patterns, url
@@ -26,9 +20,6 @@ class GulliverAdminSite(admin.AdminSite):
             url(r'^search/products/$', self.admin_view(search_products),
                 kwargs={'template_name': 'admin/product/search_products.html'},
                 name='search-products'),
-            url(r'^search/variants/$', self.admin_view(search_products),
-                kwargs={'template_name': 'admin/product/search_variants.html'},
-                name='search-variants'),
         )
         return urls
 

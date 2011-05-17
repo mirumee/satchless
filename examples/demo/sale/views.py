@@ -1,13 +1,9 @@
 # -*- coding:utf-8 -*-
-from django.contrib.auth.decorators import login_required
-from django.core.urlresolvers import reverse
-from django.http import HttpResponse, HttpResponseRedirect, HttpResponseForbidden, HttpResponseNotFound
-from django.shortcuts import get_object_or_404
-from django.views.generic.simple import direct_to_template
+from django.http import HttpResponseNotFound
+from django.template.response import TemplateResponse
 
 from satchless.product.models import Category, Product
 
-from . import models
 from . import query
 
 def index(request, category_slugs=None):
@@ -26,19 +22,20 @@ def index(request, category_slugs=None):
         category = None
         products = Product.objects.filter(discount__isnull=False)
         path = []
-
     ProductCategory = Product.categories.through
-    discounted_products = ProductCategory.objects.filter(product__discount__isnull=False) \
-                                                        .values_list('category_id', flat=True)
-    categories = query.add_filtered_related_count(Category.tree, Category.tree.root_nodes(),
-                                                  discounted_products, 'category', 'products_count',
+    discounted_products = (ProductCategory.objects.filter(product__discount__isnull=False)
+                                                  .values_list('category_id',
+                                                               flat=True))
+    categories = query.add_filtered_related_count(Category.tree,
+                                                  Category.tree.root_nodes(),
+                                                  discounted_products,
+                                                  'category',
+                                                  'products_count',
                                                   cumulative=True)
     categories = filter(lambda cat: cat.products_count, categories)
-    return direct_to_template(request, "sale/index.html", {
-        'category': category,
+    return TemplateResponse(request, 'sale/index.html', {
         'categories': categories,
+        'category': category,
         'path': path,
         'products': products,
     })
-
-

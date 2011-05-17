@@ -1,6 +1,6 @@
 from django.db import models
 
-from ..models import *
+from ..models import ProductAbstract, Variant
 
 #models for tests
 
@@ -8,9 +8,14 @@ class DeadParrot(ProductAbstract):
     species = models.CharField(max_length=20)
 
 class DeadParrotVariant(Variant):
+    COLOR_CHOICES = (
+        ('blue', 'blue'),
+        ('white', 'white'),
+        ('red', 'red'),
+        ('green', 'green'),
+    )
     product = models.ForeignKey(DeadParrot, related_name='variants')
-    color = models.CharField(max_length=10,
-                choices=(('blue', 'blue'), ('white', 'white'), ('red', 'red'), ('green', 'green')))
+    color = models.CharField(max_length=10, choices=COLOR_CHOICES)
     looks_alive = models.BooleanField()
 
     def __unicode__(self):

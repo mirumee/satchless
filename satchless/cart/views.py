@@ -1,9 +1,7 @@
 # -*- coding: utf-8 -*-
 from django.contrib import messages
-from django.core.urlresolvers import reverse
-from django.http import HttpResponseRedirect, Http404
-from django.shortcuts import render_to_response
-from django.template import RequestContext
+from django.shortcuts import get_object_or_404, redirect
+from django.template.response import TemplateResponse
 from django.utils.translation import ugettext
 from django.views.decorators.http import require_POST
 
@@ -18,22 +16,23 @@ def cart(request, typ, form_class=forms.EditCartItemForm):
         form = form_class(data=request.POST or None, instance=item,
                           prefix='%s-%i'%(typ, item.id))
         if request.method == 'POST' and form.is_valid():
-            messages.success(request, ugettext("Cart's content updated successfully."))
+            messages.success(request,
+                             ugettext("Cart's content updated successfully."))
             form.save()
-            return HttpResponseRedirect(request.path)
+            return redirect(request.get_full_path())
         cart_item_forms.append(form)
-
-    return render_to_response(
-            ['satchless/cart/%s/view.html' % typ, 'satchless/cart/view.html'],
-            {'cart': cart, 'cart_item_forms': cart_item_forms},
-            context_instance=RequestContext(request))
+    templates = [
+        'satchless/cart/%s/view.html' % typ,
+        'satchless/cart/view.html'
+    ]
+    return TemplateResponse(request, templates, {
+        'cart': cart,
+        'cart_item_forms': cart_item_forms,
+    })
 
 @require_POST
 def remove_item(request, typ, item_pk):
     cart = models.Cart.objects.get_or_create_from_request(request, typ)
-    try:
-        item = cart.items.get(pk=item_pk)
-    except models.CartItem.DoesNotExist:
-        raise Http404
+    item = get_object_or_404(cart.items, pk=item_pk)
     cart.set_quantity(item.variant, 0)
-    return HttpResponseRedirect(reverse('satchless-cart-view', kwargs={'typ': typ}))
+    return redirect('satchless-cart-view', typ=typ)

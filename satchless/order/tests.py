@@ -1,7 +1,5 @@
 # -*- coding: utf-8 -*-
 from decimal import Decimal
-from django.conf import settings
-from django.core.urlresolvers import reverse
 from django.test import TestCase, Client
 
 from satchless.product.models import Category

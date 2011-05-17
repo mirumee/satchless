@@ -42,23 +42,17 @@ def get_delivery_details_forms_for_groups(groups, request):
 
 
 class PaymentMethodForm(forms.ModelForm):
-    payment_typ = forms.ChoiceField(label=_('Payment method'), choices=[])
-
+    payment_type = forms.ChoiceField(choices=())
     class Meta:
         model = models.Order
-        fields = ('payment_typ',)
+        fields = ('payment_type',)
 
     def __init__(self, *args, **kwargs):
         super(PaymentMethodForm, self).__init__(*args, **kwargs)
-        self.fields['payment_typ'].choices = handler.get_payment_types(self.instance)
-
-    def save(self, session):
-        session['satchless_payment_method'] = self.cleaned_data['payment_typ']
-
+        self.fields['payment_type'].choices = handler.get_payment_types(self.instance)
 
 def get_payment_details_form(order, request):
-    typ = request.session['satchless_payment_method']
-    Form = handler.get_payment_formclass(order, typ)
+    Form = handler.get_payment_formclass(order, order.payment_type)
     if Form:
         return Form(data=request.POST or None, instance=order)
     return None

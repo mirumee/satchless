@@ -31,6 +31,10 @@ class OrderManager(models.Manager):
         else:
             order = instance
             order.groups.all().delete()
+            try:
+                order.paymentvariant.delete()
+            except ObjectDoesNotExist:
+                pass
         groups = partition(cart)
         for group in groups:
             delivery_group = order.groups.create(order=order)
@@ -83,7 +87,7 @@ class Order(models.Model):
     billing_tax_id = models.CharField(_("tax ID"), max_length=40, blank=True)
     billing_phone = models.CharField(_("phone number"),
                                      max_length=30, blank=True)
-
+    payment_type = models.CharField(max_length=256, blank=True)
     objects = OrderManager()
 
     def __unicode__(self):
@@ -132,6 +136,9 @@ class OrderedItem(models.Model):
                                          max_digits=12, decimal_places=4)
     unit_price_gross = models.DecimalField(_('unit price (gross)'),
                                            max_digits=12, decimal_places=4)
+
+    def unit_price(self):
+        return Price(net=self.unit_price_net, gross=self.unit_price_gross)
 
     def price(self):
         return Price(net=self.unit_price_net * self.quantity,

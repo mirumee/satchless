@@ -57,8 +57,8 @@ def get_payment_formclass(order, typ):
     provider, typ_short = get_payment_provider(typ)
     return provider.get_configuration_formclass(order, typ_short)
 
-def create_payment_variant(order, typ, form):
-    provider, typ_short = get_payment_provider(typ)
+def create_payment_variant(order, form):
+    provider, typ_short = get_payment_provider(order.payment_type)
     return provider.create_variant(order, typ_short, form)
 
 def confirm(order, typ):
@@ -89,15 +89,17 @@ def init_queues():
         elements = getattr(settings, setting_name, [])
         for e in elements:
             if isinstance(e, str):
-                mod_name, obj_name = e.rsplit('.', 1)
+                mod_name, attr_name = e.rsplit('.', 1)
                 module = import_module(mod_name)
-                e_obj = getattr(module, obj_name)
-                queue.append((e, e_obj))
+                instance = getattr(module, attr_name)
+                if isinstance(instance, type):
+                    instance = instance()
+                queue.append((e, instance))
             else:
                 raise ValueError('%r in %s is not a proper Python path' % \
                         (e, setting_name))
             for method in required_methods:
-                if not callable(getattr(e_obj, method, None)):
+                if not callable(getattr(instance, method, None)):
                     raise ImproperlyConfigured('%s in %s does not implement %s() method' % (
                             e, setting_name, method))
         return queue

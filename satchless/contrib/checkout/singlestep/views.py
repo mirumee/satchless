@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 from django.core.exceptions import ImproperlyConfigured
 from django.shortcuts import redirect
-from django.views.decorators.http import require_POST
 from django.template.response import TemplateResponse
 
 from ....cart.models import Cart
@@ -9,20 +8,6 @@ from ....order import forms
 from ....order import models
 from ....order import handler
 
-@require_POST
-def prepare_order(request, typ):
-    cart = Cart.objects.get_or_create_from_request(request, typ)
-    order_pk = request.session.get('satchless_order')
-    previous_orders = models.Order.objects.filter(pk=order_pk, cart=cart,
-                                                  status='checkout')
-    if not order_pk or not previous_orders.exists():
-        try:
-            order = models.Order.objects.get_from_cart(cart)
-        except models.EmptyCart:
-            return redirect('satchless-cart-view', typ=typ)
-        else:
-            request.session['satchless_order'] = order.pk
-    return redirect('satchless-checkout')
 
 def checkout(request, typ):
     """

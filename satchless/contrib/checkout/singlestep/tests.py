@@ -2,6 +2,7 @@
 from decimal import Decimal
 from django.conf import settings
 from django.core.urlresolvers import reverse
+from django.utils.translation import ugettext_lazy as _
 from django.test import TestCase, Client
 
 from satchless.product.models import Category
@@ -10,8 +11,49 @@ from satchless.product.tests import DeadParrot
 
 from satchless.cart.models import Cart, CART_SESSION_KEY
 from satchless.order.models import Order
+import satchless.delivery
+
+class TestDeliveryVariant(satchless.delivery.models.DeliveryVariant):
+    pass
+
+class TestDeliveryProvider(satchless.delivery.DeliveryProvider):
+    name = _("Test delivery")
+
+    def __unicode__(self):
+        return unicode(self.name)
+
+    def enum_types(self, customer=None, delivery_group=None):
+        print "ENUM TYPES"
+        return (('pidgin', 'pidgin'),)
+
+    def get_formclass(self, delivery_group, typ):
+        return None
+
+    def create_variant(self, delivery_group, typ, form=None):
+        variant = TestDeliveryVariant()
+        variant.delivery_group = delivery_group
+        variant.name = typ
+        variant.price = '20'
+        variant.save()
+        return variant
 
 class CheckoutTest(TestCase):
+    def _setup_settings(self, custom_settings):
+        original_settings = {}
+        for setting_name, value in custom_settings.items():
+            if hasattr(settings, setting_name):
+                original_settings[setting_name] = getattr(settings, setting_name)
+            setattr(settings, setting_name, value)
+        return original_settings
+
+    def _teardown_settings(self, original_settings, custom_settings=None):
+        custom_settings = custom_settings or {}
+        for setting_name, value in custom_settings.items():
+            if setting_name in original_settings:
+                setattr(settings, setting_name, value)
+            else:
+                delattr(settings, setting_name)
+
     def setUp(self):
         category = Category.objects.create(name='parrot')
         self.macaw = DeadParrot.objects.create(slug='macaw',
@@ -27,15 +69,16 @@ class CheckoutTest(TestCase):
         self.cockatoo_blue_a = self.cockatoo.variants.create(color='blue', looks_alive=True)
         self.cockatoo_blue_d = self.cockatoo.variants.create(color='blue', looks_alive=False)
 
-        self.original_product_view_handlers = settings.SATCHLESS_PRODUCT_VIEW_HANDLERS
-        settings.SATCHLESS_PRODUCT_VIEW_HANDLERS = [
-            'satchless.cart.add_to_cart_handler',
-        ]
+        self.custom_settings = {
+            'SATCHLESS_PRODUCT_VIEW_HANDLERS': ('satchless.cart.add_to_cart_handler',),
+            'SATCHLESS_DELIVERY_PROVIDERS': ['satchless.contrib.checkout.singlestep.tests.TestDeliveryProvider'],
+        }
+        self.original_settings = self._setup_settings(self.custom_settings)
         handler.init_queue()
         self.anon_client = Client()
 
     def tearDown(self):
-        settings.SATCHLESS_PRODUCT_VIEW_HANDLERS = self.original_product_view_handlers
+        self._teardown_settings(self.original_settings, self.custom_settings)
         handler.init_queue()
 
     def _test_status(self, url, method='get', *args, **kwargs):

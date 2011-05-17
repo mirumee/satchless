@@ -1,43 +1,14 @@
 # -*- coding: utf-8 -*-
 from django.shortcuts import redirect
 from django.template.response import TemplateResponse
-from django.views.decorators.http import require_POST
 
+from ..common.views import order_from_request
 from ....cart.models import Cart
 from ....payment import PaymentFailure, ConfirmationFormNeeded
 from ....order import models
 from ....order import forms
 from ....order import handler
 from ....order import signals
-
-def _order_from_request(request):
-    '''
-    Get the order from session, possibly invalidating the variable if the
-    order has been processed already.
-    '''
-    session = request.session
-    if 'satchless_order' in session:
-        try:
-            return models.Order.objects.get(pk=session['satchless_order'],
-                                            status='checkout')
-        except models.Order.DoesNotExist:
-            del session['satchless_order']
-    return None
-
-@require_POST
-def prepare_order(request, typ):
-    cart = Cart.objects.get_or_create_from_request(request, typ)
-    order_pk = request.session.get('satchless_order')
-    previous_orders = models.Order.objects.filter(pk=order_pk, cart=cart,
-                                                  status='checkout')
-    if not order_pk or not previous_orders.exists():
-        try:
-            order = models.Order.objects.get_from_cart(cart)
-        except models.EmptyCart:
-            return redirect('satchless-cart-view', typ=typ)
-        else:
-            request.session['satchless_order'] = order.pk
-    return redirect('satchless-checkout')
 
 def checkout(request, typ):
     """
@@ -74,7 +45,7 @@ def delivery_details(request):
     If there are any delivery details needed (e.g. the shipping address),
     user will be asked for them. Otherwise we redirect to step 2.
     """
-    order = _order_from_request(request)
+    order = order_from_request(request)
     if not order:
         return redirect('satchless-cart-view')
     groups = order.groups.all()
@@ -103,13 +74,13 @@ def payment_choice(request):
     Checkout step 2
     User will choose the payment method.
     """
-    order = _order_from_request(request)
+    order = order_from_request(request)
     if not order:
         return redirect('satchless-checkout')
     payment_form = forms.PaymentMethodForm(data=request.POST or None, instance=order)
     if request.method == 'POST':
         if payment_form.is_valid():
-            payment_form.save(request.session)
+            payment_form.save()
             return redirect('satchless-checkout-payment-details')
     return TemplateResponse(request, 'satchless/checkout/payment_choice.html', {
         'order': order,
@@ -122,14 +93,15 @@ def payment_details(request):
     If any payment details are needed, user will be asked for them. Otherwise
     we redirect to step 3.
     """
-    order = _order_from_request(request)
+    order = order_from_request(request)
     if not order:
         return redirect('satchless-checkout')
+    if not order.payment_type:
+        return redirect('satchless-checkout-payment-choice')
     form = forms.get_payment_details_form(order, request)
-    typ = request.session['satchless_payment_method']
 
-    def proceed(order, typ, form):
-        variant = handler.create_payment_variant(order, typ, form)
+    def proceed(order, form):
+        variant = handler.create_payment_variant(order, form)
         order.payment_variant = variant
         order.save()
         return redirect('satchless-checkout-confirmation')
@@ -137,13 +109,13 @@ def payment_details(request):
     if form:
         if request.method == 'POST':
             if form.is_valid():
-                return proceed(order, typ, form)
+                return proceed(order, form)
         return TemplateResponse(request, 'satchless/checkout/payment_details.html', {
             'form': form,
             'order': order,
         })
     else:
-        return proceed(order, typ, form)
+        return proceed(order, form)
 
 def confirmation(request):
     """
@@ -151,7 +123,7 @@ def confirmation(request):
     The final summary, where user is asked to review and confirm the order.
     Confirmation will redirect to the payment gateway.
     """
-    order = _order_from_request(request)
+    order = order_from_request(request)
     if not order:
         return redirect('satchless-checkout')
     order.set_status('payment-pending')

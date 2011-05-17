@@ -1,6 +1,14 @@
-{% load i18n prices %}
+{% load i18n %}
+{% load prices %}
+{% load products_tags %}
+{% load satchless_image %}
 {% for group in order.groups.all %}
 <table class="cart-contents">
+    <col class="image" />
+    <col class="name" />
+    <col class="price" />
+    <col class="qty" />
+    <col class="total" />
     <thead>
         {% if order.groups.count > 1 %}
         <tr>
@@ -10,12 +18,53 @@
         </tr>
         {% endif %}
         <tr>
-            <th>{% trans "Item" %}</th>
-            <th class="numerical">{% trans "Qty." %}</th>
-            <th class="numerical">{% trans "Unit price" %}</th>
-            <th class="numerical">{% trans "Price" %}</th>
+            <th class="image"></th>
+            <th class="name">{% trans 'Description' %}</th>
+            <th class="price">{% trans 'Unit Price' %}</th>
+            <th class="qty">{% trans 'Quantity' %}</th>
+            <th class="total">{% trans 'Total' %}</th>
         </tr>
     </thead>
+    <tbody>
+    {% for item in group.items.all %}
+        {% with product=item.product_variant.get_subtype_instance.product %}
+        {% with variant=item.product_variant.get_subtype_instance %}
+        {% with unit_price=item.unit_price item_price=item.price currency=order.currency readonly=1 %}
+            {% include "satchless/cart/snippets/row.html" %}
+        {% endwith %}
+        {% endwith %}
+        {% endwith %}
+        {% comment %}
+        <tr>
+            <td class="image">
+{% if variant.product.main_image %}
+                <a href="{{ variant.product.get_url }}"><img src="{{ variant.product.main_image|at_size:'cart-product' }}" alt="{{ item }}" /></a>
+{% else %}
+                <a href="{{ variant.product.get_url }}">{{ variant }}</a>
+{% endif %}
+            </td>
+            <td class="name product-description">
+{% if variant.product.manufacture %}
+                <span class="manufacture">{{ variant.product.manufacture }}</span>
+{% endif %}
+                <h2><a href="{{ variant.product.get_absolute_url }}">{{ variant.product.name }}</a></h2>
+{% with variant|variant_attrs as va %}
+{% if va %}
+                <ul class="variant-attrs">
+    {% for attr in va %}
+                    <li>{{ attr.name }}: <strong>{{ attr.value }}</strong></li>
+    {% endfor %}
+                </ul>
+{% endif %}
+{% endwith %}
+            </td>
+            <td class="numerical"><span class="gross">{{ item.unit_price_gross|floatformat:2 }}</span></td>
+            <td class="numerical">{{ item.quantity }}</td>
+            <td class="numerical">{{ item.price|gross|floatformat:2 }}</td>
+        </tr>
+        {% endcomment %}
+        {% endfor %}
+    </tbody>
     <tfoot>
         {% if group.deliveryvariant %}{% with group.deliveryvariant.get_subtype_instance as variant %}
         <tr>
@@ -31,25 +80,6 @@
             <td class="numerical">{{ group.total|gross|floatformat:2 }}</td>
         </tr>
     </tfoot>
-    <tbody>
-        {% for item in group.items.all %}
-        {% with item.product_variant.get_subtype_instance.product as product %}
-        <tr>
-            <td>
-                {% url satchless-product-product product.slug product.pk as product_url %}
-                {% if product_url %}
-                <a href="{{ product_url }}">{{ item.product_name }}</a>
-                {% else %}
-                {{ item.product_name }}
-                {% endif %}
-            </td>
-            <td class="numerical">{{ item.quantity }}</td>
-            <td class="numerical"><span class="gross">{{ item.unit_price_gross|floatformat:2 }}</span></td>
-            <td class="numerical">{{ item.price|gross|floatformat:2 }}</td>
-        </tr>
-        {% endwith %}
-        {% endfor %}
-    </tbody>
 </table>
 {% endfor %}
 <p>Total amount to pay: {{ order.total|gross|floatformat:2 }} <span class="currency">{{ order.currency }}</span></p>

@@ -24,6 +24,11 @@ def get_delivery_types(delivery_group):
         types.extend([('%s:%s' % (provider_path, t[0]), t[1]) for t in prov_types])
     return types
 
+def get_delivery_type_name(typ):
+    provider, short_typ = get_delivery_provider(typ)
+    delivery_types = dict(provider.enum_types())
+    return delivery_types[short_typ]
+
 def get_delivery_provider(typ):
     provider_path, typ_short = typ.split(':', 1)
     for prov_path, provider in _delivery_providers_queue:

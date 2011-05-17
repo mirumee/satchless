@@ -1,41 +1,17 @@
 # -*- coding: utf-8 -*-
-from decimal import Decimal
 from django.conf import settings
 from django.core.urlresolvers import reverse
-from django.utils.translation import ugettext_lazy as _
 from django.test import TestCase, Client
 
-from satchless.product.models import Category
-from satchless.product import handler
 from satchless.product.tests import DeadParrot
 
 from satchless.cart.models import Cart, CART_SESSION_KEY
 from satchless.order.models import Order
-import satchless.delivery
+import satchless.order.handler
+import satchless.product.handler
 
-class TestDeliveryVariant(satchless.delivery.models.DeliveryVariant):
-    pass
-
-class TestDeliveryProvider(satchless.delivery.DeliveryProvider):
-    name = _("Test delivery")
-
-    def __unicode__(self):
-        return unicode(self.name)
-
-    def enum_types(self, customer=None, delivery_group=None):
-        print "ENUM TYPES"
-        return (('pidgin', 'pidgin'),)
-
-    def get_formclass(self, delivery_group, typ):
-        return None
-
-    def create_variant(self, delivery_group, typ, form=None):
-        variant = TestDeliveryVariant()
-        variant.delivery_group = delivery_group
-        variant.name = typ
-        variant.price = '20'
-        variant.save()
-        return variant
+from ..common.views import prepare_order
+from . import views
 
 class CheckoutTest(TestCase):
     def _setup_settings(self, custom_settings):
@@ -55,31 +31,23 @@ class CheckoutTest(TestCase):
                 delattr(settings, setting_name)
 
     def setUp(self):
-        category = Category.objects.create(name='parrot')
-        self.macaw = DeadParrot.objects.create(slug='macaw',
-                species="Hyacinth Macaw")
-        self.macaw.categories.add(category)
-        self.cockatoo = DeadParrot.objects.create(slug='cockatoo',
-                species="White Cockatoo")
-        self.cockatoo.categories.add(category)
-        self.macaw_blue = self.macaw.variants.create(color='blue', looks_alive=False)
-        self.macaw_blue_fake = self.macaw.variants.create(color='blue', looks_alive=True)
-        self.cockatoo_white_a = self.cockatoo.variants.create(color='white', looks_alive=True)
-        self.cockatoo_white_d = self.cockatoo.variants.create(color='white', looks_alive=False)
-        self.cockatoo_blue_a = self.cockatoo.variants.create(color='blue', looks_alive=True)
-        self.cockatoo_blue_d = self.cockatoo.variants.create(color='blue', looks_alive=False)
+        self.parrot = DeadParrot.objects.create(slug='parrot', species="Hyacinth Macaw")
+        self.dead_parrot = self.parrot.variants.create(color='blue', looks_alive=False)
 
         self.custom_settings = {
             'SATCHLESS_PRODUCT_VIEW_HANDLERS': ('satchless.cart.add_to_cart_handler',),
-            'SATCHLESS_DELIVERY_PROVIDERS': ['satchless.contrib.checkout.singlestep.tests.TestDeliveryProvider'],
+            'SATCHLESS_DELIVERY_PROVIDERS': ['satchless.contrib.checkout.common.tests.TestDeliveryProvider'],
+            'SATCHLESS_PAYMENT_PROVIDERS': ['satchless.contrib.checkout.common.tests.TestPaymentProvider'],
         }
         self.original_settings = self._setup_settings(self.custom_settings)
-        handler.init_queue()
+        satchless.product.handler.init_queue()
+        satchless.order.handler.init_queues()
         self.anon_client = Client()
 
     def tearDown(self):
         self._teardown_settings(self.original_settings, self.custom_settings)
-        handler.init_queue()
+        satchless.product.handler.init_queue()
+        satchless.order.handler.init_queues()
 
     def _test_status(self, url, method='get', *args, **kwargs):
         status_code = kwargs.pop('status_code', 200)
@@ -94,14 +62,14 @@ class CheckoutTest(TestCase):
         return response
 
     def _get_or_create_cart_for_client(self, client, typ='satchless_cart'):
-        self._test_status(reverse('satchless-cart-view'), client_instance=self.anon_client)
-        return Cart.objects.get(pk=self.anon_client.session[CART_SESSION_KEY % typ], typ=typ)
+        self._test_status(reverse('satchless-cart-view'), client_instance=client)
+        return Cart.objects.get(pk=client.session[CART_SESSION_KEY % typ], typ=typ)
 
-    def _get_order_from_session(self, session):
-        order_pk = session.get('satchless_order', None)
-        if order_pk:
-            return Order.objects.get(pk=order_pk)
-        return None
+    def _get_or_create_order_for_client(self, client):
+        self._test_status(reverse(prepare_order), method='post',
+                          client_instance=client, status_code=302)
+        order_pk = client.session.get('satchless_order', None)
+        return Order.objects.get(pk=order_pk)
 
     def _get_order_items(self, order):
         order_items = set()
@@ -109,47 +77,12 @@ class CheckoutTest(TestCase):
             order_items.update(group.items.values_list('product_variant', 'quantity'))
         return order_items
 
-    def test_order_from_cart_view_creates_proper_order(self):
+    def test_checkout_view_redirects_when_order_is_missing(self):
         cart = self._get_or_create_cart_for_client(self.anon_client)
-        cart.set_quantity(self.macaw_blue, 1)
-        cart.set_quantity(self.macaw_blue_fake, Decimal('2.45'))
-        cart.set_quantity(self.cockatoo_white_a, Decimal('2.45'))
+        cart.set_quantity(self.dead_parrot, 1)
 
-        self._test_status(reverse('satchless-checkout-prepare-order'), method='post',
-                          client_instance=self.anon_client, status_code=302)
+        self._test_status(reverse(views.checkout), client_instance=self.anon_client, status_code=302)
+        self._get_or_create_order_for_client(self.anon_client)
+        self._test_status(reverse(views.checkout), client_instance=self.anon_client, status_code=200)
 
-        order = self._get_order_from_session(self.anon_client.session)
-        self.assertNotEqual(order, None)
-        order_items = self._get_order_items(order)
-        self.assertEqual(set(cart.items.values_list('variant', 'quantity')), order_items)
-
-    def test_order_is_updated_after_cart_changes(self):
-        cart = self._get_or_create_cart_for_client(self.anon_client)
-
-        cart.set_quantity(self.macaw_blue, 1)
-        cart.set_quantity(self.macaw_blue_fake, Decimal('2.45'))
-        cart.set_quantity(self.cockatoo_white_a, Decimal('2.45'))
-
-        self._test_status(reverse('satchless-checkout-prepare-order'), method='post',
-                          client_instance=self.anon_client, status_code=302)
-
-        order = self._get_order_from_session(self.anon_client.session)
-        order_items = self._get_order_items(order)
-        # compare cart and order
-        self.assertEqual(set(cart.items.values_list('variant', 'quantity')), order_items)
-
-        # update cart
-        cart.add_quantity(self.macaw_blue, 100)
-        cart.add_quantity(self.macaw_blue_fake, 100)
-        self._test_status(reverse('satchless-checkout-prepare-order'), method='post',
-                          client_instance=self.anon_client, status_code=302)
-
-        old_order = order
-        order = self._get_order_from_session(self.anon_client.session)
-        # order should be reused
-        self.assertEqual(old_order.pk, order.pk)
-        self.assertNotEqual(order, None)
-        order_items = self._get_order_items(order)
-        # compare cart and order
-        self.assertEqual(set(cart.items.values_list('variant', 'quantity')), order_items)
 

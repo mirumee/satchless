@@ -40,6 +40,22 @@ variant_formclass_for_product.connect(get_variantformclass, sender=DeadParrot)
 
 
 class ParrotTest(TestCase):
+    def _setup_settings(self, custom_settings):
+        original_settings = {}
+        for setting_name, value in custom_settings.items():
+            if hasattr(settings, setting_name):
+                original_settings[setting_name] = getattr(settings, setting_name)
+            setattr(settings, setting_name, value)
+        return original_settings
+
+    def _teardown_settings(self, original_settings, custom_settings=None):
+        custom_settings = custom_settings or {}
+        for setting_name, value in custom_settings.items():
+            if setting_name in original_settings:
+                setattr(settings, setting_name, value)
+            else:
+                delattr(settings, setting_name)
+
     def setUp(self):
         category = Category.objects.create(name='parrot')
         self.macaw = DeadParrot.objects.create(slug='macaw',
@@ -58,14 +74,14 @@ class ParrotTest(TestCase):
         self.user1 = User.objects.create(username="testuser", is_staff=True, is_superuser=True)
         self.user1.set_password(u"pasło")
         self.user1.save()
-        self.original_product_view_handlers = settings.SATCHLESS_PRODUCT_VIEW_HANDLERS
-        settings.SATCHLESS_PRODUCT_VIEW_HANDLERS = [
-            'satchless.cart.add_to_cart_handler',
-        ]
+        self.custom_settings = {
+            'SATCHLESS_PRODUCT_VIEW_HANDLERS': ('satchless.cart.add_to_cart_handler',),
+        }
+        self.original_settings = self._setup_settings(self.custom_settings)
         handler.init_queue()
 
     def tearDown(self):
-        settings.SATCHLESS_PRODUCT_VIEW_HANDLERS = self.original_product_view_handlers
+        self._teardown_settings(self.original_settings, self.custom_settings)
         handler.init_queue()
 
     def _test_status(self, url, method='get', *args, **kwargs):

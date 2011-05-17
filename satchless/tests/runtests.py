@@ -30,16 +30,17 @@ ALWAYS_INSTALLED_APPS = [
 ]
 
 TESTED_APPS = [
-    'satchless.contrib.checkout.multistep',
-    'satchless.product',
     'satchless.cart',
-    'satchless.order',
     'satchless.delivery',
+    'satchless.order',
     'satchless.payment',
     'satchless.pricing',
+    'satchless.product',
+    'satchless.contrib.checkout.multistep',
+    'satchless.contrib.checkout.singlestep',
     'satchless.contrib.delivery.simplepost',
     'satchless.contrib.pricing.simpleqty',
-    'satchless.contrib.checkout.singlestep'
+    'satchless.contrib.tax.flatgroups',
 ]
 
 def setup(verbosity, test_modules):

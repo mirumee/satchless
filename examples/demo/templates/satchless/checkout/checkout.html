@@ -13,7 +13,7 @@
         {% for form in delivery_formset.forms %}{% with form.instance as group %}
             {% if order.groups.count > 1 %}<h2>{% trans "Delivery group" %}:</h2>{% endif %}
             <ul>
-            {% include 'satchless/order/snippets/delivery_group.html' %}
+            {% include 'satchless/checkout/snippets/delivery_group.html' %}
             </ul>
             {{ form.as_p }}
         {% endwith %}{% endfor %}

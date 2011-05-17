@@ -378,6 +378,45 @@ body.store.checkout {
 }
     body.store.checkout #content {
     }
+        body.checkout #content .container {
+            background: #fff;
+            border: 1px solid #dcdcdc;
+            padding: 15px;
+        }
+            body.checkout #content .container form {
+            }
+                body.checkout #content .container form table tbody th {
+                    font-size: 15px;
+                    font-weight: normal;
+                    text-align: right;
+                }
+                    body.checkout #content .container form table tbody th .required {
+                        color: #c00005;
+                    }
+                body.checkout #content .container form table tbody td {
+                    padding: 5px;
+                }
+                    body.checkout #content .container form table tbody td input {
+                        border: 1px solid #bfbfbf;
+                        border-radius: 5px;
+                        -moz-border-radius: 5px;
+                        padding: 5px;
+                    }
+                body.checkout #content .container form table tfoot td {
+                    padding-top: 30px;
+                }
+                    body.checkout #content .container form table tfoot td button {
+                        background: transparent;
+                        border: 1px solid #dcdcdc;
+                        border-radius: 5px;
+                        -moz-border-radius: 5px;
+                        cursor: pointer;
+                        font-size: 16px;
+                        font-weight: bold;
+                        margin-bottom: 5px;
+                        padding: 10px;
+                        text-align: left;
+                    }
         body.store.checkout #content table.cart-contents {
             border-collapse: collapse;
             width: 100%;

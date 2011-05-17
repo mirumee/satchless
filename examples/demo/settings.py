@@ -219,7 +219,7 @@ SATCHLESS_ORDER_PARTITIONERS = [
     'satchless.contrib.order.partitioner.simple',
 ]
 SATCHLESS_DELIVERY_PROVIDERS = [
-    'satchless.contrib.delivery.simplepost.provider',
+    'satchless.contrib.delivery.simplepost.PostDeliveryProvider',
 ]
 SATCHLESS_PAYMENT_PROVIDERS = [
     'satchless.contrib.payment.django_payments_provider.provider',

@@ -3,9 +3,7 @@
 {% load i18n %}
 {% load prices %}
 {% load product_prices %}
-{% load products_tags %}
 {% load promote %}
-{% load satchless_image %}
 
 {% block title %}{% trans "Shopping Bag" %} || {{ block.super }}{% endblock %}
 {% block body-class %}{{ block.super }} cart{% endblock %}
@@ -36,55 +34,9 @@
         {% cartitem_unit_price cart_item discount=0 as undiscounted_unit_price %}
         {% cartitem_price cart_item as item_price %}
         {% cartitem_price cart_item discount=0 as undiscounted_item_price %}
-            <tr>
-                <td class="image">
-    {% if variant.product.main_image %}
-                    <a href="{{ variant.product.get_url }}"><img src="{{ variant.product.main_image|at_size:'cart-product' }}" alt="{{ item }}" /></a>
-    {% else %}
-                    <a href="{{ variant.product.get_url }}">{{ variant }}</a>
-    {% endif %}
-                </td>
-                <td class="name product-description">
-    {% if variant.product.manufacture %}
-                    <span class="manufacture">{{ variant.product.manufacture }}</span>
-    {% endif %}
-                    <h2><a href="{{ variant.product.get_absolute_url }}">{{ variant.product.name }}</a></h2>
-    {% with variant|variant_attrs as va %}
-    {% if va %}
-                        <ul class="variant-attrs">
-        {% for attr in va %}
-                            <li>{{ attr.name }}: <strong>{{ attr.value }}</strong></li>
-        {% endfor %}
-                        </ul>
-    {% endif %}
-    {% endwith %}
-                </td>
-                <td class="product-price">
-                    <div class="amounts">
-    {% if undiscounted_unit_price != unit_price %}
-                        <span class="strike">{{ undiscounted_unit_price|gross|floatformat:2 }}</span><br />
-    {% endif %}
-                        <span class="fullprice">{{ unit_price|gross|floatformat:2 }}</span>
-                    </div>
-                    <span class="currency">{{ cart.currency }}</span>
-                </td>
-                <td class="qty">
-                    <form action="" method="post">
-                        &times; {% for field in form %}{{ field }}{% endfor %}
-                        <input type="submit" value="{% trans "update" %}" name="update" />
-                        {% csrf_token %}
-                    </form>
-                </td>
-                <td class="product-price">
-                    <div class="amounts">
-    {% if undiscounted_item_price != item_price %}
-                        <span class="strike">{{ undiscounted_item_price|gross|floatformat:2 }}</span><br />
-    {% endif %}
-                        <span class="fullprice">{{ item_price|gross|floatformat:2 }}</span>
-                    </div>
-                    <span class="currency">{{ cart.currency }}</span>
-                </td>
-            </tr>
+        {% with cart.currency as currency %}
+        {% include "satchless/cart/snippets/row.html" %}
+        {% endwith %}
         {% endwith %}
     {% endfor %}
         </tbody>

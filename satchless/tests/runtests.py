@@ -29,17 +29,17 @@ ALWAYS_INSTALLED_APPS = [
     'satchless.contrib.pricing.simpleqty',
 ]
 
-SATCHLESS_TEST_GROUPS = [
-    ('satchless.contrib.checkout.multistep',
-     'satchless.product',
-     'satchless.cart',
-     'satchless.order',
-     'satchless.delivery',
-     'satchless.payment',
-     'satchless.pricing',
-     'satchless.contrib.delivery.simplepost',
-     'satchless.contrib.pricing.simpleqty',),
-    ('satchless.contrib.checkout.singlestep',),
+TESTED_APPS = [
+    'satchless.contrib.checkout.multistep',
+    'satchless.product',
+    'satchless.cart',
+    'satchless.order',
+    'satchless.delivery',
+    'satchless.payment',
+    'satchless.pricing',
+    'satchless.contrib.delivery.simplepost',
+    'satchless.contrib.pricing.simpleqty',
+    'satchless.contrib.checkout.singlestep'
 ]
 
 def setup(verbosity, test_modules):
@@ -107,7 +107,7 @@ def teardown(state):
     for key, value in state.items():
         setattr(settings, key, value)
 
-def satchless_tests(verbosity, interactive, failfast, test_groups):
+def satchless_tests(verbosity, interactive, failfast, tested_apps):
     from django.conf import settings
     failures = 0
 
@@ -116,30 +116,27 @@ def satchless_tests(verbosity, interactive, failfast, test_groups):
         settings.TEST_RUNNER = 'django.test.simple.DjangoTestSuiteRunner'
     TestRunner = get_runner(settings)
 
-    for test_labels in test_groups:
-        state = setup(verbosity, test_labels)
-        modules_names = []
-        for test_label in test_labels:
-            if '.' in test_label:
-                modules_names.append(test_label.rsplit('.', 1)[1])
-            else:
-                modules_names.append(test_label)
-
-        if hasattr(TestRunner, 'func_name'):
-            # Pre 1.2 test runners were just functions,
-            # and did not support the 'failfast' option.
-            import warnings
-            warnings.warn(
-                'Function-based test runners are deprecated. Test runners should be classes with a run_tests() method.',
-                DeprecationWarning
-            )
-            failures += TestRunner(modules_names, verbosity=verbosity, interactive=interactive)
+    state = setup(verbosity, tested_apps)
+    modules_names = []
+    for test_label in tested_apps:
+        if '.' in test_label:
+            modules_names.append(test_label.rsplit('.', 1)[1])
         else:
-            test_runner = TestRunner(verbosity=verbosity, interactive=interactive, failfast=failfast)
-            failures += test_runner.run_tests(modules_names)
-        teardown(state)
-        if failures and failfast:
-            return failures
+            modules_names.append(test_label)
+
+    if hasattr(TestRunner, 'func_name'):
+        # Pre 1.2 test runners were just functions,
+        # and did not support the 'failfast' option.
+        import warnings
+        warnings.warn(
+            'Function-based test runners are deprecated. Test runners should be classes with a run_tests() method.',
+            DeprecationWarning
+        )
+        failures += TestRunner(modules_names, verbosity=verbosity, interactive=interactive)
+    else:
+        test_runner = TestRunner(verbosity=verbosity, interactive=interactive, failfast=failfast)
+        failures += test_runner.run_tests(modules_names)
+    teardown(state)
     return failures
 
 if __name__ == "__main__":
@@ -168,10 +165,9 @@ if __name__ == "__main__":
 
 
     if args:
-        failures = satchless_tests(int(options.verbosity), options.interactive, options.failfast, [args])
+        failures = satchless_tests(int(options.verbosity), options.interactive, options.failfast, args)
     else:
-        failures = satchless_tests(int(options.verbosity), options.interactive, options.failfast,
-                                   SATCHLESS_TEST_GROUPS)
+        failures = satchless_tests(int(options.verbosity), options.interactive, options.failfast, TESTED_APPS)
 
     if failures:
         sys.exit(bool(failures))

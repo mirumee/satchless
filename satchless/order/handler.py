@@ -138,7 +138,8 @@ def init_queues():
                 raise ImproperlyConfigured('%r in %s provides an ID of %s that '
                                            'was already claimed by %r. Did you '
                                            'include the same object twice?' %
-                                           (item, setting_name, previous))
+                                           (item, setting_name, item.unique_id,
+                                            previous))
             registered_ids.add(item.unique_id)
             queue.append((item.unique_id, item))
         return queue

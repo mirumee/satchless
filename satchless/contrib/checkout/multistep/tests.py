@@ -50,7 +50,7 @@ class CheckoutTest(TestCase):
         self.custom_settings = {
             'SATCHLESS_DELIVERY_PROVIDERS': ['satchless.contrib.delivery.simplepost.PostDeliveryProvider'],
             'SATCHLESS_ORDER_PARTITIONERS': ['satchless.contrib.order.partitioner.simple'],
-            'SATCHLESS_PAYMENT_PROVIDERS': ['satchless.contrib.payment.django_payments_provider.provider'],
+            'SATCHLESS_PAYMENT_PROVIDERS': ['satchless.contrib.payment.django_payments_provider.DjangoPaymentsProvider'],
             'SATCHLESS_DJANGO_PAYMENT_TYPES': ['dummy'],
             'PAYMENT_VARIANTS': {'dummy': ('payments.dummy.DummyProvider', {'url': '/', })},
         }
@@ -63,7 +63,7 @@ class CheckoutTest(TestCase):
         PostShippingType.objects.create(price=20, typ='list', name='List zwykly')
 
     def tearDown(self):
-        self._teardown_settings(self.custom_settings, self.original_settings)
+        self._teardown_settings(self.original_settings, self.custom_settings)
         satchless.order.handler.init_queues()
 
     def _test_status(self, url, method='get', *args, **kwargs):

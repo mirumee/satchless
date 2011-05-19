@@ -1,4 +1,6 @@
 class DeliveryProvider(object):
+    unique_id = None
+
     def enum_types(self, customer=None, delivery_group=None):
         '''
         Should return an iterable consisting of pairs suitable for a select

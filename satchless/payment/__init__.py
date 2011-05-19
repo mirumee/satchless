@@ -13,6 +13,8 @@ class ConfirmationFormNeeded(Exception):
 
 
 class PaymentProvider(object):
+    unique_id = None
+
     def enum_types(self, order=None, customer=None):
         '''
         Should return an iterable consisting of pairs suitable for a select

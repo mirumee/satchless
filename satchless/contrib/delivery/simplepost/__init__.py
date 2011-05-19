@@ -1,13 +1,14 @@
-from django.utils.translation import ugettext_lazy as _
+from django.utils.translation import ugettext as _
 from satchless.delivery import DeliveryProvider
 
 from . import forms
 from . import models
 
 class PostDeliveryProvider(DeliveryProvider):
-    name = _("Post delivery")
+    unique_id = 'post'
+
     def __unicode__(self):
-        return unicode(self.name)
+        return _("Post delivery")
 
     def enum_types(self, customer=None, delivery_group=None):
         return ([(t.typ, t.name) for t in models.PostShippingType.objects.all()])

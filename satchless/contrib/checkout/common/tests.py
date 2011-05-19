@@ -1,5 +1,5 @@
 # -*- coding:utf-8 -*-
-from django.utils.translation import ugettext_lazy as _
+from django.utils.translation import ugettext as _
 
 import satchless.delivery
 import satchless.payment
@@ -9,10 +9,10 @@ class TestDeliveryVariant(satchless.delivery.models.DeliveryVariant):
     pass
 
 class TestDeliveryProvider(satchless.delivery.DeliveryProvider):
-    name = _("Test delivery")
+    unique_id = 'test'
 
     def __unicode__(self):
-        return unicode(self.name)
+        return _("Test delivery")
 
     def enum_types(self, customer=None, delivery_group=None):
         return (('pidgin', 'pidgin'),)
@@ -29,6 +29,8 @@ class TestDeliveryProvider(satchless.delivery.DeliveryProvider):
         return variant
 
 class TestPaymentProvider(satchless.payment.PaymentProvider):
+    unique_id = 'test'
+
     def enum_types(self, order=None, customer=None):
         return (('gold', 'gold'),)
 
@@ -36,8 +38,9 @@ class TestPaymentProvider(satchless.payment.PaymentProvider):
         return None
 
     def create_variant(self, order, typ, form):
-        payment_variant = TestPaymentVariant.objects \
-                                            .create(order=order, price=0, name='test')
+        payment_variant = TestPaymentVariant.objects.create(order=order,
+                                                            price=0,
+                                                            name='test')
         return payment_variant
 
     def confirm(self, order):

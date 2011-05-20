@@ -3,12 +3,8 @@ from django.shortcuts import redirect
 from django.template.response import TemplateResponse
 
 from ..common.views import order_from_request
-from ....cart.models import Cart
-from ....payment import PaymentFailure, ConfirmationFormNeeded
-from ....order import models
 from ....order import forms
 from ....order import handler
-from ....order import signals
 
 def checkout(request, typ):
     """
@@ -16,16 +12,7 @@ def checkout(request, typ):
     The order is split into delivery groups. User chooses delivery method
     for each of the groups.
     """
-    cart = Cart.objects.get_or_create_from_request(request, typ)
-    order_pk = request.session.get('satchless_order')
-    order = None
-    if order_pk:
-        cart = Cart.objects.get_or_create_from_request(request, typ)
-        try:
-            order = models.Order.objects.get(pk=order_pk, cart=cart,
-                                             status='checkout')
-        except models.Order.DoesNotExist:
-            pass
+    order = order_from_request(request)
     if not order:
         return redirect('satchless-cart-view', typ=typ)
     delivery_formset = forms.DeliveryMethodFormset(
@@ -51,7 +38,8 @@ def delivery_details(request):
     groups = order.groups.all()
     if filter(lambda g: not g.delivery_type, groups):
         return redirect('satchless-checkout')
-    delivery_group_forms = forms.get_delivery_details_forms_for_groups(order.groups.all(), request)
+    delivery_group_forms = forms.get_delivery_details_forms_for_groups(order.groups.all(),
+                                                                       request.POST)
     groups_with_forms = filter(lambda gf: gf[2], delivery_group_forms)
     if len(groups_with_forms) == 0:
         # all forms are None, no details needed
@@ -98,7 +86,7 @@ def payment_details(request):
         return redirect('satchless-checkout')
     if not order.payment_type:
         return redirect('satchless-checkout-payment-choice')
-    form = forms.get_payment_details_form(order, request)
+    form = forms.get_payment_details_form(order, request.POST)
 
     def proceed(order, form):
         variant = handler.create_payment_variant(order, form)
@@ -117,26 +105,4 @@ def payment_details(request):
     else:
         return proceed(order, form)
 
-def confirmation(request):
-    """
-    Checkout step 3
-    The final summary, where user is asked to review and confirm the order.
-    Confirmation will redirect to the payment gateway.
-    """
-    order = order_from_request(request)
-    if not order:
-        return redirect('satchless-checkout')
-    order.set_status('payment-pending')
-    signals.order_pre_confirm.send(sender=models.Order, instance=order, request=request)
-    try:
-        handler.confirm(order, request.session['satchless_payment_method'])
-    except ConfirmationFormNeeded, e:
-        return TemplateResponse(request, 'satchless/checkout/confirmation.html', {
-            'formdata': e,
-            'order': order,
-        })
-    except PaymentFailure:
-        order.set_status('payment-failed')
-    else:
-        order.set_status('payment-complete')
-    return redirect('satchless-order-view', order.pk)
+

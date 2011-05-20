@@ -19,7 +19,7 @@ class DeliveryMethodForm(forms.ModelForm):
 
 DeliveryMethodFormset = modelformset_factory(models.DeliveryGroup, form=DeliveryMethodForm, extra=0)
 
-def get_delivery_details_forms_for_groups(groups, request):
+def get_delivery_details_forms_for_groups(groups, data):
     '''
     For each delivery group creates a (group, typ, delivery details form) tuple.
     If there is no form, the third element is None.
@@ -28,13 +28,13 @@ def get_delivery_details_forms_for_groups(groups, request):
     for group in groups:
         delivery_type = group.delivery_type
         form = None
-        Form = handler.get_delivery_formclass(group, delivery_type)
+        Form = handler.get_delivery_formclass(group)
         if Form:
             try:
                 variant = group.deliveryvariant.get_subtype_instance()
             except ObjectDoesNotExist:
                 variant = None
-            form = Form(data=request.POST or None,
+            form = Form(data=data or None,
                     instance=variant,
                     prefix='delivery_group-%s' % group.pk)
         groups_and_forms.append((group, delivery_type, form))
@@ -51,10 +51,10 @@ class PaymentMethodForm(forms.ModelForm):
         super(PaymentMethodForm, self).__init__(*args, **kwargs)
         self.fields['payment_type'].choices = handler.get_payment_types(self.instance)
 
-def get_payment_details_form(order, request):
-    Form = handler.get_payment_formclass(order, order.payment_type)
+def get_payment_details_form(order, data):
+    Form = handler.get_payment_formclass(order)
     if Form:
-        return Form(data=request.POST or None, instance=order)
+        return Form(data=data or None, instance=order)
     return None
 
 class PaymentDetailsBaseForm(forms.ModelForm):

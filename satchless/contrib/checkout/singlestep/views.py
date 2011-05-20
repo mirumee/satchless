@@ -3,11 +3,9 @@ from django.core.exceptions import ImproperlyConfigured
 from django.shortcuts import redirect
 from django.template.response import TemplateResponse
 
-from ....cart.models import Cart
+from ..common.views import order_from_request
 from ....order import forms
-from ....order import models
 from ....order import handler
-
 
 def checkout(request, typ):
     """
@@ -15,14 +13,7 @@ def checkout(request, typ):
     The order is split into delivery groups. User chooses delivery method
     for each of the groups.
     """
-    order_pk = request.session.get('satchless_order')
-    order = None
-    if order_pk:
-        try:
-            cart = Cart.objects.get_or_create_from_request(request, typ)
-            order = models.Order.objects.get(pk=order_pk, cart=cart, status='checkout')
-        except models.Order.DoesNotExist:
-            pass
+    order = order_from_request(request)
     if not order:
         return redirect('satchless-cart-view', typ=typ)
 
@@ -33,9 +24,11 @@ def checkout(request, typ):
             raise ImproperlyConfigured("The singlestep checkout requires "
                                        "exactly one delivery type per group.")
         group.delivery_type = delivery_types[0][0]
+        group.save()
 
     delivery_valid = True
-    delivery_group_forms = forms.get_delivery_details_forms_for_groups(delivery_groups, request)
+    delivery_group_forms = forms.get_delivery_details_forms_for_groups(delivery_groups,
+                                                                       request.POST)
     if request.method == 'POST':
         delivery_valid = True
         for group, typ, form in delivery_group_forms:
@@ -46,9 +39,9 @@ def checkout(request, typ):
     if len(payment_types) > 1:
         raise ImproperlyConfigured("The singlestep checkout cannot handle multiple payment "
                                    "methods. Methods for this order: %s" % payment_types)
-    payment_type = payment_types[0][0]
-    PaymentForm = handler.get_payment_formclass(order, payment_type)
-    payment_form = PaymentForm(data=request.POST or None, instance=order) if PaymentForm else None
+    order.payment_type = payment_types[0][0]
+    order.save()
+    payment_form = forms.get_payment_details_form(order, request.POST)
     if request.method == 'POST':
         payment_valid = payment_form.is_valid() if payment_form else True
 
@@ -56,8 +49,6 @@ def checkout(request, typ):
             for group, typ, form in delivery_group_forms:
                 handler.create_delivery_variant(group, form)
             handler.create_payment_variant(order, payment_form)
-            request.session['satchless_order'] = order.pk
-            request.session['satchless_payment_method'] = payment_type
             return redirect('satchless-checkout-confirmation')
     return TemplateResponse(request, 'satchless/checkout/checkout.html', {
         'delivery_group_forms': delivery_group_forms,

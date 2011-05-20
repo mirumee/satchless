@@ -1,9 +1,13 @@
 # -*- coding:utf-8 -*-
 from django.shortcuts import redirect
+from django.template.response import TemplateResponse
 from django.views.decorators.http import require_POST
 
 from ....cart.models import Cart
+from ....order import handler
 from ....order import models
+from ....order import signals
+from ....payment import PaymentFailure, ConfirmationFormNeeded
 
 
 def order_from_request(request):
@@ -35,3 +39,26 @@ def prepare_order(request, typ):
             request.session['satchless_order'] = order.pk
     return redirect('satchless-checkout')
 
+def confirmation(request):
+    """
+    Checkout confirmation
+    The final summary, where user is asked to review and confirm the order.
+    Confirmation will redirect to the payment gateway.
+    """
+    order = order_from_request(request)
+    if not order:
+        return redirect('satchless-checkout')
+    order.set_status('payment-pending')
+    signals.order_pre_confirm.send(sender=models.Order, instance=order, request=request)
+    try:
+        handler.confirm(order)
+    except ConfirmationFormNeeded, e:
+        return TemplateResponse(request, 'satchless/checkout/confirmation.html', {
+            'formdata': e,
+            'order': order,
+        })
+    except PaymentFailure:
+        order.set_status('payment-failed')
+    else:
+        order.set_status('payment-complete')
+    return redirect('satchless-order-view', order.pk)

@@ -68,7 +68,9 @@ class Order(models.Model):
     user = models.ForeignKey(User, blank=True, null=True, related_name='orders')
     cart = models.ForeignKey(Cart, blank=True, null=True, related_name='orders')
     currency = models.CharField(max_length=3)
-    billing_full_name = models.CharField(_("full person name"),
+    billing_first_name = models.CharField(_("first name"),
+                                         max_length=256, blank=True)
+    billing_last_name = models.CharField(_("last name"),
                                          max_length=256, blank=True)
     billing_company_name = models.CharField(_("company name"),
                                             max_length=256, blank=True)
@@ -92,6 +94,10 @@ class Order(models.Model):
 
     def __unicode__(self):
         return _('Order #%d') % self.id
+
+    @property
+    def billing_full_name(self):
+        return u'%s %s' % (self.billing_first_name, self.billing_last_name)
 
     def set_status(self, new_status):
         old_status = self.status

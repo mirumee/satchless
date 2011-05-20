@@ -21,7 +21,8 @@ class DeliveryVariant(Subtyped):
 
 
 class PhysicalShippingVariant(DeliveryVariant):
-    shipping_full_name = models.CharField(_("full person name"), max_length=256)
+    shipping_first_name = models.CharField(_("first name"), max_length=256)
+    shipping_last_name = models.CharField(_("last name"), max_length=256)
     shipping_company_name = models.CharField(_("company name"),
                                              max_length=256, blank=True)
     shipping_street_address_1 = models.CharField(_("street address 1"),
@@ -34,7 +35,7 @@ class PhysicalShippingVariant(DeliveryVariant):
                                         choices=countries.COUNTRY_CHOICES,
                                         max_length=2, blank=True)
     shipping_country_area = models.CharField(_("country administrative area"),
-                                            max_length=128, blank=True)
+                                             max_length=128, blank=True)
     shipping_phone = models.CharField(_("phone number"),
                                       max_length=30, blank=True)
 
@@ -42,4 +43,9 @@ class PhysicalShippingVariant(DeliveryVariant):
         abstract = True
 
     def __unicode__(self):
-        return "%s for %s, %s" % (self.name, self.shipping_full_name, self.get_shipping_country_display())
+        return "%s for %s, %s" % (self.name, self.shipping_full_name,
+                                  self.get_shipping_country_display())
+
+    @property
+    def shipping_full_name(self):
+        return u'%s %s' % (self.shipping_first_name, self.shipping_last_name)

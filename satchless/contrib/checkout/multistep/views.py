@@ -51,21 +51,21 @@ def delivery_details(request):
     groups = order.groups.all()
     if filter(lambda g: not g.delivery_type, groups):
         return redirect('satchless-checkout')
-    delivery_groups_forms = forms.get_delivery_details_forms_for_groups(order.groups.all(), request)
-    groups_with_forms = filter(lambda gf: gf[2], delivery_groups_forms)
+    delivery_group_forms = forms.get_delivery_details_forms_for_groups(order.groups.all(), request)
+    groups_with_forms = filter(lambda gf: gf[2], delivery_group_forms)
     if len(groups_with_forms) == 0:
         # all forms are None, no details needed
         return redirect('satchless-checkout-payment-choice')
     if request.method == 'POST':
         are_valid = True
-        for group, typ, form in delivery_groups_forms:
+        for group, typ, form in delivery_group_forms:
             are_valid = are_valid and form.is_valid()
         if are_valid:
-            for group, typ, form in delivery_groups_forms:
+            for group, typ, form in delivery_group_forms:
                 handler.create_delivery_variant(group, typ, form)
             return redirect('satchless-checkout-payment-choice')
     return TemplateResponse(request, 'satchless/checkout/delivery_details.html', {
-        'delivery_groups_forms': groups_with_forms,
+        'delivery_group_forms': groups_with_forms,
         'order': order,
     })
 

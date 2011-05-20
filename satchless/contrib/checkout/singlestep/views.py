@@ -35,10 +35,10 @@ def checkout(request, typ):
         group.delivery_type = delivery_types[0][0]
 
     delivery_valid = True
-    delivery_groups_forms = forms.get_delivery_details_forms_for_groups(delivery_groups, request)
+    delivery_group_forms = forms.get_delivery_details_forms_for_groups(delivery_groups, request)
     if request.method == 'POST':
         delivery_valid = True
-        for group, typ, form in delivery_groups_forms:
+        for group, typ, form in delivery_group_forms:
             if form:
                 delivery_valid = delivery_valid and form.is_valid()
 
@@ -53,14 +53,14 @@ def checkout(request, typ):
         payment_valid = payment_form.is_valid() if payment_form else True
 
         if delivery_valid and payment_valid:
-            for group, typ, form in delivery_groups_forms:
+            for group, typ, form in delivery_group_forms:
                 handler.create_delivery_variant(group, typ, form)
             handler.create_payment_variant(order, payment_type, payment_form)
             request.session['satchless_order'] = order.pk
             request.session['satchless_payment_method'] = payment_type
             return redirect('satchless-checkout-confirmation')
     return TemplateResponse(request, 'satchless/checkout/checkout.html', {
-        'delivery_groups_forms': delivery_groups_forms,
+        'delivery_group_forms': delivery_group_forms,
         'order': order,
         'payment_form': payment_form,
     })

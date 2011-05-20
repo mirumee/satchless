@@ -10,7 +10,7 @@
     {% if order %}
     <form method="post" action="">{% csrf_token %}
         <h1>{% trans "Delivery details" %}</h1>
-        {% for group, typ, form in delivery_groups_forms %}
+        {% for group, typ, form in delivery_group_forms %}
         <h2>{% trans "Delivery method" %}: {{ typ|delivery_type }}</h2>
         <h3>{% trans "Items deliverd using this method" %}:</h3>
         <ul>

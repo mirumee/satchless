@@ -62,7 +62,7 @@ def delivery_details(request):
             are_valid = are_valid and form.is_valid()
         if are_valid:
             for group, typ, form in delivery_group_forms:
-                handler.create_delivery_variant(group, typ, form)
+                handler.create_delivery_variant(group, form)
             return redirect('satchless-checkout-payment-choice')
     return TemplateResponse(request, 'satchless/checkout/delivery_details.html', {
         'delivery_group_forms': groups_with_forms,

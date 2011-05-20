@@ -55,8 +55,8 @@ def get_delivery_formclass(delivery_group, typ):
     provider, typ_short = get_delivery_provider(typ)
     return provider.get_formclass(delivery_group, typ_short)
 
-def create_delivery_variant(delivery_group, typ, form):
-    provider, typ_short = get_delivery_provider(typ)
+def create_delivery_variant(delivery_group, form):
+    provider, typ_short = get_delivery_provider(delivery_group.delivery_type)
     return provider.create_variant(delivery_group, typ_short, form)
 
 def get_payment_types(order):

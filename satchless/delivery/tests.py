@@ -1,23 +1,43 @@
-"""
-This file demonstrates two different styles of tests (one doctest and one
-unittest). These will both pass when you run "manage.py test".
+# -*- coding:utf-8 -*-
+from django.utils.translation import ugettext as _
+import django.db
+import django.forms
 
-Replace these with more appropriate tests for your application.
-"""
+from . import models
+from . import DeliveryProvider
 
-from django.test import TestCase
 
-class SimpleTest(TestCase):
-    def test_basic_addition(self):
-        """
-        Tests that 1 + 1 always equals 2.
-        """
-        self.failUnlessEqual(1 + 1, 2)
+class TestDeliveryVariant(models.DeliveryVariant):
+    email = django.db.models.EmailField()
 
-__test__ = {"doctest": """
-Another way to test that 1 + 1 is equal to 2.
 
->>> 1 + 1 == 2
-True
-"""}
+class DeliveryForm(django.forms.ModelForm):
+    class Meta:
+        model = TestDeliveryVariant
+        fields = ('email',)
+
+
+class TestDeliveryProvider(DeliveryProvider):
+    unique_id = 'test'
+
+    def __init__(self, delivery_types=None):
+        # by default this is one type delivery provider
+        self.types = delivery_types or (('pidgin', 'pidgin'),)
+
+    def __unicode__(self):
+        return _("Test delivery")
+
+    def enum_types(self, customer=None, delivery_group=None):
+        return self.types
+
+    def get_formclass(self, delivery_group, typ):
+        return DeliveryForm
+
+    def create_variant(self, delivery_group, typ, form=None):
+        variant = TestDeliveryVariant()
+        variant.delivery_group = delivery_group
+        variant.name = typ
+        variant.price = '20'
+        variant.save()
+        return variant
 

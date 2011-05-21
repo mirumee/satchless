@@ -10,6 +10,31 @@ from django import forms
 from django.test import TestCase
 
 from . import fields
+from . import models
+from . import PaymentProvider
+
+class TestPaymentProvider(PaymentProvider):
+    unique_id = 'test'
+
+    def enum_types(self, order=None, customer=None):
+        return (('gold', 'gold'),)
+
+    def get_configuration_formclass(self, order, typ):
+        return None
+
+    def create_variant(self, order, typ, form):
+        payment_variant = TestPaymentVariant.objects.create(order=order,
+                                                            price=0,
+                                                            name='test')
+        return payment_variant
+
+    def confirm(self, order):
+        pass
+
+
+class TestPaymentVariant(models.PaymentVariant):
+    pass
+
 
 class CreditCardNumberFieldTest(TestCase):
     def setUp(self):

@@ -1,7 +1,12 @@
-#!/usr/bin/env python
+#!/usr/bin!/usr/bin/env python
+from django.conf.urls.defaults import patterns, url, include
+from django.core import urlresolvers
+
 import os, sys
 
 import satchless.contrib as contrib
+
+import urls
 
 CONTRIB_DIR_NAME = 'django.contrib'
 CONTRIB_DIR = os.path.dirname(contrib.__file__)
@@ -9,44 +14,48 @@ CONTRIB_DIR = os.path.dirname(contrib.__file__)
 TEST_TEMPLATE_DIR = 'templates'
 
 ALWAYS_INSTALLED_APPS = [
-    'django.contrib.contenttypes',
-    'django.contrib.auth',
-    'django.contrib.sites',
-    'django.contrib.sessions',
-    'django.contrib.messages',
     'django.contrib.admin',
     'django.contrib.admindocs',
+    'django.contrib.auth',
+    'django.contrib.contenttypes',
+    'django.contrib.messages',
+    'django.contrib.sessions',
+    'django.contrib.sites',
     'django.contrib.staticfiles',
 
-    'satchless.product',
-    'satchless.cart',
-    'satchless.order',
-    'satchless.delivery',
-    'satchless.payment',
-    'satchless.pricing',
-    'satchless.image',
-    'satchless.contrib.delivery.simplepost',
-    'satchless.contrib.pricing.simpleqty',
-]
-
-TESTED_APPS = [
     'satchless.cart',
     'satchless.contact',
-    'satchless.delivery',
-    'satchless.order',
-    'satchless.payment',
-    'satchless.pricing',
-    'satchless.product',
-    'satchless.contrib.checkout.multistep',
-    'satchless.contrib.checkout.singlestep',
     'satchless.contrib.delivery.simplepost',
     'satchless.contrib.pricing.simpleqty',
     'satchless.contrib.tax.flatgroups',
+    'satchless.delivery',
+    'satchless.image',
+    'satchless.order',
+    'satchless.payment',
+    'satchless.pricing',
+    'satchless.product',
 ]
 
-def setup(verbosity, test_modules):
+TESTED_APPS_GROUPS = [
+    {'APPS': ('satchless.cart',
+              'satchless.contact',
+              'satchless.contrib.checkout.singlestep',
+              'satchless.contrib.delivery.simplepost',
+              'satchless.contrib.pricing.simpleqty',
+              'satchless.contrib.tax.flatgroups',
+              'satchless.delivery',
+              'satchless.order',
+              'satchless.payment',
+              'satchless.pricing',
+              'satchless.product'),
+     'URLS':('satchless.contrib.checkout.singlestep.urls',)},
+    {'APPS': ('satchless.contrib.checkout.singlestep',),
+     'URLS': ('satchless.contrib.checkout.singlestep.urls',)}
+]
+
+def setup(verbosity, test_modules, extra_urls):
     from django.conf import settings
-    state = {
+    settings_state = {
         'INSTALLED_APPS': settings.INSTALLED_APPS,
         'ROOT_URLCONF': getattr(settings, "ROOT_URLCONF", ""),
         'TEMPLATE_DIRS': settings.TEMPLATE_DIRS,
@@ -57,7 +66,7 @@ def setup(verbosity, test_modules):
     }
 
     # Redirect some settings for the duration of these tests.
-    settings.INSTALLED_APPS = ALWAYS_INSTALLED_APPS
+    settings.INSTALLED_APPS = list(ALWAYS_INSTALLED_APPS)
     settings.ROOT_URLCONF = 'urls'
     settings.TEMPLATE_DIRS = (os.path.join(os.path.dirname(__file__), TEST_TEMPLATE_DIR),)
     settings.USE_I18N = True
@@ -101,15 +110,32 @@ def setup(verbosity, test_modules):
             if module_label not in settings.INSTALLED_APPS:
                 settings.INSTALLED_APPS.append(module_label)
 
-    return state
+    from django.template.loaders import app_directories
+    reload(app_directories)
 
-def teardown(state):
+    urls_state = list(urls.urlpatterns)
+    if extra_urls:
+        eu = []
+        for i,u in enumerate(extra_urls):
+            eu.append(url('extra-urls-%i/' % i, include(u)))
+        new_patterns = urls.urlpatterns + patterns('', *eu)
+        urls.urlpatterns += new_patterns
+        urlresolvers.clear_url_caches()
+
+    return settings_state, urls_state
+
+def teardown(settings_state, urls_state):
     from django.conf import settings
     # Restore the old settings.
-    for key, value in state.items():
+    for key, value in settings_state.items():
         setattr(settings, key, value)
+    urls.urlpatterns = urls_state
+    urlresolvers.clear_url_caches()
 
-def satchless_tests(verbosity, interactive, failfast, tested_apps):
+    from django.template.loaders import app_directories
+    reload(app_directories)
+
+def satchless_tests(verbosity, interactive, failfast, tested_groups):
     from django.conf import settings
     failures = 0
 
@@ -118,27 +144,31 @@ def satchless_tests(verbosity, interactive, failfast, tested_apps):
         settings.TEST_RUNNER = 'django.test.simple.DjangoTestSuiteRunner'
     TestRunner = get_runner(settings)
 
-    state = setup(verbosity, tested_apps)
-    modules_names = []
-    for test_label in tested_apps:
-        if '.' in test_label:
-            modules_names.append(test_label.rsplit('.', 1)[1])
-        else:
-            modules_names.append(test_label)
+    for tested_group in tested_groups:
+        tested_apps = tested_group['APPS']
+        settings_state, urls_state = setup(verbosity, tested_apps, tested_group['URLS'])
+        modules_names = []
+        for test_label in tested_apps:
+            if '.' in test_label:
+                modules_names.append(test_label.rsplit('.', 1)[1])
+            else:
+                modules_names.append(test_label)
 
-    if hasattr(TestRunner, 'func_name'):
-        # Pre 1.2 test runners were just functions,
-        # and did not support the 'failfast' option.
-        import warnings
-        warnings.warn(
-            'Function-based test runners are deprecated. Test runners should be classes with a run_tests() method.',
-            DeprecationWarning
-        )
-        failures += TestRunner(modules_names, verbosity=verbosity, interactive=interactive)
-    else:
-        test_runner = TestRunner(verbosity=verbosity, interactive=interactive, failfast=failfast)
-        failures += test_runner.run_tests(modules_names)
-    teardown(state)
+        if hasattr(TestRunner, 'func_name'):
+            # Pre 1.2 test runners were just functions,
+            # and did not support the 'failfast' option.
+            import warnings
+            warnings.warn(
+                'Function-based test runners are deprecated. Test runners should be classes with a run_tests() method.',
+                DeprecationWarning
+            )
+            failures += TestRunner(modules_names, verbosity=verbosity, interactive=interactive)
+        else:
+            test_runner = TestRunner(verbosity=verbosity, interactive=interactive, failfast=failfast)
+            failures += test_runner.run_tests(modules_names)
+        teardown(settings_state, urls_state)
+        if failures and failfast:
+            return failure
     return failures
 
 if __name__ == "__main__":
@@ -166,10 +196,7 @@ if __name__ == "__main__":
         options.settings = os.environ['DJANGO_SETTINGS_MODULE']
 
 
-    if args:
-        failures = satchless_tests(int(options.verbosity), options.interactive, options.failfast, args)
-    else:
-        failures = satchless_tests(int(options.verbosity), options.interactive, options.failfast, TESTED_APPS)
+    failures = satchless_tests(int(options.verbosity), options.interactive, options.failfast, TESTED_APPS_GROUPS)
 
     if failures:
         sys.exit(bool(failures))

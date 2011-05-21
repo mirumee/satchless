@@ -27,8 +27,6 @@ def checkout(request, typ):
         group.save()
 
     delivery_valid = True
-    delivery_group_forms = forms.get_delivery_details_forms_for_groups(delivery_groups,
-                                                                       request.POST)
     if request.method == 'POST':
         delivery_valid = True
         for group, typ, form in delivery_group_forms:

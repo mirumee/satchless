@@ -187,15 +187,13 @@ class CheckoutTest(TestCase):
 
     def test_delivery_details_view_redirects_to_checkout_when_delivery_type_is_missing(self):
         self._create_order(self.anon_client)
-        self._test_status(reverse(views.delivery_details),
-                          status_code=302, client_instance=self.anon_client, method='get')
-        #self.assertRedirects(response, reverse(views.checkout))
+        response = self._test_status(reverse(views.delivery_details),
+                                     status_code=302, client_instance=self.anon_client, method='get')
+        self.assertRedirects(response, reverse(views.checkout))
 
     def test_payment_view_redirects_to_payment_choice_view_when_payment_type_is_missing(self):
         self._create_order(self.anon_client)
-        self._test_status(reverse(views.payment_details),
-                          status_code=302, client_instance=self.anon_client, method='get')
-        #self.assertRedirects(response, reverse(views.payment_choice))
+        response = self._test_status(reverse(views.payment_details),
+                                     status_code=302, client_instance=self.anon_client, method='get')
+        self.assertRedirects(response, reverse(views.payment_choice))
 
-    #def test_payment_view_redirects_to_payment_choice_view_when_payment_type_is_unknown(self):
-    #   pass

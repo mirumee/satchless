@@ -13,6 +13,10 @@ import satchless.product.handler
 from ..common.views import prepare_order
 from . import views
 
+# force to create models
+from ....delivery.tests import TestDeliveryProvider
+from ....payment.tests import TestPaymentProvider
+
 class CheckoutTest(TestCase):
     def _setup_settings(self, custom_settings):
         original_settings = {}
@@ -36,8 +40,8 @@ class CheckoutTest(TestCase):
 
         self.custom_settings = {
             'SATCHLESS_PRODUCT_VIEW_HANDLERS': ('satchless.cart.add_to_cart_handler',),
-            'SATCHLESS_DELIVERY_PROVIDERS': ['satchless.contrib.checkout.common.tests.TestDeliveryProvider'],
-            'SATCHLESS_PAYMENT_PROVIDERS': ['satchless.contrib.checkout.common.tests.TestPaymentProvider'],
+            'SATCHLESS_DELIVERY_PROVIDERS': [TestDeliveryProvider],
+            'SATCHLESS_PAYMENT_PROVIDERS': [TestPaymentProvider],
         }
         self.original_settings = self._setup_settings(self.custom_settings)
         satchless.product.handler.init_queue()
@@ -85,4 +89,18 @@ class CheckoutTest(TestCase):
         self._get_or_create_order_for_client(self.anon_client)
         self._test_status(reverse(views.checkout), client_instance=self.anon_client, status_code=200)
 
+    def test_checkout_view_passes_with_correct_data(self):
+        cart = self._get_or_create_cart_for_client(self.anon_client)
+        cart.set_quantity(self.dead_parrot, 1)
+        self._get_or_create_order_for_client(self.anon_client)
+
+        response = self._test_status(reverse(views.checkout), client_instance=self.anon_client,
+                                     data={'email': 'foo@example.com'})
+        dg = response.context['delivery_groups_forms']
+        data = {}
+        for g, typ, form in dg:
+            data[form.add_prefix('email')] = 'foo@example.com'
+
+        self._test_status(reverse(views.checkout), client_instance=self.anon_client,
+                          status_code=302, method='post', data=data)
 

@@ -5,7 +5,9 @@ from urllib import urlencode
 from urlparse import parse_qs
 
 from ..delivery import DeliveryProvider
+from ..delivery.models import DeliveryVariant
 from ..payment import PaymentProvider
+from ..payment.models import PaymentVariant
 
 _partitioners_queue = None
 _delivery_providers_queue = None
@@ -57,8 +59,10 @@ def get_delivery_formclass(delivery_group):
 
 def create_delivery_variant(delivery_group, form):
     provider, typ_short = get_delivery_provider(delivery_group.delivery_type)
-    if delivery_group.deliveryvariant:
+    try:
         delivery_group.deliveryvariant.delete()
+    except DeliveryVariant.DoesNotExist:
+        pass
     return provider.create_variant(delivery_group, typ_short, form)
 
 def get_payment_types(order):
@@ -91,8 +95,10 @@ def get_payment_formclass(order):
 
 def create_payment_variant(order, form):
     provider, typ_short = get_payment_provider(order.payment_type)
-    if order.paymentvariant:
+    try:
         order.paymentvariant.delete()
+    except PaymentVariant.DoesNotExist:
+        pass
     return provider.create_variant(order, typ_short, form)
 
 def confirm(order):

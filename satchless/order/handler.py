@@ -57,6 +57,8 @@ def get_delivery_formclass(delivery_group):
 
 def create_delivery_variant(delivery_group, form):
     provider, typ_short = get_delivery_provider(delivery_group.delivery_type)
+    if delivery_group.deliveryvariant:
+        delivery_group.deliveryvariant.delete()
     return provider.create_variant(delivery_group, typ_short, form)
 
 def get_payment_types(order):
@@ -89,6 +91,8 @@ def get_payment_formclass(order):
 
 def create_payment_variant(order, form):
     provider, typ_short = get_payment_provider(order.payment_type)
+    if order.paymentvariant:
+        order.paymentvariant.delete()
     return provider.create_variant(order, typ_short, form)
 
 def confirm(order):

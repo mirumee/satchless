@@ -6,7 +6,7 @@ from ..common.views import require_order
 from ....order import forms
 from ....order import handler
 
-@require_order()
+@require_order(status='checkout')
 def checkout(request, typ):
     """
     Checkout step 1
@@ -27,7 +27,7 @@ def checkout(request, typ):
         'order': order,
     })
 
-@require_order()
+@require_order(status='checkout')
 def delivery_details(request):
     """
     Checkout step 1½
@@ -59,7 +59,7 @@ def delivery_details(request):
         'order': order,
     })
 
-@require_order()
+@require_order(status='checkout')
 def payment_choice(request):
     """
     Checkout step 2
@@ -78,7 +78,7 @@ def payment_choice(request):
         'payment_form': payment_form,
     })
 
-@require_order()
+@require_order(status='checkout')
 def payment_details(request):
     """
     Checkout step 2½

@@ -7,7 +7,7 @@ from ..common.views import require_order
 from ....order import forms
 from ....order import handler
 
-@require_order()
+@require_order(status='checkout')
 def checkout(request, typ):
     """
     Checkout step 1

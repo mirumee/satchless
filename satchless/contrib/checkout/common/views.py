@@ -15,7 +15,7 @@ from ....order import models
 from ....order import signals
 from ....payment import PaymentFailure, ConfirmationFormNeeded
 
-def require_order(statuses=('checkout',)):
+def require_order(status=None):
     def decorator(view_func):
         @wraps(view_func, assigned=available_attrs(view_func))
         def _wrapped_view(request, *args, **kwargs):
@@ -23,16 +23,19 @@ def require_order(statuses=('checkout',)):
             if 'satchless_order' in request.session:
                 try:
                     order = models.Order.objects.get(pk=request.session['satchless_order'],
-                                                    status__in=statuses)
+                                                     status=status)
                 except models.Order.DoesNotExist:
                     pass
 
             if not order:
                 return redirect('satchless-cart-view')
-            elif order.status == 'checkout' and not 'checkout' in statuses:
-                return redirect('checkout')
-            elif order.status == 'payment-pending' and not 'payment-pending' in statuses:
-                return redirect(confirmation)
+            elif status is not None and status != order.status:
+                if order.status == 'checkout':
+                    return redirect('checkout')
+                elif order.status == 'payment-pending':
+                    return redirect(confirmation)
+                else:
+                    return redirect('satchless-order-view', order.pk)
             request.order = order
             return view_func(request, *args, **kwargs)
         return _wrapped_view
@@ -53,7 +56,7 @@ def prepare_order(request, typ):
             request.session['satchless_order'] = order.pk
     return redirect('satchless-checkout')
 
-@require_order(statuses=('payment-pending',))
+@require_order(status='payment-pending')
 def confirmation(request):
     """
     Checkout confirmation

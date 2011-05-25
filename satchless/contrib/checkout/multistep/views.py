@@ -2,17 +2,18 @@
 from django.shortcuts import redirect
 from django.template.response import TemplateResponse
 
-from ..common.views import order_from_request
+from ..common.views import require_order
 from ....order import forms
 from ....order import handler
 
+@require_order()
 def checkout(request, typ):
     """
     Checkout step 1
     The order is split into delivery groups. User chooses delivery method
     for each of the groups.
     """
-    order = order_from_request(request)
+    order = request.order
     if not order:
         return redirect('satchless-cart-view', typ=typ)
     delivery_formset = forms.DeliveryMethodFormset(
@@ -26,13 +27,14 @@ def checkout(request, typ):
         'order': order,
     })
 
+@require_order()
 def delivery_details(request):
     """
     Checkout step 1½
     If there are any delivery details needed (e.g. the shipping address),
     user will be asked for them. Otherwise we redirect to step 2.
     """
-    order = order_from_request(request)
+    order = request.order
     if not order:
         return redirect('satchless-cart-view')
     groups = order.groups.all()
@@ -57,12 +59,13 @@ def delivery_details(request):
         'order': order,
     })
 
+@require_order()
 def payment_choice(request):
     """
     Checkout step 2
     User will choose the payment method.
     """
-    order = order_from_request(request)
+    order = request.order
     if not order:
         return redirect('satchless-checkout')
     payment_form = forms.PaymentMethodForm(data=request.POST or None, instance=order)
@@ -75,13 +78,14 @@ def payment_choice(request):
         'payment_form': payment_form,
     })
 
+@require_order()
 def payment_details(request):
     """
     Checkout step 2½
     If any payment details are needed, user will be asked for them. Otherwise
     we redirect to step 3.
     """
-    order = order_from_request(request)
+    order = request.order
     if not order:
         return redirect('satchless-checkout')
     if not order.payment_type:

@@ -3,17 +3,18 @@ from django.core.exceptions import ImproperlyConfigured
 from django.shortcuts import redirect
 from django.template.response import TemplateResponse
 
-from ..common.views import order_from_request
+from ..common.views import require_order
 from ....order import forms
 from ....order import handler
 
+@require_order()
 def checkout(request, typ):
     """
     Checkout step 1
     The order is split into delivery groups. User chooses delivery method
     for each of the groups.
     """
-    order = order_from_request(request)
+    order = request.order
     if not order:
         return redirect('satchless-cart-view', typ=typ)
 

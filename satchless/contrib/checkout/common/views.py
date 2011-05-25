@@ -1,6 +1,12 @@
 # -*- coding:utf-8 -*-
+try:
+    from functools import wraps
+except ImportError:
+    from django.utils.functional import wraps  # Python 2.4 fallback.
+
 from django.shortcuts import redirect
 from django.template.response import TemplateResponse
+from django.utils.decorators import available_attrs
 from django.views.decorators.http import require_POST
 
 from ....cart.models import Cart
@@ -9,20 +15,28 @@ from ....order import models
 from ....order import signals
 from ....payment import PaymentFailure, ConfirmationFormNeeded
 
+def require_order(statuses=('checkout',)):
+    def decorator(view_func):
+        @wraps(view_func, assigned=available_attrs(view_func))
+        def _wrapped_view(request, *args, **kwargs):
+            order = None
+            if 'satchless_order' in request.session:
+                try:
+                    order = models.Order.objects.get(pk=request.session['satchless_order'],
+                                                    status__in=statuses)
+                except models.Order.DoesNotExist:
+                    pass
 
-def order_from_request(request, status='checkout'):
-    '''
-    Get the order from session, possibly invalidating the variable if the
-    order has been processed already.
-    '''
-    session = request.session
-    if 'satchless_order' in session:
-        try:
-            return models.Order.objects.get(pk=session['satchless_order'],
-                                            status=status)
-        except models.Order.DoesNotExist:
-            del session['satchless_order']
-    return None
+            if not order:
+                return redirect('satchless-cart-view')
+            elif order.status == 'checkout' and not 'checkout' in statuses:
+                return redirect('checkout')
+            elif order.status == 'payment-pending' and not 'payment-pending' in statuses:
+                return redirect(confirmation)
+            request.order = order
+            return view_func(request, *args, **kwargs)
+        return _wrapped_view
+    return decorator
 
 @require_POST
 def prepare_order(request, typ):
@@ -39,14 +53,15 @@ def prepare_order(request, typ):
             request.session['satchless_order'] = order.pk
     return redirect('satchless-checkout')
 
+@require_order(statuses=('payment-pending',))
 def confirmation(request):
     """
     Checkout confirmation
     The final summary, where user is asked to review and confirm the order.
     Confirmation will redirect to the payment gateway.
     """
-    order = order_from_request(request, status='payment-pending')
-    if not order:
+    order = request.order
+    if not request.order:
         return redirect('satchless-checkout')
     signals.order_pre_confirm.send(sender=models.Order, instance=order, request=request)
     try:

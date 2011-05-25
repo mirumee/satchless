@@ -8,7 +8,7 @@ from ....delivery.tests import TestDeliveryProvider
 from ....order import handler as order_handler
 from ....order.models import Order
 from ....payment import ConfirmationFormNeeded
-from ....payment.tests import TestPaymentProvider
+from ....payment.tests import TestPaymentProvider, TestPaymentVariant
 from ....product import handler as product_handler
 from ....product.tests import DeadParrot
 
@@ -114,3 +114,26 @@ class CheckoutTest(TestCase):
         self.assertEqual(order.status, 'payment-pending')
 
 
+    def test_confirmation_view_redirects_when_order_or_payment_is_missing(self):
+        cart = self._get_or_create_cart_for_client(self.anon_client)
+        cart.set_quantity(self.dead_parrot, 1)
+
+        # without order
+        self._test_status(reverse(confirmation), client_instance=self.anon_client, status_code=302)
+        self._get_or_create_order_for_client(self.anon_client)
+
+        # without payment
+        self._test_status(reverse(confirmation), client_instance=self.anon_client, status_code=302)
+
+        # finish chcekout view
+        response = self._test_status(reverse(views.checkout), client_instance=self.anon_client,
+                                     data={'email': 'foo@example.com'})
+        dg = response.context['delivery_group_forms']
+        data = {}
+        for g, typ, form in dg:
+            data[form.add_prefix('email')] = 'foo@example.com'
+
+        response = self._test_status(reverse(views.checkout), client_instance=self.anon_client,
+                                     status_code=302, method='post', data=data, follow=True)
+
+        self._test_status(reverse(confirmation), client_instance=self.anon_client, status_code=200)

@@ -4,16 +4,23 @@ from django.conf import settings
 from django.core.urlresolvers import reverse
 from django.test import TestCase, Client
 
-from satchless.contrib.delivery.simplepost.models import PostShippingType
-from satchless.product.models import Category
-from satchless.product.tests import DeadParrot
-import satchless.order.handler
-
-from satchless.cart.models import Cart, CART_SESSION_KEY
-from satchless.order.models import Order
+from ....cart.models import Cart, CART_SESSION_KEY
+from ....contrib.delivery.simplepost.models import PostShippingType
+from ....order import handler as order_handler
+from ....order.models import Order
+from ....payment import ConfirmationFormNeeded
+from ....payment.tests import TestPaymentProvider
+from ....product.models import Category
+from ....product.tests import DeadParrot
 
 from ..common.views import prepare_order
 from . import views
+
+
+class TestPaymentProviderWithConfirmation(TestPaymentProvider):
+    def confirm(self, order):
+        raise ConfirmationFormNeeded(action='http://test.payment.gateway.example.com')
+
 
 class CheckoutTest(TestCase):
     def _setup_settings(self, custom_settings):
@@ -50,12 +57,12 @@ class CheckoutTest(TestCase):
         self.custom_settings = {
             'SATCHLESS_DELIVERY_PROVIDERS': ['satchless.contrib.delivery.simplepost.PostDeliveryProvider'],
             'SATCHLESS_ORDER_PARTITIONERS': ['satchless.contrib.order.partitioner.simple'],
-            'SATCHLESS_PAYMENT_PROVIDERS': ['satchless.contrib.payment.django_payments_provider.DjangoPaymentsProvider'],
+            'SATCHLESS_PAYMENT_PROVIDERS': [TestPaymentProviderWithConfirmation],
             'SATCHLESS_DJANGO_PAYMENT_TYPES': ['dummy'],
             'PAYMENT_VARIANTS': {'dummy': ('payments.dummy.DummyProvider', {'url': '/', })},
         }
         self.original_settings = self._setup_settings(self.custom_settings)
-        satchless.order.handler.init_queues()
+        order_handler.init_queues()
 
         self.anon_client = Client()
 
@@ -64,7 +71,7 @@ class CheckoutTest(TestCase):
 
     def tearDown(self):
         self._teardown_settings(self.original_settings, self.custom_settings)
-        satchless.order.handler.init_queues()
+        order_handler.init_queues()
 
     def _test_status(self, url, method='get', *args, **kwargs):
         status_code = kwargs.pop('status_code', 200)
@@ -157,7 +164,7 @@ class CheckoutTest(TestCase):
                           client_instance=self.anon_client,
                           status_code=200)
         group = order.groups.get()
-        dtypes = satchless.order.handler.get_delivery_types(group)
+        dtypes = order_handler.get_delivery_types(group)
         dtype = dtypes[0][0]
         data = {
             u'form-0-delivery_type': dtype,
@@ -173,7 +180,7 @@ class CheckoutTest(TestCase):
     def test_delivery_details_view(self):
         order = self._create_order(self.anon_client)
         group = order.groups.get()
-        dtypes = satchless.order.handler.get_delivery_types(group)
+        dtypes = order_handler.get_delivery_types(group)
         group.delivery_type = dtypes[0][0]
         group.save()
 

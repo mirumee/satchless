@@ -91,7 +91,7 @@ def payment_details(request):
     def proceed(order, form):
         variant = handler.create_payment_variant(order, form)
         order.payment_variant = variant
-        order.save()
+        order.set_status('payment-pending')
         return redirect('satchless-checkout-confirmation')
 
     if form:

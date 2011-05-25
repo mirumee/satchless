@@ -3,19 +3,23 @@ from django.conf import settings
 from django.core.urlresolvers import reverse
 from django.test import TestCase, Client
 
-from satchless.product.tests import DeadParrot
+from ....cart.models import Cart, CART_SESSION_KEY
+from ....delivery.tests import TestDeliveryProvider
+from ....order import handler as order_handler
+from ....order.models import Order
+from ....payment import ConfirmationFormNeeded
+from ....payment.tests import TestPaymentProvider
+from ....product import handler as product_handler
+from ....product.tests import DeadParrot
 
-from satchless.cart.models import Cart, CART_SESSION_KEY
-from satchless.order.models import Order
-import satchless.order.handler
-import satchless.product.handler
-
-from ..common.views import prepare_order
+from ..common.views import prepare_order, confirmation
 from . import views
 
-# force to create models
-from ....delivery.tests import TestDeliveryProvider
-from ....payment.tests import TestPaymentProvider
+
+class TestPaymentProviderWithConfirmation(TestPaymentProvider):
+    def confirm(self, order):
+        raise ConfirmationFormNeeded(action='http://test.payment.gateway.example.com')
+
 
 class CheckoutTest(TestCase):
     def _setup_settings(self, custom_settings):
@@ -41,17 +45,17 @@ class CheckoutTest(TestCase):
         self.custom_settings = {
             'SATCHLESS_PRODUCT_VIEW_HANDLERS': ('satchless.cart.add_to_cart_handler',),
             'SATCHLESS_DELIVERY_PROVIDERS': [TestDeliveryProvider],
-            'SATCHLESS_PAYMENT_PROVIDERS': [TestPaymentProvider],
+            'SATCHLESS_PAYMENT_PROVIDERS': [TestPaymentProviderWithConfirmation],
         }
         self.original_settings = self._setup_settings(self.custom_settings)
-        satchless.product.handler.init_queue()
-        satchless.order.handler.init_queues()
+        product_handler.init_queue()
+        order_handler.init_queues()
         self.anon_client = Client()
 
     def tearDown(self):
         self._teardown_settings(self.original_settings, self.custom_settings)
-        satchless.product.handler.init_queue()
-        satchless.order.handler.init_queues()
+        product_handler.init_queue()
+        order_handler.init_queues()
 
     def _test_status(self, url, method='get', *args, **kwargs):
         status_code = kwargs.pop('status_code', 200)
@@ -92,15 +96,21 @@ class CheckoutTest(TestCase):
     def test_checkout_view_passes_with_correct_data(self):
         cart = self._get_or_create_cart_for_client(self.anon_client)
         cart.set_quantity(self.dead_parrot, 1)
-        self._get_or_create_order_for_client(self.anon_client)
+        order = self._get_or_create_order_for_client(self.anon_client)
 
         response = self._test_status(reverse(views.checkout), client_instance=self.anon_client,
                                      data={'email': 'foo@example.com'})
-        dg = response.context['delivery_groups_forms']
+        dg = response.context['delivery_group_forms']
         data = {}
         for g, typ, form in dg:
             data[form.add_prefix('email')] = 'foo@example.com'
 
-        self._test_status(reverse(views.checkout), client_instance=self.anon_client,
-                          status_code=302, method='post', data=data)
+        response = self._test_status(reverse(views.checkout), client_instance=self.anon_client,
+                                     status_code=302, method='post', data=data, follow=True)
+
+        order = Order.objects.get(pk=order.pk)
+
+        self.assertRedirects(response, reverse(confirmation))
+        self.assertEqual(order.status, 'payment-pending')
+
 

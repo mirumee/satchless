@@ -49,8 +49,8 @@ TESTED_APPS_GROUPS = [
               'satchless.pricing',
               'satchless.product'),
      'URLS':('satchless.contrib.checkout.singlestep.urls',)},
-    {'APPS': ('satchless.contrib.checkout.singlestep',),
-     'URLS': ('satchless.contrib.checkout.singlestep.urls',)}
+    {'APPS': ('satchless.contrib.checkout.multistep',),
+     'URLS': ('satchless.contrib.checkout.multistep.urls',)}
 ]
 
 def setup(verbosity, test_modules, extra_urls):

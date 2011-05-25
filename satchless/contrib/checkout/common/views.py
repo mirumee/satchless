@@ -10,7 +10,7 @@ from ....order import signals
 from ....payment import PaymentFailure, ConfirmationFormNeeded
 
 
-def order_from_request(request):
+def order_from_request(request, status='checkout'):
     '''
     Get the order from session, possibly invalidating the variable if the
     order has been processed already.
@@ -19,7 +19,7 @@ def order_from_request(request):
     if 'satchless_order' in session:
         try:
             return models.Order.objects.get(pk=session['satchless_order'],
-                                            status='checkout')
+                                            status=status)
         except models.Order.DoesNotExist:
             del session['satchless_order']
     return None
@@ -45,10 +45,9 @@ def confirmation(request):
     The final summary, where user is asked to review and confirm the order.
     Confirmation will redirect to the payment gateway.
     """
-    order = order_from_request(request)
+    order = order_from_request(request, status='payment-pending')
     if not order:
         return redirect('satchless-checkout')
-    order.set_status('payment-pending')
     signals.order_pre_confirm.send(sender=models.Order, instance=order, request=request)
     try:
         handler.confirm(order)

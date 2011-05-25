@@ -12,6 +12,11 @@ from django.test import TestCase
 from . import fields
 from . import models
 from . import PaymentProvider
+from . import ConfirmationFormNeeded
+
+class TestPaymentVariant(models.PaymentVariant):
+    pass
+
 
 class TestPaymentProvider(PaymentProvider):
     unique_id = 'test'
@@ -30,11 +35,6 @@ class TestPaymentProvider(PaymentProvider):
 
     def confirm(self, order):
         pass
-
-
-class TestPaymentVariant(models.PaymentVariant):
-    pass
-
 
 class CreditCardNumberFieldTest(TestCase):
     def setUp(self):

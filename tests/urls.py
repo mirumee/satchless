@@ -5,5 +5,6 @@ urlpatterns = patterns('',
     url(r'^product/', include('satchless.product.urls')),
     url(r'^cart/', include('satchless.cart.urls')),
     url(r'^contact/', include('satchless.contact.urls')),
+    url(r'^order/', include('satchless.order.urls')),
     url(r'^image/', include('satchless.image.urls')),
 )

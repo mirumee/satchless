@@ -222,7 +222,7 @@ SATCHLESS_DELIVERY_PROVIDERS = [
     'satchless.contrib.delivery.simplepost.PostDeliveryProvider',
 ]
 SATCHLESS_PAYMENT_PROVIDERS = [
-    'satchless.contrib.payment.django_payments_provider.provider',
+    'satchless.contrib.payment.django_payments_provider.DjangoPaymentsProvider',
 ]
 SATCHLESS_DJANGO_PAYMENT_TYPES = ('dummy',)
 PAYMENT_VARIANTS = {

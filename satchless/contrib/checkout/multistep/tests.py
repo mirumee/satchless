@@ -160,7 +160,8 @@ class CheckoutTest(TestCase):
 
     def test_checkout_view(self):
         order = self._create_order(self.anon_client)
-        self._test_status(reverse(views.checkout),
+        self._test_status(reverse(views.checkout,
+                                  kwargs={'order_token': order.token}),
                           client_instance=self.anon_client,
                           status_code=200)
         group = order.groups.get()
@@ -173,7 +174,9 @@ class CheckoutTest(TestCase):
             u'form-0-id': [u'1'],
             u'form-INITIAL_FORMS': [u'1'],
         }
-        self._test_status(reverse(views.checkout), data=data, status_code=302,
+        self._test_status(reverse(views.checkout, kwargs={'order_token':
+                                                          order.token}),
+                          data=data, status_code=302,
                           client_instance=self.anon_client, method='post')
         self.assertEqual(order.groups.get().delivery_type, dtype)
 
@@ -183,24 +186,30 @@ class CheckoutTest(TestCase):
         dtypes = order_handler.get_delivery_types(group)
         group.delivery_type = dtypes[0][0]
         group.save()
-
-        self._test_status(reverse(views.delivery_details),
+        self._test_status(reverse(views.delivery_details,
+                                  kwargs={'order_token': order.token}),
                           client_instance=self.anon_client, method='get')
 
-    def test_delivery_details_view_redirects_to_cart_when_cart_is_missing(self):
-        response = self._test_status(reverse(views.delivery_details),
-                                     status_code=302, client_instance=self.anon_client, method='get')
-        self.assertRedirects(response, reverse('satchless-cart-view'))
-
     def test_delivery_details_view_redirects_to_checkout_when_delivery_type_is_missing(self):
-        self._create_order(self.anon_client)
-        response = self._test_status(reverse(views.delivery_details),
-                                     status_code=302, client_instance=self.anon_client, method='get')
-        self.assertRedirects(response, reverse(views.checkout))
+        order = self._create_order(self.anon_client)
+        response = self._test_status(reverse(views.delivery_details,
+                                             kwargs={'order_token':
+                                                     order.token}),
+                                     status_code=302,
+                                     client_instance=self.anon_client,
+                                     method='get')
+        self.assertRedirects(response, reverse(views.checkout,
+                                               kwargs={'order_token':
+                                                       order.token}))
 
     def test_payment_view_redirects_to_payment_choice_view_when_payment_type_is_missing(self):
-        self._create_order(self.anon_client)
-        response = self._test_status(reverse(views.payment_details),
-                                     status_code=302, client_instance=self.anon_client, method='get')
-        self.assertRedirects(response, reverse(views.payment_choice))
-
+        order = self._create_order(self.anon_client)
+        response = self._test_status(reverse(views.payment_details,
+                                             kwargs={'order_token':
+                                                     order.token}),
+                                     status_code=302,
+                                     client_instance=self.anon_client,
+                                     method='get')
+        self.assertRedirects(response, reverse(views.payment_choice,
+                                               kwargs={'order_token':
+                                                       order.token}))

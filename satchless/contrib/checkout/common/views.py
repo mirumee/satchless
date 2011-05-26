@@ -20,13 +20,12 @@ def require_order(status=None):
         @wraps(view_func, assigned=available_attrs(view_func))
         def _wrapped_view(request, *args, **kwargs):
             order = None
-            if 'satchless_order' in request.session:
+            if 'order_token' in kwargs:
                 try:
-                    order = models.Order.objects.get(pk=request.session['satchless_order'],
+                    order = models.Order.objects.get(token=kwargs['order_token'],
                                                      status=status)
                 except models.Order.DoesNotExist:
                     pass
-
             if not order:
                 return redirect('satchless-cart-view')
             elif status is not None and status != order.status:
@@ -35,7 +34,8 @@ def require_order(status=None):
                 elif order.status == 'payment-pending':
                     return redirect(confirmation)
                 else:
-                    return redirect('satchless-order-view', order.pk)
+                    return redirect('satchless-order-view',
+                                    order_token=order.token)
             request.order = order
             return view_func(request, *args, **kwargs)
         return _wrapped_view
@@ -54,10 +54,11 @@ def prepare_order(request, typ):
             return redirect('satchless-cart-view', typ=typ)
         else:
             request.session['satchless_order'] = order.pk
-    return redirect('satchless-checkout')
+            return redirect('satchless-checkout', order_token=order.token)
+    return redirect('satchless-cart-view')
 
 @require_order(status='payment-pending')
-def confirmation(request):
+def confirmation(request, order_token):
     """
     Checkout confirmation
     The final summary, where user is asked to review and confirm the order.
@@ -65,8 +66,9 @@ def confirmation(request):
     """
     order = request.order
     if not request.order:
-        return redirect('satchless-checkout')
-    signals.order_pre_confirm.send(sender=models.Order, instance=order, request=request)
+        return redirect('satchless-checkout', order_token=order.token)
+    signals.order_pre_confirm.send(sender=models.Order, instance=order,
+                                   request=request)
     try:
         handler.confirm(order)
     except ConfirmationFormNeeded, e:
@@ -78,4 +80,4 @@ def confirmation(request):
         order.set_status('payment-failed')
     else:
         order.set_status('payment-complete')
-    return redirect('satchless-order-view', order.pk)
+    return redirect('satchless-order-view', order_token=order.token)

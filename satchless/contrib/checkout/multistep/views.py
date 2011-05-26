@@ -7,7 +7,7 @@ from ....order import forms
 from ....order import handler
 
 @require_order(status='checkout')
-def checkout(request, typ):
+def checkout(request, order_token):
     """
     Checkout step 1
     The order is split into delivery groups. User chooses delivery method
@@ -15,20 +15,21 @@ def checkout(request, typ):
     """
     order = request.order
     if not order:
-        return redirect('satchless-cart-view', typ=typ)
+        return redirect('satchless-cart-view')
     delivery_formset = forms.DeliveryMethodFormset(
             data=request.POST or None, queryset=order.groups.all())
     if request.method == 'POST':
         if delivery_formset.is_valid():
             delivery_formset.save()
-            return redirect('satchless-checkout-delivery-details')
+            return redirect('satchless-checkout-delivery-details',
+                            order_token=order.token)
     return TemplateResponse(request, 'satchless/checkout/checkout.html', {
         'delivery_formset': delivery_formset,
         'order': order,
     })
 
 @require_order(status='checkout')
-def delivery_details(request):
+def delivery_details(request, order_token):
     """
     Checkout step 1½
     If there are any delivery details needed (e.g. the shipping address),
@@ -39,13 +40,14 @@ def delivery_details(request):
         return redirect('satchless-cart-view')
     groups = order.groups.all()
     if filter(lambda g: not g.delivery_type, groups):
-        return redirect('satchless-checkout')
+        return redirect('satchless-checkout', order_token=order.token)
     delivery_group_forms = forms.get_delivery_details_forms_for_groups(order.groups.all(),
                                                                        request.POST)
     groups_with_forms = filter(lambda gf: gf[2], delivery_group_forms)
     if len(groups_with_forms) == 0:
         # all forms are None, no details needed
-        return redirect('satchless-checkout-payment-choice')
+        return redirect('satchless-checkout-payment-choice',
+                        order_token=order.token)
     if request.method == 'POST':
         are_valid = True
         for group, typ, form in delivery_group_forms:
@@ -53,33 +55,36 @@ def delivery_details(request):
         if are_valid:
             for group, typ, form in delivery_group_forms:
                 handler.create_delivery_variant(group, form)
-            return redirect('satchless-checkout-payment-choice')
+            return redirect('satchless-checkout-payment-choice',
+                            order_token=order.token)
     return TemplateResponse(request, 'satchless/checkout/delivery_details.html', {
         'delivery_group_forms': groups_with_forms,
         'order': order,
     })
 
 @require_order(status='checkout')
-def payment_choice(request):
+def payment_choice(request, order_token):
     """
     Checkout step 2
     User will choose the payment method.
     """
     order = request.order
     if not order:
-        return redirect('satchless-checkout')
-    payment_form = forms.PaymentMethodForm(data=request.POST or None, instance=order)
+        return redirect('satchless-checkout', order_token=order.token)
+    payment_form = forms.PaymentMethodForm(data=request.POST or None,
+                                           instance=order)
     if request.method == 'POST':
         if payment_form.is_valid():
             payment_form.save()
-            return redirect('satchless-checkout-payment-details')
+            return redirect('satchless-checkout-payment-details',
+                            order_token=order.token)
     return TemplateResponse(request, 'satchless/checkout/payment_choice.html', {
         'order': order,
         'payment_form': payment_form,
     })
 
 @require_order(status='checkout')
-def payment_details(request):
+def payment_details(request, order_token):
     """
     Checkout step 2½
     If any payment details are needed, user will be asked for them. Otherwise
@@ -87,17 +92,17 @@ def payment_details(request):
     """
     order = request.order
     if not order:
-        return redirect('satchless-checkout')
+        return redirect('satchless-checkout', order_token=order.token)
     if not order.payment_type:
-        return redirect('satchless-checkout-payment-choice')
+        return redirect('satchless-checkout-payment-choice',
+                        order_token=order.token)
     form = forms.get_payment_details_form(order, request.POST)
-
     def proceed(order, form):
         variant = handler.create_payment_variant(order, form)
         order.payment_variant = variant
         order.set_status('payment-pending')
-        return redirect('satchless-checkout-confirmation')
-
+        return redirect('satchless-checkout-confirmation',
+                        order_token=order.token)
     if form:
         if request.method == 'POST':
             if form.is_valid():
@@ -108,5 +113,3 @@ def payment_details(request):
         })
     else:
         return proceed(order, form)
-
-

@@ -1,6 +1,5 @@
-# -*- coding: utf-8 -*-
 from django.contrib.auth.decorators import login_required
-from django.http import HttpResponseNotFound
+from django.shortcuts import get_object_or_404
 from django.template.response import TemplateResponse
 
 from . import models
@@ -12,18 +11,12 @@ def my_orders(request):
         'orders': orders,
     })
 
-def view(request, order_pk):
+def view(request, order_token):
     if request.user.is_authenticated():
         orders = models.Order.objects.filter(user=request.user)
-    elif request.session.has_key('satchless_order'):
-        # We allow anonymous users to see their latest order.
-        orders = models.Order.objects.filter(pk=request.session['satchless_order'])
     else:
-        return HttpResponseNotFound()
-    try:
-        order = orders.get(pk=order_pk)
-    except models.Order.DoesNotExist:
-        return HttpResponseNotFound()
+        orders = models.Order.objects.filter(user=None)
+    order = get_object_or_404(orders, token=order_token)
     return TemplateResponse(request, 'satchless/order/view.html', {
         'order': order,
     })

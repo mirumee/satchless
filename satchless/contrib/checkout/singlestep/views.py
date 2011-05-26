@@ -8,16 +8,15 @@ from ....order import forms
 from ....order import handler
 
 @require_order(status='checkout')
-def checkout(request, typ):
+def checkout(request, order_token):
     """
-    Checkout step 1
-    The order is split into delivery groups. User chooses delivery method
-    for each of the groups.
+    Checkout step 1 of 1
+    The order is split into delivery groups and the user gets to pick both the
+    delivery and payment methods.
     """
     order = request.order
     if not order:
-        return redirect('satchless-cart-view', typ=typ)
-
+        return redirect('satchless-cart-view')
     delivery_groups = order.groups.all()
     for group in delivery_groups:
         delivery_types = handler.get_delivery_types(group)
@@ -26,7 +25,6 @@ def checkout(request, typ):
                                        "exactly one delivery type per group.")
         group.delivery_type = delivery_types[0][0]
         group.save()
-
     delivery_group_forms = forms.get_delivery_details_forms_for_groups(delivery_groups,
                                                                        request.POST)
     delivery_valid = True
@@ -35,23 +33,23 @@ def checkout(request, typ):
         for group, typ, form in delivery_group_forms:
             if form:
                 delivery_valid = delivery_valid and form.is_valid()
-
     payment_types = handler.get_payment_types(order)
     if len(payment_types) > 1:
-        raise ImproperlyConfigured("The singlestep checkout cannot handle multiple payment "
-                                   "methods. Methods for this order: %s" % payment_types)
+        raise ImproperlyConfigured("The singlestep checkout cannot handle "
+                                   "multiple payment methods. Methods for this "
+                                   "order: %s" % payment_types)
     order.payment_type = payment_types[0][0]
     order.save()
     payment_form = forms.get_payment_details_form(order, request.POST)
     if request.method == 'POST':
         payment_valid = payment_form.is_valid() if payment_form else True
-
         if delivery_valid and payment_valid:
             for group, typ, form in delivery_group_forms:
                 handler.create_delivery_variant(group, form)
             handler.create_payment_variant(order, payment_form)
             order.set_status('payment-pending')
-            return redirect('satchless-checkout-confirmation')
+            return redirect('satchless-checkout-confirmation',
+                            order_token=order.token)
     return TemplateResponse(request, 'satchless/checkout/checkout.html', {
         'delivery_group_forms': delivery_group_forms,
         'order': order,

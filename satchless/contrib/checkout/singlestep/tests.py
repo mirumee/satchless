@@ -8,7 +8,7 @@ from ....delivery.tests import TestDeliveryProvider
 from ....order import handler as order_handler
 from ....order.models import Order
 from ....payment import ConfirmationFormNeeded
-from ....payment.tests import TestPaymentProvider, TestPaymentVariant
+from ....payment.tests import TestPaymentProvider
 from ....product import handler as product_handler
 from ....product.tests import DeadParrot
 
@@ -85,32 +85,33 @@ class CheckoutTest(TestCase):
             order_items.update(group.items.values_list('product_variant', 'quantity'))
         return order_items
 
-    def test_checkout_view_redirects_when_order_is_missing(self):
-        cart = self._get_or_create_cart_for_client(self.anon_client)
-        cart.set_quantity(self.dead_parrot, 1)
-
-        self._test_status(reverse(views.checkout), client_instance=self.anon_client, status_code=302)
-        self._get_or_create_order_for_client(self.anon_client)
-        self._test_status(reverse(views.checkout), client_instance=self.anon_client, status_code=200)
-
     def test_checkout_view_passes_with_correct_data(self):
         cart = self._get_or_create_cart_for_client(self.anon_client)
         cart.set_quantity(self.dead_parrot, 1)
         order = self._get_or_create_order_for_client(self.anon_client)
 
-        response = self._test_status(reverse(views.checkout), client_instance=self.anon_client,
+        response = self._test_status(reverse(views.checkout,
+                                             kwargs={'order_token':
+                                                     order.token}),
+                                     client_instance=self.anon_client,
                                      data={'email': 'foo@example.com'})
         dg = response.context['delivery_group_forms']
         data = {}
         for g, typ, form in dg:
             data[form.add_prefix('email')] = 'foo@example.com'
 
-        response = self._test_status(reverse(views.checkout), client_instance=self.anon_client,
-                                     status_code=302, method='post', data=data, follow=True)
+        response = self._test_status(reverse(views.checkout,
+                                             kwargs={'order_token':
+                                                     order.token}),
+                                     client_instance=self.anon_client,
+                                     status_code=302, method='post', data=data,
+                                     follow=True)
 
         order = Order.objects.get(pk=order.pk)
 
-        self.assertRedirects(response, reverse(confirmation))
+        self.assertRedirects(response, reverse(confirmation,
+                                               kwargs={'order_token':
+                                                       order.token}))
         self.assertEqual(order.status, 'payment-pending')
 
 
@@ -118,22 +119,30 @@ class CheckoutTest(TestCase):
         cart = self._get_or_create_cart_for_client(self.anon_client)
         cart.set_quantity(self.dead_parrot, 1)
 
-        # without order
-        self._test_status(reverse(confirmation), client_instance=self.anon_client, status_code=302)
-        self._get_or_create_order_for_client(self.anon_client)
-
+        order = self._get_or_create_order_for_client(self.anon_client)
         # without payment
-        self._test_status(reverse(confirmation), client_instance=self.anon_client, status_code=302)
-
+        self._test_status(reverse(confirmation, kwargs={'order_token':
+                                                        order.token}),
+                          client_instance=self.anon_client, status_code=302)
         # finish chcekout view
-        response = self._test_status(reverse(views.checkout), client_instance=self.anon_client,
+        response = self._test_status(reverse(views.checkout,
+                                             kwargs={'order_token':
+                                                     order.token}),
+                                     client_instance=self.anon_client,
                                      data={'email': 'foo@example.com'})
         dg = response.context['delivery_group_forms']
         data = {}
         for g, typ, form in dg:
             data[form.add_prefix('email')] = 'foo@example.com'
 
-        response = self._test_status(reverse(views.checkout), client_instance=self.anon_client,
-                                     status_code=302, method='post', data=data, follow=True)
+        response = self._test_status(reverse(views.checkout,
+                                             kwargs={'order_token':
+                                                     order.token}),
+                                     client_instance=self.anon_client,
+                                     status_code=302, method='post', data=data,
+                                     follow=True)
 
-        self._test_status(reverse(confirmation), client_instance=self.anon_client, status_code=200)
+        self._test_status(reverse(confirmation, kwargs={'order_token':
+                                                        order.token}),
+                          client_instance=self.anon_client,
+                          status_code=200)

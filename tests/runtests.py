@@ -1,4 +1,4 @@
-#!/usr/bin!/usr/bin/env python
+#!/usr/bin/env python
 from django.conf.urls.defaults import patterns, url, include
 from django.core import urlresolvers
 

@@ -3,6 +3,7 @@ from django.contrib.auth.models import User
 from django.core.exceptions import ObjectDoesNotExist
 from django.db import models
 from django.utils.translation import ugettext_lazy as _
+import random
 
 from ..cart.models import Cart
 from ..pricing import Price
@@ -23,7 +24,6 @@ class OrderManager(models.Manager):
         from .handler import partition
         if cart.is_empty():
             raise EmptyCart("Cannot create empty order.")
-
         previous_orders = self.filter(cart=cart)
         if not instance:
             order = Order.objects.create(cart=cart, user=cart.owner,
@@ -47,7 +47,8 @@ class OrderManager(models.Manager):
                                             quantity=item.quantity,
                                             unit_price_net=price.net,
                                             unit_price_gross=price.gross)
-        previous_orders = previous_orders.exclude(pk=order.pk).filter(status='checkout')
+        previous_orders = (previous_orders.exclude(pk=order.pk)
+                                          .filter(status='checkout'))
         previous_orders.delete()
         return order
 
@@ -69,7 +70,7 @@ class Order(models.Model):
     cart = models.ForeignKey(Cart, blank=True, null=True, related_name='orders')
     currency = models.CharField(max_length=3)
     billing_first_name = models.CharField(_("first name"),
-                                         max_length=256, blank=True)
+                                          max_length=256, blank=True)
     billing_last_name = models.CharField(_("last name"),
                                          max_length=256, blank=True)
     billing_company_name = models.CharField(_("company name"),
@@ -90,10 +91,21 @@ class Order(models.Model):
     billing_phone = models.CharField(_("phone number"),
                                      max_length=30, blank=True)
     payment_type = models.CharField(max_length=256, blank=True)
+    token = models.CharField(max_length=32, blank=True, default='')
     objects = OrderManager()
 
     def __unicode__(self):
         return _('Order #%d') % self.id
+
+    def save(self, *args, **kwargs):
+        if not self.token:
+            for i in xrange(100):
+                token = ''.join(random.sample(
+                                '0123456789abcdefghijklmnopqrstuvwxyz', 32))
+                if not Order.objects.filter(token=token).count():
+                    self.token = token
+                    break
+        return super(Order, self).save(*args, **kwargs)
 
     @property
     def billing_full_name(self):
@@ -103,14 +115,16 @@ class Order(models.Model):
         old_status = self.status
         self.status = new_status
         self.save()
-        signals.order_status_changed.send(sender=type(self), instance=self, old_status=old_status)
+        signals.order_status_changed.send(sender=type(self), instance=self,
+                                          old_status=old_status)
 
     def total(self):
         try:
             payment_price = Price(self.paymentvariant.price)
         except ObjectDoesNotExist:
             payment_price = Price(0)
-        return payment_price + sum([g.total() for g in self.groups.all()], Price(0))
+        return payment_price + sum([g.total() for g in self.groups.all()],
+                                   Price(0))
 
     class Meta:
         # Use described string to resolve ambiguity of the word 'order' in English.
@@ -128,7 +142,8 @@ class DeliveryGroup(models.Model):
             delivery_price = Price(self.deliveryvariant.price)
         except ObjectDoesNotExist:
             delivery_price = Price(0)
-        return delivery_price + sum([i.price() for i in self.items.all()], Price(0))
+        return delivery_price + sum([i.price() for i in self.items.all()],
+                                    Price(0))
 
 
 class OrderedItem(models.Model):
@@ -148,5 +163,4 @@ class OrderedItem(models.Model):
 
     def price(self):
         return Price(net=self.unit_price_net * self.quantity,
-                    gross=self.unit_price_gross * self.quantity)
-
+                     gross=self.unit_price_gross * self.quantity)

@@ -29,10 +29,11 @@ class AddToCartForm(forms.Form, QuantityForm):
 
     def clean(self):
         data = super(AddToCartForm, self).clean()
-        qty = data['quantity']
-        add_result = self.cart.add_quantity(self.get_variant(), qty, dry_run=True)
-        if add_result.quantity_delta < qty:
-            raise forms.ValidationError(add_result.reason)
+        if 'quantity' in data:
+            qty = data['quantity']
+            add_result = self.cart.add_quantity(self.get_variant(), qty, dry_run=True)
+            if add_result.quantity_delta < qty:
+                raise forms.ValidationError(add_result.reason)
         return data
 
     def save(self):

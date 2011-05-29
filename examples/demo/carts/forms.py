@@ -1,9 +1,5 @@
 # -*- coding:utf-8 -*-
 from django import forms
-from django.forms.models import inlineformset_factory
-
-import satchless.cart.forms
-import satchless.cart.models
 
 class AddToCartForm(forms.Form):
     quantity = forms.DecimalField(initial=1)

@@ -154,11 +154,8 @@ class ParrotTest(TestCase):
                 client_instance=cli_user1,
                 status_code=302)
 
-    def test_add_by_view_handles_incorrect_data(self):
+    def test_add_to_cart_form_handles_incorrect_data(self):
         cli_anon = Client()
-        self._test_status(reverse('satchless-cart-view', kwargs={'typ': 'satchless_cart'}),
-                client_instance=cli_anon, status_code=200)
-
         response = self._test_status(self.macaw.get_absolute_url(),
                                      method='post',
                                      data={'typ': 'satchless_cart', 'color': 'blue', 'looks_alive': 1, 'quantity': 'alkjl'},

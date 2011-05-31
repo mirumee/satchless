@@ -63,5 +63,10 @@ class Price(object):
     def has_value(self):
         return not (self.net.is_nan() and self.gross.is_nan())
 
+    @property
+    def tax(self):
+        return self.gross - self.net
+
+
 class StopPropagation(Exception):
     pass

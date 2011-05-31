@@ -10,7 +10,8 @@ def decimal_format(value, min_decimal_places=0):
         digits.append(0)
         have_decimal_places += 1
     while have_decimal_places > min_decimal_places and not digits[-1]:
-        digits = digits[:-1]
+        if len(digits) > 1:
+            digits = digits[:-1]
         have_decimal_places -= 1
     return Decimal((decimal_tuple.sign, digits, -have_decimal_places))
 

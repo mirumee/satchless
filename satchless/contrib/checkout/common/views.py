@@ -47,15 +47,15 @@ def prepare_order(request, typ):
     order_pk = request.session.get('satchless_order')
     previous_orders = models.Order.objects.filter(pk=order_pk, cart=cart,
                                                   status='checkout')
-    if not order_pk or not previous_orders.exists():
+    try:
+        order = previous_orders.get()
+    except models.Order.DoesNotExist:
         try:
             order = models.Order.objects.get_from_cart(cart)
         except models.EmptyCart:
             return redirect('satchless-cart-view', typ=typ)
-        else:
-            request.session['satchless_order'] = order.pk
-            return redirect('satchless-checkout', order_token=order.token)
-    return redirect('satchless-cart-view')
+    request.session['satchless_order'] = order.pk
+    return redirect('satchless-checkout', order_token=order.token)
 
 @require_order(status='payment-pending')
 def confirmation(request, order_token):

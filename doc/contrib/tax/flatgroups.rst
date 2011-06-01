@@ -32,8 +32,8 @@ to the ``SATCHLESS_PRICING_HANDLERS`` chain::
     )
 
     SATCHLESS_PRICING_HANDLERS = [
-        'satchless.contrib.pricing.simpleqty.handler',
-        'satchless.contrib.tax.flatgroups.handler',
+        'satchless.contrib.pricing.simpleqty.SimpleQtyPricingHandler',
+        'satchless.contrib.tax.flatgroups.FlatGroupPricingHandler',
     ]
 
 Usage

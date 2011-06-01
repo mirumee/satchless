@@ -30,8 +30,8 @@ Here's an example of standard configuration, using modules provided by
 satchless::
 
     SATCHLESS_PRICING_HANDLERS = [
-        'satchless.contrib.pricing.simpleqty.handler',
-        'satchless.contrib.tax.flatgroups.handler',
+        'satchless.contrib.pricing.simpleqty.SimpleQtyPricingHandler',
+        'satchless.contrib.tax.flatgroups.FlatGroupPricingHandler',
     ]
 
 The first step is ``satchless.contrib.pricing.simpleqty`` module, responsible
@@ -100,7 +100,7 @@ The default handler
 -------------------
 
 The default handler shipped with satchless
-(``satchless.contrib.pricing.simpleqty.handler``) offers quantity-based
+(``satchless.contrib.pricing.simpleqty.SimpleQtyPricingHandler``) offers quantity-based
 discount in two forms:
     * *per variant*: variant quantity changes the price. For example,
       you will get a discount for buying *≥n* yellow t-shirts, but adding

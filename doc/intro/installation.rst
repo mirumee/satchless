@@ -80,13 +80,13 @@ Also, base :ref:`pricing handler <pricing-overview>` should be configured, as
 well as basic settings for :ref:`order handling <checkout-order>`::
 
     SATCHLESS_PRICING_HANDLERS = [
-        'satchless.contrib.pricing.simpleqty.handler',
+        'satchless.contrib.pricing.simpleqty.SimpleQtyPricingHandler',
     ]
     SATCHLESS_ORDER_PARTITIONERS = [
         'satchless.contrib.order.partitioner.simple',
     ]
     SATCHLESS_DELIVERY_PROVIDERS = [
-        'satchless.contrib.delivery.simplepost.provider',
+        'satchless.contrib.delivery.simplepost.PostDeliveryProvider',
     ]
 
 Finally, you should enable some payment modules. Currently Satchless supports
@@ -95,8 +95,8 @@ beyond the scope of this document, but once you have it done, just enable
 corresponding providers::
 
     SATCHLESS_PAYMENT_PROVIDERS = [
-        'satchless.contrib.payment.django_payments_provider.provider',
-        'satchless.contrib.payment.mamona_provider.provider',
+        'satchless.contrib.payment.django_payments_provider.DjangoPaymentsProvider',
+        'satchless.contrib.payment.mamona_provider.MamonaProvider',
     ]
 
     # This setting specifies which payment channels of django-payments
@@ -115,4 +115,4 @@ server on production site!
 
 For great success!
 
-.. _`great documentation`: http://docs.djangoproject.com/en/1.2/intro/tutorial01/#creating-a-project
+.. _`great documentation`: http://docs.djangoproject.com/en/1.3/intro/tutorial01/#creating-a-project

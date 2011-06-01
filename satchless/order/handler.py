@@ -132,6 +132,9 @@ def init_queues():
             if isinstance(item, str):
                 mod_name, attr_name = item.rsplit('.', 1)
                 module = import_module(mod_name)
+                if not hasattr(module, attr_name):
+                    raise ImproperlyConfigured(
+                        '%s in %s does not exist.' % (item, setting_name))
                 item = getattr(module, attr_name)
             if isinstance(item, type):
                 item = item()

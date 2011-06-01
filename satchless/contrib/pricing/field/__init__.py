@@ -1,5 +1,5 @@
 from django.db.models import Min, Max
-from ....pricing import Price
+from ....pricing import Price, PricingHandler
 
 class FieldGetter(object):
     def __init__(self, field_name='price', currency=None):
@@ -7,7 +7,7 @@ class FieldGetter(object):
         self.field_name = field_name
 
 
-class ProductFieldGetter(FieldGetter):
+class ProductFieldGetter(FieldGetter, PricingHandler):
     def get_variant_price(self, variant, currency, quantity=1, **kwargs):
         price = kwargs.pop('price')
         if self.currency and self.currency != currency:
@@ -30,7 +30,7 @@ class ProductFieldGetter(FieldGetter):
                 Price(instance_price, instance_price))
 
 
-class VariantFieldGetter(FieldGetter):
+class VariantFieldGetter(FieldGetter, PricingHandler):
     def get_variant_price(self, variant, currency, quantity=1, **kwargs):
         price = kwargs.pop('price')
         if self.currency and self.currency != currency:

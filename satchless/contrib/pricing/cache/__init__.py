@@ -1,6 +1,7 @@
 import urllib
 
 from ....util.exceptions import FinalValue
+from ....pricing import PricingHandler
 
 def get_cache_key(product=None, variant=None, **kwargs):
     ret = {}
@@ -18,7 +19,7 @@ class CacheFactory(object):
         def get_key(self, **kwargs):
             return urllib.urlencode(self.get_cache_key(**kwargs), True)
 
-    class SetHandler(Handler):
+    class SetHandler(Handler, PricingHandler):
         def get_variant_price(self, **kwargs):
             from django.core.cache import cache
             price = kwargs.get('price', None)
@@ -38,7 +39,7 @@ class CacheFactory(object):
             return price_range
 
 
-    class GetHandler(Handler):
+    class GetHandler(Handler, PricingHandler):
         def get_variant_price(self, **kwargs):
             from django.core.cache import cache
             key = 'price:' + self.get_key(**kwargs)

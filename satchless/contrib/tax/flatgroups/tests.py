@@ -28,14 +28,14 @@ class ParrotTaxTest(TestCase):
         # set the pricing pipeline
         self.original_pricing_handler = settings.SATCHLESS_PRICING_HANDLERS
         settings.SATCHLESS_PRICING_HANDLERS = [
-            'satchless.contrib.pricing.simpleqty.handler',
-            'satchless.contrib.tax.flatgroups.handler',
+            'satchless.contrib.pricing.simpleqty.SimpleQtyPricingHandler',
+            'satchless.contrib.tax.flatgroups.FlatGroupPricingHandler',
             ]
-        handler.init()
+        handler.init_queue()
 
     def tearDown(self):
         settings.SATCHLESS_PRICING_HANDLERS = self.original_pricing_handler
-        handler.init()
+        handler.init_queue()
 
     def test_nodefault(self):
         # these have 8% VAT

@@ -12,21 +12,22 @@ One Python file will suffice. Let's call it ``mytax.py`` and place it a
 directory included in ``PYTHONPATH``::
 
     import decimal
-    from satchless.pricing import Price
+    from satchless.pricing import Price, PricingHandler
 
-    def get_variant_price(variant, **kwargs):
-        price = kwargs.pop('price')
-        return Price(price.net, price.gross * decimal.Decimal('1.05'))
+    class MyTaxHandler(PricingHandler):
+        def get_variant_price(self, variant, **kwargs):
+            price = kwargs.pop('price')
+            return Price(price.net, price.gross * decimal.Decimal('1.05'))
 
-    def get_product_price_range(product, **kwargs):
-        hi, lo = kwargs.pop('price_range')
-        return (Price(lo.net, lo.gross * decimal.Decimal('1.05')),
-                Price(hi.net, hi.gross * decimal.Decimal('1.05')))
+        def get_product_price_range(self, product, **kwargs):
+            hi, lo = kwargs.pop('price_range')
+            return (Price(lo.net, lo.gross * decimal.Decimal('1.05')),
+                    Price(hi.net, hi.gross * decimal.Decimal('1.05')))
 
 After that, append your new handler to the end of the chain in ``settings.py``::
 
     SATCHLESS_PRICING_HANDLERS = [
-        'satchless.contrib.pricing.simpleqty.handler',
+        'satchless.contrib.pricing.simpleqty.SimpleQtyPricingHandler',
         ...
-        'mytax',
+        'mytax.MyTaxHandler',
     ]

@@ -24,7 +24,7 @@ to the ``SATCHLESS_PRICING_HANDLERS`` chain::
     )
 
     SATCHLESS_PRICING_HANDLERS = [
-        'satchless.contrib.pricing.simpleqty.handler',
+        'satchless.contrib.pricing.simpleqty.SimpleQtyPricingHandler',
     ]
 
 Usage

@@ -88,7 +88,7 @@ def setup(verbosity, test_modules, extra_urls):
     if not hasattr(settings, 'SATCHLESS_DEFAULT_CURRENCY'):
         settings.SATCHLESS_DEFAULT_CURRENCY='PLN'
     if not hasattr(settings, 'SATCHLESS_PRICING_HANDLERS'):
-        settings.SATCHLESS_PRICING_HANDLERS = ('satchless.contrib.pricing.simpleqty.handler',)
+        settings.SATCHLESS_PRICING_HANDLERS = ('satchless.contrib.pricing.simpleqty.SimpleQtyPricingHandler',)
     if not hasattr(settings, 'SATCHLESS_DELIVERY_PROVIDER'):
         settings.SATCHLESS_DELIVERY_PROVIDER = ('satchless.contrib.delivery.simplepost.PostDeliveryProvider',)
 
@@ -200,4 +200,3 @@ if __name__ == "__main__":
 
     if failures:
         sys.exit(bool(failures))
-

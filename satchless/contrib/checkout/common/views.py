@@ -30,7 +30,8 @@ def require_order(status=None):
                 return redirect('satchless-cart-view')
             elif status is not None and status != order.status:
                 if order.status == 'checkout':
-                    return redirect('checkout')
+                    return redirect('satchless-checkout',
+                                    order_toke=order.token)
                 elif order.status == 'payment-pending':
                     return redirect(confirmation)
                 else:

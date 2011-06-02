@@ -58,6 +58,7 @@ class CreditCardExpirationField(forms.DateField):
 
     def to_python(self, value):
         value = super(CreditCardExpirationField, self).to_python(value)
-        first_weekday, num_days = calendar.monthrange(value.year, value.month)
-        value = datetime.date(value.year, value.month, num_days)
+        if isinstance(value, datetime.date):
+            first_weekday, num_days = calendar.monthrange(value.year, value.month)
+            value = datetime.date(value.year, value.month, num_days)
         return value

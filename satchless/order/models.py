@@ -42,7 +42,7 @@ class OrderManager(models.Manager):
             for item in group:
                 price = item.get_unit_price()
                 variant = item.variant.get_subtype_instance()
-                name = u"%s: %s" % (variant.product, variant)
+                name = unicode(variant)
                 delivery_group.items.create(product_variant=item.variant,
                                             product_name=name,
                                             quantity=item.quantity,

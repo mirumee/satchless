@@ -13,8 +13,7 @@ def require_order(status=None):
             order = None
             if 'order_token' in kwargs:
                 try:
-                    order = models.Order.objects.get(token=kwargs['order_token'],
-                                                     status=status)
+                    order = models.Order.objects.get(token=kwargs['order_token'])
                 except models.Order.DoesNotExist:
                     pass
             if not order:
@@ -24,7 +23,8 @@ def require_order(status=None):
                     return redirect('satchless-checkout',
                                     order_token=order.token)
                 elif order.status == 'payment-pending':
-                    return redirect(confirmation)
+                    return redirect('satchless-checkout-confirmation',
+                                    order_token=order.token)
                 else:
                     return redirect('satchless-order-view',
                                     order_token=order.token)

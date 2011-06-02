@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 from decimal import Decimal
+from django.http import HttpResponse, HttpRequest
 from django.conf import settings
 from django.core.urlresolvers import reverse
 from django.test import TestCase, Client
@@ -13,6 +14,7 @@ from ....payment.tests import TestPaymentProvider
 from ....product.models import Category
 from ....product.tests import DeadParrot
 
+from ..common.decorators import require_order
 from ..common.views import prepare_order, reactivate_order
 from . import views
 
@@ -283,3 +285,40 @@ class CheckoutTest(TestCase):
                                      method='post')
         self.assertRedirects(response, reverse('satchless-checkout', args=(order.token,)))
 
+    def test_require_order_decorator(self):
+        def assertRedirects(response, path):
+            self.assertEqual(response.status_code, 302)
+            self.assertEqual(response['Location'], path)
+
+        def view_factory(status):
+            @require_order(status=status)
+            def view(request, order_token):
+                return HttpResponse()
+            return view
+        request = HttpRequest()
+        order = self._create_order(self.anon_client)
+
+        # decorator should not redirect if status is correct
+        for status, name in Order.STATUS_CHOICES:
+            view = view_factory(status)
+            order.set_status(status)
+            self.assertTrue(view(request, order_token=order.token).status_code, 200)
+
+
+        view = view_factory('non-existing-status')
+
+        order.set_status('payment-pending')
+        assertRedirects(view(request, order_token=order.token),
+                        reverse('satchless-checkout-confirmation', args=(order.token,)))
+
+        order.set_status('checkout')
+        assertRedirects(view(request, order_token=order.token),
+                        reverse('satchless-checkout', args=(order.token,)))
+
+        for status in ('payment-failed', 'delivery', 'payment-complete', 'cancelled'):
+            order.set_status(status)
+            assertRedirects(view(request, order_token=order.token),
+                            reverse('satchless-order-view', args=(order.token,)))
+
+        assertRedirects(view(request, order_token='non-existing-order-token'),
+                        reverse('satchless-cart-view'))

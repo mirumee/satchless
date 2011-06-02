@@ -13,7 +13,7 @@ from ....payment.tests import TestPaymentProvider
 from ....product.models import Category
 from ....product.tests import DeadParrot
 
-from ..common.views import prepare_order
+from ..common.views import prepare_order, reactivate_order
 from . import views
 
 
@@ -258,4 +258,28 @@ class CheckoutTest(TestCase):
                                   status_code=302,
                                   client_instance=self.anon_client,
                                   method='get')
+
+    def test_reactive_order_view_changes_order_status_to_checkout(self):
+        order = self._create_order(self.anon_client)
+        order.set_status('payment-failed')
+
+        self._test_status(reverse(reactivate_order,
+                                  kwargs={'order_token':
+                                          order.token}),
+                                  status_code=302,
+                                  client_instance=self.anon_client,
+                                  method='post')
+        self.assertEqual(Order.objects.get(pk=order.pk).status, 'checkout')
+
+    def test_reactive_order_view_redirects_to_checkout_for_correct_order(self):
+        order = self._create_order(self.anon_client)
+        order.set_status('payment-failed')
+
+        response = self._test_status(reverse(reactivate_order,
+                                     kwargs={'order_token':
+                                             order.token}),
+                                     status_code=302,
+                                     client_instance=self.anon_client,
+                                     method='post')
+        self.assertRedirects(response, reverse('satchless-checkout', args=(order.token,)))
 

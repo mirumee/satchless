@@ -57,6 +57,13 @@ def prepare_order(request, typ):
     request.session['satchless_order'] = order.pk
     return redirect('satchless-checkout', order_token=order.token)
 
+@require_POST
+@require_order(status='payment-failed')
+def reactivate_order(request, order_token):
+    order = request.order
+    order.set_status('checkout')
+    return redirect('satchless-checkout', order_token=order.token)
+
 @require_order(status='payment-pending')
 def confirmation(request, order_token):
     """

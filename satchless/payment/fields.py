@@ -43,7 +43,6 @@ class CreditCardNumberField(forms.CharField):
             raise forms.ValidationError(self.error_messages['required'])
         if value and not mod10(value):
             raise forms.ValidationError(self.error_messages['invalid'])
-        return value
 
 class CreditCardExpirationField(forms.DateField):
     widget = widgets.SelectMonthWidget
@@ -52,9 +51,10 @@ class CreditCardExpirationField(forms.DateField):
     }
 
     def validate(self, value):
-        if value < datetime.date.today():
+        if value in validators.EMPTY_VALUES and self.required:
+            raise forms.ValidationError(self.error_messages['required'])
+        if isinstance(value, datetime.date) and value < datetime.date.today():
             raise forms.ValidationError(self.error_messages['expired'])
-        return value
 
     def to_python(self, value):
         value = super(CreditCardExpirationField, self).to_python(value)

@@ -1,4 +1,5 @@
 import datetime
+import decimal
 from django.contrib.auth.models import User
 from django.core.exceptions import ObjectDoesNotExist
 from django.db import models
@@ -120,11 +121,12 @@ class Order(models.Model):
 
     def total(self):
         try:
-            payment_price = Price(self.paymentvariant.price)
+            payment_price = Price(self.paymentvariant.price,
+                                  currency=self.currency)
         except ObjectDoesNotExist:
-            payment_price = Price(0)
+            payment_price = Price(0, currency=self.currency)
         return payment_price + sum([g.total() for g in self.groups.all()],
-                                   Price(0))
+                                   Price(0, currency=self.currency))
 
     class Meta:
         # Use described string to resolve ambiguity of the word 'order' in English.
@@ -139,11 +141,12 @@ class DeliveryGroup(models.Model):
 
     def total(self):
         try:
-            delivery_price = Price(self.deliveryvariant.price)
+            delivery_price = Price(self.deliveryvariant.price,
+                                   currency=self.order.currency)
         except ObjectDoesNotExist:
-            delivery_price = Price(0)
+            delivery_price = Price(0, currency=self.order.currency)
         return delivery_price + sum([i.price() for i in self.items.all()],
-                                    Price(0))
+                                    Price(0, currency=self.order.currency))
 
 
 class OrderedItem(models.Model):
@@ -159,8 +162,12 @@ class OrderedItem(models.Model):
                                            max_digits=12, decimal_places=4)
 
     def unit_price(self):
-        return Price(net=self.unit_price_net, gross=self.unit_price_gross)
+        return Price(net=self.unit_price_net, gross=self.unit_price_gross,
+                     currency=self.delivery_group.order.currency)
 
     def price(self):
-        return Price(net=self.unit_price_net * self.quantity,
-                     gross=self.unit_price_gross * self.quantity)
+        net = self.unit_price_net * self.quantity
+        gross = self.unit_price_gross * self.quantity
+        return Price(net=net.quantize(decimal.Decimal('0.01')),
+                     gross=gross.quantize(decimal.Decimal('0.01')),
+                     currency=self.delivery_group.order.currency)

@@ -2,7 +2,7 @@
 from django.contrib import messages
 from django.shortcuts import get_object_or_404, redirect
 from django.template.response import TemplateResponse
-from django.utils.translation import ugettext
+from django.utils.translation import ugettext as _
 from django.views.decorators.http import require_POST
 
 from . import models
@@ -17,7 +17,7 @@ def cart(request, typ, form_class=forms.EditCartItemForm):
                           prefix='%s-%i'%(typ, item.id))
         if request.method == 'POST' and form.is_valid():
             messages.success(request,
-                             ugettext("Cart's content updated successfully."))
+                             _("Cart contents were updated successfully."))
             form.save()
             return redirect(request.get_full_path())
         cart_item_forms.append(form)

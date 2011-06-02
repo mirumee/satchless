@@ -2,7 +2,7 @@
 from django.shortcuts import redirect
 from django.template.response import TemplateResponse
 
-from ..common.views import require_order
+from ..common.decorators import require_order
 from ....order import forms
 from ....order import handler
 

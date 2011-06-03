@@ -207,9 +207,9 @@ price_cache = satchless.contrib.pricing.cache.CacheFactory(get_cache_key)
 
 SATCHLESS_PRICING_HANDLERS = [
     price_cache.getter,
-    'satchless.contrib.pricing.simpleqty.handler',
-    'satchless.contrib.tax.flatgroups.handler',
-    'sale.handler',
+    'satchless.contrib.pricing.simpleqty.SimpleQtyPricingHandler',
+    'satchless.contrib.tax.flatgroups.FlatGroupPricingHandler',
+    'sale.SalePricingHandler',
     price_cache.setter,
 ]
 SATCHLESS_PRODUCT_VIEW_HANDLERS = [

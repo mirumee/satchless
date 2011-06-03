@@ -1,10 +1,4 @@
 from decimal import Decimal
-from django.conf import settings
-from django.core.exceptions import ImproperlyConfigured
-
-if not getattr(settings, 'SATCHLESS_PRICING_HANDLERS'):
-    raise ImproperlyConfigured('You need to configure '
-                               'SATCHLESS_PRICING_HANDLERS')
 
 class Price(object):
     gross = Decimal('NaN')
@@ -78,3 +72,4 @@ class PricingHandler(object):
 
 class StopPropagation(Exception):
     pass
+

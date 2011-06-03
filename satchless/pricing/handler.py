@@ -5,6 +5,10 @@ from satchless.util.exceptions import FinalValue
 
 from . import Price, PricingHandler
 
+if not getattr(settings, 'SATCHLESS_PRICING_HANDLERS', None):
+    raise ImproperlyConfigured('You need to configure '
+                               'SATCHLESS_PRICING_HANDLERS')
+
 _handlers = None
 
 def get_variant_price(variant, currency, quantity=1, **context):

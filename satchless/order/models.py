@@ -67,6 +67,8 @@ class Order(models.Model):
                               choices=STATUS_CHOICES, default='checkout')
     created = models.DateTimeField(default=datetime.datetime.now,
                                    editable=False, blank=True)
+    last_status_change = models.DateTimeField(default=datetime.datetime.now,
+                                   editable=False, blank=True)
     user = models.ForeignKey(User, blank=True, null=True, related_name='orders')
     cart = models.ForeignKey(Cart, blank=True, null=True, related_name='orders')
     currency = models.CharField(max_length=3)
@@ -115,6 +117,7 @@ class Order(models.Model):
     def set_status(self, new_status):
         old_status = self.status
         self.status = new_status
+        self.last_status_change = datetime.datetime.now()
         self.save()
         signals.order_status_changed.send(sender=type(self), instance=self,
                                           old_status=old_status)
@@ -132,7 +135,7 @@ class Order(models.Model):
         # Use described string to resolve ambiguity of the word 'order' in English.
         verbose_name = _('order (business)')
         verbose_name_plural = _('orders (business)')
-        ordering = ('-created',)
+        ordering = ('-last_status_change',)
 
 
 class DeliveryGroup(models.Model):

@@ -38,6 +38,21 @@ a {
     padding: 10px;
     text-align: left;
 }
+input.wishlist,
+.button.cart {
+    background-image: url(../img/icons/cart.png);
+    background-repeat: no-repeat;
+    background-position: 10px 50%;
+    padding: 10px 10px 10px 45px;
+}
+input.wishlist {
+    background-color: transparent;
+    background-image: url(../img/icons/wishlist.png);
+    border: 0 none;
+    cursor: pointer;
+    font-size: 12px;
+    padding: 10px 10px 10px 45px;
+}
 
 #header {
     color: #474747;
@@ -294,28 +309,6 @@ a {
                 margin-bottom: 5px;
                 text-align: left;
             }
-input.wishlist,
-input.cart {
-    background: #fbf839 url(../img/icons/cart.png) no-repeat 10px 50%;
-    cursor: pointer;
-    font-weight: bold;
-    margin-bottom: 5px;
-    padding: 10px 2px 10px 45px;
-    text-align: left;
-    width: 100%;
-}
-input.cart {
-    border: 1px solid #dad74a;
-    border-radius: 5px;
-    -moz-border-radius: 5px;
-    font-size: 16px;
-}
-input.wishlist {
-    background-color: transparent;
-    background-image: url(../img/icons/wishlist.png);
-    border: 0 none;
-    font-size: 12px;
-}
 .footer {
 }
     .footer .info {
@@ -549,6 +542,7 @@ body.store.checkout .order-preview {
             text-align: left;
         }
         body.store.checkout #content .order-preview table td {
+            font-weight: normal;
             font-size: 12px;
             padding: 5px;
         }
@@ -613,10 +607,7 @@ body .products .product {
         }
             body .products .product .description .price .strike {
                 font-size: 0.8em;
-                text-decoration: line-through;                    
-            }
-            body .products .product .description .price .fullprice {
-                
+                text-decoration: line-through;
             }
             body .products .product .description .price .currency {
                 font-size: 0.6em;

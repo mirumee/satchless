@@ -5,36 +5,49 @@
 {% block title %}{{ block.super }} | {% trans "Delivery details" %}{% endblock %}
 
 {% block body-class %}{{ block.super }} delivery-details{% endblock %}
+
 {% block breadcrumbs %}
-    {{ block.super }}
-    <li><a href="">{% trans "Order (business)" %}</a></li>
+<li>
+    <a href="{% url satchless-cart-view %}">1. {% trans "Cart" %}</a>
+</li>
+<li class="active">
+    2. {% trans "Delivery" %}
+</li>
+<li class="payment">
+    3. {% trans "Payment" %}
+</li>
+<li class="confirmation">
+    <span>3. {% trans "Great success!" %}</span>
+</li>
 {% endblock %}
+
 {% block content %}
-    <div class="container_24">
-        <div class="grid_16">
-            <div class="container">
-                <h1>{% trans "Delivery details" %}</h1>
-                <form method="post" action="">{% csrf_token %}
-                    {% for group, typ, form in delivery_group_forms %}
-                    <h2>{% trans "Delivery method" %}: {{ typ|delivery_type }}</h2>
-                    <h3>{% trans "Items deliverd using this method" %}:</h3>
-                    <ul>
-                    {% include 'satchless/checkout/snippets/delivery_group.html' %}
-                    </ul>
-                    <h3>{% trans "Delivery details" %}:</h3>
-                    <table>
-                        <tbody>
-                            {{ form|form_as_table }}
-                        </tbody>
-                        <tfoot>
-                            <tr>
-                                <td><button type="submit">{% trans "Proceed" %}</button></td>
-                            </tr>
-                        </tfoot>
-                    </table>
-                    {% endfor %}
-                </form>
-            </div>
-        </div>
+<div class="grid_16 alpha">
+    <div class="container">
+        <h1>{% trans "Delivery details" %}</h1>
+        <form method="post" action="">{% csrf_token %}
+            {% for group, typ, form in delivery_group_forms %}
+            <h2>{% trans "Delivery method" %}: {{ typ|delivery_type }}</h2>
+            <h3>{% trans "Items deliverd using this method" %}:</h3>
+            <ul>
+            {% include 'satchless/checkout/snippets/delivery_group.html' %}
+            </ul>
+            <h3>{% trans "Delivery details" %}:</h3>
+            <table>
+                <tbody>
+                    {{ form|form_as_table }}
+                </tbody>
+                <tfoot>
+                    <tr>
+                        <td><button class="button" type="submit">{% trans "Proceed" %}</button></td>
+                    </tr>
+                </tfoot>
+            </table>
+            {% endfor %}
+        </form>
     </div>
+</div>
+<div class="grid_8 omega">
+    {% include "satchless/checkout/snippets/order_preview.html" %}
+</div>
 {% endblock %}

@@ -1,23 +1,36 @@
-{% extends 'satchless/order/base.html' %}
+{% extends 'satchless/checkout/base.html' %}
 {% load i18n %}
 {% block title %}{{ block.super }} | {% trans "Delivery method" %}{% endblock %}
+
 {% block breadcrumbs %}
-    {{ block.super }}
-    <li><a href="">{% trans "Order (business)" %}</a></li>
+<li>
+    <a href="{% url satchless-cart-view %}">1. {% trans "Cart" %}</a>
+</li>
+<li class="active">
+    2. {% trans "Delivery" %}
+</li>
+<li class="payment">
+    3. {% trans "Payment" %}
+</li>
+<li class="confirmation">
+    <span>3. {% trans "Great success!" %}</span>
+</li>
 {% endblock %}
+
 {% block content %}
-    <h1>{% trans "Order (business)" %}</h1>
+<div class="grid_16 alpha">
+<div class="container">
     {% if order %}
     <form method="post" action="">{% csrf_token %}
         {{ delivery_formset.management_form }}
         {% for form in delivery_formset.forms %}{% with form.instance as group %}
-            {% if order.groups.count > 1 %}<h2>{% trans "Delivery group" %}:</h2>{% endif %}
+            <h2>{% trans "Delivery group" %}{% if order.groups.count > 1 %} {{ forloop.counter }}{% endif %}:</h2>
             <ul>
             {% include 'satchless/checkout/snippets/delivery_group.html' %}
             </ul>
             {{ form.as_p }}
         {% endwith %}{% endfor %}
-        <button type="submit">{% trans "Proceed" %}</button>
+        <button class="button" type="submit">{% trans "Proceed" %}</button>
     </form>
     {% else %}
     <p>
@@ -26,4 +39,9 @@
     <a href="/">continue shopping</a>.
     {% endblocktrans %}
     {% endif %}
+</div>
+</div>
+<div class="grid_8 omega">
+    {% include "satchless/checkout/snippets/order_preview.html" %}
+</div>
 {% endblock %}

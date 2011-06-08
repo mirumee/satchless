@@ -121,7 +121,7 @@ class CardiganVariant(ColoredVariant):
     size = models.CharField(choices=SIZE_CHOICES, max_length=2)
 
     def __unicode__(self):
-        return '%s / %s' % (self.get_color_display(), self.get_size_display())
+        return '%s (%s / %s)' % (self.product, self.get_color_display(), self.get_size_display())
 
 
 class Dress(Product):
@@ -140,7 +140,8 @@ class DressVariant(ColoredVariant):
     size = models.CharField(choices=SIZE_CHOICES, max_length=2)
 
     def __unicode__(self):
-        return '%s / %s' % (self.get_color_display(), self.get_size_display())
+        return '%s (%s / %s)' % (unicode(self.product), self.get_color_display(),
+                                 self.get_size_display())
 
 
 class Hat(Product):
@@ -157,7 +158,7 @@ class HatVariant(satchless.product.models.Variant):
     product = models.ForeignKey(Hat, related_name='variants')
 
     def __unicode__(self):
-        return _("This product has only one variant.")
+        return unicode(self.product)
 
 
 class Jacket(Product):
@@ -176,7 +177,8 @@ class JacketVariant(ColoredVariant):
     size = models.CharField(choices=SIZE_CHOICES, max_length=2)
 
     def __unicode__(self):
-        return '%s / %s' % (self.get_color_display(), self.get_size_display())
+        return '%s (%s / %s)' % (unicode(self.product), self.get_color_display(),
+                                 self.get_size_display())
 
 
 class Shirt(Product):
@@ -195,7 +197,8 @@ class ShirtVariant(ColoredVariant):
     size = models.CharField(choices=SIZE_CHOICES, max_length=2)
 
     def __unicode__(self):
-        return '%s / %s' % (self.get_color_display(), self.get_size_display())
+        return '%s (%s / %s)' % (unicode(self.product), self.get_color_display(),
+                                 self.get_size_display())
 
 
 class TShirt(Product):

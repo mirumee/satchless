@@ -9,12 +9,7 @@ class DjangoPaymentsProvider(PaymentProvider):
     unique_id = 'django-payments'
 
     def enum_types(self, order=None, customer=None):
-        payment_types = getattr(settings, 'SATCHLESS_DJANGO_PAYMENT_TYPES', None)
-        if payment_types:
-            payment_types = ((k,k) for k in payment_types)
-        else:
-            payment_types = ()
-        return payment_types
+        return getattr(settings, 'SATCHLESS_DJANGO_PAYMENT_TYPES', ())
 
     def create_variant(self, order, typ, form):
         factory = payments.factory(typ)

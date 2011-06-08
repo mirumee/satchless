@@ -27,57 +27,35 @@
     </thead>
     <tbody>
     {% for item in group.items.all %}
-        {% with product=item.product_variant.get_subtype_instance.product %}
         {% with variant=item.product_variant.get_subtype_instance %}
+        {% with product=variant.product %}
         {% with unit_price=item.unit_price item_price=item.price currency=order.currency readonly=1 %}
-            {% include "satchless/cart/snippets/row.html" %}
+        {% include "satchless/cart/snippets/row.html" %}
         {% endwith %}
         {% endwith %}
         {% endwith %}
-        {% comment %}
-        <tr>
-            <td class="image">
-{% if variant.product.main_image %}
-                <a href="{{ variant.product.get_url }}"><img src="{{ variant.product.main_image|at_size:'cart-product' }}" alt="{{ item }}" /></a>
-{% else %}
-                <a href="{{ variant.product.get_url }}">{{ variant }}</a>
-{% endif %}
-            </td>
-            <td class="name product-description">
-{% if variant.product.manufacture %}
-                <span class="manufacture">{{ variant.product.manufacture }}</span>
-{% endif %}
-                <h2><a href="{{ variant.product.get_absolute_url }}">{{ variant.product.name }}</a></h2>
-{% with variant|variant_attrs as va %}
-{% if va %}
-                <ul class="variant-attrs">
-    {% for attr in va %}
-                    <li>{{ attr.name }}: <strong>{{ attr.value }}</strong></li>
     {% endfor %}
-                </ul>
-{% endif %}
-{% endwith %}
-            </td>
-            <td class="numerical"><span class="gross">{{ item.unit_price_gross|floatformat:2 }}</span></td>
-            <td class="numerical">{{ item.quantity }}</td>
-            <td class="numerical">{{ item.price|gross|floatformat:2 }}</td>
-        </tr>
-        {% endcomment %}
-        {% endfor %}
     </tbody>
     <tfoot>
-        {% if group.deliveryvariant %}{% with group.deliveryvariant.get_subtype_instance as variant %}
+        {% if group.deliveryvariant %}
+            {% with group.deliveryvariant.get_subtype_instance as variant %}
         <tr>
             <th>{% trans "Delivery" %}:</th>
-            <td colspan="2">
+            <td colspan="3">
                 {{ variant }}
             </td>
-            <td class="numerical">{{ variant.price|floatformat:2 }}</td>
+            <td class="product-price">
+                <span class="fullprice">{{ variant.price|floatformat:2 }}</span>
+                <span class="currency">{{ order.currency }}</span><br />
+            </td>
         </tr>
-        {% endwith %}{% endif %}
+            {% endwith %}
+        {% endif %}
         <tr>
-            <th colspan="3">{% trans "Total" %}:</th>
-            <td class="numerical">{{ group.total|gross|floatformat:2 }}</td>
+            <td class="product-price" colspan="5">
+                <span class="fullprice">{{ group.total|gross|floatformat:2 }}</span>
+                <span class="currency">{{ order.currency }}</span><br />
+            </td>
         </tr>
     </tfoot>
 </table>

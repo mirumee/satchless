@@ -14,8 +14,6 @@ def checkout(request, order_token):
     for each of the groups.
     """
     order = request.order
-    if not order:
-        return redirect('satchless-cart-view')
     delivery_formset = forms.DeliveryMethodFormset(
             data=request.POST or None, queryset=order.groups.all())
     if request.method == 'POST':
@@ -36,8 +34,6 @@ def delivery_details(request, order_token):
     user will be asked for them. Otherwise we redirect to step 2.
     """
     order = request.order
-    if not order:
-        return redirect('satchless-cart-view')
     groups = order.groups.all()
     if filter(lambda g: not g.delivery_type, groups):
         return redirect('satchless-checkout', order_token=order.token)
@@ -69,8 +65,6 @@ def payment_choice(request, order_token):
     User will choose the payment method.
     """
     order = request.order
-    if not order:
-        return redirect('satchless-checkout', order_token=order.token)
     payment_form = forms.PaymentMethodForm(data=request.POST or None,
                                            instance=order)
     if request.method == 'POST':
@@ -91,8 +85,6 @@ def payment_details(request, order_token):
     we redirect to step 3.
     """
     order = request.order
-    if not order:
-        return redirect('satchless-checkout', order_token=order.token)
     if not order.payment_type:
         return redirect('satchless-checkout-payment-choice',
                         order_token=order.token)

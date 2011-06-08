@@ -3,6 +3,8 @@ import os
 import re
 from localeurl.models import patch_reverse
 patch_reverse()
+from django.core.urlresolvers import reverse
+from django.utils.translation import ugettext_lazy as _
 
 PROJECT_ROOT = os.path.dirname( __file__ )
 
@@ -146,20 +148,18 @@ INSTALLED_APPS = (
     'satchless.delivery',
     'satchless.contrib.delivery.simplepost',
     'satchless.payment',
-    'satchless.contrib.payment.django_payments_provider',
     'products',
     'south',
     'pagination',
+    'core',
+    'carts',
     'sale',
 
     'haystack',
     'satchless.contrib.search.haystack_predictive',
     'payments',
+    'payments.dummy',
     'satchless.contrib.payment.django_payments_provider',
-    'mamona',
-    'satchless.contrib.payment.mamona_provider',
-    'core',
-    'carts',
 )
 
 SATCHLESS_IMAGE_SIZES = {
@@ -190,7 +190,11 @@ SATCHLESS_IMAGE_SIZES = {
     'cart-product': {
         'size': ('156', '156'),
         'crop': False,
-    }
+    },
+    'order-preview': {
+        'size': ('56', '56'),
+        'crop': True,
+    },
 }
 
 SATCHLESS_DEFAULT_CURRENCY = 'GBP'
@@ -224,21 +228,13 @@ SATCHLESS_DELIVERY_PROVIDERS = [
 SATCHLESS_PAYMENT_PROVIDERS = [
     'satchless.contrib.payment.django_payments_provider.DjangoPaymentsProvider',
 ]
-SATCHLESS_DJANGO_PAYMENT_TYPES = ('dummy',)
+SATCHLESS_DJANGO_PAYMENT_TYPES = (('dummy', _('Dummy Payment Provider')),)
+
 PAYMENT_VARIANTS = {
     'dummy': ('payments.dummy.DummyProvider', {
-            'url': '/',
-        })
-}
-MAMONA_ACTIVE_BACKENDS = (
-    'dummy',
-    'paypal',
-)
-MAMONA_BACKENDS_SETTINGS = {
-    'paypal': {
-        'url': 'https://www.sandbox.paypal.com/cgi-bin/webscr',
-        'email': 'me@my-email.com',
-    },
+              'url': lambda payment: reverse('thank-you',
+                                             args=(payment.satchless_payment_variant.order.token,))
+    })
 }
 
 HAYSTACK_SITECONF = 'search_sites'

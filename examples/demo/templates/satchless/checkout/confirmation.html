@@ -1,0 +1,34 @@
+{% extends 'satchless/checkout/base.html' %}
+{% load i18n %}
+{% block title %}{{ block.super }} | {% trans "Confirmation" %}{% endblock %}
+{% block body-class %}{{ block.super }} confirmation{% endblock %}
+{% block breadcrumbs %}
+<li>
+    1. {% trans "Cart" %}
+</li>
+<li>
+    2. {% trans "Delivery" %}
+</li>
+<li class="active">
+    3. {% trans "Payment" %}
+</li>
+<li class="confirmation">
+    <span>3. {% trans "Great success!" %}</span>
+</li>
+{% endblock %}
+
+{% block content %}
+<div class="grid_16 alpha">
+    <div class="container">
+        <h1>{% blocktrans with name=order.billing_first_name %}<strong>Order confirmation.{% endblocktrans %}</h1>
+
+        <form action="{{ formdata.action }}" method="{{ formdata.method }}">{% csrf_token %}
+            {{ formdata.form.as_p }}
+            <button class="button" type="submit">{% trans "Confirm" %}</button>
+        </form>
+    </div>
+</div>
+<div class="grid_8 omega">
+    {% include "satchless/checkout/snippets/order_preview.html" %}
+</div>
+{% endblock %}

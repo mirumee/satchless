@@ -8,6 +8,21 @@
 {% block title %}{% trans "Shopping Bag" %} || {{ block.super }}{% endblock %}
 {% block body-class %}{{ block.super }} cart{% endblock %}
 
+{% block breadcrumbs %}
+    <li class="active">
+        1. {% trans "Cart" %}
+    </li>
+    <li>
+        2. {% trans "Delivery" %}
+    </li>
+    <li>
+        3. {% trans "Payment" %}
+    </li>
+    <li class="confirmation">
+        <span>3. {% trans "Great success!" %}</span>
+    </li>
+{% endblock %}
+
 {% block content %}
 
 {% if cart_item_forms %}
@@ -40,11 +55,23 @@
         {% endwith %}
     {% endfor %}
         </tbody>
+        <tfoot>
+            <tr class="checkout">
+                <td class="product-price" colspan="5">
+                    <span class="fullprice">{{ cart|cart_total|gross|floatformat:2 }}</span>
+                    <span class="currency">{{ cart.currency }}</span><br />
+                </td>
+            </tr>
+            <tr class="checkout">
+                <td colspan="5">
+                <form action="{% url satchless-checkout-prepare-order %}" method="post">
+                    {% csrf_token %}
+                    <button class="button" type="submit"><span>{% trans "Go to checkout" %}</span></button>
+                </form>
+                </td>
+            </tr>
+        </tfoot>
     </table>
-    <form action="{% url satchless-checkout-prepare-order %}" method="post">
-        {% csrf_token %}
-        <button type="submit">{% trans "Check out" %}</button>
-    </form>
 {% else %}
 <p class="no-items">
     {% trans "Your shopping bag is empty." %}

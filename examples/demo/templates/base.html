@@ -2,7 +2,7 @@
 {% load i18n %}
 {% load localeurl_tags %}
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="pl-PL" lang="pl-PL">
-<head
+<head>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
     <title>{% block title %}Satchless Demo Store{% endblock %}</title>
     <meta name="description" content="{% block meta-description %}{% trans "For Python perfectionists with real deadlines" %}{% endblock %}" />
@@ -66,11 +66,16 @@
     </div> {# #header #}
 {% endblock %}
 
-<div id="content" class="container_24">
-    <div class="grid_24">
+<div id="breadcrumbs" class="container_24">
+    <ul class="grid_24 {% block breadcrumbs-class %}{% endblock %}">
 {% block breadcrumbs %}
 {% endblock %}
+    </ul>
+    <div class="clear"></div>
+</div>
 
+<div id="content" class="container_24">
+    <div class="grid_24">
 {% block content %}
 {% endblock %}
     <div class="clear"></div>

@@ -16,7 +16,7 @@ class ProductFieldGetter(FieldGetter, PricingHandler):
             instance_price = getattr(variant.product, self.field_name)
         except AttributeError:
             return price
-        return Price(instance_price, instance_price)
+        return Price(instance_price, instance_price, currency=currency)
 
     def get_product_price_range(self, product, currency, **kwargs):
         price_range = kwargs.pop('price_range')
@@ -26,8 +26,8 @@ class ProductFieldGetter(FieldGetter, PricingHandler):
             instance_price = getattr(product, self.field_name)
         except AttributeError:
             return price_range
-        return (Price(instance_price, instance_price),
-                Price(instance_price, instance_price))
+        return (Price(instance_price, instance_price, currency=currency),
+                Price(instance_price, instance_price, currency=currency))
 
 
 class VariantFieldGetter(FieldGetter, PricingHandler):
@@ -39,7 +39,7 @@ class VariantFieldGetter(FieldGetter, PricingHandler):
             instance_price = getattr(variant, self.field_name)
         except AttributeError:
             return price
-        return Price(instance_price, instance_price)
+        return Price(instance_price, instance_price, currency=currency)
 
     def get_product_price_range(self, product, currency, **kwargs):
         price_range = kwargs.pop('price_range')
@@ -48,5 +48,7 @@ class VariantFieldGetter(FieldGetter, PricingHandler):
         minmax = product.variants.all().aggregate(
                     min_price=Min(self.field_name),
                     max_price=Max(self.field_name))
-        return (Price(minmax['min_price'], minmax['min_price']),
-                Price(minmax['max_price'], minmax['max_price']))
+        return (Price(minmax['min_price'], minmax['min_price'],
+                      currency=currency),
+                Price(minmax['max_price'], minmax['max_price'],
+                      currency=currency))

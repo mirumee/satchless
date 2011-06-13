@@ -141,12 +141,12 @@ class CartItem(models.Model):
         super(CartItem, self).save(*args, **kwargs)
 
     def __unicode__(self):
-        return u"%s × %s" % (self.variant, self.quantity)
+        return u"%s × %.10g" % (self.variant, self.quantity)
 
     def get_unit_price(self, currency=None, **kwargs):
         from ..pricing import handler
         variant = self.variant.get_subtype_instance()
-        currency = currency if currency else self.cart.currency
+        currency = currency or self.cart.currency
         return handler.get_variant_price(variant, currency,
                 quantity=self.quantity, cart=self.cart, cartitem=self, **kwargs)
 

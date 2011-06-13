@@ -9,18 +9,14 @@ class CartItemPriceNode(BasePriceNode):
         return item.cart.currency
 
     def get_price(self, cartitem, currency, **kwargs):
-        price = cartitem.get_unit_price(cartitem, currency=currency, **kwargs)
-        if price.has_value():
-            return price * cartitem.quantity
+        return cartitem.price(currency=currency, **kwargs)
 
 class CartItemUnitPriceNode(BasePriceNode):
     def get_currency_for_item(self, item):
         return item.cart.currency
 
     def get_price(self, cartitem, currency, **kwargs):
-        price = cartitem.get_unit_price(cartitem, currency=currency, **kwargs)
-        if price.has_value():
-            return price
+        return cartitem.get_unit_price(currency=currency, **kwargs)
 
 @register.tag
 def cartitem_price(parser, token):

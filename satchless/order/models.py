@@ -122,12 +122,23 @@ class Order(models.Model):
         signals.order_status_changed.send(sender=type(self), instance=self,
                                           old_status=old_status)
 
-    def total(self):
+    def subtotal(self):
+        return sum([g.subtotal() for g in self.groups.all()],
+                   Price(0, currency=self.currency))
+
+    def delivery_price(self):
+        return sum([g.delivery_price() for g in self.groups.all()],
+                   Price(0, currency=self.currency))
+
+    def payment_price(self):
         try:
-            payment_price = Price(self.paymentvariant.price,
-                                  currency=self.currency)
+            return Price(self.paymentvariant.price,
+                         currency=self.currency)
         except ObjectDoesNotExist:
-            payment_price = Price(0, currency=self.currency)
+            return Price(0, currency=self.currency)
+
+    def total(self):
+        payment_price = self.payment_price()
         return payment_price + sum([g.total() for g in self.groups.all()],
                                    Price(0, currency=self.currency))
 
@@ -142,12 +153,19 @@ class DeliveryGroup(models.Model):
     order = models.ForeignKey(Order, related_name='groups')
     delivery_type = models.CharField(max_length=256, blank=True)
 
-    def total(self):
+    def subtotal(self):
+        return sum([i.price() for i in self.items.all()],
+                   Price(0, currency=self.order.currency))
+
+    def delivery_price(self):
         try:
-            delivery_price = Price(self.deliveryvariant.price,
-                                   currency=self.order.currency)
+            return Price(self.deliveryvariant.price,
+                         currency=self.order.currency)
         except ObjectDoesNotExist:
-            delivery_price = Price(0, currency=self.order.currency)
+            return Price(0, currency=self.order.currency)
+
+    def total(self):
+        delivery_price = self.delivery_price()
         return delivery_price + sum([i.price() for i in self.items.all()],
                                     Price(0, currency=self.order.currency))
 

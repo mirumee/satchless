@@ -1,7 +1,6 @@
 from django import template
 
 from ...product.templatetags.product_prices import BasePriceNode, parse_price_tag
-from ...pricing import Price
 
 register = template.Library()
 
@@ -10,7 +9,7 @@ class CartItemPriceNode(BasePriceNode):
         return item.cart.currency
 
     def get_price(self, cartitem, currency, **kwargs):
-        price = cartitem.get__unit_price(cartitem, currency=currency, **kwargs)
+        price = cartitem.get_unit_price(cartitem, currency=currency, **kwargs)
         if price.has_value():
             return price * cartitem.quantity
 

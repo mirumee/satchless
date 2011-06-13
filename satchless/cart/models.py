@@ -150,8 +150,8 @@ class CartItem(models.Model):
         return handler.get_variant_price(variant, currency,
                 quantity=self.quantity, cart=self.cart, cartitem=self, **kwargs)
 
-    def price(self, currency=None):
-        return self.get_unit_price(currency=currency) * self.quantity
+    def price(self, currency=None, **kwargs):
+        return self.get_unit_price(currency=currency, **kwargs) * self.quantity
 
     class Meta:
         unique_together = ('cart', 'variant')

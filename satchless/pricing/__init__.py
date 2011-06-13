@@ -40,7 +40,8 @@ class Price(object):
     def __mul__(self, other):
         price_net = self.net * other
         price_gross = self.gross * other
-        return Price(net=price_net, gross=price_gross, tax_name=self.tax_name)
+        return Price(net=price_net, gross=price_gross, currency=self.currency,
+                     tax_name=self.tax_name)
 
     def __add__(self, other):
         if not isinstance(other, Price):

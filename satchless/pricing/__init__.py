@@ -24,7 +24,8 @@ class Price(object):
             return u"net=%s,gross=%s" % (self.net, self.gross)
 
     def __repr__(self):
-        return "net=%s,gross=%s" % (self.net, self.gross)
+        return ("<Price(net=%.10g, gross=%.10g, currency='%s')>" %
+                (self.net, self.gross, self.currency))
 
     def __eq__(self, other):
         if isinstance(other, Price):

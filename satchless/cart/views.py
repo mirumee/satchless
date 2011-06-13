@@ -8,7 +8,7 @@ from django.views.decorators.http import require_POST
 from . import models
 from . import forms
 
-def cart(request, typ, form_class=forms.EditCartItemForm):
+def cart(request, typ, form_class=forms.EditCartItemForm, extra_context=None):
     cart = models.Cart.objects.get_or_create_from_request(request, typ)
 
     cart_item_forms = []
@@ -25,10 +25,13 @@ def cart(request, typ, form_class=forms.EditCartItemForm):
         'satchless/cart/%s/view.html' % typ,
         'satchless/cart/view.html'
     ]
-    return TemplateResponse(request, templates, {
+    context = {
         'cart': cart,
         'cart_item_forms': cart_item_forms,
-    })
+    }
+    if extra_context:
+        context.update(extra_context)
+    return TemplateResponse(request, templates, context)
 
 @require_POST
 def remove_item(request, typ, item_pk):

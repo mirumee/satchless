@@ -125,6 +125,10 @@ class Cart(models.Model):
         else:
             return self.typ
 
+    def total(self):
+        from ..pricing import Price
+        return sum([i.price() for i in self.items.all()],
+                   Price(0, currency=self.currency))
 
 class CartItem(models.Model):
     cart = models.ForeignKey(Cart, related_name='items')
@@ -145,6 +149,9 @@ class CartItem(models.Model):
         currency = currency if currency else self.cart.currency
         return handler.get_variant_price(variant, currency,
                 quantity=self.quantity, cart=self.cart, cartitem=self, **kwargs)
+
+    def price(self, currency=None):
+        return self.get_unit_price(currency=currency) * self.quantity
 
     class Meta:
         unique_together = ('cart', 'variant')

@@ -16,9 +16,14 @@ def decimal_format(value, min_decimal_places=0):
     return Decimal((decimal_tuple.sign, digits, -have_decimal_places))
 
 class JSONResponse(HttpResponse):
+    def handle_decimal(self, o):
+        if isinstance(o, Decimal):
+            return float(o)
+        raise TypeError()
+
     def __init__(self, content='', mimetype=None, status=None,
                  content_type='application/json'):
-        content = simplejson.dumps(content)
+        content = simplejson.dumps(content, default=self.handle_decimal)
         return super(JSONResponse, self).__init__(content=content,
                                                   mimetype=mimetype,
                                                   status=status,

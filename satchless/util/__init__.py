@@ -16,9 +16,21 @@ def decimal_format(value, min_decimal_places=0):
     return Decimal((decimal_tuple.sign, digits, -have_decimal_places))
 
 class JSONResponse(HttpResponse):
+    class UndercoverDecimal(float):
+        '''
+        A horrible hack that lets us encode Decimals as numbers.
+        Do not do this at home.
+        '''
+
+        def __init__(self, value):
+            self.value = value
+
+        def __repr__(self):
+            return str(self.value)
+
     def handle_decimal(self, o):
         if isinstance(o, Decimal):
-            return float(o)
+            return self.UndercoverDecimal(o)
         raise TypeError()
 
     def __init__(self, content='', mimetype=None, status=None,

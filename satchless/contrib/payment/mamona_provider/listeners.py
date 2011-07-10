@@ -13,7 +13,7 @@ def payment_status_changed_listener(sender, instance=None, old_status=None, new_
 def return_urls_query_listener(sender, instance=None, urls=None, **kwargs):
     urls['failure'] = urls['paid'] = reverse(
                 'satchless-order-view',
-                kwargs={'order_pk': instance.order.order.pk})
+                kwargs={'order_token': instance.order.order.token})
 
 def order_items_query_listener(sender, instance=None, items=None, **kwargs):
     for item in OrderedItem.objects.filter(delivery_group__order=instance.order.order):

@@ -20,6 +20,8 @@ def init_queue():
             mod_name, han_name = handler.rsplit('.', 1)
             module = import_module(mod_name)
             handler = getattr(module, han_name)
+            if isinstance(handler, type):
+                handler = handler()
         _handlers_queue.append(handler)
 
 init_queue()

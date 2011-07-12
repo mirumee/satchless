@@ -173,7 +173,8 @@ class DeliveryGroup(models.Model):
 class OrderedItem(models.Model):
     delivery_group = models.ForeignKey(DeliveryGroup, related_name='items')
     product_variant = models.ForeignKey(Variant, blank=True, null=True,
-                                        related_name='+')
+                                        related_name='+',
+                                        on_delete=models.SET_NULL)
     product_name = models.CharField(max_length=128)
     quantity = models.DecimalField(_('quantity'),
                                    max_digits=10, decimal_places=4)

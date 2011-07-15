@@ -24,7 +24,7 @@ setup(name="satchless",
                   "satchless.contrib.products",
                   "satchless.contrib.search",
                   "satchless.contrib.stock",
-                  "satchless.contrib.tax"
+                  "satchless.contrib.tax",
                   "satchless.delivery",
                   "satchless.forms",
                   "satchless.image",

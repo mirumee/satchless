@@ -5,6 +5,7 @@ from django.template.response import TemplateResponse
 from django.utils.translation import ugettext as _
 from django.views.decorators.http import require_POST
 
+from ..util import JSONResponse
 from . import models
 from . import forms
 
@@ -21,6 +22,7 @@ def cart(request, typ, form_class=forms.EditCartItemForm, extra_context=None):
             form.save()
             return redirect(request.get_full_path())
         cart_item_forms.append(form)
+
     templates = [
         'satchless/cart/%s/view.html' % typ,
         'satchless/cart/view.html'
@@ -31,6 +33,16 @@ def cart(request, typ, form_class=forms.EditCartItemForm, extra_context=None):
     }
     if extra_context:
         context.update(extra_context)
+    if request.is_ajax():
+        templates = [
+            'satchless/cart/%s/ajax_view.html' % typ,
+            'satchless/cart/ajax_view.html'
+        ]
+        response = TemplateResponse(request, templates, context)
+        return JSONResponse({
+                            'total': cart.items.count(),
+                            'html': response.rendered_content
+                            })
     return TemplateResponse(request, templates, context)
 
 @require_POST
@@ -38,4 +50,6 @@ def remove_item(request, typ, item_pk):
     cart = models.Cart.objects.get_or_create_from_request(request, typ)
     item = get_object_or_404(cart.items, pk=item_pk)
     cart.set_quantity(item.variant, 0)
+    if request.is_ajax():
+        return JSONResponse({'total': cart.items.count()})
     return redirect('satchless-cart-view', typ=typ)

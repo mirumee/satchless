@@ -22,7 +22,6 @@ def cart(request, typ, form_class=forms.EditCartItemForm, extra_context=None):
             form.save()
             return redirect(request.get_full_path())
         cart_item_forms.append(form)
-
     templates = [
         'satchless/cart/%s/view.html' % typ,
         'satchless/cart/view.html'

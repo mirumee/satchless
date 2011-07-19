@@ -34,7 +34,8 @@ class Subtyped(models.Model):
         return self._subtype_instance
 
     def store_content_type(self, klass):
-        self.content_type = ContentType.objects.get_for_model(klass)
+        if not self.content_type_id:
+            self.content_type = ContentType.objects.get_for_model(klass)
 
 def _store_content_type(sender, instance, **kwargs):
     if isinstance(instance, Subtyped):

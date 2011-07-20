@@ -49,6 +49,4 @@ def remove_item(request, typ, item_pk):
     cart = models.Cart.objects.get_or_create_from_request(request, typ)
     item = get_object_or_404(cart.items, pk=item_pk)
     cart.set_quantity(item.variant, 0)
-    if request.is_ajax():
-        return JSONResponse({'total': cart.items.count()})
     return redirect('satchless-cart-view', typ=typ)

@@ -12,7 +12,6 @@ from django.test import TestCase
 from . import fields
 from . import models
 from . import PaymentProvider
-from . import ConfirmationFormNeeded
 
 class TestPaymentVariant(models.PaymentVariant):
     pass
@@ -24,7 +23,7 @@ class TestPaymentProvider(PaymentProvider):
     def enum_types(self, order=None, customer=None):
         return (('gold', 'gold'),)
 
-    def get_configuration_formclass(self, order, typ):
+    def get_configuration_form(self, order, typ, data):
         return None
 
     def create_variant(self, order, typ, form):

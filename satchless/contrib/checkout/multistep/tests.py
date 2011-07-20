@@ -196,20 +196,29 @@ class CheckoutTest(TestCase):
 
     def test_checkout_view(self):
         order = self._create_order(self.anon_client)
-        self._test_status(reverse(views.checkout,
-                                  kwargs={'order_token': order.token}),
-                          client_instance=self.anon_client,
-                          status_code=200)
+        response = self._test_status(reverse(views.checkout,
+                                             kwargs={'order_token':
+                                                     order.token}),
+                                     client_instance=self.anon_client,
+                                     status_code=200)
         group = order.groups.get()
         dtypes = order_handler.get_delivery_types(group)
         dtype = dtypes[0][0]
-        data = {
-            u'form-0-delivery_type': dtype,
-            u'form-MAX_NUM_FORMS': [u''],
-            u'form-TOTAL_FORMS': [u'1'],
-            u'form-0-id': [u'1'],
-            u'form-INITIAL_FORMS': [u'1'],
-        }
+        df = response.context['delivery_formset']
+        data = {'billing_first_name': 'First',
+                'billing_last_name': 'Last',
+                'billing_street_address_1': 'Via Rodeo 1',
+                'billing_city': 'Beverly Hills',
+                'billing_country': 'US',
+                'billing_country_area': 'AZ',
+                'billing_phone': '555-555-5555',
+                'billing_postal_code': '90210'}
+        data[df.add_prefix('INITIAL_FORMS')] = '1'
+        data[df.add_prefix('MAX_NUM_FORMS')] = ''
+        data[df.add_prefix('TOTAL_FORMS')] = '1'
+        for form in df.forms:
+            data[form.add_prefix('delivery_type')] = dtype
+            data[form.add_prefix('id')] = group.id
         self._test_status(reverse(views.checkout, kwargs={'order_token':
                                                           order.token}),
                           data=data, status_code=302,

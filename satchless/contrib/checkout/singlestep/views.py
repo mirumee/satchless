@@ -8,7 +8,7 @@ from ....order import forms
 from ....order import handler
 
 @require_order(status='checkout')
-def checkout(request, order_token):
+def checkout(request, order_token, billing_form_class=forms.BillingForm):
     """
     Checkout step 1 of 1
     The order is split into delivery groups and the user gets to pick both the
@@ -40,10 +40,13 @@ def checkout(request, order_token):
                                    "order: %s" % payment_types)
     order.payment_type = payment_types[0][0]
     order.save()
+    billing_form = billing_form_class(request.POST or None, instance=order)
     payment_form = forms.get_payment_details_form(order, request.POST)
     if request.method == 'POST':
+        billing_valid = billing_form.is_valid()
         payment_valid = payment_form.is_valid() if payment_form else True
-        if delivery_valid and payment_valid:
+        if billing_valid and delivery_valid and payment_valid:
+            order = billing_form.save()
             for group, typ, form in delivery_group_forms:
                 handler.create_delivery_variant(group, form)
             handler.create_payment_variant(order, payment_form)
@@ -51,6 +54,7 @@ def checkout(request, order_token):
             return redirect('satchless-checkout-confirmation',
                             order_token=order.token)
     return TemplateResponse(request, 'satchless/checkout/checkout.html', {
+        'billing_form': billing_form,
         'delivery_group_forms': delivery_group_forms,
         'order': order,
         'payment_form': payment_form,

@@ -96,7 +96,14 @@ class CheckoutTest(TestCase):
                                      client_instance=self.anon_client,
                                      data={'email': 'foo@example.com'})
         dg = response.context['delivery_group_forms']
-        data = {}
+        data = {'billing_first_name': 'First',
+                'billing_last_name': 'Last',
+                'billing_street_address_1': 'Via Rodeo 1',
+                'billing_city': 'Beverly Hills',
+                'billing_country': 'US',
+                'billing_country_area': 'AZ',
+                'billing_phone': '555-555-5555',
+                'billing_postal_code': '90210'}
         for g, typ, form in dg:
             data[form.add_prefix('email')] = 'foo@example.com'
 
@@ -124,14 +131,21 @@ class CheckoutTest(TestCase):
         self._test_status(reverse(confirmation, kwargs={'order_token':
                                                         order.token}),
                           client_instance=self.anon_client, status_code=302)
-        # finish chcekout view
+        # finish checkout view
         response = self._test_status(reverse(views.checkout,
                                              kwargs={'order_token':
                                                      order.token}),
                                      client_instance=self.anon_client,
                                      data={'email': 'foo@example.com'})
         dg = response.context['delivery_group_forms']
-        data = {}
+        data = {'billing_first_name': 'First',
+                'billing_last_name': 'Last',
+                'billing_street_address_1': 'Via Rodeo 1',
+                'billing_city': 'Beverly Hills',
+                'billing_country': 'US',
+                'billing_country_area': 'AZ',
+                'billing_phone': '555-555-5555',
+                'billing_postal_code': '90210'}
         for g, typ, form in dg:
             data[form.add_prefix('email')] = 'foo@example.com'
 

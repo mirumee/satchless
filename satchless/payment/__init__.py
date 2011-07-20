@@ -23,10 +23,10 @@ class PaymentProvider(object):
         '''
         raise NotImplementedError()
 
-    def get_configuration_formclass(self, order, typ):
+    def get_configuration_form(self, order, typ, data):
         '''
-        If applicable, return a form class responsible for getting any
-        additional payment data.
+        If applicable, return a form responsible for getting any additional
+        payment data.
         '''
         return None
 

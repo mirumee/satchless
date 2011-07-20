@@ -53,9 +53,9 @@ def get_delivery_provider(typ):
         raise ValueError('No provider found for delivery type %s.' % typ)
     return provider, type_name
 
-def get_delivery_formclass(delivery_group):
+def get_delivery_form(delivery_group, data):
     provider, typ_short = get_delivery_provider(delivery_group.delivery_type)
-    return provider.get_formclass(delivery_group, typ_short)
+    return provider.get_configuration_form(delivery_group, typ_short, data)
 
 def create_delivery_variant(delivery_group, form):
     provider, typ_short = get_delivery_provider(delivery_group.delivery_type)
@@ -89,9 +89,9 @@ def get_payment_provider(typ):
         raise ValueError('No provider found for payment type %s.' % typ)
     return provider, type_name
 
-def get_payment_formclass(order):
+def get_payment_form(order, data):
     provider, typ_short = get_payment_provider(order.payment_type)
-    return provider.get_configuration_formclass(order, typ_short)
+    return provider.get_configuration_form(order, typ_short, data)
 
 def create_payment_variant(order, form):
     provider, typ_short = get_payment_provider(order.payment_type)

@@ -30,14 +30,10 @@ class TestDeliveryProvider(DeliveryProvider):
     def enum_types(self, customer=None, delivery_group=None):
         return self.types
 
-    def get_formclass(self, delivery_group, typ):
-        return DeliveryForm
+    def get_configuration_form(self, delivery_group, typ, data):
+        instance = TestDeliveryVariant(delivery_group=delivery_group,
+                                       name=typ, price=20)
+        return DeliveryForm(data or None, instance=instance)
 
     def create_variant(self, delivery_group, typ, form=None):
-        variant = TestDeliveryVariant()
-        variant.delivery_group = delivery_group
-        variant.name = typ
-        variant.price = '20'
-        variant.save()
-        return variant
-
+        return form.save()

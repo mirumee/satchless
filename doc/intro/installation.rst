@@ -40,7 +40,7 @@ Include neccessary applications in your ``INSTALLED_APPS`` tuple in Django
         'satchless.order',
 
         # The following list depends on what kinds of products you want to sell:
-        'satchless.contrib.products.dummy',
+        'your_custom_products',
         'satchless.contrib.productset',
     )
 
@@ -53,7 +53,7 @@ just examples and you may change them freely.::
         url(r'^image/', include('satchless.image.urls')),
         url(r'^cart/', include('satchless.cart.urls')),
         url(r'^checkout/', include('satchless.order.urls')),
-        )
+    )
 
 Run ``./manage.py syncdb`` to create the database tables.
 

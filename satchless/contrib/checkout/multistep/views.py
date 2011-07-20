@@ -7,21 +7,24 @@ from ....order import forms
 from ....order import handler
 
 @require_order(status='checkout')
-def checkout(request, order_token):
+def checkout(request, order_token, billing_form_class=forms.BillingForm):
     """
     Checkout step 1
     The order is split into delivery groups. User chooses delivery method
     for each of the groups.
     """
     order = request.order
+    billing_form = billing_form_class(request.POST or None, instance=order)
     delivery_formset = forms.DeliveryMethodFormset(
             data=request.POST or None, queryset=order.groups.all())
     if request.method == 'POST':
-        if delivery_formset.is_valid():
+        if all([billing_form.is_valid(), delivery_formset.is_valid()]):
+            order = billing_form.save()
             delivery_formset.save()
             return redirect('satchless-checkout-delivery-details',
                             order_token=order.token)
     return TemplateResponse(request, 'satchless/checkout/checkout.html', {
+        'billing_form': billing_form,
         'delivery_formset': delivery_formset,
         'order': order,
     })

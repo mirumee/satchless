@@ -9,7 +9,8 @@
     <h1>{% trans "Order (business)" %}</h1>
     {% if order %}
     <form method="post" action="">{% csrf_token %}
-        <h1>{% trans "Delivery details" %}</h1>
+        <h2>{% trans "Billing details" %}</h2>
+        {{ billing_form.as_p }}
         {% for group, typ, form in delivery_group_forms %}
         <h2>{% trans "Delivery method" %}: {{ typ|delivery_type }}</h2>
         <h3>{% trans "Items deliverd using this method" %}:</h3>

@@ -55,22 +55,20 @@ Every product in Satchless has a variant. Simple products may have only one.
     Actually, the base ``satchless.product`` application does not provide
     models for managing any real products. It contains only the base classes
     to define your own models of products and their variants. Examples of code
-    may be found in ``satchless.contrib.products`` tree.
+    may be found in ``examples/`` directory.
 
 The inside class hierarchy looks like this::
 
     satchless.product.models.Product
         satchless.product.models.ProductAbstract
-            satchless.contrib.products.dummy.models.Dummy
-            satchless.contrib.products.book.models.Book
-            user_custom_module.models.CustomProduct
+            your_custom_products.models.CustomProduct
+            your_custom_products.models.AnotherProduct
 
     satchless.product.models.Variant
-        satchless.contrib.products.dummy.models.DummyVariant
-        satchless.contrib.products.book.models.BookVariant
-        user_custom_module.models.CustomProductVariant
+        your_custom_products.models.CustomProductVariant
+        your_custom_products.models.AnotherProductVariant
 
-As you probably noticed, every Product subclass has it's sister Variant
+As you probably noticed, every Product subclass has its sister Variant
 subclass. The convention we use in Satchless is for Variant to refer to
-it's Product model via ``product`` field and for Product to refer back
+its Product model via ``product`` field and for Product to refer back
 via ``variants`` manager.

@@ -9,10 +9,10 @@ class DeliveryProvider(object):
         '''
         raise NotImplementedError()
 
-    def get_form(self, delivery_group, typ):
+    def get_configuration_form(self, delivery_group, typ, data):
         '''
-        If applicable, return a form class responsible for getting any
-        additional delivery data.
+        If applicable, return a form responsible for getting any additional
+        delivery data.
         '''
         return None
 

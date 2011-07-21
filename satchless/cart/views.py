@@ -38,10 +38,8 @@ def cart(request, typ, form_class=forms.EditCartItemForm, extra_context=None):
             'satchless/cart/ajax_view.html'
         ]
         response = TemplateResponse(request, templates, context)
-        return JSONResponse({
-                            'total': cart.items.count(),
-                            'html': response.rendered_content
-                            })
+        return JSONResponse({'total': cart.items.count(),
+                             'html': response.rendered_content})
     return TemplateResponse(request, templates, context)
 
 @require_POST

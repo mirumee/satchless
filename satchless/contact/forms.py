@@ -29,3 +29,4 @@ class AddressFormWithDefaultCheckboxes(AddressForm):
         if self.cleaned_data['set_as_default_shipping']:
             self.instance.customer.shipping_address = self.instance
         self.instance.customer.save()
+        return self.instance

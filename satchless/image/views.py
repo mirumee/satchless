@@ -14,8 +14,11 @@ from . import models
 
 # this neat function is based on easy-thumbnails
 def scale_and_crop(image, size, crop=False, upscale=False):
+    # Open image and store format/metadata.
     image.open()
     im = Image.open(image)
+    im_format, im_info = im.format, im.info
+
     # Force PIL to load image data.
     im.load()
 
@@ -51,6 +54,9 @@ def scale_and_crop(image, size, crop=False, upscale=False):
                    min(source_y, int(target_y) + halfdiff_y)]
             # Finally, crop the image!
             im = im.crop(box)
+
+    # Close image and replace format/metadata, as PIL blows this away.
+    im.format, im.info = im_format, im_info
     image.close()
     return im
 
@@ -64,7 +70,7 @@ def thumbnail(request, image_id, size):
         img = scale_and_crop(image.image, **IMAGE_SIZES[size])
         # save to memory
         buf = StringIO()
-        img.save(buf, 'JPEG')
+        img.save(buf, img.format, **img.info)
         # and save to storage
         original_dir, original_file = os.path.split(image.image.name)
         thumb_file = InMemoryUploadedFile(buf, "image", original_file, None, buf.tell(), None)

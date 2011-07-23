@@ -6,6 +6,7 @@ from django.db.models.query import EmptyQuerySet
 
 from satchless.contrib.pricing import simpleqty
 import satchless.product.models
+import satchless.category.models
 import satchless.product.admin
 import sale.models
 
@@ -152,7 +153,7 @@ class CategoryTranslationInline(TranslationInline):
     model = models.CategoryTranslation
 
 
-class CategoryWithImageAdmin(satchless.product.admin.CategoryAdmin):
+class CategoryWithImageAdmin(satchless.category.admin.CategoryAdmin):
    inlines = [CategoryTranslationInline, CategoryImageInline]
 
 admin.site.register(models.Cardigan, CardiganAdmin)
@@ -163,7 +164,7 @@ admin.site.register(models.Shirt, ShirtAdmin)
 admin.site.register(models.Trousers, TrousersAdmin)
 admin.site.register(models.TShirt, TShirtAdmin)
 
-admin.site.unregister(satchless.product.models.Category)
+admin.site.unregister(satchless.category.models.Category)
 admin.site.register(models.Category, CategoryWithImageAdmin)
 
 admin.site.register(models.Make)

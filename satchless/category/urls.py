@@ -4,7 +4,7 @@ from django.conf.urls.defaults import patterns, url
 from . import views
 
 urlpatterns = patterns('',
-    url(r'^$', views.CatgoryIndex(), name='satchless-category-index'),
+    url(r'^$', views.CategoryList(), name='satchless-category-list'),
     # this url simplifies url templatetag usage ({% url slug %} instead of {% url '' slug %})
     url(r'^(?P<category_slug>[a-z0-9_-]+)/$',
         views.CategoryDetails(), name='satchless-category-details',

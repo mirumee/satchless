@@ -5,7 +5,7 @@ from django.utils.translation import ugettext_lazy as _
 
 from ..util.models import Subtyped
 
-__all__ = ('ProductAbstract', 'Variant',)
+__all__ = ('ProductAbstract', 'Variant')
 
 class Product(Subtyped):
     """
@@ -22,7 +22,10 @@ class Product(Subtyped):
         return self.slug
 
     @models.permalink
-    def get_absolute_url(self):
+    def get_absolute_url(self, category=None):
+        categories = getattr(self, 'categories', None)
+        if category and categories:
+            return categories.get_product_url(product=self, category=category)
         return 'satchless-product-details', (self.pk, self.slug)
 
     def sanitize_quantity(self, quantity):

@@ -7,8 +7,8 @@ from scbv.views import View
 from ..product import views
 from . import models
 
-class CategoryIndex(View):
-    template_name = 'satchless/category/index.html'
+class CategoryList(View):
+    template_name = 'satchless/category/list.html'
 
     def get_context_data(self, request, **kwargs):
         context = {
@@ -19,19 +19,24 @@ class CategoryIndex(View):
 
 
 class CategoryDetails(View):
+    template_name = 'satchless/category/category.html'
+
     def __call__(self, request, parent_slugs, category_slug):
         slugs = filter(None, parent_slugs.split('/') + [category_slug])
         try:
-            path = models.Category.path_from_slugs(slugs)
+            path = models.Category.objects.path_from_slugs(slugs)
         except models.Category.DoesNotExist:
             return HttpResponseNotFound()
         category = path[-1]
-        return self.respond(self.get_context_data(request, category=category, path=path))
+        context = self.get_context_data(request, category=category, path=path)
+        return self.respond(request, context)
 
 
 class ProductDetails(views.ProductDetails):
-    def get_product(self, request, category_slugs='', product_slug='', product_pk=None):
-        path = models.Category.path_from_slugs(filter(None, category_slugs.split('/')))
+    def get_product(self, request, category_slugs='', product_slug='',
+                    product_pk=None):
+        slugs = category_slugs.split('/')
+        path = models.Category.objects.path_from_slugs(filter(None, slugs))
         products = models.Product.objects.filter(slug=product_slug)
         if product_pk:
             products = products.filter(pk=product_pk)

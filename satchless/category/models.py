@@ -1,5 +1,5 @@
 # -*- coding:utf-8 -*-
-from django.db import models, manager
+from django.db import models
 from django.utils.translation import ugettext as _
 from mptt.models import MPTTModel
 
@@ -7,7 +7,7 @@ from ..product.models import Product
 
 __all__ = ('Category',)
 
-class CategoryManager(manager.Manager):
+class CategoryManager(models.Manager):
     def path_from_slugs(self, slugs):
         """
         Returns list of Category instances matchnig given slug path.
@@ -25,6 +25,14 @@ class CategoryManager(manager.Manager):
                 continue
             return list(path) + [leaf]
         raise Category.DoesNotExist
+
+    def get_product_url(self, product, category):
+        if not category:
+            raise ValueError('Category cannot be None')
+        return ('satchless-category-product-details',
+                ('%s%s/' % (category.parents_slug_path(),
+                            category.slug),
+                 product.slug))
 
 
 class Category(MPTTModel):
@@ -52,6 +60,6 @@ class Category(MPTTModel):
 
     @models.permalink
     def get_absolute_url(self):
-        return ('satchless.product.views.category',
+        return ('satchless-category-details',
                 (self.parents_slug_path(), self.slug))
 

@@ -135,6 +135,7 @@ INSTALLED_APPS = (
     'django.contrib.admin',
     'mptt',
     'satchless.product',
+    'satchless.category',
     'satchless.image',
     'satchless.contrib.productset',
     #'satchless.contact',

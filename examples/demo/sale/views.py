@@ -2,7 +2,8 @@
 from django.http import HttpResponseNotFound
 from django.template.response import TemplateResponse
 
-from satchless.product.models import Category, Product
+from satchless.category.models import Category
+from satchless.product.models import Product
 
 from . import query
 

@@ -11,7 +11,6 @@ from ....order import handler as order_handler
 from ....order.models import Order
 from ....payment import ConfirmationFormNeeded
 from ....payment.tests import TestPaymentProvider
-from ....product.models import Category
 from ....product.tests import DeadParrot
 
 from ..common.decorators import require_order
@@ -42,13 +41,10 @@ class CheckoutTest(TestCase):
                 delattr(settings, setting_name)
 
     def setUp(self):
-        category = Category.objects.create(name='parrot')
         self.macaw = DeadParrot.objects.create(slug='macaw',
                 species="Hyacinth Macaw")
-        self.macaw.categories.add(category)
         self.cockatoo = DeadParrot.objects.create(slug='cockatoo',
                 species="White Cockatoo")
-        self.cockatoo.categories.add(category)
         self.macaw_blue = self.macaw.variants.create(color='blue', looks_alive=False)
         self.macaw_blue_fake = self.macaw.variants.create(color='blue', looks_alive=True)
         self.cockatoo_white_a = self.cockatoo.variants.create(color='white', looks_alive=True)

@@ -34,6 +34,18 @@ REQUIREMENTS = [
     'django-mptt >= 0.4.2',
 ]
 
+EXTRAS = {
+    'authorize.net payment provider': [
+        'django-authorizenet >= 1.0'
+    ],
+    'django-payments payment provider': [
+        'django-payments'
+    ],
+    'mamona payment provider': [
+        'mamona',
+    ],
+}
+
 setup(name='satchless',
       author='Mirumee Software',
       author_email='hello@mirumee.com',
@@ -45,5 +57,6 @@ setup(name='satchless',
       package_data=PACKAGE_DATA,
       classifiers=CLASSIFIERS,
       install_requires=REQUIREMENTS,
+      extras_require=EXTRAS,
       platforms=['any'],
       zip_safe=False)

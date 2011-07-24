@@ -47,7 +47,4 @@ def remove_item(request, typ, item_pk):
     cart = models.Cart.objects.get_or_create_from_request(request, typ)
     item = get_object_or_404(cart.items, pk=item_pk)
     cart.set_quantity(item.variant, 0)
-    sku = item.variant.sku
-    messages.info(request,
-                  _('Item "%s" has been removed from your cart' % sku))
     return redirect('satchless-cart-view', typ=typ)

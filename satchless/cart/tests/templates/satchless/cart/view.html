@@ -1,0 +1,83 @@
+{% load i18n promote prices product_prices cart_prices %}
+{% block content %}
+    <table class="cart">
+        <thead>
+            <tr>
+                <th>{% trans "No." %}</th>
+                <th>{% trans "Item" %}</th>
+                <th>{% trans "Unit price" %}</th>
+                <th>{% trans "Quantity" %}</th>
+                <th>{% trans "Price" %}</th>
+                <th>{% trans "Tax" %}</th>
+                <th>{% trans "Delete" %}</th>
+            </tr>
+        </thead>
+        <tbody>
+    {% for form in cart_item_forms %}
+        {% if form.quantity.errors %}
+            <tr class="errors">
+                <td></td>
+                <td colspan="5">
+                    {{ form.quantity.errors }}
+                </td>
+                <td></td>
+            </tr>
+        {% endif %}
+            {% cartitem_unit_price form.instance as unit_price %}
+            {% cartitem_price form.instance as item_price %}
+            <tr class="item">
+                <td rowspan="2">{{ forloop.counter }}</td>
+                <td rowspan="2">{% promote form.instance.variant as variant %}
+                    <a href="{% url satchless-product-product variant.product.slug variant.product.pk %}">{{ variant }}</a>
+                </td>
+                <td class="numerical unitPrice">
+                    {{ unit_price|gross|floatformat:2 }} <span class="currency">{{ cart.currency }}</span><br />
+                </td>
+                <td class="numerical quantity">
+                    <form method="POST" action="">
+                        {% csrf_token %}
+                        &times; {{ form.quantity }}
+                        <button type="submit">{% trans "Update" %}</button>
+                    </form>
+                </td>
+                <td class="numerical itemPrice">
+                    = {{ item_price|gross|floatformat:2 }} <span class="currency">{{ cart.currency }}</span><br />
+                </td>
+                <td class="numerical tax">
+                    {{ item_price|tax|floatformat:2 }} <span class="currency">{{ cart.currency }}</span>
+                </td>
+                <td rowspan="2">
+                    <form method="POST" action="{% url satchless-cart-remove-item cart.typ form.instance.id %}">
+                        {% csrf_token %}
+                        <button type="submit">{% trans "Delete" %}</button>
+                    </form>
+                </td>
+            </tr>
+            <tr>
+                <td class="numerical unitPrice netPrice">
+                    {{ unit_price|net|floatformat:2 }} <span class="currency">{{ cart.currency }}</span>
+                </td>
+                <td></td>
+                <td class="numerical itemPrice netPrice">
+                    {{ item_price|net|floatformat:2 }} <span class="currency">{{ cart.currency }}</span>
+                </td>
+                <td class="numerical taxName">
+                    {% with item_price|tax_name as taxname %}{% if taxname %}({{ taxname }}){% endif %}{% endwith %}
+                </td>
+            </tr>
+    {% endfor %}
+        </tbody>
+        <tfoot>
+            <tr class="total">
+                <th colspan="4" rowspan="2">{% trans "Total" %}:</th>
+                <td class="numerical">
+                    {{ cart.total|gross|floatformat:2 }} <span class="currency">{{ cart.currency }}</span><br />
+                </td>
+                <td colspan="2" rowspan="2"></td>
+            </tr>
+            <tr>
+                <td class="numerical netPrice">{{ cart.total|net|floatformat:2 }} <span class="currency">{{ cart.currency }}</span></td>
+            </tr>
+        </tfoot>
+    </table>
+{% endblock %}

@@ -2,6 +2,7 @@
 from decimal import Decimal
 from django.http import HttpResponse, HttpRequest
 from django.conf import settings
+from django.conf.urls.defaults import patterns, include, url
 from django.core.urlresolvers import reverse
 from django.test import TestCase, Client
 
@@ -17,6 +18,11 @@ from ..common.decorators import require_order
 from ..common.views import prepare_order, reactivate_order
 from . import views
 
+urlpatterns = patterns('',
+    url(r'^cart/', include('satchless.cart.urls')),
+    url(r'^checkout/', include('satchless.contrib.checkout.multistep.urls')),
+    url(r'^order/', include('satchless.order.urls')),
+)
 
 class TestPaymentProviderWithConfirmation(TestPaymentProvider):
     def confirm(self, order):
@@ -24,6 +30,8 @@ class TestPaymentProviderWithConfirmation(TestPaymentProvider):
 
 
 class CheckoutTest(TestCase):
+    urls = 'satchless.contrib.checkout.multistep.tests'
+
     def _setup_settings(self, custom_settings):
         original_settings = {}
         for setting_name, value in custom_settings.items():

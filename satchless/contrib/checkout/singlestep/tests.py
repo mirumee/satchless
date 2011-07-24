@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 from django.conf import settings
+from django.conf.urls.defaults import patterns, include, url
 from django.core.urlresolvers import reverse
 from django.test import TestCase, Client
 
@@ -15,6 +16,10 @@ from ....product.tests import DeadParrot
 from ..common.views import prepare_order, confirmation
 from . import views
 
+urlpatterns = patterns('',
+    url(r'^cart/', include('satchless.cart.urls')),
+    url(r'^checkout/', include('satchless.contrib.checkout.singlestep.urls')),
+)
 
 class TestPaymentProviderWithConfirmation(TestPaymentProvider):
     def confirm(self, order):
@@ -22,6 +27,8 @@ class TestPaymentProviderWithConfirmation(TestPaymentProvider):
 
 
 class CheckoutTest(TestCase):
+    urls = 'satchless.contrib.checkout.singlestep.tests'
+
     def _setup_settings(self, custom_settings):
         original_settings = {}
         for setting_name, value in custom_settings.items():

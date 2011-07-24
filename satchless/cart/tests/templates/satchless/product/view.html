@@ -1,0 +1,32 @@
+{% load i18n promote product_prices %}
+{% block content %}
+    {% if product.variants.count %}
+    <h2>{% trans "Variants" %}</h2>
+    <ul>
+        {% for variant in product.variants.all %}
+            <li>
+                <strong>{{ variant }}</strong>
+                {% variant_price variant currency='BTC' as price %}{% if price %}
+                price: {{ price.gross|floatformat:2 }} <span class="currency">BTC</span>
+                ({{ price.net|floatformat:2 }} <span class="currency">BTC</span> net)
+                {% endif %}
+            </li>
+        {% endfor %}
+    </ul>
+    {% endif %}
+    {% if product.cart_form %}
+    <form method="post" action="">
+        {% csrf_token %}
+        {{ product.cart_form.as_p }}
+        <button type="submit">{% trans "Add to cart" %}</button>
+    </form>
+    {% endif %}
+    {% if product.images.count %}{% load satchless_image %}
+    <h2>{% trans "Images" %}</h2>
+    <ul>
+        {% for img in product.images.all %}
+            <li><img src="{{ img|at_size:'product-detail' }}" alt="" /></li>
+        {% endfor %}
+    </ul>
+    {% endif %}
+{% endblock %}

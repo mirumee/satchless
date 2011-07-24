@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 from django.core.urlresolvers import reverse
 from django.test import TestCase
 
@@ -46,8 +45,10 @@ class Views(ViewTestCase):
         self.parrots = Category.objects.create(slug='parrots', name=u'Parrorts',
                                                parent=self.birds)
 
-    def test_simple_views(self):
+    def test_category_list(self):
         self._test_GET_status(reverse('satchless-category-list'))
+
+    def test_category_details(self):
         self._test_GET_status(self.animals.get_absolute_url())
         self._test_GET_status(self.parrots.get_absolute_url())
 
@@ -57,5 +58,3 @@ class Views(ViewTestCase):
         self.parrots.products.add(parrot_macaw)
         self._test_GET_status(parrot_macaw.get_absolute_url(category=self.animals))
         self._test_GET_status(parrot_macaw.get_absolute_url(category=self.parrots))
-
-

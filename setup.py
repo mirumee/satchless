@@ -33,7 +33,6 @@ PACKAGE_DATA = {
 REQUIREMENTS = [
     'Django >= 1.3',
     'django-mptt >= 0.4.2',
-    'django-scbv',
 ]
 
 EXTRAS = {

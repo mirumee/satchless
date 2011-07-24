@@ -1,10 +1,11 @@
-# -*- coding: utf-8 -*-
-from django.conf.urls.defaults import patterns, url
+from django.conf.urls.defaults import patterns, url, include
+import warnings
 
-from . import views
+from . import app
+
+warnings.warn('satchless.product.urls is deprecated, use'
+              ' satchless.product.views.product_app.urls instead')
 
 urlpatterns = patterns('',
-    # '+' which predeces product slug prevents conflicts with categories paths
-    url(r'^\+(?P<product_pk>[0-9]+)-(?P<product_slug>[a-z0-9_-]+)/$',
-        views.ProductDetails(), name='satchless-product-details'),
+    url(r'', include(app.product_app.urls)),
 )

@@ -1,4 +1,3 @@
-# -*- coding:utf-8 -*-
 from django.db import models
 from django.utils.translation import ugettext as _
 from mptt.models import MPTTModel
@@ -43,8 +42,8 @@ class Category(MPTTModel):
     slug = models.SlugField(max_length=50)
     parent = models.ForeignKey('self', null=True, blank=True,
                                related_name='children')
-    products = models.ManyToManyField(Product, related_name='categories', null=True)
-
+    products = models.ManyToManyField(Product, related_name='categories',
+                                      null=True)
     objects = CategoryManager()
 
     class Meta:
@@ -62,4 +61,3 @@ class Category(MPTTModel):
     def get_absolute_url(self):
         return ('satchless-category-details',
                 (self.parents_slug_path(), self.slug))
-

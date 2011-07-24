@@ -1,16 +1,11 @@
-# -*- coding:utf-8 -*-
-from django.conf.urls.defaults import patterns, url
+from django.conf.urls.defaults import patterns, url, include
+import warnings
 
-from . import views
+from . import app
+
+warnings.warn('satchless.category.urls is deprecated, use'
+              ' satchless.category.views.product_app.urls instead')
 
 urlpatterns = patterns('',
-    url(r'^$', views.CategoryList(), name='satchless-category-list'),
-    # this url simplifies url templatetag usage ({% url slug %} instead of {% url '' slug %})
-    url(r'^(?P<category_slug>[a-z0-9_-]+)/$',
-        views.CategoryDetails(), name='satchless-category-details',
-        kwargs={'parent_slugs': ''}),
-    url(r'^(?P<parent_slugs>([a-z0-9_-]+/)*)(?P<category_slug>[a-z0-9_-]+)/$',
-        views.CategoryDetails(), name='satchless-category-details'),
-    url(r'^(?P<category_slugs>([a-z0-9_-]+/)+)\+(?P<product_slug>[a-z0-9_-]+)/$',
-        views.ProductDetails(), name='satchless-category-product-details'),
+    url(r'', include(app.product_app.urls)),
 )

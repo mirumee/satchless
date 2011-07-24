@@ -160,7 +160,8 @@ class ParrotTest(TestCase):
                                   kwargs={'typ': 'satchless_cart'}),
                           client_instance=cli_user1, status_code=200)
 
-        self._test_status(self.macaw.get_absolute_url(),
+        self._test_status(reverse('satchless-product-details',
+                                  args=(self.macaw.pk, self.macaw.slug)),
                           method='post',
                           data={'typ': 'satchless_cart',
                                 'color': 'blue',
@@ -168,7 +169,8 @@ class ParrotTest(TestCase):
                                 'quantity': 1},
                           client_instance=cli_anon,
                           status_code=302)
-        self._test_status(self.cockatoo.get_absolute_url(),
+        self._test_status(reverse('satchless-product-details',
+                                  args=(self.cockatoo.pk, self.cockatoo.slug)),
                           method='post',
                           data={'typ': 'satchless_cart',
                                 'color': 'white',
@@ -179,7 +181,8 @@ class ParrotTest(TestCase):
 
     def test_add_to_cart_form_handles_incorrect_data(self):
         cli_anon = Client()
-        response = self._test_status(self.macaw.get_absolute_url(),
+        response = self._test_status(reverse('satchless-product-details',
+                                             args=(self.macaw.pk, self.macaw.slug)),
                                      method='post',
                                      data={'typ': 'satchless_cart',
                                            'color': 'blue',

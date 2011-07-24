@@ -1,13 +1,20 @@
 # -*- coding: utf-8 -*-
+from django.conf.urls.defaults import patterns, include, url
+from django.core.urlresolvers import reverse
 from django.test import TestCase, Client
 
 from ..models import Variant, ProductAbstract
+from ..app import product_app
 
 from . import DeadParrot, DeadParrotVariant
 
-__all__ = [ 'ParrotTest' ]
+__all__ = ['Models', 'Views']
 
-class ParrotTest(TestCase):
+urlpatterns = patterns('',
+    url(r'^cart/', include(product_app.urls)),
+)
+
+class Models(TestCase):
     def setUp(self):
         self.macaw = DeadParrot.objects.create(slug='macaw',
                 species="Hyacinth Macaw")
@@ -44,7 +51,15 @@ class ParrotTest(TestCase):
             self.assertEqual(type(variant.get_subtype_instance()), DeadParrotVariant)
 
 
-    def test_product_details_view(self):
-        response = self.client.get(self.macaw.get_absolute_url())
-        self.assertEqual(response.status_code, 200)
+class Views(TestCase):
+    urls = 'satchless.product.tests.product'
 
+    def setUp(self):
+        self.macaw = DeadParrot.objects.create(slug='macaw',
+                species="Hyacinth Macaw")
+        self.client_test = Client()
+
+    def test_product_details_view(self):
+        response = self.client.get(reverse('satchless-product-details',
+                                           args=(self.macaw.pk, self.macaw.slug)))
+        self.assertEqual(response.status_code, 200)

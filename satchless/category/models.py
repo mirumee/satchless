@@ -27,7 +27,9 @@ class CategoryManager(models.Manager):
 
     def get_product_url(self, product, category):
         if not category:
-            raise ValueError('Category cannot be None')
+            if not product.categories.exists():
+                raise ValueError('Category cannot be None')
+            category = product.categories.all()[0]
         return ('satchless-category-product-details',
                 ('%s%s/' % (category.parents_slug_path(),
                             category.slug),

@@ -1,12 +1,7 @@
 #!/usr/bin/env python
-from django.conf.urls.defaults import patterns, url, include
-from django.core import urlresolvers
-
 import os, sys
 
 import satchless.contrib as contrib
-
-import urls
 
 CONTRIB_DIR_NAME = 'django.contrib'
 CONTRIB_DIR = os.path.dirname(contrib.__file__)
@@ -24,6 +19,7 @@ ALWAYS_INSTALLED_APPS = [
     'django.contrib.staticfiles',
 
     'satchless.cart',
+    'satchless.category',
     'satchless.contact',
     'satchless.contrib.delivery.simplepost',
     'satchless.contrib.pricing.simpleqty',
@@ -36,24 +32,23 @@ ALWAYS_INSTALLED_APPS = [
     'satchless.product',
 ]
 
-TESTED_APPS_GROUPS = [
-    {'APPS': ('satchless.cart',
-              'satchless.contact',
-              'satchless.contrib.checkout.singlestep',
-              'satchless.contrib.delivery.simplepost',
-              'satchless.contrib.pricing.simpleqty',
-              'satchless.contrib.tax.flatgroups',
-              'satchless.delivery',
-              'satchless.order',
-              'satchless.payment',
-              'satchless.pricing',
-              'satchless.product'),
-     'URLS':('satchless.contrib.checkout.singlestep.urls',)},
-    {'APPS': ('satchless.contrib.checkout.multistep',),
-     'URLS': ('satchless.contrib.checkout.multistep.urls',)}
+TESTED_APPS = [
+    'satchless.cart',
+    'satchless.category',
+    'satchless.contact',
+    'satchless.contrib.checkout.multistep',
+    'satchless.contrib.checkout.singlestep',
+    'satchless.contrib.delivery.simplepost',
+    'satchless.contrib.pricing.simpleqty',
+    'satchless.contrib.tax.flatgroups',
+    'satchless.delivery',
+    'satchless.order',
+    'satchless.payment',
+    'satchless.pricing',
+    'satchless.product',
 ]
 
-def setup(verbosity, test_modules, extra_urls):
+def setup(verbosity, test_modules):
     from django.conf import settings
     settings_state = {
         'INSTALLED_APPS': settings.INSTALLED_APPS,
@@ -68,7 +63,8 @@ def setup(verbosity, test_modules, extra_urls):
     # Redirect some settings for the duration of these tests.
     settings.INSTALLED_APPS = list(ALWAYS_INSTALLED_APPS)
     settings.ROOT_URLCONF = 'urls'
-    settings.TEMPLATE_DIRS = (os.path.join(os.path.dirname(__file__), TEST_TEMPLATE_DIR),)
+    settings.TEMPLATE_DIRS = (os.path.join(os.path.dirname(__file__),
+                                           TEST_TEMPLATE_DIR),)
     settings.USE_I18N = True
     settings.LANGUAGE_CODE = 'en'
     settings.LOGIN_URL = '/accounts/login/'
@@ -113,29 +109,18 @@ def setup(verbosity, test_modules, extra_urls):
     from django.template.loaders import app_directories
     reload(app_directories)
 
-    urls_state = list(urls.urlpatterns)
-    if extra_urls:
-        eu = []
-        for i,u in enumerate(extra_urls):
-            eu.append(url('extra-urls-%i/' % i, include(u)))
-        new_patterns = urls.urlpatterns + patterns('', *eu)
-        urls.urlpatterns += new_patterns
-        urlresolvers.clear_url_caches()
+    return settings_state
 
-    return settings_state, urls_state
-
-def teardown(settings_state, urls_state):
+def teardown(settings_state):
     from django.conf import settings
     # Restore the old settings.
     for key, value in settings_state.items():
         setattr(settings, key, value)
-    urls.urlpatterns = urls_state
-    urlresolvers.clear_url_caches()
 
     from django.template.loaders import app_directories
     reload(app_directories)
 
-def satchless_tests(verbosity, interactive, failfast, tested_groups):
+def satchless_tests(verbosity, interactive, failfast, tested_apps):
     from django.conf import settings
     failures = 0
 
@@ -144,59 +129,67 @@ def satchless_tests(verbosity, interactive, failfast, tested_groups):
         settings.TEST_RUNNER = 'django.test.simple.DjangoTestSuiteRunner'
     TestRunner = get_runner(settings)
 
-    for tested_group in tested_groups:
-        tested_apps = tested_group['APPS']
-        settings_state, urls_state = setup(verbosity, tested_apps, tested_group['URLS'])
-        modules_names = []
-        for test_label in tested_apps:
-            if '.' in test_label:
-                modules_names.append(test_label.rsplit('.', 1)[1])
-            else:
-                modules_names.append(test_label)
-
-        if hasattr(TestRunner, 'func_name'):
-            # Pre 1.2 test runners were just functions,
-            # and did not support the 'failfast' option.
-            import warnings
-            warnings.warn(
-                'Function-based test runners are deprecated. Test runners should be classes with a run_tests() method.',
-                DeprecationWarning
-            )
-            failures += TestRunner(modules_names, verbosity=verbosity, interactive=interactive)
+    settings_state = setup(verbosity, tested_apps)
+    modules_names = []
+    for test_label in tested_apps:
+        if '.' in test_label:
+            modules_names.append(test_label.rsplit('.', 1)[1])
         else:
-            test_runner = TestRunner(verbosity=verbosity, interactive=interactive, failfast=failfast)
-            failures += test_runner.run_tests(modules_names)
-        teardown(settings_state, urls_state)
-        if failures and failfast:
-            return failure
+            modules_names.append(test_label)
+
+    if hasattr(TestRunner, 'func_name'):
+        # Pre 1.2 test runners were just functions,
+        # and did not support the 'failfast' option.
+        import warnings
+        warnings.warn(
+            'Function-based test runners are deprecated. Test runners should'
+            ' be classes with a run_tests() method.',
+            DeprecationWarning
+        )
+        failures += TestRunner(modules_names, verbosity=verbosity,
+                               interactive=interactive)
+    else:
+        test_runner = TestRunner(verbosity=verbosity, interactive=interactive,
+                                 failfast=failfast)
+        failures += test_runner.run_tests(modules_names)
+    teardown(settings_state)
     return failures
 
 if __name__ == "__main__":
     from optparse import OptionParser
     usage = "%prog [options] [module module module ...]"
     parser = OptionParser(usage=usage)
-    parser.add_option('-v','--verbosity', action='store', dest='verbosity', default='1',
-        type='choice', choices=['0', '1', '2', '3'],
-        help='Verbosity level; 0=minimal output, 1=normal output, 2=all output')
-    parser.add_option('--noinput', action='store_false', dest='interactive', default=True,
-        help='Tells Django to NOT prompt the user for input of any kind.')
-    parser.add_option('--failfast', action='store_true', dest='failfast', default=False,
-        help='Tells Django to stop running the test suite after first failed test.')
+    parser.add_option('-v','--verbosity', action='store', dest='verbosity',
+                      default='1', type='choice', choices=['0', '1', '2', '3'],
+                      help='Verbosity level; 0=minimal output, 1=normal output,'
+                           ' 2=all output')
+    parser.add_option('--noinput', action='store_false', dest='interactive',
+                      default=True,
+                      help='Tells Django to NOT prompt the user for input of'
+                           ' any kind.')
+    parser.add_option('--failfast', action='store_true', dest='failfast',
+                      default=False,
+                      help='Tells Django to stop running the test suite after'
+                           ' first failed test.')
     parser.add_option('--settings',
-        help='Python path to settings module, e.g. "myproject.settings". If this isn\'t provided, the DJANGO_SETTINGS_MODULE environment variable will be used.')
+                      help='Python path to settings module, e.g.'
+                           ' "myproject.settings". If this isn\'t provided,'
+                           ' the DJANGO_SETTINGS_MODULE environment variable'
+                           ' will be used.')
 
     options, args = parser.parse_args()
     if options.settings:
         os.environ['DJANGO_SETTINGS_MODULE'] = options.settings
-    elif "DJANGO_SETTINGS_MODULE" not in os.environ:
-        parser.error("DJANGO_SETTINGS_MODULE is not set in the environment "
-                      "(you can use simple settings file from satchless.tests.views). "
-                      "Set it or use --settings.")
+    elif 'DJANGO_SETTINGS_MODULE' not in os.environ:
+        parser.error('DJANGO_SETTINGS_MODULE is not set in the environment'
+                     ' (you can use simple settings file from'
+                     ' satchless.tests.views). Set it or use --settings.')
     else:
         options.settings = os.environ['DJANGO_SETTINGS_MODULE']
 
 
-    failures = satchless_tests(int(options.verbosity), options.interactive, options.failfast, TESTED_APPS_GROUPS)
+    failures = satchless_tests(int(options.verbosity), options.interactive,
+                               options.failfast, TESTED_APPS)
 
     if failures:
-        sys.exit(bool(failures))
+        sys.exit(int(failures))

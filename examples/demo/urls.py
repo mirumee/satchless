@@ -1,15 +1,16 @@
 from django.conf import settings
-from django.conf.urls.defaults import *
+from django.conf.urls.defaults import patterns, include, url
 
 from core.admin import gulliver_admin
 import satchless.cart.views
+from satchless.category.app import product_app
 import core.views
 
 urlpatterns = patterns('',
     url(r'^$', core.views.home_page, name='home-page'),
     url(r'^thankyou/(?P<order_token>\w+)/$', core.views.thank_you_page, name='thank-you'),
     url(r'^payment/failed/(?P<order_token>\w+)/$', core.views.payment_failed, name='payment-failed'),
-    url(r'^products/', include('satchless.product.urls')),
+    url(r'^products/', include(product_app.urls)),
     url(r'^contact/', include('satchless.contact.urls')),
     url(r'^image/', include('satchless.image.urls')),
     url(r'^cart/view/(?P<typ>(satchless_cart|satchless_wishlist))/$',

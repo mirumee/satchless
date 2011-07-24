@@ -11,4 +11,3 @@ urlpatterns = patterns('',
     url(r'^(?P<order_token>\w+)/reactivate/$', reactivate_order,
         name='satchless-checkout-reactivate-order'),
     )
-

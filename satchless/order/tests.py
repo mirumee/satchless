@@ -4,7 +4,6 @@ from decimal import Decimal
 from django.core.urlresolvers import reverse
 from django.test import TestCase, Client
 
-from satchless.product.models import Category
 from satchless.product.tests import DeadParrot
 from satchless.cart.models import Cart
 
@@ -12,13 +11,10 @@ from . import models
 
 class OrderTest(TestCase):
     def setUp(self):
-        category = Category.objects.create(name='parrot')
         self.macaw = DeadParrot.objects.create(slug='macaw',
                 species="Hyacinth Macaw")
-        self.macaw.categories.add(category)
         self.cockatoo = DeadParrot.objects.create(slug='cockatoo',
                 species="White Cockatoo")
-        self.cockatoo.categories.add(category)
         self.macaw_blue = self.macaw.variants.create(color='blue', looks_alive=False)
         self.macaw_blue_fake = self.macaw.variants.create(color='blue', looks_alive=True)
         self.cockatoo_white_a = self.cockatoo.variants.create(color='white', looks_alive=True)

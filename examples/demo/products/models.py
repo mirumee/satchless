@@ -6,41 +6,8 @@ from django.db import models
 from django.utils.translation import ugettext as _
 from localeurl.models import reverse
 from mothertongue.models import MothertongueModelTranslate
-import satchless.product.models
 from satchless.image.models import Image
-
-class Category(satchless.product.models.Category,
-               MothertongueModelTranslate):
-    translated_fields = ('name', 'description', 'meta_description')
-    translation_set = 'translations'
-
-    class Meta:
-        verbose_name = _("category")
-        verbose_name_plural = _("categories")
-
-    def get_url(self):
-        """Uses reverse resolver, to force localeurl to add language code."""
-        return reverse('satchless-product-category',
-                args=(self._parents_slug_path(), self.slug))
-
-
-class CategoryImage(Image):
-    category = models.OneToOneField(Category, related_name='image')
-    class Meta:
-        verbose_name_plural = _("Category image")
-
-
-class CategoryTranslation(models.Model):
-    category = models.ForeignKey(Category, related_name='translations')
-    language = models.CharField(max_length=5, choices=settings.LANGUAGES[1:])
-    name = models.CharField(_('name'), max_length=128)
-    description = models.TextField(_('description'), blank=True)
-    meta_description = models.TextField(_('meta description'), blank=True,
-            help_text=_("Description used by search and indexing engines"))
-
-    class Meta(object):
-        unique_together = ('category', 'language')
-
+import satchless.product.models
 
 class ProductImage(Image):
     product = models.ForeignKey(satchless.product.models.Product, related_name="images")
@@ -58,6 +25,7 @@ class ProductImage(Image):
             self.order = self.product.images.aggregate(max_order=models.Max("order"))['max_order'] or 0
         return super(ProductImage, self).save(*args, **kwargs)
 
+
 class Make(models.Model):
     name = models.TextField(_("manufacturer"), default='', blank=True)
     logo = models.ImageField(upload_to="make/logo/")
@@ -65,8 +33,8 @@ class Make(models.Model):
     def __unicode__(self):
         return self.name
 
-class Product(satchless.product.models.ProductAbstract,
-              MothertongueModelTranslate):
+
+class Product(MothertongueModelTranslate, satchless.product.models.ProductAbstract):
     make = models.ForeignKey(Make, null=True, blank=True, on_delete=models.SET_NULL,
         help_text=_("Product manufacturer"))
     main_image = models.ForeignKey(ProductImage, null=True, blank=True, on_delete=models.SET_NULL,
@@ -76,11 +44,6 @@ class Product(satchless.product.models.ProductAbstract,
 
     class Meta:
         abstract = True
-
-    def get_url(self, category=None):
-        """Uses reverse resolver, to force localeurl to add language code."""
-        view, args = self._get_url(category=category)
-        return reverse(view, args=args)
 
 
 class ProductTranslation(models.Model):

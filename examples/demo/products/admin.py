@@ -4,7 +4,8 @@ from django.contrib import admin
 import django.db.models
 from django.db.models.query import EmptyQuerySet
 
-from satchless.contrib.pricing import simpleqty
+import satchless.category.admin
+import satchless.contrib.pricing.simpleqty.admin
 import satchless.product.models
 import satchless.product.admin
 import sale.models
@@ -17,17 +18,13 @@ class TranslationInline(admin.StackedInline):
     max_num = len(settings.LANGUAGES) - 1
 
 
-class CategoryTranslationInline(TranslationInline):
-    model = models.CategoryTranslation
-
-
 class ImageInline(admin.TabularInline):
     formfield_overrides = {
         django.db.models.ImageField: { 'widget': widgets.AdminImageWidget },
     }
 
 
-class ProductForm(satchless.product.admin.ProductForm):
+class ProductForm(satchless.category.admin.ProductForm):
     def __init__(self, *args, **kwargs):
         super(ProductForm, self).__init__(*args, **kwargs)
         if self.instance.id:
@@ -37,7 +34,7 @@ class ProductForm(satchless.product.admin.ProductForm):
             self.fields['main_image'].queryset = EmptyQuerySet(model=models.ProductImage)
 
 
-class ProductAdmin(satchless.product.admin.ProductAdmin):
+class ProductAdmin(satchless.category.admin.ProductAdmin):
     form = ProductForm
 
 
@@ -49,8 +46,8 @@ class ProductImageInline(ImageInline):
 
 
 class PriceInline(admin.TabularInline):
-    model = simpleqty.models.ProductPrice
-    form = simpleqty.admin.ProductPriceForm
+    model = satchless.contrib.pricing.simpleqty.models.ProductPrice
+    form = satchless.contrib.pricing.simpleqty.admin.ProductPriceForm
 
 
 class DiscountInline(admin.TabularInline):
@@ -144,17 +141,6 @@ class TShirtAdmin(ProductAdmin):
                PriceInline, DiscountInline, ProductImageInline]
 
 
-class CategoryImageInline(ImageInline):
-    model = models.CategoryImage
-
-
-class CategoryTranslationInline(TranslationInline):
-    model = models.CategoryTranslation
-
-
-class CategoryWithImageAdmin(satchless.product.admin.CategoryAdmin):
-   inlines = [CategoryTranslationInline, CategoryImageInline]
-
 admin.site.register(models.Cardigan, CardiganAdmin)
 admin.site.register(models.Dress, DressAdmin)
 admin.site.register(models.Hat, HatAdmin)
@@ -162,8 +148,5 @@ admin.site.register(models.Jacket, JacketAdmin)
 admin.site.register(models.Shirt, ShirtAdmin)
 admin.site.register(models.Trousers, TrousersAdmin)
 admin.site.register(models.TShirt, TShirtAdmin)
-
-admin.site.unregister(satchless.product.models.Category)
-admin.site.register(models.Category, CategoryWithImageAdmin)
 
 admin.site.register(models.Make)

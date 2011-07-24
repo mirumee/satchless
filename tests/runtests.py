@@ -24,6 +24,7 @@ ALWAYS_INSTALLED_APPS = [
     'django.contrib.staticfiles',
 
     'satchless.cart',
+    'satchless.category',
     'satchless.contact',
     'satchless.contrib.delivery.simplepost',
     'satchless.contrib.pricing.simpleqty',
@@ -38,6 +39,7 @@ ALWAYS_INSTALLED_APPS = [
 
 TESTED_APPS_GROUPS = [
     {'APPS': ('satchless.cart',
+              'satchless.category',
               'satchless.contact',
               'satchless.contrib.checkout.singlestep',
               'satchless.contrib.delivery.simplepost',

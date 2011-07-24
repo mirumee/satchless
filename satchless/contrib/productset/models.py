@@ -2,11 +2,14 @@ from django.db import models
 from django.utils.translation import ugettext_lazy as _
 
 from satchless.product.models import Variant
-from satchless.product.models import DescribedModel
 from satchless.image.models import Image
 
-class ProductSet(DescribedModel):
+class ProductSet(models.Model):
+    name = models.CharField(_('name'), max_length=128)
     slug = models.SlugField(max_length=50)
+    description = models.TextField(_('description'), blank=True)
+    meta_description = models.TextField(_('meta description'), blank=True,
+            help_text=_("Description used by search and indexing engines"))
 
     @models.permalink
     def get_absolute_url(self):

@@ -3,7 +3,7 @@ from django.conf.urls.defaults import patterns, include, url
 
 from core.admin import gulliver_admin
 import satchless.cart.views
-import satchless.category.app import product_app
+from satchless.category.app import product_app
 import core.views
 
 urlpatterns = patterns('',

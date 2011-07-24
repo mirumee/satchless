@@ -34,8 +34,7 @@ class Make(models.Model):
         return self.name
 
 
-class Product(satchless.product.models.ProductAbstract,
-              MothertongueModelTranslate):
+class Product(MothertongueModelTranslate, satchless.product.models.ProductAbstract):
     make = models.ForeignKey(Make, null=True, blank=True, on_delete=models.SET_NULL,
         help_text=_("Product manufacturer"))
     main_image = models.ForeignKey(ProductImage, null=True, blank=True, on_delete=models.SET_NULL,
@@ -45,11 +44,6 @@ class Product(satchless.product.models.ProductAbstract,
 
     class Meta:
         abstract = True
-
-    def get_url(self, category=None):
-        """Uses reverse resolver, to force localeurl to add language code."""
-        view, args = self._get_url(category=category)
-        return reverse(view, args=args)
 
 
 class ProductTranslation(models.Model):

@@ -9,6 +9,7 @@ class ProductForm(forms.ModelForm):
         model = models.Product
 
 
+# you should use satchless.category.admin.ProductAdmin if you are using category app
 class ProductAdmin(admin.ModelAdmin):
     form = ProductForm
     prepopulated_fields = {'slug': ('name',)}

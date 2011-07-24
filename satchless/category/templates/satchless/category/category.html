@@ -4,7 +4,7 @@
 {% block meta-description %}{% if category.meta_description %}{{ category.meta_description }}{% else %}{{ block.super }}{% endif %}{% endblock %}
 {% block breadcrumbs %}
     {{ block.super }}
-    <li><a href="{% url satchless-product-index %}">{% trans "Products" %}</a></li>
+    <li><a href="{% url satchless-category-list %}">{% trans "Products" %}</a></li>
     {% for cat in path %}
     <li><a href="{{ cat.get_absolute_url }}">{{ cat }}</a></li>
     {% endfor %}

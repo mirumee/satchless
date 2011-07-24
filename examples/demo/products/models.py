@@ -8,40 +8,6 @@ from localeurl.models import reverse
 from mothertongue.models import MothertongueModelTranslate
 from satchless.image.models import Image
 import satchless.product.models
-import satchless.category.models
-
-class Category(satchless.category.models.Category,
-               MothertongueModelTranslate):
-    translated_fields = ('name', 'description', 'meta_description')
-    translation_set = 'translations'
-
-    class Meta:
-        verbose_name = _("category")
-        verbose_name_plural = _("categories")
-
-    def get_url(self):
-        """Uses reverse resolver, to force localeurl to add language code."""
-        return reverse('satchless-product-category',
-                args=(self._parents_slug_path(), self.slug))
-
-
-class CategoryImage(Image):
-    category = models.OneToOneField(Category, related_name='image')
-    class Meta:
-        verbose_name_plural = _("Category image")
-
-
-class CategoryTranslation(models.Model):
-    category = models.ForeignKey(Category, related_name='translations')
-    language = models.CharField(max_length=5, choices=settings.LANGUAGES[1:])
-    name = models.CharField(_('name'), max_length=128)
-    description = models.TextField(_('description'), blank=True)
-    meta_description = models.TextField(_('meta description'), blank=True,
-            help_text=_("Description used by search and indexing engines"))
-
-    class Meta(object):
-        unique_together = ('category', 'language')
-
 
 class ProductImage(Image):
     product = models.ForeignKey(satchless.product.models.Product, related_name="images")
@@ -59,12 +25,14 @@ class ProductImage(Image):
             self.order = self.product.images.aggregate(max_order=models.Max("order"))['max_order'] or 0
         return super(ProductImage, self).save(*args, **kwargs)
 
+
 class Make(models.Model):
     name = models.TextField(_("manufacturer"), default='', blank=True)
     logo = models.ImageField(upload_to="make/logo/")
 
     def __unicode__(self):
         return self.name
+
 
 class Product(satchless.product.models.ProductAbstract,
               MothertongueModelTranslate):

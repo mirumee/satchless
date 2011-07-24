@@ -131,6 +131,7 @@ INSTALLED_APPS = (
     'django.contrib.staticfiles',
 
     'mothertongue',
+    'categories',
     'grappelli',
     'django.contrib.admin',
     'mptt',

@@ -6,7 +6,6 @@ from ..util.tests import ViewTestCase
 from ..product.tests import DeadParrot
 
 from .models import Category
-from .utils import get_product_url
 
 __all__ = ['Views', 'Models']
 

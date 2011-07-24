@@ -43,7 +43,7 @@ class Category(MPTTModel):
     slug = models.SlugField(max_length=50)
     parent = models.ForeignKey('self', null=True, blank=True,
                                related_name='children')
-    products = models.ManyToManyField(Product, related_name='categories')
+    products = models.ManyToManyField(Product, related_name='categories', null=True)
 
     objects = CategoryManager()
 

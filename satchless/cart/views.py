@@ -8,6 +8,7 @@ from django.views.decorators.http import require_POST
 from ..util import JSONResponse
 from . import models
 from . import forms
+from . import signals
 
 def cart(request, typ, form_class=forms.EditCartItemForm, extra_context=None):
     cart = models.Cart.objects.get_or_create_from_request(request, typ)
@@ -47,4 +48,7 @@ def remove_item(request, typ, item_pk):
     cart = models.Cart.objects.get_or_create_from_request(request, typ)
     item = get_object_or_404(cart.items, pk=item_pk)
     cart.set_quantity(item.variant, 0)
+    signals.cart_item_removed.send(sender=type(item),
+                             instance=item,
+                             request=request)
     return redirect('satchless-cart-view', typ=typ)

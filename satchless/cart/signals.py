@@ -16,5 +16,10 @@ Sent whenever cart's content has been changed.
 
 cart_item_added = dispatch.Signal()
 cart_item_added.__doc__ = """
-Sent whenever new items is added to the cart.
+Sent whenever new item is added to the cart.
+"""
+
+cart_item_removed = dispatch.Signal()
+cart_item_removed.__doc__ = """
+Sent whenever item is removed from the cart.
 """

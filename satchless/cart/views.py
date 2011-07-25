@@ -49,6 +49,6 @@ def remove_item(request, typ, item_pk):
     item = get_object_or_404(cart.items, pk=item_pk)
     cart.set_quantity(item.variant, 0)
     signals.cart_item_removed.send(sender=type(item),
-                             instance=item,
-                             request=request)
+                                   instance=item,
+                                   request=request)
     return redirect('satchless-cart-view', typ=typ)

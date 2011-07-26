@@ -4,7 +4,7 @@ from django import forms
 
 from mptt.admin import MPTTModelAdmin
 
-from ..products.models import Product
+from ..product.models import Product
 from . import fields
 from . import models
 

@@ -1,2 +1,0 @@
-Django>=1.3
--e git+git://github.com/django-mptt/django-mptt.git#egg=django-mptt

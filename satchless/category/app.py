@@ -55,7 +55,7 @@ class CategorizedProductApp(app.ProductApp):
 
     def get_context_data(self, request, product=None, **kwargs):
         categories = self.category_model.objects.filter(parent__isnull=True)
-        context = dict(kwargs, catgories=categories)
+        context = dict(kwargs, categories=categories)
         if product:
             context.update({
                 'path': product.category_path,

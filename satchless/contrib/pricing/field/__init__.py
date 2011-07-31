@@ -1,5 +1,5 @@
 from django.db.models import Min, Max
-from ....pricing import Price, PricingHandler
+from ....pricing import Price, PriceRange, PricingHandler
 
 class FieldGetter(object):
     def __init__(self, field_name='price', currency=None):
@@ -26,8 +26,9 @@ class ProductFieldGetter(FieldGetter, PricingHandler):
             instance_price = getattr(product, self.field_name)
         except AttributeError:
             return price_range
-        return (Price(instance_price, instance_price, currency=currency),
-                Price(instance_price, instance_price, currency=currency))
+        min_price = Price(instance_price, instance_price, currency=currency)
+        max_price = Price(instance_price, instance_price, currency=currency)
+        return PriceRange(min_price=min_price, max_price=max_price)
 
 
 class VariantFieldGetter(FieldGetter, PricingHandler):
@@ -45,10 +46,11 @@ class VariantFieldGetter(FieldGetter, PricingHandler):
         price_range = kwargs.pop('price_range')
         if self.currency and self.currency != currency:
             return price_range
-        minmax = product.variants.all().aggregate(
-                    min_price=Min(self.field_name),
-                    max_price=Max(self.field_name))
-        return (Price(minmax['min_price'], minmax['min_price'],
-                      currency=currency),
-                Price(minmax['max_price'], minmax['max_price'],
-                      currency=currency))
+        field = self.field_name
+        minmax = product.variants.all().aggregate(min_price=Min(field),
+                                                  max_price=Max(field))
+        min_price = Price(minmax['min_price'], minmax['min_price'],
+                          currency=currency)
+        max_price = Price(minmax['max_price'], minmax['max_price'],
+                          currency=currency)
+        return PriceRange(min_price=min_price, max_price=max_price)

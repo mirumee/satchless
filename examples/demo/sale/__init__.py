@@ -1,4 +1,4 @@
-from satchless.pricing import Price, PricingHandler
+from satchless.pricing import Price, PriceRange, PricingHandler
 
 from . import models
 
@@ -8,19 +8,16 @@ class SalePricingHandler(PricingHandler):
             group = product.discount.get()
         except models.DiscountGroup.DoesNotExist:
             return price
-        if isinstance(price, Price):
-            return group.get_discount_amount(price)
-        elif isinstance(price, tuple):
-            return (group.get_discount_amount(price[0]), group.get_discount_amount(price[1]))
-        raise TypeError("Price must be a Price instance or tuple.")
+        if not isinstance(price, (Price, PriceRange)):
+            raise TypeError("Price must be a Price or PriceRange instance")
+        return group.get_discount_amount(price)
 
-    def get_variant_price(self, variant, currency, **context):
+    def get_variant_price(self, variant, price, **context):
         if context.get('discount', True):
-            return self._discount_product(variant.product, context.pop('price'))
-        return context.pop('price')
+            return self._discount_product(variant.product, price)
+        return price
 
-    def get_product_price_range(self, product, currency, **context):
+    def get_product_price_range(self, product, price_range, currency, **context):
         if context.get('discount', True):
-            return self._discount_product(product, context.pop('price_range'))
-        return context.pop('price_range')
-
+            return self._discount_product(product, price_range)
+        return price_range

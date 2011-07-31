@@ -24,7 +24,7 @@ def get_variant_price(variant, currency, quantity=1, **context):
     return price
 
 def get_product_price_range(product, currency, **context):
-    p_range = (Price(), Price())
+    p_range = None
     for handler in _handlers:
         try:
             p_range = handler.get_product_price_range(product=product,

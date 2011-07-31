@@ -43,9 +43,7 @@ class VariantPriceNode(BasePriceNode):
 class ProductPriceRangeNode(BasePriceNode):
     def get_price(self, product, currency, **kwargs):
         from satchless.pricing.handler import get_product_price_range
-        min_price, max_price = get_product_price_range(product, currency, **kwargs)
-        if min_price is not None and min_price.has_value():
-            return SortedDict((('min', min_price), ('max', max_price)))
+        return get_product_price_range(product, currency, **kwargs)
 
 def parse_price_tag(parser, token):
     bits = token.split_contents()

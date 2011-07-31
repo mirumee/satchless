@@ -3,7 +3,7 @@ from decimal import Decimal
 from django.db import models
 from django.utils.translation import ugettext_lazy as _
 from satchless.product.models import Product
-from satchless.pricing import Price
+from satchless.pricing import PriceRange
 
 class DiscountGroup(models.Model):
     name = models.CharField(_("group name"), max_length=100)
@@ -15,15 +15,13 @@ class DiscountGroup(models.Model):
             help_text=_("WARNING: Adding product to a discount's group will remove it from other groups."))
 
     def get_discount_amount(self, price):
-        """
-        For Price objects multiplies only the gross amount.
-        """
-        multi = (Decimal('100') - self.rate) / Decimal('100')
-        if isinstance(price, Price):
-            return Price(net=price.net*multi, gross=price.gross*multi, currency=price.currency)
+        multiplier = (Decimal('100') - self.rate) / Decimal('100')
+        if isinstance(price, PriceRange):
+            min_price = price.min_price * multiplier
+            max_price = price.max_price * multiplier
+            return PriceRange(min_price=min_price, max_price=max_price)
         else:
-            price = price * multi
-            return price
+            return price * multiplier
 
     def __unicode__(self):
         return self.name

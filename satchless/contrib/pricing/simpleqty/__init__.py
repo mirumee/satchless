@@ -1,6 +1,6 @@
 from django.db.models import Sum, Min, Max
 
-from ....pricing import Price, PricingHandler
+from ....pricing import Price, PriceRange, PricingHandler
 from . import models
 
 class SimpleQtyPricingHandler(PricingHandler):
@@ -49,5 +49,6 @@ class SimpleQtyPricingHandler(PricingHandler):
             max_price = max(price, price + max_offset)
         if min_offset is not None:
             min_price = min(price, price + min_offset)
-        return (Price(net=min_price, gross=min_price, currency=currency),
-                Price(net=max_price, gross=max_price, currency=currency))
+        min_price = Price(net=min_price, gross=min_price, currency=currency)
+        max_price = Price(net=max_price, gross=max_price, currency=currency)
+        return PriceRange(min_price=min_price, max_price=max_price)

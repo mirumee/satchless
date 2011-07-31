@@ -1,8 +1,6 @@
-from decimal import Decimal
 from django.db import models
 from django.utils.translation import ugettext_lazy as _
 from satchless.product.models import Product
-from satchless.pricing import Price
 
 class TaxGroup(models.Model):
     name = models.CharField(_("group name"), max_length=100)
@@ -22,19 +20,6 @@ class TaxGroup(models.Model):
                 q = q.exclude(pk=self.pk)
             q.update(default=False)
         super(TaxGroup, self).save(*args, **kwargs)
-
-    def get_tax_amount(self, price):
-        """
-        For Price objects multiplies only the gross amount.
-        """
-        multi = (self.rate + Decimal('100')) / Decimal('100')
-        if isinstance(price, Price):
-            return Price(net=price.net, gross=price.gross * multi,
-                         tax_name=self.rate_name, currency=price.currency)
-        else:
-            price = price * multi
-            price.tax_name = self.rate_name
-            return price
 
     def __unicode__(self):
         return self.name

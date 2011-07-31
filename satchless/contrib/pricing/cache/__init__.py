@@ -3,8 +3,8 @@ import urllib
 from ....util.exceptions import FinalValue
 from ....pricing import PricingHandler
 
-def get_cache_key(product=None, variant=None, **kwargs):
-    ret = {}
+def get_cache_key(currency, product=None, variant=None, **kwargs):
+    ret = {'currency': currency}
     if variant:
         ret['variant'] = variant.id
     if product:

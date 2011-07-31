@@ -3,7 +3,7 @@ from django.conf import settings
 from django.test import TestCase
 from django import template
 import mock
-from satchless.pricing import handler, Price, PricingHandler
+from satchless.pricing import handler, Price, PriceRange, PricingHandler
 
 from ..templatetags import product_prices
 
@@ -16,8 +16,8 @@ class FiveZlotyPriceHandler(PricingHandler):
         return Price(net=5, gross=5, currency=u'PLN')
 
     def get_product_price_range(self, *args, **kwargs):
-        return (Price(net=5, gross=5, currency=u'PLN'),
-                Price(net=5, gross=5, currency=u'PLN'))
+        return PriceRange(min_price=Price(net=5, gross=5, currency=u'PLN'),
+                          max_price=Price(net=5, gross=5, currency=u'PLN'))
 
 class NinetyPerecentTaxPriceHandler(PricingHandler):
     """Scary price handler - it counts 90% of tax for everything"""
@@ -32,14 +32,15 @@ class NinetyPerecentTaxPriceHandler(PricingHandler):
 
     def get_product_price_range(self, *args, **kwargs):
         price_range = kwargs.get('price_range')
-        return (self._tax(price_range[0]),
-                self._tax(price_range[1]))
+        return PriceRange(min_price=self._tax(price_range.min_price),
+                          max_price=self._tax(price_range.max_price))
 
 class TenPercentDiscountPriceHandler(PricingHandler):
     """Discount all handler"""
 
     def _discount(self, price):
-        return Price(currency=price.currency, net=price.net*decimal.Decimal('0.9'),
+        return Price(currency=price.currency,
+                     net=price.net*decimal.Decimal('0.9'),
                      gross=price.gross*decimal.Decimal('0.9'))
 
     def get_variant_price(self, *args, **kwargs):
@@ -51,8 +52,8 @@ class TenPercentDiscountPriceHandler(PricingHandler):
     def get_product_price_range(self, *args, **kwargs):
         price_range = kwargs.pop('price_range')
         if kwargs.get('discount', True):
-            return (self._discount(price_range[0]),
-                    self._discount(price_range[1]))
+            return PriceRange(min_price=self._discount(price_range.min_price),
+                              max_price=self._discount(price_range.max_price))
         return price_range
 
 class BasicHandlerTest(TestCase):
@@ -68,14 +69,17 @@ class BasicHandlerTest(TestCase):
         handler.init_queue()
 
     def test_discounted_price(self):
-        price = handler.get_variant_price(None, u'PLN', quantity=1, discount=True)
+        price = handler.get_variant_price(None, u'PLN', quantity=1,
+                                          discount=True)
         self.assertEqual(price,
                          Price(net=5*decimal.Decimal('0.9'),
-                               gross=5*decimal.Decimal('1.9')*decimal.Decimal('0.9'),
+                               gross=(5 * decimal.Decimal('1.9') *
+                                      decimal.Decimal('0.9')),
                                currency=u'PLN'))
 
     def test_undiscounted_price(self):
-        price = handler.get_variant_price(None, u'PLN', quantity=1, discount=False)
+        price = handler.get_variant_price(None, u'PLN', quantity=1,
+                                          discount=False)
         self.assertEqual(price,
                          Price(net=5,
                                gross=5*decimal.Decimal('1.9'),
@@ -135,7 +139,8 @@ class PricingTagsTest(TestCase):
         result = node.render(context)
         self.assertEqual(result,
                          Price(net=5*decimal.Decimal('0.9'),
-                               gross=5*decimal.Decimal('1.9')*decimal.Decimal('0.9'),
+                               gross=(5 * decimal.Decimal('1.9') *
+                                      decimal.Decimal('0.9')),
                                currency=u'PLN'))
 
     def test_variant_price_tag_with_asvar(self):
@@ -156,7 +161,8 @@ class PricingTagsTest(TestCase):
         node.render(context)
         self.assertEqual(context['price'],
                          Price(net=5*decimal.Decimal('0.9'),
-                               gross=5*decimal.Decimal('1.9')*decimal.Decimal('0.9'),
+                               gross=(5 * decimal.Decimal('1.9') *
+                                      decimal.Decimal('0.9')),
                                currency=u'PLN'))
 
     def test_undiscounted_product_price_range(self):
@@ -173,9 +179,9 @@ class PricingTagsTest(TestCase):
 
         context = {'product': 'product', 'PLN': 'PLN', '0': 0}
         node.render(context)
-        self.assertEqual(context['price']['min'],
+        self.assertEqual(context['price'].min_price,
                          Price(net=5, gross=5*decimal.Decimal('1.9'),
                          currency=u'PLN'))
-        self.assertEqual(context['price']['max'],
+        self.assertEqual(context['price'].max_price,
                          Price(net=5, gross=5*decimal.Decimal('1.9'),
                          currency=u'PLN'))

@@ -1,4 +1,6 @@
-from satchless.pricing import Price, PricingHandler
+from decimal import Decimal
+from satchless.pricing import Price, PriceRange, LinearTax, PricingHandler
+
 from . import models
 
 class FlatGroupPricingHandler(PricingHandler):
@@ -10,14 +12,14 @@ class FlatGroupPricingHandler(PricingHandler):
                 group = models.TaxGroup.objects.get(default=True)
             except models.TaxGroup.DoesNotExist:
                 return price
-        if isinstance(price, Price):
-            return group.get_tax_amount(price)
-        elif isinstance(price, tuple):
-            return (group.get_tax_amount(price[0]), group.get_tax_amount(price[1]))
-        raise TypeError("Price must be a Price instance or tuple.")
+        if not isinstance(price, (Price, PriceRange)):
+            raise TypeError("Price must be a Price instance or tuple.")
+        multiplier = (group.rate + Decimal('100')) / Decimal('100')
+        tax = LinearTax(multiplier=multiplier, name=group.name)
+        return price + tax
 
-    def get_variant_price(self, variant, quantity=1, **kwargs):
-        return self._tax_product(variant.product, kwargs.pop('price'))
+    def get_variant_price(self, variant, price, quantity=1, **kwargs):
+        return self._tax_product(variant.product, price)
 
-    def get_product_price_range(self, product, **kwargs):
-        return self._tax_product(product, kwargs.pop('price_range'))
+    def get_product_price_range(self, product, price_range, **kwargs):
+        return self._tax_product(product, price_range)

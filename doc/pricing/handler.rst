@@ -12,7 +12,7 @@ One Python file will suffice. Let's call it ``mytax.py`` and place it a
 directory included in ``PYTHONPATH``::
 
     import decimal
-    from satchless.pricing import Price, PriceRange, LinearTax, PricingHandler
+    from satchless.pricing import LinearTax, PricingHandler
 
     class MyTaxHandler(PricingHandler):
         tax = LinearTax(decimal.Decimal('1.05'), name='My Tax')

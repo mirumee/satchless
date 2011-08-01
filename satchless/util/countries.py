@@ -256,9 +256,7 @@ DEFAULT_COUNTRY_CHOICES = (
     ('ZW', _(u'Zimbabwe')),
 )
 
-COUNTRY_CHOICES = []
 def init_countries():
-    global COUNTRY_CHOICES
     country_list = getattr(settings, 'SATCHLESS_COUNTRY_CHOICES', DEFAULT_COUNTRY_CHOICES)
     if isinstance(country_list, str):
         mod_name, han_name = country_list.rsplit('.', 1)
@@ -266,12 +264,15 @@ def init_countries():
         country_list = getattr(module, han_name)()
 
     country_keys = dict(DEFAULT_COUNTRY_CHOICES)
+    countries = []
     for country in country_list:
         if isinstance(country, str):
             if country == '':
                 country = (u'', u'---------')
             else:
                 country = (country, country_keys[country])
-        COUNTRY_CHOICES.append(country)
+        countries.append(country)
+    return countries
 
-init_countries()
+COUNTRY_CHOICES = init_countries()
+

@@ -1,7 +1,11 @@
 # -*- coding: utf-8 -*-
-from django.utils.translation import ugettext_lazy as _
 
-COUNTRY_CHOICES = (
+from django.utils.translation import ugettext_lazy as _
+from django.utils.importlib import import_module
+from django.conf import settings
+
+
+DEFAULT_COUNTRY_CHOICES = (
     ('AF', _(u'Afghanistan')),
     ('AX', _(u'Åland Islands')),
     ('AL', _(u'Albania')),
@@ -251,3 +255,24 @@ COUNTRY_CHOICES = (
     ('ZM', _(u'Zambia')),
     ('ZW', _(u'Zimbabwe')),
 )
+
+def init_countries():
+    country_list = getattr(settings, 'SATCHLESS_COUNTRY_CHOICES', DEFAULT_COUNTRY_CHOICES)
+    if isinstance(country_list, str):
+        mod_name, han_name = country_list.rsplit('.', 1)
+        module = import_module(mod_name)
+        country_list = getattr(module, han_name)()
+
+    country_keys = dict(DEFAULT_COUNTRY_CHOICES)
+    countries = []
+    for country in country_list:
+        if isinstance(country, str):
+            if country == '':
+                country = (u'', u'---------')
+            else:
+                country = (country, country_keys[country])
+        countries.append(country)
+    return countries
+
+COUNTRY_CHOICES = init_countries()
+

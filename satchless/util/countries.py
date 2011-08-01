@@ -267,11 +267,10 @@ def build_country_choices():
     country_keys = dict(DEFAULT_COUNTRY_CHOICES)
     countries = []
     for country in country_list:
+        if country is None:
+            country = (u'', u'---------')
         if isinstance(country, str):
-            if country == '':
-                country = (u'', u'---------')
-            else:
-                country = (country, country_keys[country])
+            country = (country, country_keys[country])
         countries.append(country)
     return countries
 

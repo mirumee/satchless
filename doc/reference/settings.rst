@@ -10,6 +10,32 @@ general, refer to `Django settings`_ doc.
 
 .. _`Django settings`: http://docs.djangoproject.com/en/1.3/topics/settings/
 
+SATCHLESS_COUNTRY_CHOICES
+-------------------------
+
+A list of countries your business cares about. If not set, Satchless will
+default to a list of all known countries. Valid values are:
+
+* an iterable of 2-letter country ISO codes with optional separators expressed
+  as ``None``::
+
+      SATCHLESS_COUNTRY_CHOICES = ('GB', 'US', None, 'CZ', 'PL')
+
+* an iterable of choices, using valid 2-letter country ISO codes as values::
+
+      SATCHLESS_COUNTRY_CHOICES = (
+          ('CZ', 'The guys who make beer'),
+          ('PL', 'The guys who drink it'),
+      )
+
+* a callable returning any of the above::
+
+      SATCHLESS_COUNTRY_CHOICES = lambda: ['BE', 'DE', 'FR']
+
+* a Python path to any of the above::
+
+      SATCHLESS_COUNTRY_CHOICES = 'my_store.stuff.country_list'
+
 SATCHLESS_DEFAULT_CURRENCY
 --------------------------
 

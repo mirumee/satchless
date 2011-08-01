@@ -4,6 +4,7 @@ from django.conf.urls.defaults import patterns, include, url
 from django.core.urlresolvers import reverse
 from django.test import TestCase, Client
 
+from ....cart.app import cart_app
 from ....cart.models import Cart, CART_SESSION_KEY
 from ....delivery.tests import TestDeliveryProvider
 from ....order import handler as order_handler
@@ -17,7 +18,7 @@ from ..common.views import prepare_order, confirmation
 from . import views
 
 urlpatterns = patterns('',
-    url(r'^cart/', include('satchless.cart.urls')),
+    url(r'^cart/', include(cart_app.urls)),
     url(r'^checkout/', include('satchless.contrib.checkout.singlestep.urls')),
 )
 

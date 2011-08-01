@@ -6,6 +6,7 @@ from django.conf.urls.defaults import patterns, include, url
 from django.core.urlresolvers import reverse
 from django.test import TestCase, Client
 
+from ....cart.app import cart_app
 from ....cart.models import Cart, CART_SESSION_KEY
 from ....contrib.delivery.simplepost.models import PostShippingType
 from ....order import handler as order_handler
@@ -19,7 +20,7 @@ from ..common.views import prepare_order, reactivate_order
 from . import views
 
 urlpatterns = patterns('',
-    url(r'^cart/', include('satchless.cart.urls')),
+    url(r'^cart/', include(cart_app.urls)),
     url(r'^checkout/', include('satchless.contrib.checkout.multistep.urls')),
     url(r'^order/', include('satchless.order.urls')),
 )
@@ -168,7 +169,7 @@ class CheckoutTest(TestCase):
                                      client_instance=self.anon_client, status_code=302)
         # 'satchless_cart' is taken from multistep/urls.py:
         # url(r'^prepare-order/$', prepare_order, {'typ': 'satchless_cart'}...)
-        self.assertRedirects(response, reverse('satchless-cart-view', args=('satchless_cart',)))
+        self.assertRedirects(response, reverse('satchless-cart-view'))
 
     def test_prepare_order_redirects_to_checkout_when_order_exists(self):
         order = self._create_order(self.anon_client)

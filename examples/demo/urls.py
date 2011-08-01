@@ -2,7 +2,7 @@ from django.conf import settings
 from django.conf.urls.defaults import patterns, include, url
 
 from core.admin import gulliver_admin
-import satchless.cart.views
+from satchless.cart.app import cart_app
 from satchless.category.app import product_app
 import core.views
 
@@ -13,9 +13,7 @@ urlpatterns = patterns('',
     url(r'^products/', include(product_app.urls)),
     url(r'^contact/', include('satchless.contact.urls')),
     url(r'^image/', include('satchless.image.urls')),
-    url(r'^cart/view/(?P<typ>(satchless_cart|satchless_wishlist))/$',
-         satchless.cart.views.cart, name='satchless-cart-view'),
-    url(r'^cart/', include('satchless.cart.urls')),
+    url(r'^cart/', include(cart_app.urls)),
     url(r'^carts/', include('carts.urls')),
     url(r'^order/', include('satchless.order.urls')),
     url(r'^checkout/', include('satchless.contrib.checkout.multistep.urls')),

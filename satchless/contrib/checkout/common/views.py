@@ -23,7 +23,7 @@ def prepare_order(request, typ):
         try:
             order = models.Order.objects.get_from_cart(cart)
         except models.EmptyCart:
-            return redirect('satchless-cart-view', typ=typ)
+            return redirect('satchless-cart-view')
     request.session['satchless_order'] = order.pk
     return redirect('satchless-checkout', order_token=order.token)
 

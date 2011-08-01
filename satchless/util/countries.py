@@ -4,7 +4,6 @@ from django.utils.translation import ugettext_lazy as _
 from django.utils.importlib import import_module
 from django.conf import settings
 
-
 DEFAULT_COUNTRY_CHOICES = (
     ('AF', _(u'Afghanistan')),
     ('AX', _(u'Åland Islands')),
@@ -256,13 +255,15 @@ DEFAULT_COUNTRY_CHOICES = (
     ('ZW', _(u'Zimbabwe')),
 )
 
-def init_countries():
-    country_list = getattr(settings, 'SATCHLESS_COUNTRY_CHOICES', DEFAULT_COUNTRY_CHOICES)
+def build_country_choices():
+    country_list = getattr(settings, 'SATCHLESS_COUNTRY_CHOICES',
+                           DEFAULT_COUNTRY_CHOICES)
     if isinstance(country_list, str):
         mod_name, han_name = country_list.rsplit('.', 1)
         module = import_module(mod_name)
-        country_list = getattr(module, han_name)()
-
+        country_list = getattr(module, han_name)
+    if hasattr(country_list, '__call__'):
+        country_list = country_list()
     country_keys = dict(DEFAULT_COUNTRY_CHOICES)
     countries = []
     for country in country_list:
@@ -274,5 +275,4 @@ def init_countries():
         countries.append(country)
     return countries
 
-COUNTRY_CHOICES = init_countries()
-
+COUNTRY_CHOICES = build_country_choices()

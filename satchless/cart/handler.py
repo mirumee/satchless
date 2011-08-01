@@ -69,7 +69,7 @@ class AddToCartHandler(object):
                     if request.is_ajax():
                         # FIXME: add cart details like number of items and new total
                         return JSONResponse({})
-                    return redirect('satchless-cart-view', typ=self.typ)
+                    return redirect('satchless-cart-view')
                 elif request.is_ajax() and form.errors:
                     data = dict(form.errors)
                     return JSONResponse(data, status=400)

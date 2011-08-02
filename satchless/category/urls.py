@@ -4,7 +4,7 @@ import warnings
 from . import app
 
 warnings.warn('satchless.category.urls is deprecated, use'
-              ' satchless.category.views.product_app.urls instead')
+              ' satchless.category.app.product_app.urls instead')
 
 urlpatterns = patterns('',
     url(r'', include(app.product_app.urls)),

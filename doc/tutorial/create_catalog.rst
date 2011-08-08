@@ -200,6 +200,128 @@ customer somehow. However, supposing that not all of your tacos are offered in
 all variations you're going to want to write a form which only uses available
 variants. Here's how we handle the form in this store::
 
+        from django import forms
+        from satchless.forms.widgets import DecimalInput
+        from satchless.product.forms import BaseVariantForm
+        from models import Taco, TacoVariant
+
+        class ProductPriceForm(forms.ModelForm):
+            class Meta:
+                widgets = {
+                    'price': DecimalInput(min_decimal_places=2),
+                }
+
+        class TacoVariantForm(BaseVariantForm):
+            size = forms.CharField(
+                    max_length=6,
+                    widget=forms.Select(choices=[]))
+
+            def __init__(self, *args, **kwargs):
+                super(TacoVariantForm, self).__init__(*args, **kwargs)
+                used_sizes = self.product.variants.values_list('size', flat=True).distinct()
+                size_choices = [(k, v)
+                                for k, v in TacoVariant.SIZE_CHOICES
+                                if k in used_sizes]
+                self.fields['size'].widget.choices = size_choices
+
+            def _get_variant_queryset(self):
+                return TacoVariant.objects.filter(
+                    product=self.product,
+                    size=self.cleaned_data['size'],
+                )
+
+            def clean(self):
+                if not self._get_variant_queryset().exists():
+                    raise forms.ValidationError("We are sorry but we don't carry this"
+                                                "size of taco")
+                return self.cleaned_data
+
+            def get_variant(self):
+                return self._get_variant_queryset().get()
+
+
+The Taco Admin
+--------------
+
+Now that we know how we want to display Taco sizes to the user, we can start
+writing our ``admin.py`` so we can add Taco Products using the django admin
+interface. This code is based on the ``example.demo`` store and is modified for our taco stand. Refer to the ``example.demo`` source for further examples of using inlines.
+
+Our taco stand admin.py looks like::
+
+        # -*- coding:utf-8 -*-
+        from django.conf import settings
+        from django.contrib import admin
+        import django.db.models
+
+        from django.db.models.query import EmptyQuerySet
+
+        from satchless.contrib.pricing import simpleqty
+        import satchless.product.models
+        import satchless.product.admin
+        import satchless.category.models
+        import satchless.category.admin
+        import sale.models
+
+        from . import models
+        from . import widgets
+        from .forms import ProductPriceForm
+
+        class ImageInline(admin.TabularInline):
+            formfield_overrides = {
+                django.db.models.ImageField: { 'widget': widgets.AdminImageWidget },
+            }
+
+        class ProductImageInline(ImageInline):
+            extra = 4
+            max_num = 4
+            model = models.ProductImage
+            sortable_field_name = "order"
+
+        class ProductForm(satchless.product.admin.ProductForm):
+            def __init__(self, *args, **kwargs):
+                super(ProductForm, self).__init__(*args, **kwargs)
+                if self.instance.id:
+                    self.fields['main_image'].queryset =\
+                        (models.ProductImage.objects.filter(product=self.instance))
+                else:
+                    self.fields['main_image'].queryset =\
+                        EmptyQuerySet(model=models.ProductImage)
+
+        class ProductAdmin(satchless.product.admin.ProductAdmin):
+            form = ProductForm
+
+        class ProductImageInline(ImageInline):
+            extra = 4
+            man_num = 4
+            model = models.ProductImage
+            sortable_field_name = "order"
+
+        class PriceInline(admin.TabularInline):
+            model = simpleqty.models.ProductPrice
+            form = ProductPriceForm
+
+        class DiscountInline(admin.TabularInline):
+            model = sale.models.DiscountGroup.products.through
+            max_num = 1
+
+        class CategoryImageInline(ImageInline):
+            model = models.CategoryImage
+
+        class CategoryWithImageAdmin(satchless.category.admin.CategoryAdmin):
+            inlines = [CategoryImageInline]
+
+        class TacoVariantInline(admin.TabularInline):
+            model = models.TacoVariant
+
+        class TacoAdmin(ProductAdmin):
+            inlines = [ProductImageInline, TacoVariantInline, PriceInline,
+                    DiscountInline]
+
+        admin.site.unregister(satchless.category.models.Category)
+        admin.site.register(models.Category, CategoryWithImageAdmin)
+
+        admin.site.register(models.Taco, TacoAdmin)
 
 
 Going Forward
@@ -211,6 +333,6 @@ customers to browse, search, and purchase your product.
 
 TODO:
 
-    * Write admin.py documentation.
-    * Write admin documentation for adding products (with screenshots).
+    * Admin documentation for adding products (with screenshots).
+    * Document "toppings" and similar free customizations.
 

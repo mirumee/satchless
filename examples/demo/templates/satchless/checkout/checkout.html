@@ -28,7 +28,12 @@
             <ul>
             {% include 'satchless/checkout/snippets/delivery_group.html' %}
             </ul>
-            {{ form.as_p }}
+            <table>
+            <tbody>
+            {{ form.as_table }}
+            {{ billing_form.as_table }}
+            </tbody>
+            </table>
         {% endwith %}{% endfor %}
         <button class="button" type="submit">{% trans "Proceed" %}</button>
     </form>

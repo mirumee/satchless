@@ -1,11 +1,12 @@
 from PIL import Image
 
 # this neat function is based on easy-thumbnails
-def scale_and_crop(image, size, crop=False, upscale=False):
+def scale_and_crop(image, size, crop=False, upscale=False, quality=75):
     # Open image and store format/metadata.
     image.open()
     im = Image.open(image)
     im_format, im_info = im.format, im.info
+    im_info['quality'] = quality
 
     # Force PIL to load image data.
     im.load()

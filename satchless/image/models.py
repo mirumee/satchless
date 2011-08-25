@@ -7,6 +7,7 @@ except:
 
 from django.db import models
 from django.core.files.uploadedfile import InMemoryUploadedFile
+from django.core.urlresolvers import reverse
 
 from . import IMAGE_SIZES
 from . import utils
@@ -44,7 +45,7 @@ class Image(models.Model):
         try:
             return self.get_by_size(size).image.url
         except Thumbnail.DoesNotExist:
-            return Thumbnail.objects.get_or_create_at_size(self.id, size).get_absolute_url()
+            return reverse('satchless-image-thumbnail', args=(self.id, size))
 
 
 def thumbnail_upload_to(instance, filename, **kwargs):

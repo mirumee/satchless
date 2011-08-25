@@ -1,8 +1,15 @@
 import hashlib
 import os.path
+try:
+    from cStringIO import StringIO
+except:
+    from StringIO import StringIO
 
-from django.core.urlresolvers import reverse
 from django.db import models
+from django.core.files.uploadedfile import InMemoryUploadedFile
+
+from . import IMAGE_SIZES
+from . import utils
 
 def hashed_upload_to(prefix, instance, filename):
     hasher = hashlib.md5()
@@ -37,10 +44,30 @@ class Image(models.Model):
         try:
             return self.get_by_size(size).image.url
         except Thumbnail.DoesNotExist:
-            return reverse('satchless-image-thumbnail', args=(self.id, size))
+            return Thumbnail.objects.get_or_create_at_size(self.id, size).get_absolute_url()
+
 
 def thumbnail_upload_to(instance, filename, **kwargs):
     return hashed_upload_to('image/thumbnail/by-md5/', instance, filename)
+    
+
+class ThumbnailManager(models.Manager):
+    def get_or_create_at_size(self, image_id, size):
+        image = Image.objects.get(id=image_id)
+        if not size in IMAGE_SIZES:
+            pass
+        try:
+            thumbnail = image.get_by_size(size)
+        except Thumbnail.DoesNotExist:
+            img = utils.scale_and_crop(image.image, **IMAGE_SIZES[size])
+            # save to memory
+            buf = StringIO()
+            img.save(buf, img.format, **img.info)
+            # and save to storage
+            original_dir, original_file = os.path.split(image.image.name)
+            thumb_file = InMemoryUploadedFile(buf, "image", original_file, None, buf.tell(), None)
+            thumbnail = image.thumbnail_set.create(size=size, image=thumb_file)
+        return thumbnail
 
 class Thumbnail(models.Model):
     original = models.ForeignKey(Image)
@@ -49,6 +76,8 @@ class Thumbnail(models.Model):
     size = models.CharField(max_length=100)
     height = models.PositiveIntegerField(default=0, editable=False)
     width = models.PositiveIntegerField(default=0, editable=False)
+    
+    objects = ThumbnailManager()
 
     class Meta:
         unique_together = ('image', 'size')

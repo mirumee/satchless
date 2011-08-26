@@ -46,7 +46,7 @@ class Category(MPTTModel):
     parent = models.ForeignKey('self', null=True, blank=True,
                                related_name='children')
     products = models.ManyToManyField(Product, related_name='categories',
-                                      null=True)
+                                      null=True, blank=True)
     objects = CategoryManager()
 
     class Meta:

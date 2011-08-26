@@ -34,9 +34,6 @@ Let's start with a model for the product, in ``models.py`` file.::
     class Parrot(ProductAbstract):
         latin_name = models.CharField(max_length=20)
 
-        class Meta:
-            app_label = 'product'
-
 
     class ParrotVariant(Variant):
         product = models.ForeignKey(Parrot, related_name='variants')
@@ -51,11 +48,9 @@ Let's start with a model for the product, in ``models.py`` file.::
                     self.product.name)
 
         class Meta:
-            app_label = 'product'
             unique_together = ('product', 'color', 'looks_alive')
 
-Looks pretty simple, doesn't it? Notice the optional ``app_label`` meta
-attribute, which will cause parrots to appear in *Products* admin group.
+Looks pretty simple, doesn't it?
 
 .. note::
     In Satchless we assume that variants refer to their products via

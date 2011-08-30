@@ -53,12 +53,23 @@ class CheckoutTest(TestCase):
                 species="Hyacinth Macaw")
         self.cockatoo = DeadParrot.objects.create(slug='cockatoo',
                 species="White Cockatoo")
-        self.macaw_blue = self.macaw.variants.create(color='blue', looks_alive=False)
-        self.macaw_blue_fake = self.macaw.variants.create(color='blue', looks_alive=True)
-        self.cockatoo_white_a = self.cockatoo.variants.create(color='white', looks_alive=True)
-        self.cockatoo_white_d = self.cockatoo.variants.create(color='white', looks_alive=False)
-        self.cockatoo_blue_a = self.cockatoo.variants.create(color='blue', looks_alive=True)
-        self.cockatoo_blue_d = self.cockatoo.variants.create(color='blue', looks_alive=False)
+        self.macaw_blue = self.macaw.variants.create(color='blue', sku='M-BL-D',
+                                                     looks_alive=False)
+        self.macaw_blue_fake = self.macaw.variants.create(color='blue',
+                                                          sku='M-BL-A',
+                                                          looks_alive=True)
+        self.cockatoo_white_a = self.cockatoo.variants.create(color='white',
+                                                              sku='C-WH-A',
+                                                              looks_alive=True)
+        self.cockatoo_white_d = self.cockatoo.variants.create(color='white',
+                                                              sku='C-WH-D',
+                                                              looks_alive=False)
+        self.cockatoo_blue_a = self.cockatoo.variants.create(color='blue',
+                                                             sku='C-BL-A',
+                                                             looks_alive=True)
+        self.cockatoo_blue_d = self.cockatoo.variants.create(color='blue',
+                                                             sku='C-BL-D',
+                                                             looks_alive=False)
 
         self.custom_settings = {
             'SATCHLESS_DELIVERY_PROVIDERS': ['satchless.contrib.delivery.simplepost.PostDeliveryProvider'],

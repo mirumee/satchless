@@ -22,20 +22,28 @@ class ParrotTest(TestCase):
         self.cockatoo = DeadParrot.objects.create(slug='cockatoo',
                                                   species="White Cockatoo")
         self.macaw_blue_a = self.macaw.variants.create(color='blue',
+                                                       sku='M-BL-A',
                                                        looks_alive=True)
         self.macaw_blue_d = self.macaw.variants.create(color='blue',
+                                                       sku='M-BL-D',
                                                        looks_alive=False)
         self.macaw_red_a = self.macaw.variants.create(color='red',
+                                                      sku='M-RD-A',
                                                       looks_alive=True)
         self.macaw_red_d = self.macaw.variants.create(color='red',
+                                                      sku='M-RD-D',
                                                       looks_alive=False)
         self.cockatoo_white_a = self.cockatoo.variants.create(color='white',
+                                                              sku='C-WH-A',
                                                               looks_alive=True)
         self.cockatoo_white_d = self.cockatoo.variants.create(color='white',
+                                                              sku='C-WH-D',
                                                               looks_alive=False)
         self.cockatoo_green_a = self.cockatoo.variants.create(color='green',
+                                                              sku='C-GR-A',
                                                               looks_alive=True)
         self.cockatoo_green_d = self.cockatoo.variants.create(color='green',
+                                                              sku='C-GR-D',
                                                               looks_alive=False)
 
         self.original_pricing_handlers = settings.SATCHLESS_PRICING_HANDLERS

@@ -44,7 +44,8 @@ class ParrotTest(TestCase):
         original_settings = {}
         for setting_name, value in custom_settings.items():
             if hasattr(settings, setting_name):
-                original_settings[setting_name] = getattr(settings, setting_name)
+                original_settings[setting_name] = getattr(settings,
+                                                          setting_name)
             setattr(settings, setting_name, value)
         return original_settings
 
@@ -61,20 +62,25 @@ class ParrotTest(TestCase):
         settings.TEMPLATE_DIRS = [os.path.join(os.path.dirname(__file__),
                                                'templates')]
         self.macaw = DeadParrot.objects.create(slug='macaw',
-                species="Hyacinth Macaw")
+                species='Hyacinth Macaw')
         self.cockatoo = DeadParrot.objects.create(slug='cockatoo',
-                species="White Cockatoo")
-        self.macaw_blue = self.macaw.variants.create(color='blue',
+                species='White Cockatoo')
+        self.macaw_blue = self.macaw.variants.create(color='blue', sku='M-BL-D',
                                                      looks_alive=False)
         self.macaw_blue_fake = self.macaw.variants.create(color='blue',
+                                                          sku='M-BL-A',
                                                           looks_alive=True)
         self.cockatoo_white_a = self.cockatoo.variants.create(color='white',
+                                                              sku='C-WH-A',
                                                               looks_alive=True)
         self.cockatoo_white_d = self.cockatoo.variants.create(color='white',
+                                                              sku='C-WH-D',
                                                               looks_alive=False)
         self.cockatoo_blue_a = self.cockatoo.variants.create(color='blue',
+                                                             sku='C-BL-A',
                                                              looks_alive=True)
         self.cockatoo_blue_d = self.cockatoo.variants.create(color='blue',
+                                                             sku='C-BL-D',
                                                              looks_alive=False)
         # only staff users can view uncategorized products
         self.user1 = User.objects.create(username="testuser", is_staff=True,
@@ -182,7 +188,8 @@ class ParrotTest(TestCase):
     def test_add_to_cart_form_handles_incorrect_data(self):
         cli_anon = Client()
         response = self._test_status(reverse('satchless-product-details',
-                                             args=(self.macaw.pk, self.macaw.slug)),
+                                             args=(self.macaw.pk,
+                                                   self.macaw.slug)),
                                      method='post',
                                      data={'typ': 'satchless_cart',
                                            'color': 'blue',
@@ -190,11 +197,12 @@ class ParrotTest(TestCase):
                                            'quantity': 'alkjl'},
                                      client_instance=cli_anon,
                                      status_code=200)
-        self.assertTrue('quantity' in response.context['product'].cart_form.errors)
+        errors = response.context['product'].cart_form.errors
+        self.assertTrue('quantity' in errors)
 
     def test_signals(self):
-        def modify_qty(sender, instance=None, variant=None,
-                old_quantity=None, new_quantity=None, result=None, **kwargs):
+        def modify_qty(sender, instance=None, variant=None, old_quantity=None,
+                       new_quantity=None, result=None, **kwargs):
             if instance.typ != 'satchless.test_cart_with_signals':
                 return
             if variant.product == self.macaw:

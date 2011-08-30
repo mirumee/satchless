@@ -12,11 +12,13 @@ class Product(Subtyped):
     The base Product to rule them all. Provides slug, a powerful item to
     identify member of each tribe.
     """
-    slug = models.SlugField(_('slug'), max_length=80,
-            help_text=_('Slug will be used in the address of the product page. '
-                        'It should be URL-friendly (letters, numbers, hyphens '
-                        'and underscores only) and descriptive for the SEO '
-                        'needs.'))
+    slug = models.SlugField(_('slug'), max_length=80, db_index=True,
+                            unique=True,
+                            help_text=_('Slug will be used in the address of'
+                                        ' the product page. It should be'
+                                        ' URL-friendly (letters, numbers,'
+                                        ' hyphens and underscores only) and'
+                                        ' descriptive for the SEO needs.'))
 
     def __unicode__(self):
         return self.slug
@@ -43,7 +45,8 @@ class ProductAbstract(Product):
     name = models.CharField(_('name'), max_length=128)
     description = models.TextField(_('description'), blank=True)
     meta_description = models.TextField(_('meta description'), blank=True,
-            help_text=_("Description used by search and indexing engines"))
+                                        help_text=_('Description used by search'
+                                                    ' and indexing engines.'))
 
     class Meta:
         abstract = True
@@ -54,13 +57,20 @@ class NonConfigurableProductAbstract(ProductAbstract):
     Base class for non-configurable products.
     Automatically creates a variant when created.
     """
+    sku = models.CharField(_('SKU'), max_length=128, db_index=True, unique=True,
+                           help_text=_('ID of the product used internally in'
+                                       ' the shop.'))
 
     class Meta:
         abstract = True
 
     def save(self, *args, **kwargs):
         super(NonConfigurableProductAbstract, self).save(*args, **kwargs)
-        self.variants.get_or_create()
+        variant, created = self.variants.get_or_create(defaults={'sku':
+                                                                 self.sku})
+        if not created and variant.sku != self.sku:
+            variant.sku = self.sku
+            variant.save()
 
 
 class Variant(Subtyped):
@@ -68,9 +78,9 @@ class Variant(Subtyped):
     Base class for variants. It identifies a concrete product instance,
     which goes to a cart. Custom variants inherit from it.
     """
-    sku = models.CharField(_('SKU'), max_length=128, blank=True, db_index=True,
-                           help_text=_('ID of the product variant used '
-                                       'internally in the shop.'))
+    sku = models.CharField(_('SKU'), max_length=128, db_index=True, unique=True,
+                           help_text=_('ID of the product variant used'
+                                       ' internally in the shop.'))
 
     def __unicode__(self):
         return '%s' % self.sku

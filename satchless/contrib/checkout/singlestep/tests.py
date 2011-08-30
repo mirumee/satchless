@@ -46,8 +46,11 @@ class CheckoutTest(TestCase):
                 delattr(settings, setting_name)
 
     def setUp(self):
-        self.parrot = DeadParrot.objects.create(slug='parrot', species="Hyacinth Macaw")
-        self.dead_parrot = self.parrot.variants.create(color='blue', looks_alive=False)
+        self.parrot = DeadParrot.objects.create(slug='parrot',
+                                                species='Hyacinth Macaw')
+        self.dead_parrot = self.parrot.variants.create(color='blue',
+                                                       sku='P-BL-D',
+                                                       looks_alive=False)
 
         self.custom_settings = {
             'SATCHLESS_PRODUCT_VIEW_HANDLERS': ('satchless.cart.add_to_cart_handler',),
@@ -77,8 +80,10 @@ class CheckoutTest(TestCase):
         return response
 
     def _get_or_create_cart_for_client(self, client, typ='satchless_cart'):
-        self._test_status(reverse('satchless-cart-view'), client_instance=client)
-        return Cart.objects.get(pk=client.session[CART_SESSION_KEY % typ], typ=typ)
+        self._test_status(reverse('satchless-cart-view'),
+                          client_instance=client)
+        return Cart.objects.get(pk=client.session[CART_SESSION_KEY % typ],
+                                typ=typ)
 
     def _get_or_create_order_for_client(self, client):
         self._test_status(reverse(prepare_order), method='post',
@@ -89,7 +94,8 @@ class CheckoutTest(TestCase):
     def _get_order_items(self, order):
         order_items = set()
         for group in order.groups.all():
-            order_items.update(group.items.values_list('product_variant', 'quantity'))
+            order_items.update(group.items.values_list('product_variant',
+                                                       'quantity'))
         return order_items
 
     def test_checkout_view_passes_with_correct_data(self):

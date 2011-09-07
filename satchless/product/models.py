@@ -52,27 +52,6 @@ class ProductAbstract(Product):
         abstract = True
 
 
-class NonConfigurableProductAbstract(ProductAbstract):
-    """
-    Base class for non-configurable products.
-    Automatically creates a variant when created.
-    """
-    sku = models.CharField(_('SKU'), max_length=128, db_index=True, unique=True,
-                           help_text=_('ID of the product used internally in'
-                                       ' the shop.'))
-
-    class Meta:
-        abstract = True
-
-    def save(self, *args, **kwargs):
-        super(NonConfigurableProductAbstract, self).save(*args, **kwargs)
-        variant, created = self.variants.get_or_create(defaults={'sku':
-                                                                 self.sku})
-        if not created and variant.sku != self.sku:
-            variant.sku = self.sku
-            variant.save()
-
-
 class Variant(Subtyped):
     """
     Base class for variants. It identifies a concrete product instance,

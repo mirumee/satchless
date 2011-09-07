@@ -51,6 +51,10 @@ class DressVariantForm(VariantWithSizeAndColorForm):
     size = forms.CharField(max_length=10,
             widget=forms.Select(choices=models.DressVariant.SIZE_CHOICES))
 
+class HatVariantForm(BaseVariantForm):
+    def get_variant(self):
+        return self.product.variants.get()
+
 class JacketVariantForm(VariantWithSizeAndColorForm):
     size = forms.CharField(max_length=10,
             widget=forms.Select(choices=models.JacketVariant.SIZE_CHOICES))
@@ -66,4 +70,3 @@ class TShirtVariantForm(VariantWithSizeAndColorForm):
 class TrousersVariantForm(VariantWithSizeAndColorForm):
     size = forms.CharField(max_length=10,
             widget=forms.Select(choices=models.TrousersVariant.SIZE_CHOICES))
-

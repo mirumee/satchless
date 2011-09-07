@@ -1,5 +1,4 @@
 from satchless.product.signals import variant_formclass_for_product
-from satchless.product.forms import NonConfigurableVariantForm
 
 from . import forms
 from . import models
@@ -11,7 +10,7 @@ def get_dressvariant_formclass(sender, instance, formclass, **kwargs):
     formclass.append(forms.DressVariantForm)
 
 def get_hatvariant_formclass(sender, instance, formclass, **kwargs):
-    formclass.append(NonConfigurableVariantForm)
+    formclass.append(forms.HatVariantForm)
 
 def get_jacketvariant_formclass(sender, instance, formclass, **kwargs):
     formclass.append(forms.JacketVariantForm)

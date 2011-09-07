@@ -18,10 +18,6 @@ class BaseVariantForm(forms.Form):
                 self.fields[name].initial = getattr(variant, name)
 
 
-class NonConfigurableVariantForm(BaseVariantForm):
-    def get_variant(self):
-        return self.product.variants.get()
-
 def variant_form_for_product(product):
     formclass = []
     variant_formclass_for_product.send(sender=type(product),
@@ -31,5 +27,6 @@ def variant_form_for_product(product):
         raise ValueError("Multiple form classes returned for %s: %s." %
                          (product._meta.object_name, formclass))
     elif not len(formclass):
-        formclass = [NonConfigurableVariantForm]
+        raise ValueError("No form class returned for %s." %
+                         (product._meta.object_name, ))
     return formclass[0]

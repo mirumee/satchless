@@ -4,27 +4,9 @@ from mptt.models import MPTTModel
 
 from ..product.models import Product
 
-__all__ = ('Category',)
+__all__ = ('Category', 'CategoryManager')
 
 class CategoryManager(models.Manager):
-    def path_from_slugs(self, slugs):
-        """
-        Returns list of Category instances matchnig given slug path.
-        """
-        if len(slugs) == 0:
-            return []
-        leaves = self.get_query_set().filter(slug=slugs[-1])
-        if not leaves:
-            raise Category.DoesNotExist, "slug='%s'" % slugs[-1]
-        for leaf in leaves:
-            path = leaf.get_ancestors()
-            if len(path) + 1 != len(slugs):
-                continue
-            if [c.slug for c in path] != slugs[:-1]:
-                continue
-            return list(path) + [leaf]
-        raise Category.DoesNotExist
-
     def get_product_url(self, product, category):
         if not category:
             if not product.categories.exists():

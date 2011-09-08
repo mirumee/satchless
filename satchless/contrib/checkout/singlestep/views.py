@@ -34,10 +34,9 @@ def checkout(request, order_token, billing_form_class=forms.BillingForm):
             if form:
                 delivery_valid = delivery_valid and form.is_valid()
     payment_types = handler.get_payment_types(order)
-    if len(payment_types) > 1:
-        raise ImproperlyConfigured("The singlestep checkout cannot handle "
-                                   "multiple payment methods. Methods for this "
-                                   "order: %s" % payment_types)
+    if len(payment_types) != 1:
+        raise ImproperlyConfigured("The singlestep checkout requires "
+                                   "exactly one payment methods.")
     order.payment_type = payment_types[0][0]
     order.save()
     billing_form = billing_form_class(request.POST or None, instance=order)

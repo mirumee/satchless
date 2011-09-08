@@ -6,10 +6,9 @@ from satchless.image.models import Image
 
 from localeurl.models import reverse
 from mothertongue.models import MothertongueModelTranslate
-import satchless.category.models
+from satchless.category import models as category_models
 
-
-class Category(satchless.category.models.Category,
+class Category(category_models.Category,
                MothertongueModelTranslate):
     translated_fields = ('name', 'description', 'meta_description')
     translation_set = 'translations'
@@ -38,7 +37,7 @@ class CategoryTranslation(models.Model):
     meta_description = models.TextField(_('meta description'), blank=True,
             help_text=_("Description used by search and indexing engines"))
 
-    class Meta(object):
+    class Meta:
         unique_together = ('category', 'language')
 
 

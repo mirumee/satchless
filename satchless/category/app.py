@@ -19,14 +19,32 @@ class CategorizedProductApp(app.ProductApp):
         'satchless/category/list.html',
     ]
 
+    def path_from_slugs(self, slugs):
+        """
+        Returns list of Category instances matchnig given slug path.
+        """
+        if len(slugs) == 0:
+            return []
+        leaves = self.category_model.objects.filter(slug=slugs[-1])
+        if not leaves:
+            raise self.category_model.DoesNotExist, "slug='%s'" % slugs[-1]
+        for leaf in leaves:
+            path = leaf.get_ancestors()
+            if len(path) + 1 != len(slugs):
+                continue
+            if [c.slug for c in path] != slugs[:-1]:
+                continue
+            return list(path) + [leaf]
+        raise self.category_model.DoesNotExist
+
     def category_list(self, request):
         return self.respond(request, self.get_context_data(request))
 
     def category_details(self, request, parent_slugs, category_slug):
         slugs = filter(None, parent_slugs.split('/') + [category_slug])
         try:
-            path = models.Category.objects.path_from_slugs(slugs)
-        except models.Category.DoesNotExist:
+            path = self.path_from_slugs(slugs)
+        except self.category_model.DoesNotExist:
             return HttpResponseNotFound()
         category = path[-1]
         context = self.get_context_data(request, category=category, path=path)
@@ -66,7 +84,7 @@ class CategorizedProductApp(app.ProductApp):
     def get_product(self, request, category_slugs='', product_slug=None,
                     product_pk=None):
         slugs = category_slugs.split('/')
-        path = self.category_model.objects.path_from_slugs(filter(None, slugs))
+        path = self.path_from_slugs(filter(None, slugs))
         products = self.product_model.objects.all()
         if product_slug:
             products = products.filter(slug=product_slug)

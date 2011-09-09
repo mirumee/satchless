@@ -1,8 +1,10 @@
 from django import forms
 from django.utils.translation import ugettext as _
-from satchless.product.forms import BaseVariantForm
+from satchless.product.forms import BaseVariantForm, variant_form_for_product
+
 from . import models
 
+@variant_form_for_product(models.Parrot)
 class ParrotVariantForm(BaseVariantForm):
     color = forms.CharField(
             max_length=10,

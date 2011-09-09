@@ -1,10 +1,11 @@
 from django import forms
 from django.utils.translation import ugettext as _
 
-from satchless.product.forms import BaseVariantForm
+from satchless.product.forms import BaseVariantForm, variant_form_for_product
 
 from . import models
 
+@variant_form_for_product(models.Dummy)
 class DummyVariantForm(BaseVariantForm):
     color = forms.CharField(label=_("color"), max_length=10,
             widget=forms.Select(choices=models.DummyVariant.COLOR_CHOICES))

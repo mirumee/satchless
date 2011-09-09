@@ -7,22 +7,21 @@ from django.test import TestCase, Client
 from django import forms
 import os
 
-from ...product.forms import BaseVariantForm
+from ...product.forms import BaseVariantForm, variant_form_for_product
 from ...product import handler
-from ...product.signals import variant_formclass_for_product
 from ...product.tests import DeadParrot, DeadParrotVariant
 from .. import models
 from .. import signals
 
+@variant_form_for_product(DeadParrot)
 class DeadParrotVariantForm(BaseVariantForm):
     color = forms.CharField(max_length=10)
     looks_alive = forms.BooleanField()
 
     def _get_variant_queryset(self):
-        return DeadParrotVariant.objects.filter(
-                product=self.product,
-                color=self.cleaned_data['color'],
-                looks_alive=self.cleaned_data['looks_alive'])
+        return DeadParrotVariant.objects.filter(product=self.product,
+                                                color=self.cleaned_data['color'],
+                                                looks_alive=self.cleaned_data['looks_alive'])
 
     def clean(self):
         if not self._get_variant_queryset().exists():
@@ -31,12 +30,6 @@ class DeadParrotVariantForm(BaseVariantForm):
 
     def get_variant(self):
         return self._get_variant_queryset().get()
-
-
-def get_variantformclass(sender=None, instance=None, formclass=None, **kwargs):
-    formclass.append(DeadParrotVariantForm)
-
-variant_formclass_for_product.connect(get_variantformclass, sender=DeadParrot)
 
 
 class ParrotTest(TestCase):

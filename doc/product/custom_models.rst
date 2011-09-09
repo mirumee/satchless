@@ -90,9 +90,10 @@ checkbox to select alive or dead variant. The following class goes to the
 ``forms.py`` file::
 
     from django import forms
-    from satchless.product.forms import BaseVariantForm
+    from satchless.product.forms import BaseVariantForm, variant_form_for_product
     from . import models
 
+    @variant_form_for_product(models.Parrot)
     class ParrotVariantForm(BaseVariantForm):
         color = forms.CharField(
                 max_length=10,
@@ -117,6 +118,11 @@ The minimal API requirement is to provide ``get_variant()`` method which is
 going to be called on a validated form instance. It should return a variant
 corresponding with the form data.
 
+Please note that the above form is registered using the
+``variant_form_for_product()`` decorator. This tells Satchless that the form
+should be used as the variant picker for the given product class (and its
+subclasses unless they specify their own variant forms).
+
 The validation, as shown in ``clean()`` method, is up to you.
 
 .. note::
@@ -125,38 +131,6 @@ The validation, as shown in ``clean()`` method, is up to you.
     either ``product`` or ``variant`` keyword. If given a product, it leaves
     the form empty. With a variant given, it initializes the form with the
     attributes of the variant.
-
-The bindings
-------------
-
-What's left, is to bind the form with the models. We cannot do it explicitly
-in ``models.py`` file for two reasons:
-
-    * It would create cycle import between ``models.py`` and ``forms.py`` - a
-      good example of *chicken and egg problem*.
-    * We need a hook for future customizations and it's good to keep it
-      separated from the model.
-
-For that reasons we will use a signal. You may already see an example in the
-``satchless.cart`` application, which asks for variant forms in order to build
-"add to cart" forms for displayed products.
-
-The basic signal handling is straightforward and goes to ``listeners.py``
-file::
-
-    from satchless.product.signals import variant_formclass_for_product
-    from . import forms
-    from . import models
-
-    def get_variantformclass(sender, instance, formclass, **kwargs):
-        formclass.append(forms.ParrotVariantForm)
-
-    variant_formclass_for_product.connect(get_variantformclass, sender=models.Parrot)
-
-The only thing left is to bind the listener when the application is being
-loaded. The simple way is just to add the following line to ``__init__.py``::
-
-    import listeners
 
 The result
 ----------

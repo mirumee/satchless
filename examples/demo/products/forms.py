@@ -1,7 +1,7 @@
 # -*- coding:utf-8 -*-
 from django import forms
 
-from satchless.product.forms import BaseVariantForm
+from satchless.product.forms import BaseVariantForm, variant_form_for_product
 
 from . import models
 
@@ -43,30 +43,37 @@ class VariantWithSizeAndColorForm(BaseVariantForm):
     def get_variant(self):
         return self._get_variant_queryset().get()
 
+@variant_form_for_product(models.Cardigan)
 class CardiganVariantForm(VariantWithSizeAndColorForm):
     size = forms.CharField(max_length=10,
             widget=forms.Select(choices=models.CardiganVariant.SIZE_CHOICES))
 
+@variant_form_for_product(models.Dress)
 class DressVariantForm(VariantWithSizeAndColorForm):
     size = forms.CharField(max_length=10,
             widget=forms.Select(choices=models.DressVariant.SIZE_CHOICES))
 
+@variant_form_for_product(models.Hat)
 class HatVariantForm(BaseVariantForm):
     def get_variant(self):
         return self.product.variants.get()
 
+@variant_form_for_product(models.Jacket)
 class JacketVariantForm(VariantWithSizeAndColorForm):
     size = forms.CharField(max_length=10,
             widget=forms.Select(choices=models.JacketVariant.SIZE_CHOICES))
 
+@variant_form_for_product(models.Shirt)
 class ShirtVariantForm(VariantWithSizeAndColorForm):
     size = forms.CharField(max_length=10,
             widget=forms.Select(choices=models.ShirtVariant.SIZE_CHOICES))
 
+@variant_form_for_product(models.TShirt)
 class TShirtVariantForm(VariantWithSizeAndColorForm):
     size = forms.CharField(max_length=10,
             widget=forms.Select(choices=models.TShirtVariant.SIZE_CHOICES))
 
+@variant_form_for_product(models.Trousers)
 class TrousersVariantForm(VariantWithSizeAndColorForm):
     size = forms.CharField(max_length=10,
             widget=forms.Select(choices=models.TrousersVariant.SIZE_CHOICES))

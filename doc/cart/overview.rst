@@ -73,10 +73,9 @@ Behavior of the standard handler
 ................................
 
 The standard handler (``satchless.cart.add_to_cart_handler``) finds the variant
-selection form for every product or variant received.  A signal,
-``satchless.product.signals.variant_formclass_for_product`` is used to do that.
-Then this form is merged with another one, containing quantity and cart type,
-and together they build a complete *add to cart* form.
+selection form for every product or variant received. Then this form is merged
+with another one, containing quantity and cart type, and together they build
+a complete *add to cart* form.
 
 Then, the resulting form is added to each product or variant instance, under
 the ``cart_form`` attribute.

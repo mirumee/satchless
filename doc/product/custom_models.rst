@@ -21,7 +21,6 @@ startapp parrot`` or create the necessary files manually. We will need these::
         admin.py
         models.py
         forms.py
-        listeners.py
 
 The models
 ----------

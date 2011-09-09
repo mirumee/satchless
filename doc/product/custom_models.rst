@@ -119,9 +119,12 @@ going to be called on a validated form instance. It should return a variant
 corresponding with the form data.
 
 Please note that the above form is registered using the
-``variant_form_for_product()`` decorator. This tells Satchless that the form
-should be used as the variant picker for the given product class (and its
-subclasses unless they specify their own variant forms).
+``variant_form_for_product()`` decorator. This tells Satchless that this
+particular form class should be used whenever a variant picker is needed for
+the given product class (and its subclasses unless they specify their own
+variant forms). In case more than one form is registered for a single product
+class, the last registered form will be used. This can be useful should you ever
+want to override a form defined by code you do not control.
 
 The validation, as shown in ``clean()`` method, is up to you.
 

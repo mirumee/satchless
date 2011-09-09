@@ -10,6 +10,7 @@ import os
 from ...product.forms import BaseVariantForm, variant_form_for_product
 from ...product import handler
 from ...product.tests import DeadParrot, DeadParrotVariant
+from ...category.models import Category
 from .. import models
 from .. import signals
 
@@ -54,10 +55,13 @@ class ParrotTest(TestCase):
         self.ORIGINAL_TEMPLATE_DIRS = settings.TEMPLATE_DIRS
         settings.TEMPLATE_DIRS = [os.path.join(os.path.dirname(__file__),
                                                'templates')]
+        category_birds = Category.objects.create(name='birds', slug='birds')
         self.macaw = DeadParrot.objects.create(slug='macaw',
                 species='Hyacinth Macaw')
         self.cockatoo = DeadParrot.objects.create(slug='cockatoo',
                 species='White Cockatoo')
+        category_birds.products.add(self.macaw)
+        category_birds.products.add(self.cockatoo)
         self.macaw_blue = self.macaw.variants.create(color='blue', sku='M-BL-D',
                                                      looks_alive=False)
         self.macaw_blue_fake = self.macaw.variants.create(color='blue',
@@ -79,6 +83,7 @@ class ParrotTest(TestCase):
         self.user1 = User.objects.create(username="testuser", is_staff=True,
                                          is_superuser=True)
         self.user1.set_password(u"pasło")
+        category_birds.products.add(self.macaw)
         self.user1.save()
         self.custom_settings = {
             'SATCHLESS_PRODUCT_VIEW_HANDLERS': ('satchless.cart.add_to_cart_handler',),
@@ -145,38 +150,39 @@ class ParrotTest(TestCase):
         self.assertEqual(cart.get_quantity(self.cockatoo_blue_a), Decimal('100'))
         self.assertEqual(cart.get_quantity(self.cockatoo_blue_d), Decimal('102'))
 
-    def test_add_by_view(self):
-        cli_anon = Client()
-        cli_user1 = Client()
-        self.assert_(cli_user1.login(username="testuser", password=u"pasło"))
-        # We also test different ways of URL resolving here
-        self._test_status(reverse('satchless-cart-view',
-                                  kwargs={'typ': 'satchless_cart'}),
-                          client_instance=cli_anon, status_code=200)
-        self._test_status(reverse('satchless-cart-view'),
-                          client_instance=cli_anon, status_code=200)
-        self._test_status(reverse('satchless-cart-view',
-                                  kwargs={'typ': 'satchless_cart'}),
-                          client_instance=cli_user1, status_code=200)
+    def _get_or_create_cart_for_client(self, client=None, typ='satchless_cart'):
+        client = client or self.client
+        self._test_status(reverse('satchless-cart-view'), client_instance=client)
+        return models.Cart.objects.get(pk=client.session[models.CART_SESSION_KEY % typ],
+                                       typ=typ)
 
+    def _test_add_by_view(self, client):
+        cart = self._get_or_create_cart_for_client(client)
+        self._test_status(reverse('satchless-cart-view',
+                                  kwargs={'typ': 'satchless_cart'}),
+                          client_instance=client, status_code=200)
         self._test_status(reverse('satchless-product-details',
                                   args=(self.macaw.pk, self.macaw.slug)),
                           method='post',
                           data={'typ': 'satchless_cart',
-                                'color': 'blue',
-                                'looks_alive': 1,
-                                'quantity': 1},
-                          client_instance=cli_anon,
+                                'color': self.macaw_blue_fake.color,
+                                'looks_alive': self.macaw_blue_fake.looks_alive,
+                                'quantity': 2},
+                          client_instance=client,
                           status_code=302)
-        self._test_status(reverse('satchless-product-details',
-                                  args=(self.cockatoo.pk, self.cockatoo.slug)),
-                          method='post',
-                          data={'typ': 'satchless_cart',
-                                'color': 'white',
-                                'looks_alive': 1,
-                                'quantity': 10},
-                          client_instance=cli_user1,
-                          status_code=302)
+        self.assertTrue(cart.items.count(), 1)
+        cart_item = cart.items.get()
+        self.assertTrue(cart_item.quantity, 2)
+        self.assertEqual(self.macaw_blue_fake, cart_item.variant.get_subtype_instance())
+
+    def test_add_by_view_for_anonymous(self):
+        cli_anon = Client()
+        self._test_add_by_view(cli_anon)
+
+    def test_add_by_view(self):
+        cli_user1 = Client()
+        self.assertTrue(cli_user1.login(username="testuser", password=u"pasło"))
+        self._test_add_by_view(cli_user1)
 
     def test_add_to_cart_form_handles_incorrect_data(self):
         cli_anon = Client()

@@ -102,9 +102,10 @@ class CheckoutTest(TestCase):
                 response.content.decode('utf-8')))
         return response
 
-    def _get_or_create_cart_for_client(self, client, typ='satchless_cart'):
-        self._test_status(reverse('satchless-cart-view'), client_instance=self.anon_client)
-        return Cart.objects.get(pk=self.anon_client.session[CART_SESSION_KEY % typ], typ=typ)
+    def _get_or_create_cart_for_client(self, client=None, typ='satchless_cart'):
+        client = client or self.client
+        self._test_status(reverse('satchless-cart-view'), client_instance=client)
+        return Cart.objects.get(pk=client.session[CART_SESSION_KEY % typ], typ=typ)
 
     def _get_order_from_session(self, session):
         order_pk = session.get('satchless_order', None)

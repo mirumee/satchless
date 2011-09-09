@@ -3,12 +3,13 @@ from django.conf.urls.defaults import patterns, include, url
 from django.core.urlresolvers import reverse
 from django.test import TestCase, Client
 
+from ..forms import FormRegistry, variant_form_for_product
 from ..models import Variant, ProductAbstract
 from ..app import product_app
 
-from . import DeadParrot, DeadParrotVariant
+from . import DeadParrot, DeadParrotVariant, ZombieParrot, DeadParrotVariantForm
 
-__all__ = ['Models', 'Views']
+__all__ = ['Models', 'Registry', 'Views']
 
 urlpatterns = patterns('',
     url(r'^cart/', include(product_app.urls)),
@@ -56,6 +57,17 @@ class Models(TestCase):
             self.assertEqual(type(variant.get_subtype_instance()), DeadParrotVariant)
 
 
+class Registry(TestCase):
+    def test_form_registry(self):
+        registry = FormRegistry()
+        variant_form_for_product(DeadParrot,
+                                 registry=registry)(DeadParrotVariantForm)
+        self.assertEqual(registry.get_handler(DeadParrot),
+                         DeadParrotVariantForm)
+        self.assertEqual(registry.get_handler(ZombieParrot),
+                         DeadParrotVariantForm)
+
+
 class Views(TestCase):
     urls = 'satchless.product.tests.product'
 
@@ -68,3 +80,5 @@ class Views(TestCase):
         response = self.client.get(reverse('satchless-product-details',
                                            args=(self.macaw.pk, self.macaw.slug)))
         self.assertEqual(response.status_code, 200)
+
+

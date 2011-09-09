@@ -7,31 +7,11 @@ from django.test import TestCase, Client
 from django import forms
 import os
 
-from ...product.forms import BaseVariantForm, variant_form_for_product
 from ...product import handler
-from ...product.tests import DeadParrot, DeadParrotVariant
+from ...product.tests import (DeadParrot, ZombieParrot, DeadParrotVariantForm)
 from ...category.models import Category
 from .. import models
 from .. import signals
-
-@variant_form_for_product(DeadParrot)
-class DeadParrotVariantForm(BaseVariantForm):
-    color = forms.CharField(max_length=10)
-    looks_alive = forms.BooleanField()
-
-    def _get_variant_queryset(self):
-        return DeadParrotVariant.objects.filter(product=self.product,
-                                                color=self.cleaned_data['color'],
-                                                looks_alive=self.cleaned_data['looks_alive'])
-
-    def clean(self):
-        if not self._get_variant_queryset().exists():
-            raise forms.ValidationError("Variant does not exist")
-        return self.cleaned_data
-
-    def get_variant(self):
-        return self._get_variant_queryset().get()
-
 
 class ParrotTest(TestCase):
     def _setup_settings(self, custom_settings):
@@ -55,13 +35,13 @@ class ParrotTest(TestCase):
         self.ORIGINAL_TEMPLATE_DIRS = settings.TEMPLATE_DIRS
         settings.TEMPLATE_DIRS = [os.path.join(os.path.dirname(__file__),
                                                'templates')]
-        category_birds = Category.objects.create(name='birds', slug='birds')
+        self.category_birds = Category.objects.create(name='birds', slug='birds')
         self.macaw = DeadParrot.objects.create(slug='macaw',
                 species='Hyacinth Macaw')
         self.cockatoo = DeadParrot.objects.create(slug='cockatoo',
                 species='White Cockatoo')
-        category_birds.products.add(self.macaw)
-        category_birds.products.add(self.cockatoo)
+        self.category_birds.products.add(self.macaw)
+        self.category_birds.products.add(self.cockatoo)
         self.macaw_blue = self.macaw.variants.create(color='blue', sku='M-BL-D',
                                                      looks_alive=False)
         self.macaw_blue_fake = self.macaw.variants.create(color='blue',
@@ -83,7 +63,7 @@ class ParrotTest(TestCase):
         self.user1 = User.objects.create(username="testuser", is_staff=True,
                                          is_superuser=True)
         self.user1.set_password(u"pasło")
-        category_birds.products.add(self.macaw)
+        self.category_birds.products.add(self.macaw)
         self.user1.save()
         self.custom_settings = {
             'SATCHLESS_PRODUCT_VIEW_HANDLERS': ('satchless.cart.add_to_cart_handler',),
@@ -155,6 +135,20 @@ class ParrotTest(TestCase):
         self._test_status(reverse('satchless-cart-view'), client_instance=client)
         return models.Cart.objects.get(pk=client.session[models.CART_SESSION_KEY % typ],
                                        typ=typ)
+
+    def test_add_to_cart_form_on_product_view(self):
+        response = self._test_status(self.macaw.get_absolute_url(),
+                                     method='get', status_code=200)
+        self.assertTrue(isinstance(response.context['product'].cart_form,
+                        DeadParrotVariantForm))
+
+        zombie = ZombieParrot.objects.create(slug='zombie-parrot',
+                                             species='Zombie Parrot')
+        self.category_birds.products.add(zombie)
+        response = self._test_status(zombie.get_absolute_url(),
+                                     method='get', status_code=200)
+        self.assertTrue(isinstance(response.context['product'].cart_form,
+                        DeadParrotVariantForm))
 
     def _test_add_by_view(self, client):
         cart = self._get_or_create_cart_for_client(client)

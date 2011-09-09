@@ -148,12 +148,23 @@ hr {
     color: #777;
     font-size: 12px;
 }
+.google-groups div {
+    color: #777;
+    display: inline-block;
+    font-size: 12px;
+    padding-top: 5px;
+    vertical-align: top;
+    width: 108px;
+}
 .twitter span {
     color: #777;
     font-size: 12px;
     vertical-align: top;
 }
-    .twitter a:hover {
+    .twitter a, .google-groups a {
+        text-decoration: none;
+    }
+    .twitter a:hover, .google-groups a {
         background: none;
     }
     .twitter img {

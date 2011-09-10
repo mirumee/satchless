@@ -60,6 +60,9 @@ Looks pretty simple, doesn't it?
     ``product`` field and the back reference is named ``variants``. It is
     not enforced explicitly, but breaking this rule will cause a crash.
 
+The admin
+---------
+
 Now we are going to add ``admin.py`` file in order to enter some new product
 instances into our shop::
 
@@ -77,15 +80,15 @@ instances into our shop::
     admin.site.register(models.Parrot, ParrotAdmin)
 
 Having written that, you may proceed to the admin panel and enter some parrots
-to the system. You will notice a standard inline form for managing the
+into the system. You will notice a standard inline form for managing the
 variants at the bottom of each *Product/Parrot* screen.
 
-The form
---------
+The variant form
+----------------
 
 With the above setup you may run a product catalog and list your variants. But
 it is still not enough to run a shop. For that, you will need a
-``VariantForm``.  Forms of this type are shown to customers, in order to choose
+*variant form*. Forms of this type are shown to customers, in order to choose
 an available variant and use them in any way (e.g. put them into the cart).
 
 Let's start with a form. We will use drop-down for available colors and a

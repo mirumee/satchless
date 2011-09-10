@@ -14,16 +14,20 @@ class ParrotTranslation(ProductAbstractTranslation):
 
 
 class ParrotVariant(Variant):
+    COLOR_CHOICES = (
+        ('red', _('red')),
+        ('green', _('green')),
+        ('blue', _('blue'))
+    )
     product = models.ForeignKey(Parrot, related_name='variants')
-    COLOR_CHOICES = (('red', _("red")), ('green', _("green")), ('blue', _("blue")))
     color = models.CharField(max_length=10, choices=COLOR_CHOICES)
     looks_alive = models.BooleanField()
 
     def __unicode__(self):
-        return u"%s %s %s" % (
-                _("Alive") if self.looks_alive else _("Dead"),
-                self.get_color_display(),
-                self.product.name)
+        alive = _("Alive") if self.looks_alive else _("Dead")
+        color = self.get_color_display()
+        product = self.product.name
+        return u'%s %s %s' % (alive, color, product)
 
     class Meta:
         app_label = 'product'

@@ -35,16 +35,20 @@ Let's start with a model for the product, in ``models.py`` file.::
 
 
     class ParrotVariant(Variant):
+        COLOR_CHOICES = (
+            ('red', 'red'),
+            ('green', 'green'),
+            ('blue', 'blue')
+        )
         product = models.ForeignKey(Parrot, related_name='variants')
-        COLOR_CHOICES = (('red', 'red'), ('green', 'green'), ('blue', 'blue'))
         color = models.CharField(max_length=10, choices=COLOR_CHOICES)
         looks_alive = models.BooleanField()
 
         def __unicode__(self):
-            return u"%s %s %s" % (
-                    'Alive' if self.looks_alive else 'Dead',
-                    self.get_color_display(),
-                    self.product.name)
+            alive = 'Alive' if self.looks_alive else 'Dead'
+            color = self.get_color_display()
+            name = self.product.name
+            return u'%s %s %s' % (alive, color, name)
 
         class Meta:
             unique_together = ('product', 'color', 'looks_alive')
@@ -90,24 +94,27 @@ checkbox to select alive or dead variant. The following class goes to the
 
     from django import forms
     from satchless.product.forms import BaseVariantForm, variant_form_for_product
+
     from . import models
 
     @variant_form_for_product(models.Parrot)
     class ParrotVariantForm(BaseVariantForm):
-        color = forms.CharField(
-                max_length=10,
-                widget=forms.Select(choices=models.ParrotVariant.COLOR_CHOICES))
+        COLOR_CHOICES = models.ParrotVariant.COLOR_CHOICES
+        color = forms.CharField(max_length=10,
+                                widget=forms.Select(choices=COLOR_CHOICES))
         looks_alive = forms.BooleanField(required=False)
 
         def _get_variant_queryset(self):
-            return models.ParrotVariant.objects.filter(
-                    product=self.product,
-                    color=self.cleaned_data['color'],
-                    looks_alive=self.cleaned_data.get('looks_alive', False))
+            product = self.product
+            color = self.cleaned_data['color']
+            looks_alive = self.cleaned_data.get('looks_alive', False)
+            return models.ParrotVariant.objects.filter(product=self.product,
+                                                       color=color,
+                                                       looks_alive=looks_alive)
 
         def clean(self):
             if not self._get_variant_queryset().exists():
-                raise forms.ValidationError("Variant does not exist")
+                raise forms.ValidationError('Variant does not exist')
             return self.cleaned_data
 
         def get_variant(self):

@@ -105,7 +105,6 @@ checkbox to select alive or dead variant. The following class goes to the
         looks_alive = forms.BooleanField(required=False)
 
         def _get_variant_queryset(self):
-            product = self.product
             color = self.cleaned_data['color']
             looks_alive = self.cleaned_data.get('looks_alive', False)
             return models.ParrotVariant.objects.filter(product=self.product,

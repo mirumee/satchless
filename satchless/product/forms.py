@@ -35,8 +35,8 @@ class FormRegistry(object):
         for c in classes:
             if c in self.product_handlers:
                 return self.product_handlers[c]
-        raise ValueError('No form class returned for %s.' %
-                         (product_class, ))
+        raise ValueError('No form class returned for %s. Make sure that your'
+                         ' forms module is loaded.' % (product_class, ))
 
 
 registry = FormRegistry()

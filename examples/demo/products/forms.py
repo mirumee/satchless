@@ -5,6 +5,8 @@ from satchless.product.forms import BaseVariantForm, variant_form_for_product
 
 from . import models
 
+has_side_effects = True
+
 def _get_existing_variants_choices(queryset, field_names):
     existing_choices = {}
     existing_variants = queryset.values_list(*field_names)
@@ -13,8 +15,9 @@ def _get_existing_variants_choices(queryset, field_names):
         for index, existing_field_choices in enumerate(zip(*existing_variants)):
             field_name = field_names[index]
             original_choices = queryset.model._meta.get_field(field_name).choices
-            existing_choices[field_names[index]] = filter(lambda choice: choice[0] in existing_field_choices,
-                                                         original_choices)
+            flt = lambda choice: choice[0] in existing_field_choices
+            existing_choices[field_names[index]] = filter(flt,
+                                                          original_choices)
     else:
         for field_name in field_names:
             existing_choices[field_name] = []
@@ -26,7 +29,8 @@ class VariantWithSizeAndColorForm(BaseVariantForm):
 
     def __init__(self, *args, **kwargs):
         super(VariantWithSizeAndColorForm, self).__init__(*args, **kwargs)
-        existing_choices = _get_existing_variants_choices(self.product.variants.all(),
+        all_variants = self.product.variants.all()
+        existing_choices = _get_existing_variants_choices(all_variants,
                                                           ('color', 'size'))
         for field_name, choices in existing_choices.items():
             self.fields[field_name].widget.choices = choices

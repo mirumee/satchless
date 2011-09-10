@@ -19,8 +19,8 @@ startapp parrot`` or create the necessary files manually. We will need these::
     parrot/
         __init__.py
         admin.py
-        models.py
         forms.py
+        models.py
 
 The models
 ----------
@@ -117,13 +117,24 @@ The minimal API requirement is to provide ``get_variant()`` method which is
 going to be called on a validated form instance. It should return a variant
 corresponding with the form data.
 
-Please note that the above form is registered using the
-``variant_form_for_product()`` decorator. This tells Satchless that this
-particular form class should be used whenever a variant picker is needed for
-the given product class (and its subclasses unless they specify their own
-variant forms). In case more than one form is registered for a single product
-class, the last registered form will be used. This can be useful should you ever
-want to override a form defined by code you do not control.
+.. note::
+    Please note that the above form is registered using the
+    ``variant_form_for_product()`` decorator. This tells Satchless that this
+    particular form class should be used whenever a variant picker is needed for
+    the given product class (and its subclasses unless they specify their own
+    variant forms).
+
+To make sure your variant forms are properly registered, make sure that the
+file that defines them is loaded when your application is started. Unlike
+``models.py`` your ``forms.py`` is not automatically loaded by Django.
+The easiest way to do it is to explicitly import the file in your application's
+``__init__.py``::
+
+    from . import forms
+
+In case more than one form is registered for a single product class, the last
+registered form will be used. This can be useful should you ever want to
+override a form defined by code you do not control.
 
 The validation, as shown in ``clean()`` method, is up to you.
 

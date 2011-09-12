@@ -28,7 +28,7 @@ class Category(MPTTModel):
     parent = models.ForeignKey('self', null=True, blank=True,
                                related_name='children')
     products = models.ManyToManyField(Product, related_name='categories',
-                                      null=True, blank=True)
+                                      blank=True)
     objects = CategoryManager()
 
     class Meta:
@@ -38,11 +38,11 @@ class Category(MPTTModel):
     def __unicode__(self):
         return self.name
 
-    def parents_slug_path(self):
-        parents = '/'.join(c.slug for c in self.get_ancestors())
-        return '%s/' % parents if parents else ''
-
     @models.permalink
     def get_absolute_url(self):
         return ('satchless-category-details',
                 (self.parents_slug_path(), self.slug))
+
+    def parents_slug_path(self):
+        parents = '/'.join(c.slug for c in self.get_ancestors())
+        return '%s/' % parents if parents else ''

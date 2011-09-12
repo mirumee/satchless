@@ -5,7 +5,7 @@ from django.contrib.auth.models import User
 from ..util import countries
 
 class Address(models.Model):
-    customer = models.ForeignKey('Customer')
+    customer = models.ForeignKey('Customer', related_name='addressbook')
     alias = models.CharField(_("short alias"), max_length=30,
             help_text=_("User-defined alias which identifies this address"))
     full_name = models.CharField(_("full person name"), max_length=256)
@@ -32,18 +32,18 @@ class CustomerManager(models.Manager):
 
 
 class Customer(models.Model):
-    user = models.ForeignKey(User, unique=True, null=True, blank=True)
+    user = models.OneToOneField(User, null=True, blank=True)
     billing_address = models.ForeignKey(Address, related_name='billing_customers', null=True, blank=True)
     shipping_address = models.ForeignKey(Address, related_name='shipping_customers', null=True, blank=True)
     email = models.EmailField(_("email"))
 
     objects = CustomerManager()
 
+    def __unicode__(self):
+        return self.email
+
     def save(self, *args, **kwargs):
         super(Customer, self).save(*args, **kwargs)
         if self.user:
             self.user.email = self.email
             self.user.save()
-
-    def __unicode__(self):
-        return self.email

@@ -42,12 +42,18 @@ class QuantityResult(object):
         self.reason = reason
 
 class Cart(models.Model):
-    owner = models.ForeignKey(User, null=True, blank=True)
+    owner = models.ForeignKey(User, null=True, blank=True, related_name='carts')
     typ = models.CharField(_("type"), max_length=100)
     currency = models.CharField(_("currency"), max_length=3,
                                 default=get_default_currency)
 
     objects = CartManager()
+
+    def __unicode__(self):
+        if self.owner:
+            return u"%s of %s" % (self.typ, self.owner.username)
+        else:
+            return self.typ
 
     def add_quantity(self, variant, quantity, dry_run=False):
         variant = variant.get_subtype_instance()
@@ -119,12 +125,6 @@ class Cart(models.Model):
     def is_empty(self):
         return self.items.count() == 0
 
-    def __unicode__(self):
-        if self.owner:
-            return u"%s of %s" % (self.typ, self.owner.username)
-        else:
-            return self.typ
-
     def total(self):
         from ..pricing import Price
         return sum([i.price() for i in self.items.all()],
@@ -132,16 +132,19 @@ class Cart(models.Model):
 
 class CartItem(models.Model):
     cart = models.ForeignKey(Cart, related_name='items')
-    variant = models.ForeignKey(Variant)
+    variant = models.ForeignKey(Variant, related_name='+')
     quantity = models.DecimalField(_("quantity"), max_digits=10,
                                    decimal_places=4)
+
+    class Meta:
+        unique_together = ('cart', 'variant')
+
+    def __unicode__(self):
+        return u"%s × %.10g" % (self.variant, self.quantity)
 
     def save(self, *args, **kwargs):
         assert(self.quantity > 0)
         super(CartItem, self).save(*args, **kwargs)
-
-    def __unicode__(self):
-        return u"%s × %.10g" % (self.variant, self.quantity)
 
     def get_unit_price(self, currency=None, **kwargs):
         from ..pricing import handler
@@ -152,6 +155,3 @@ class CartItem(models.Model):
 
     def price(self, currency=None, **kwargs):
         return self.get_unit_price(currency=currency, **kwargs) * self.quantity
-
-    class Meta:
-        unique_together = ('cart', 'variant')

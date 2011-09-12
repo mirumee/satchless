@@ -97,6 +97,12 @@ class Order(models.Model):
     token = models.CharField(max_length=32, blank=True, default='')
     objects = OrderManager()
 
+    class Meta:
+        # Use described string to resolve ambiguity of the word 'order' in English.
+        verbose_name = _('order (business)')
+        verbose_name_plural = _('orders (business)')
+        ordering = ('-last_status_change',)
+
     def __unicode__(self):
         return _('Order #%d') % self.id
 
@@ -141,12 +147,6 @@ class Order(models.Model):
         payment_price = self.payment_price()
         return payment_price + sum([g.total() for g in self.groups.all()],
                                    Price(0, currency=self.currency))
-
-    class Meta:
-        # Use described string to resolve ambiguity of the word 'order' in English.
-        verbose_name = _('order (business)')
-        verbose_name_plural = _('orders (business)')
-        ordering = ('-last_status_change',)
 
 
 class DeliveryGroup(models.Model):

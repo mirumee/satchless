@@ -4,7 +4,6 @@ import os
 from django.conf import settings
 from django.db import models
 from django.utils.translation import ugettext as _
-from localeurl.models import reverse
 from mothertongue.models import MothertongueModelTranslate
 from satchless.image.models import Image
 import satchless.product.models
@@ -180,7 +179,7 @@ class TShirtVariant(ColoredVariant):
     size = models.CharField(choices=SIZE_CHOICES, max_length=2)
 
     def __unicode__(self):
-        return '<em>%s / %s / %s</em>' % (self.product, self.get_color_display(), self.get_size_display())
+        return '%s / %s / %s' % (self.product, self.get_color_display(), self.get_size_display())
 
 
 class Trousers(Product):

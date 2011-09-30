@@ -32,7 +32,8 @@ for model, admin_class in admin.site._registry.items():
         gulliver_admin.register(model, admin_class.__class__)
 
 class DiscountProductForm(django.forms.ModelForm):
-    product = django.forms.ModelChoiceField(label=_("variant id"), queryset=Product.objects.all(),
+    product = django.forms.ModelChoiceField(label=_("variant id"),
+                                            queryset=Product.objects.all(),
                                             widget=widgets.ProductRawIdWidget)
     class Meta:
         model = DiscountGroup.products.through
@@ -47,13 +48,14 @@ class DiscountGroupAdmin(admin.ModelAdmin):
     exclude = ('products',)
 
 class ProductSetItemForm(django.forms.ModelForm):
-    variant = django.forms.ModelChoiceField(label=_("variant id"), queryset=Variant.objects.all(),
+    variant = django.forms.ModelChoiceField(label=_("variant id"),
+                                            queryset=Variant.objects.all(),
                                             widget=widgets.VariantRawIdWidget)
     class Meta:
         model = ProductSetItem
 
 class ProductSetItemInline(admin.TabularInline):
-    form = ProductSetItemForm
+    #form = ProductSetItemForm
     model = ProductSetItem
 
 class ProductSetAdmin(admin.ModelAdmin):

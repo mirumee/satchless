@@ -21,13 +21,15 @@
             {% for variant in variants %}
                 <li>
                     {% if variant.product.images.count %}{% load satchless_image %}
-                        <img src="{{ variant.product.images.get|at_size:'product-detail' }}" alt="" />
+                        <img src="{{ variant.product.images.all|first|at_size:'product-detail' }}" alt="" />
                     {% endif %}
                     <form method="POST" action="">
                         {% csrf_token %}
-                        {{ variant }}
-                        {{ variant.cart_form.as_p }}
-                        <button type="submit">{% trans "Add to cart" %}</button>
+                        <table>
+                            {{ variant.product }}
+                            {{ variant.cart_form.as_table }}
+                        </table>
+                        <button type="submit" name='satchless_cart'>{% trans "Add to cart" %}</button>
                     </form>
                 </li>
             {% endfor %}

@@ -13,7 +13,7 @@ class ProductSet(models.Model):
 
     @models.permalink
     def get_absolute_url(self):
-        return ('satchless.contrib.productset.views.details', (self.slug,))
+        return ('satchless-productset-details', (self.slug,))
 
     class Meta:
         verbose_name = _("product set")

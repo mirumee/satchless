@@ -16,6 +16,9 @@ urlpatterns = patterns('',
 )
 
 class Models(TestCase):
+
+    urls = 'satchless.product.tests.product'
+
     def setUp(self):
         self.macaw = DeadParrot.objects.create(slug='macaw',
                 species='Hyacinth Macaw')
@@ -55,6 +58,10 @@ class Models(TestCase):
             self.assertEqual(type(variant.get_subtype_instance()), DeadParrotVariant)
             DeadParrotVariant.objects.get(pk=variant.pk).save()
             self.assertEqual(type(variant.get_subtype_instance()), DeadParrotVariant)
+
+    def test_product_url(self):
+        self.assertEqual('/cart/+1-macaw/', self.macaw.get_absolute_url())
+
 
 
 class Registry(TestCase):

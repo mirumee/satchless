@@ -109,3 +109,17 @@ A list of product view handlers. :ref:`Adding to cart <cart-add-to-cart>` and
 :ref:`adding to wishlist <cart-wishlist>` are fine examples of use. Python
 paths and instances are accepted. The syntax is the same as for
 ``SATCHLESS_DELIVERY_PROVIDERS``.
+
+SATCHLESS_PRICING_HANDLERS
+--------------------------
+
+A list of pricing handlers. :ref:`Simple pricing with quantity discounts
+<contrib-pricing-simpleqty>` and caching handlers
+(satchless.contrib.pricing.cache.CacheFactory) are good examples of use.
+Python paths and instances are accepted. The syntax is the same as for 
+``SATCHLESS_DELIVERY_PROVIDERS``.
+
+Note that at the moment settings.py by default provides caching handlers so
+any change in product's price requires cache entry to expire in order to see it
+being applied online (by default Django keeps cache in memory so it will be dropped with
+server restart).

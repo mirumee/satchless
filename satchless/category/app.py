@@ -18,10 +18,11 @@ class CategorizedProductApp(app.ProductApp):
         'satchless/category/%(category_app)s/list.html',
         'satchless/category/list.html',
     ]
+    allow_uncategorized_product_urls = False
 
     def path_from_slugs(self, slugs):
         """
-        Returns list of Category instances matchnig given slug path.
+        Returns list of Category instances matching given slug path.
         """
         if len(slugs) == 0:
             return []
@@ -102,7 +103,7 @@ class CategorizedProductApp(app.ProductApp):
 
     def get_urls(self, prefix=None):
         prefix = prefix or 'satchless-category'
-        return patterns('',
+        url_patterns = patterns('',
             # '+' predeces product slug to prevent conflicts with categories
             # paths
             url(r'^$', self.category_list,
@@ -116,5 +117,8 @@ class CategorizedProductApp(app.ProductApp):
             url(r'^(?P<category_slugs>([a-z0-9_-]+/)+)\+(?P<product_slug>[a-z0-9_-]+)/$',
                 self.product_details, name='%s-product-details' % prefix),
         )
+        if self.allow_uncategorized_product_urls:
+            url_patterns += super(CategorizedProductApp, self).get_urls()
+        return url_patterns
 
 product_app = CategorizedProductApp()

@@ -12,7 +12,7 @@ from . import DeadParrot, DeadParrotVariant, ZombieParrot, DeadParrotVariantForm
 __all__ = ['Models', 'Registry', 'Views']
 
 urlpatterns = patterns('',
-    url(r'^cart/', include(product_app.urls)),
+    url(r'^products/', include(product_app.urls)),
 )
 
 class Models(TestCase):
@@ -60,8 +60,7 @@ class Models(TestCase):
             self.assertEqual(type(variant.get_subtype_instance()), DeadParrotVariant)
 
     def test_product_url(self):
-        self.assertEqual('/cart/+1-macaw/', self.macaw.get_absolute_url())
-
+        self.assertEqual('/products/+1-macaw/', self.macaw.get_absolute_url())
 
 
 class Registry(TestCase):
@@ -87,5 +86,3 @@ class Views(TestCase):
         response = self.client.get(reverse('satchless-product-details',
                                            args=(self.macaw.pk, self.macaw.slug)))
         self.assertEqual(response.status_code, 200)
-
-

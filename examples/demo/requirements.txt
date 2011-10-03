@@ -8,5 +8,5 @@ django-pagination
 south
 whoosh
 # these need setup.py
-# git+git://github.com/mirumee/django-payments.git#egg=django-payments
+git+git://github.com/mirumee/django-payments.git#egg=django-payments
 # git+git://github.com/emesik/mamona.git#egg=mamona

@@ -34,7 +34,7 @@ class ContactTest(TestCase):
 
     def test_address_creation(self):
         c1 = Customer.objects.get_or_create_for_user(self.user1)
-        a1 = c1.address_set.create(alias="Mirumee",
+        a1 = c1.addressbook.create(alias="Mirumee",
                 full_name="Test User", street_address_1="pl. Solny 13/42",
                 city=u"Wrocław", postal_code="50-061", country='PL')
         self.assertEqual(a1.customer.user, self.user1)
@@ -66,7 +66,7 @@ class ContactTest(TestCase):
                     'set_as_default_billing': '1', 'set_as_default_shipping': '1'})
 
         c2 = Customer.objects.get_or_create_for_user(self.user2)
-        a2 = c2.address_set.create(alias="Biuro",
+        a2 = c2.addressbook.create(alias="Biuro",
                 full_name=u"Józef Tkaczuk", company_name="Sejm RP",
                 street_address_1=u"ul. Wiejska 4/6/8", city="Warszawa",
                 postal_code="00-902", country='PL')

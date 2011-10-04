@@ -147,10 +147,10 @@ class CartItem(models.Model):
         super(CartItem, self).save(*args, **kwargs)
 
     def get_unit_price(self, currency=None, **kwargs):
-        from ..pricing import handler
+        from ..pricing.handler import pricing_queue
         variant = self.variant.get_subtype_instance()
         currency = currency or self.cart.currency
-        return handler.get_variant_price(variant, currency,
+        return pricing_queue.get_variant_price(variant, currency,
                 quantity=self.quantity, cart=self.cart, cartitem=self, **kwargs)
 
     def price(self, currency=None, **kwargs):

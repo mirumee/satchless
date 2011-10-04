@@ -1,62 +1,55 @@
 import urllib
+from satchless.core.handler import QueueHandler
 
-from ....util.exceptions import FinalValue
 from ....pricing import PricingHandler
 
-def get_cache_key(currency, product=None, variant=None, **kwargs):
-    ret = {'currency': currency}
-    if variant:
-        ret['variant'] = variant.id
-    if product:
-        ret['product'] = product.id
-    return ret
 
-class CacheFactory(object):
-    class Handler(object):
-        def __init__(self, get_key_callback):
-            self.get_cache_key = get_key_callback
+class PricingCacheHandler(PricingHandler, QueueHandler):
+    def get_cache_key(self, currency=None, product=None, variant=None, **kwargs):
+        ret = {'currency': currency}
+        if variant:
+            ret['variant'] = variant.id
+        if product:
+            ret['product'] = product.id
+        return ret
 
-        def get_key(self, **kwargs):
-            return urllib.urlencode(self.get_cache_key(**kwargs), True)
+    def _get_key(self, **kwargs):
+        return urllib.urlencode(self.get_cache_key(**kwargs), True)
 
-    class SetHandler(Handler, PricingHandler):
-        def get_variant_price(self, **kwargs):
-            from django.core.cache import cache
-            price = kwargs.get('price', None)
-            if not price:
-                raise ValueError('No price passed to Cache.SetHandler')
-            key = 'price:' + self.get_key(**kwargs)
-            cache.set(key, price)
+    def get_variant_price(self, variant, currency, price, quantity=1, **context):
+        # Visit cache for a matching entry first
+        from django.core.cache import cache
+        key = 'price:' + self._get_key(currency=currency,
+                                    variant=variant,
+                                    **context)
+        price = cache.get(key)
+        if price:
             return price
+        # Iterate queue and caculate the price to be cached
+        price = None
+        for unique_id, handler in self.queue:
+            price = handler.get_variant_price(variant=variant,
+                                              currency=currency,
+                                              quantity=quantity,
+                                              price=price,
+                                              **context)
+        # Send returned price to the cache
+        cache.set(key, price)
+        return price
 
-        def get_product_price_range(self, **kwargs):
-            from django.core.cache import cache
-            price_range = kwargs.get('price_range', None)
-            if not price_range:
-                raise ValueError('No price_range passed to Cache.SetHandler')
-            key = 'pricerange:' + self.get_key(**kwargs)
-            cache.set(key, price_range)
+    def get_product_price_range(self, product, currency, price_range, **context):
+        # Visit cache for a matching entry first
+        from django.core.cache import cache
+        key = 'pricerange:' + self._get_key(**context)
+        price_range = cache.get(key)
+        if price_range:
             return price_range
-
-
-    class GetHandler(Handler, PricingHandler):
-        def get_variant_price(self, **kwargs):
-            from django.core.cache import cache
-            key = 'price:' + self.get_key(**kwargs)
-            price = cache.get(key)
-            if price:
-                raise FinalValue(price)
-            return kwargs.get('price')
-
-        def get_product_price_range(self, **kwargs):
-            from django.core.cache import cache
-
-            key = 'pricerange:' + self.get_key(**kwargs)
-            price_range = cache.get(key)
-            if price_range:
-                raise FinalValue(price_range)
-            return kwargs.get('price_range')
-
-    def __init__(self, get_key_callback=get_cache_key):
-        self.setter = self.SetHandler(get_key_callback)
-        self.getter = self.GetHandler(get_key_callback)
+        # Iterate queue and caculate the price to be cached
+        for unique_id, handler in self.queue:
+            price_range = handler.get_product_price_range(product=product,
+                                                      currency=currency,
+                                                      price_range=price_range,
+                                                      **context)
+        # Send returned price to the cache
+        cache.set(key, price_range)
+        return price_range

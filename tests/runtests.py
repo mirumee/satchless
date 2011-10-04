@@ -40,6 +40,7 @@ TESTED_APPS = [
     'satchless.contrib.checkout.singlestep',
     'satchless.contrib.delivery.simplepost',
     'satchless.contrib.pricing.simpleqty',
+    'satchless.contrib.pricing.cache',
     'satchless.contrib.tax.flatgroups',
     'satchless.delivery',
     'satchless.order',

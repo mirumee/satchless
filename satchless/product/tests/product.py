@@ -1,10 +1,12 @@
 # -*- coding: utf-8 -*-
+from django.conf import settings
 from django.conf.urls.defaults import patterns, include, url
 from django.core.urlresolvers import reverse
+from django.db import connection, reset_queries
 from django.test import TestCase, Client
 
 from ..forms import FormRegistry, variant_form_for_product
-from ..models import Variant, ProductAbstract
+from ..models import Variant, Product
 from ..app import product_app
 
 from . import DeadParrot, DeadParrotVariant, ZombieParrot, DeadParrotVariantForm
@@ -16,21 +18,27 @@ urlpatterns = patterns('',
 )
 
 class Models(TestCase):
-
     urls = 'satchless.product.tests.product'
 
     def setUp(self):
+        settings.DEBUG = True
         self.macaw = DeadParrot.objects.create(slug='macaw',
                 species='Hyacinth Macaw')
         self.cockatoo = DeadParrot.objects.create(slug='cockatoo',
                 species='White Cockatoo')
         self.client_test = Client()
 
+    #def test_subtype_performance(self):
+    #    reset_queries()
+    #    product = Product.objects.get(slug='macaw')
+    #    product.get_subtype_instance()
+    #    self.assertEqual(len(connection.queries), 1)
+
     def test_product_subclass_promotion(self):
-        for product in ProductAbstract.objects.all():
+        for product in Product.objects.all():
             # test saving as base and promoted class
             self.assertEqual(type(product.get_subtype_instance()), DeadParrot)
-            ProductAbstract.objects.get(pk=product.pk).save()
+            Product.objects.get(pk=product.pk).save()
             self.assertEqual(type(product.get_subtype_instance()), DeadParrot)
             DeadParrot.objects.get(pk=product.pk).save()
             self.assertEqual(type(product.get_subtype_instance()), DeadParrot)

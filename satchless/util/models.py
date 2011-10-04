@@ -1,11 +1,31 @@
-from django.contrib.contenttypes.models import ContentType
 from django.db import models
+from django.db.models.fields.related import SingleRelatedObjectDescriptor
+
+class SubtypedManager(models.Manager):
+    def find_subclasses(self, root):
+        for a in dir(root):
+            attr = getattr(root, a)
+            if isinstance(attr, SingleRelatedObjectDescriptor):
+                child = attr.related.model
+                if (issubclass(child, root) and
+                    child is not root):
+                    yield a
+                    for s in self.find_subclasses(child):
+                        yield '%s__%s' % (a, s)
+
+    # https://code.djangoproject.com/ticket/16572
+    #def get_query_set(self):
+    #    qs = super(SubtypedManager, self).get_query_set()
+    #    subclasses = list(self.find_subclasses(self.model))
+    #    if subclasses:
+    #        return qs.select_related(*subclasses)
+    #    return qs
 
 class Subtyped(models.Model):
-    content_type = models.ForeignKey(ContentType, editable=False,
-                                     related_name='+')
-    _subtype_instance = None
+    subtype_attr = models.CharField(max_length=500)
     __in_unicode = False
+
+    objects = SubtypedManager()
 
     class Meta:
         abstract = True
@@ -22,22 +42,32 @@ class Subtyped(models.Model):
         else:
             return self.get_subtype_instance().__unicode__()
 
-    def get_subtype_instance(self, refresh=False):
+    def get_subtype_instance(self):
         """
         Caches and returns the final subtype instance. If refresh is set,
         the instance is taken from database, no matter if cached copy
         exists.
         """
-        if not self._subtype_instance or refresh:
-            instance = self.content_type.get_object_for_this_type(pk=self.pk)
-            self._subtype_instance = instance
-        return self._subtype_instance
+        subtype = self
+        path = self.subtype_attr.split()
+        whoami = self._meta.module_name
+        remaining = path[path.index(whoami)+1:]
+        for r in remaining:
+            subtype = getattr(subtype, r)
+        return subtype
 
-    def store_content_type(self, klass):
-        if not self.content_type_id:
-            self.content_type = ContentType.objects.get_for_model(klass)
+    def store_subtype(self, klass):
+        if not self.id:
+            path = [self]
+            parents = self._meta.parents.keys()
+            while parents:
+                parent = parents[0]
+                path.append(parent)
+                parents = parent._meta.parents.keys()
+            path = [p._meta.module_name for p in reversed(path)]
+            self.subtype_attr = ' '.join(path)
 
 def _store_content_type(sender, instance, **kwargs):
     if isinstance(instance, Subtyped):
-        instance.store_content_type(sender)
+        instance.store_subtype(instance)
 models.signals.pre_save.connect(_store_content_type)

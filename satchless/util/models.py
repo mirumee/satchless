@@ -1,5 +1,6 @@
 from django.db import models
 from django.db.models.fields.related import SingleRelatedObjectDescriptor
+from django.dispatch import receiver
 
 class SubtypedManager(models.Manager):
     def find_subclasses(self, root):
@@ -20,6 +21,7 @@ class SubtypedManager(models.Manager):
     #    if subclasses:
     #        return qs.select_related(*subclasses)
     #    return qs
+
 
 class Subtyped(models.Model):
     subtype_attr = models.CharField(max_length=500)
@@ -67,7 +69,8 @@ class Subtyped(models.Model):
             path = [p._meta.module_name for p in reversed(path)]
             self.subtype_attr = ' '.join(path)
 
+
+@receiver(models.signals.pre_save)
 def _store_content_type(sender, instance, **kwargs):
     if isinstance(instance, Subtyped):
         instance.store_subtype(instance)
-models.signals.pre_save.connect(_store_content_type)

@@ -6,7 +6,7 @@ from satchless.payment.models import PaymentVariant
 class AuthorizeNetVariant(PaymentVariant):
     cc_name = models.CharField(_('Name on Credit Card'), max_length=128)
     cc_number = models.CharField(_('Card Number'), max_length=32)
-    cc_expiration = models.DateField(_('Exp. date'), none=True)
+    cc_expiration = models.DateField(_('Exp. date'), null=True)
     cc_cvv2 = models.CharField(_('CVV2 Security Number'), max_length=4)
     billing_email = models.EmailField(_("Email Address"), blank=True)
     response = models.ForeignKey(authorizenet.models.Response, null=True, blank=True)

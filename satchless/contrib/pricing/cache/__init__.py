@@ -1,6 +1,5 @@
 import urllib
 from satchless.core.handler import QueueHandler
-
 from ....pricing import PricingHandler
 
 

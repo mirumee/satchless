@@ -210,12 +210,11 @@ class CustomCacheHandler(PricingCacheHandler):
         key = super(self, CustomCacheHandler).get_cache_key(**kwargs)
         key['discount'] = bool(kwargs.get('discount', True))
         return key
-
 SATCHLESS_PRICING_HANDLERS = [
-    CustomCacheHandler(
+    #CustomCacheHandler(
         'satchless.contrib.pricing.simpleqty.SimpleQtyPricingHandler',
         'satchless.contrib.tax.flatgroups.FlatGroupPricingHandler',
-        'sale.SalePricingHandler')
+        'sale.SalePricingHandler'#)
 ]
 SATCHLESS_PRODUCT_VIEW_HANDLERS = [
     'carts.handler.carts_handler',

@@ -14,6 +14,9 @@ from ....payment import ConfirmationFormNeeded
 from ....payment.tests import TestPaymentProvider
 from ....product.tests import DeadParrot
 
+from satchless.product.tests.pricing import FiveZlotyPriceHandler
+from satchless.pricing import handler
+
 from ..common.decorators import require_order
 from ..common.views import prepare_order, reactivate_order
 from . import views
@@ -86,9 +89,13 @@ class CheckoutTest(TestCase):
         PostShippingType.objects.create(price=12, typ='polecony', name='list polecony')
         PostShippingType.objects.create(price=20, typ='list', name='List zwykly')
 
+        self.original_handlers = settings.SATCHLESS_PRICING_HANDLERS
+        handler.pricing_queue = handler.PricingQueue(FiveZlotyPriceHandler)
+
     def tearDown(self):
         self._teardown_settings(self.original_settings, self.custom_settings)
         order_handler.init_queues()
+        handler.pricing_queue = handler.PricingQueue(*self.original_handlers)
 
     def _test_status(self, url, method='get', *args, **kwargs):
         status_code = kwargs.pop('status_code', 200)

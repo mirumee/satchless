@@ -1,10 +1,13 @@
 # -*- coding: utf-8 -*-
 from decimal import Decimal
 
+from django.conf import settings
 from django.core.urlresolvers import reverse
 from django.test import TestCase, Client
 
+from satchless.pricing import handler
 from satchless.product.tests import DeadParrot
+from satchless.product.tests.pricing import FiveZlotyPriceHandler
 from satchless.cart.models import Cart
 
 from . import models
@@ -32,8 +35,12 @@ class OrderTest(TestCase):
         self.cockatoo_blue_d = self.cockatoo.variants.create(color='blue',
                                                              sku='C-BL-D',
                                                              looks_alive=False)
-
         self.anon_client = Client()
+        self.original_handlers = settings.SATCHLESS_PRICING_HANDLERS
+        handler.pricing_queue = handler.PricingQueue(FiveZlotyPriceHandler)
+
+    def tearDown(self):
+        handler.pricing_queue = handler.PricingQueue(*self.original_handlers)
 
     def test_order_is_updated_when_cart_content_changes(self):
         cart = Cart.objects.create(typ='satchless.test_cart')

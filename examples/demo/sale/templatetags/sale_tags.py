@@ -3,7 +3,8 @@ from django.conf import settings
 from django.core.urlresolvers import reverse
 from django import template
 
-from satchless.product.models import Category, Product
+from satchless.product.models import Product
+from satchless.category.models import Category
 
 from .. import query
 

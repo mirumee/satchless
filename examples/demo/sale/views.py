@@ -23,7 +23,7 @@ def index(request, category_slugs=None):
         category = None
         products = Product.objects.filter(discount__isnull=False)
         path = []
-    ProductCategory = Product.categories.through
+    ProductCategory = Product.categories.related.field.rel.through
     discounted_products = (ProductCategory.objects.filter(product__discount__isnull=False)
                                                   .values_list('category_id',
                                                                flat=True))

@@ -1,5 +1,4 @@
 from django.conf import settings
-from django.utils.datastructures import SortedDict
 from django import template
 from django.template.base import Node
 from django.template.defaulttags import kwarg_re
@@ -20,9 +19,11 @@ class BasePriceNode(Node):
         return getattr(settings, 'SATCHLESS_DEFAULT_CURRENCY', None)
 
     def render(self, context):
+        from satchless.pricing.handler import pricing_queue
         item = self.item.resolve(context)
         kwargs = dict([(smart_str(k, 'ascii'), v.resolve(context))
                        for k, v in self.kwargs.items()])
+        self.pricing_handler = kwargs.pop('handler', pricing_queue)
         currency = kwargs.pop('currency', self.get_currency_for_item(item))
         result = ''
         if currency:
@@ -37,13 +38,11 @@ class BasePriceNode(Node):
 
 class VariantPriceNode(BasePriceNode):
     def get_price(self, product, currency, **kwargs):
-        from satchless.pricing.handler import get_variant_price
-        return get_variant_price(product, currency, **kwargs)
+        return self.pricing_handler.get_variant_price(product, currency, **kwargs)
 
 class ProductPriceRangeNode(BasePriceNode):
     def get_price(self, product, currency, **kwargs):
-        from satchless.pricing.handler import get_product_price_range
-        return get_product_price_range(product, currency, **kwargs)
+        return self.pricing_handler.get_product_price_range(product, currency, **kwargs)
 
 def parse_price_tag(parser, token):
     bits = token.split_contents()
@@ -78,4 +77,3 @@ def variant_price(parser, token):
 @register.tag
 def product_price_range(parser, token):
     return ProductPriceRangeNode(*parse_price_tag(parser, token))
-

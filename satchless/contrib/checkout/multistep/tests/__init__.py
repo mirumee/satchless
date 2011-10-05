@@ -3,6 +3,7 @@ import os
 
 from decimal import Decimal
 from django.http import HttpResponse, HttpRequest
+from django.conf import settings
 from django.conf.urls.defaults import patterns, include, url
 from django.core.urlresolvers import reverse
 from django.test import Client
@@ -13,7 +14,9 @@ from .....order import handler as order_handler
 from .....order.models import Order
 from .....payment import ConfirmationFormNeeded
 from .....payment.tests import TestPaymentProvider
+from .....pricing import handler
 from .....product.tests import DeadParrot
+from .....product.tests.pricing import FiveZlotyPriceHandler
 from .....util.tests import ViewsTestCase
 
 from ...common.decorators import require_order
@@ -81,9 +84,13 @@ class CheckoutTest(ViewsTestCase):
         PostShippingType.objects.create(price=12, typ='polecony', name='list polecony')
         PostShippingType.objects.create(price=20, typ='list', name='List zwykly')
 
+        self.original_handlers = settings.SATCHLESS_PRICING_HANDLERS
+        handler.pricing_queue = handler.PricingQueue(FiveZlotyPriceHandler)
+
     def tearDown(self):
         self._teardown_settings(self.original_settings, self.custom_settings)
         order_handler.init_queues()
+        handler.pricing_queue = handler.PricingQueue(*self.original_handlers)
 
     def _get_or_create_cart_for_client(self, client=None, typ='satchless_cart'):
         client = client or self.client

@@ -1,9 +1,9 @@
 from decimal import Decimal
-from django.conf import settings
 from django.test import TestCase
 from satchless.contrib.pricing.simpleqty.models import ProductPrice
 from satchless.product.tests import DeadParrot
-from satchless.pricing import Price, PriceRange, handler
+from satchless.pricing import Price, PriceRange
+from satchless.pricing.handler import PricingQueue
 
 from . import models
 
@@ -40,33 +40,26 @@ class ParrotTaxTest(TestCase):
                                                     rate_name="23%")
         self.vat8.products.add(self.macaw)
         # set the pricing pipeline
-        self.original_pricing_handler = settings.SATCHLESS_PRICING_HANDLERS
-        settings.SATCHLESS_PRICING_HANDLERS = [
+        self.pricing_queue = PricingQueue(
             'satchless.contrib.pricing.simpleqty.SimpleQtyPricingHandler',
-            'satchless.contrib.tax.flatgroups.FlatGroupPricingHandler',
-            ]
-        handler.init_queue()
-
-    def tearDown(self):
-        settings.SATCHLESS_PRICING_HANDLERS = self.original_pricing_handler
-        handler.init_queue()
+            'satchless.contrib.tax.flatgroups.FlatGroupPricingHandler')
 
     def test_nodefault(self):
         # these have 8% VAT
-        self.assertEqual(handler.get_variant_price(self.macaw_blue_d,
+        self.assertEqual(self.pricing_queue.get_variant_price(self.macaw_blue_d,
                                                    currency='PLN'),
                          Price(10, Decimal('10.80'), currency='PLN'))
-        self.assertEqual(handler.get_variant_price(self.macaw_blue_a,
+        self.assertEqual(self.pricing_queue.get_variant_price(self.macaw_blue_a,
                                                    currency='PLN'),
                          Price(12, Decimal('12.96'), currency='PLN'))
         # while these have no tax group, hence the tax is zero
-        self.assertEqual(handler.get_variant_price(self.cockatoo_white_a,
+        self.assertEqual(self.pricing_queue.get_variant_price(self.cockatoo_white_a,
                                                    currency='PLN'),
                          Price(20, 20, currency='PLN'))
-        self.assertEqual(handler.get_variant_price(self.cockatoo_green_a,
+        self.assertEqual(self.pricing_queue.get_variant_price(self.cockatoo_green_a,
                                                    currency='PLN'),
                          Price(25, 25, currency='PLN'))
-        pr = handler.get_product_price_range(self.cockatoo, currency='PLN')
+        pr = self.pricing_queue.get_product_price_range(self.cockatoo, currency='PLN')
         self.assertEqual(pr, PriceRange(min_price=Price(20, 20,
                                                         currency='PLN'),
                                         max_price=Price(25, 25,
@@ -76,20 +69,20 @@ class ParrotTaxTest(TestCase):
         self.vat23.default = True
         self.vat23.save()
         # these have 8% VAT
-        self.assertEqual(handler.get_variant_price(self.macaw_blue_d,
+        self.assertEqual(self.pricing_queue.get_variant_price(self.macaw_blue_d,
                                                    currency='PLN'),
                          Price(10, Decimal('10.80'), currency='PLN'))
-        self.assertEqual(handler.get_variant_price(self.macaw_blue_a,
+        self.assertEqual(self.pricing_queue.get_variant_price(self.macaw_blue_a,
                                                    currency='PLN'),
                          Price(12, Decimal('12.96'), currency='PLN'))
         # while these have default 23% VAT
-        self.assertEqual(handler.get_variant_price(self.cockatoo_white_a,
+        self.assertEqual(self.pricing_queue.get_variant_price(self.cockatoo_white_a,
                                                    currency='PLN'),
                          Price(20, Decimal('24.60'), currency='PLN'))
-        self.assertEqual(handler.get_variant_price(self.cockatoo_green_a,
+        self.assertEqual(self.pricing_queue.get_variant_price(self.cockatoo_green_a,
                                                    currency='PLN'),
                          Price(25, Decimal('30.75'), currency='PLN'))
-        pr = handler.get_product_price_range(self.cockatoo, currency='PLN')
+        pr = self.pricing_queue.get_product_price_range(self.cockatoo, currency='PLN')
         self.assertEqual(pr, PriceRange(min_price=Price(20, Decimal('24.60'),
                                                         currency='PLN'),
                                         max_price=Price(25, Decimal('30.75'),

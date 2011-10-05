@@ -3,10 +3,13 @@ from decimal import Decimal
 import os
 
 from django.conf.urls.defaults import patterns, include, url
+from django.conf import settings
 from django.core.urlresolvers import reverse
 from django.test import TestCase, Client
 
+from satchless.pricing import handler
 from satchless.product.tests import DeadParrot
+from satchless.product.tests.pricing import FiveZlotyPriceHandler
 from satchless.cart.models import Cart
 
 from . import models
@@ -42,8 +45,10 @@ class OrderTest(ViewsTestCase):
         self.cockatoo_blue_d = self.cockatoo.variants.create(color='blue',
                                                              sku='C-BL-D',
                                                              looks_alive=False)
-
         self.anon_client = Client()
+
+        self.original_handlers = settings.SATCHLESS_PRICING_HANDLERS
+        handler.pricing_queue = handler.PricingQueue(FiveZlotyPriceHandler)
         app_dir = os.path.dirname(__file__)
         self.custom_settings = {
             'SATCHLESS_PRODUCT_VIEW_HANDLERS': ('satchless.cart.add_to_cart_handler',),
@@ -54,6 +59,7 @@ class OrderTest(ViewsTestCase):
         self.original_settings = self._setup_settings(self.custom_settings)
 
     def tearDown(self):
+        handler.pricing_queue = handler.PricingQueue(*self.original_handlers)
         self._teardown_settings(self.original_settings,
                                 self.custom_settings)
 

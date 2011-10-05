@@ -3,7 +3,8 @@ from django.conf import settings
 from django.test import TestCase
 from django import template
 import mock
-from satchless.pricing import handler, Price, PriceRange, PricingHandler
+from satchless.pricing import Price, PriceRange, PricingHandler
+from satchless.pricing.handler import PricingQueue
 
 from ..templatetags import product_prices
 
@@ -58,18 +59,15 @@ class TenPercentDiscountPriceHandler(PricingHandler):
 
 class BasicHandlerTest(TestCase):
     def setUp(self):
-        self.original_pricing_handlers = settings.SATCHLESS_PRICING_HANDLERS
-        settings.SATCHLESS_PRICING_HANDLERS = [FiveZlotyPriceHandler,
-                                               NinetyPerecentTaxPriceHandler,
-                                               TenPercentDiscountPriceHandler]
-        handler.init_queue()
+        self.pricing_queue = PricingQueue(FiveZlotyPriceHandler,
+                                        NinetyPerecentTaxPriceHandler,
+                                        TenPercentDiscountPriceHandler)
 
     def tearDown(self):
-        settings.SATCHLESS_PRICING_HANDLERS = self.original_pricing_handlers
-        handler.init_queue()
+        self.pricing_queue = PricingQueue(*settings.SATCHLESS_PRICING_HANDLERS)
 
     def test_discounted_price(self):
-        price = handler.get_variant_price(None, u'PLN', quantity=1,
+        price = self.pricing_queue.get_variant_price(None, u'PLN', quantity=1,
                                           discount=True)
         self.assertEqual(price,
                          Price(net=5*decimal.Decimal('0.9'),
@@ -78,7 +76,7 @@ class BasicHandlerTest(TestCase):
                                currency=u'PLN'))
 
     def test_undiscounted_price(self):
-        price = handler.get_variant_price(None, u'PLN', quantity=1,
+        price = self.pricing_queue.get_variant_price(None, u'PLN', quantity=1,
                                           discount=False)
         self.assertEqual(price,
                          Price(net=5,
@@ -87,20 +85,15 @@ class BasicHandlerTest(TestCase):
 
 class PricingTagsTest(TestCase):
     def setUp(self):
-        self.original_pricing_handlers = settings.SATCHLESS_PRICING_HANDLERS
-        settings.SATCHLESS_PRICING_HANDLERS = [FiveZlotyPriceHandler,
-                                               NinetyPerecentTaxPriceHandler,
-                                               TenPercentDiscountPriceHandler]
-        handler.init_queue()
-
-    def tearDown(self):
-        settings.SATCHLESS_PRICING_HANDLERS = self.original_pricing_handlers
-        handler.init_queue()
+        self.pricing_queue = PricingQueue(FiveZlotyPriceHandler,
+                                        NinetyPerecentTaxPriceHandler,
+                                        TenPercentDiscountPriceHandler)
 
     def test_undiscounted_variant_price_tag_without_asvar(self):
         token = mock.Mock()
         token.split_contents.return_value = ('variant_price', 'product',
-                                             'currency=PLN', 'discount=0')
+                                             'currency=PLN', 'discount=0',
+                                             'handler=handler')
         parser = mock.Mock()
         def side_effect(arg):
             return template.Variable(arg)
@@ -113,7 +106,7 @@ class PricingTagsTest(TestCase):
         self.assertEqual(node.kwargs['currency'].var, 'PLN')
         self.assertEqual(node.kwargs['discount'].var, '0')
 
-        context = {'product': 'product', 'PLN': 'PLN', '0': 0}
+        context = {'product': 'product', 'PLN': 'PLN', '0': 0, 'handler': self.pricing_queue}
         result = node.render(context)
         self.assertEqual(result,
                          Price(net=5,
@@ -123,7 +116,8 @@ class PricingTagsTest(TestCase):
     def test_discounted_variant_price_tag_without_asvar(self):
         token = mock.Mock()
         token.split_contents.return_value = ('variant_price', 'product',
-                                             'currency=PLN')
+                                             'currency=PLN',
+                                             'handler=handler')
         parser = mock.Mock()
         def side_effect(arg):
             return template.Variable(arg)
@@ -135,7 +129,7 @@ class PricingTagsTest(TestCase):
         self.assertEqual(node.item.var, 'product')
         self.assertEqual(node.kwargs['currency'].var, 'PLN')
 
-        context = {'product': 'product', 'PLN': 'PLN', '0': 0}
+        context = {'product': 'product', 'PLN': 'PLN', '0': 0, 'handler': self.pricing_queue}
         result = node.render(context)
         self.assertEqual(result,
                          Price(net=5*decimal.Decimal('0.9'),
@@ -146,7 +140,8 @@ class PricingTagsTest(TestCase):
     def test_variant_price_tag_with_asvar(self):
         token = mock.Mock()
         token.split_contents.return_value = ('variant_price', 'product',
-                                             'currency=PLN', 'as', 'price')
+                                             'currency=PLN', 'handler=handler',
+                                             'as', 'price')
         parser = mock.Mock()
         def side_effect(arg):
             return template.Variable(arg)
@@ -157,7 +152,7 @@ class PricingTagsTest(TestCase):
         self.assertEqual(node.kwargs['currency'].var, 'PLN')
         self.assertEqual(node.asvar, 'price')
 
-        context = {'product': 'product', 'PLN': 'PLN', '0': 0}
+        context = {'product': 'product', 'PLN': 'PLN', '0': 0, 'handler': self.pricing_queue}
         node.render(context)
         self.assertEqual(context['price'],
                          Price(net=5*decimal.Decimal('0.9'),
@@ -168,8 +163,8 @@ class PricingTagsTest(TestCase):
     def test_undiscounted_product_price_range(self):
         token = mock.Mock()
         token.split_contents.return_value = ('product_price_range', 'product',
-                                             'currency=PLN', 'discount=0', 'as',
-                                             'price')
+                                             'currency=PLN', 'discount=0',
+                                             'handler=handler', 'as','price')
         parser = mock.Mock()
         def side_effect(arg):
             return template.Variable(arg)
@@ -177,7 +172,7 @@ class PricingTagsTest(TestCase):
 
         node = product_prices.product_price_range(parser, token)
 
-        context = {'product': 'product', 'PLN': 'PLN', '0': 0}
+        context = {'product': 'product', 'PLN': 'PLN', '0': 0, 'handler': self.pricing_queue}
         node.render(context)
         self.assertEqual(context['price'].min_price,
                          Price(net=5, gross=5*decimal.Decimal('1.9'),

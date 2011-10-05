@@ -71,7 +71,7 @@ class CartApp(SatchlessApp):
         return redirect(self.cart_url)
 
     def get_urls(self, prefix=None):
-        prefix = prefix or 'satchless-cart'
+        prefix = prefix or self.cart_type
         return patterns('',
             url(r'^view/$', self.cart, name='%s-view' % prefix),
             url(r'^remove/(?P<item_pk>[0-9]+)/$', self.remove_item,

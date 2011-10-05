@@ -45,8 +45,8 @@
 {% endfor %}
             {% endspaceless %}</ul>
             <div class="carts">
-                <a class="wishlist" href="{% url satchless-cart-view 'satchless_wishlist' %}">{{ wishlist_size|floatformat:0 }}<img src="{{ STATIC_URL }}img/icons/wishlist.png" alt="wishlist" /></a>
-                <a href="{% url satchless-cart-view 'satchless_cart' %}">{{ cart_size|floatformat:0 }}<img src="{{ STATIC_URL }}img/icons/cart.png" alt="cart" /></a>
+                <a class="wishlist" href="{% url wishlist-view %}">{{ wishlist_size|floatformat:0 }}<img src="{{ STATIC_URL }}img/icons/wishlist.png" alt="wishlist" /></a>
+                <a href="{% url cart-view %}">{{ cart_size|floatformat:0 }}<img src="{{ STATIC_URL }}img/icons/cart.png" alt="cart" /></a>
             </div>
         </div>
         <div class="grid_24">

@@ -1,9 +1,10 @@
 {% extends 'satchless/product/base.html' %}
 {% load i18n %}
+{% load url from future %}
 {% block title %}{% trans "Products" %} | {{ block.super }}{% endblock %}
 {% block breadcrumbs %}
     {{ block.super }}
-    <li><a href="{% url satchless-category-list %}">{% trans "Products" %}</a></li>
+    <li><a href="{% url 'satchless-category-list' %}">{% trans "Products" %}</a></li>
 {% endblock %}
 {% block content %}
     <div id="subcategories">

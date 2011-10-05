@@ -1,22 +1,24 @@
 # -*- coding: utf-8 -*-
+import os
+
 from decimal import Decimal
 from django.http import HttpResponse, HttpRequest
-from django.conf import settings
 from django.conf.urls.defaults import patterns, include, url
 from django.core.urlresolvers import reverse
-from django.test import TestCase, Client
+from django.test import Client
 
-from ....cart.models import Cart, CART_SESSION_KEY
-from ....contrib.delivery.simplepost.models import PostShippingType
-from ....order import handler as order_handler
-from ....order.models import Order
-from ....payment import ConfirmationFormNeeded
-from ....payment.tests import TestPaymentProvider
-from ....product.tests import DeadParrot
+from .....cart.models import Cart, CART_SESSION_KEY
+from .....contrib.delivery.simplepost.models import PostShippingType
+from .....order import handler as order_handler
+from .....order.models import Order
+from .....payment import ConfirmationFormNeeded
+from .....payment.tests import TestPaymentProvider
+from .....product.tests import DeadParrot
+from .....util.tests import ViewsTestCase
 
-from ..common.decorators import require_order
-from ..common.views import prepare_order, reactivate_order
-from . import views
+from ...common.decorators import require_order
+from ...common.views import prepare_order, reactivate_order
+from .. import views
 
 urlpatterns = patterns('',
     url(r'^cart/', include('satchless.cart.urls')),
@@ -29,24 +31,8 @@ class TestPaymentProviderWithConfirmation(TestPaymentProvider):
         raise ConfirmationFormNeeded(action='http://test.payment.gateway.example.com')
 
 
-class CheckoutTest(TestCase):
+class CheckoutTest(ViewsTestCase):
     urls = 'satchless.contrib.checkout.multistep.tests'
-
-    def _setup_settings(self, custom_settings):
-        original_settings = {}
-        for setting_name, value in custom_settings.items():
-            if hasattr(settings, setting_name):
-                original_settings[setting_name] = getattr(settings, setting_name)
-            setattr(settings, setting_name, value)
-        return original_settings
-
-    def _teardown_settings(self, original_settings, custom_settings=None):
-        custom_settings = custom_settings or {}
-        for setting_name, value in custom_settings.items():
-            if setting_name in original_settings:
-                setattr(settings, setting_name, value)
-            else:
-                delattr(settings, setting_name)
 
     def setUp(self):
         self.macaw = DeadParrot.objects.create(slug='macaw',
@@ -71,12 +57,21 @@ class CheckoutTest(TestCase):
                                                              sku='C-BL-D',
                                                              looks_alive=False)
 
+        test_dir = os.path.dirname(__file__)
+        satchless_dir = os.path.join(test_dir, '..', '..', '..', '..')
         self.custom_settings = {
             'SATCHLESS_DELIVERY_PROVIDERS': ['satchless.contrib.delivery.simplepost.PostDeliveryProvider'],
             'SATCHLESS_ORDER_PARTITIONERS': ['satchless.contrib.order.partitioner.simple'],
             'SATCHLESS_PAYMENT_PROVIDERS': [TestPaymentProviderWithConfirmation],
             'SATCHLESS_DJANGO_PAYMENT_TYPES': ['dummy'],
             'PAYMENT_VARIANTS': {'dummy': ('payments.dummy.DummyProvider', {'url': '/', })},
+            'TEMPLATE_DIRS': (os.path.join(satchless_dir, 'category', 'templates'),
+                              os.path.join(satchless_dir, 'order', 'templates'),
+                              os.path.join(test_dir, '..', 'templates'),
+                              os.path.join(test_dir, 'templates')),
+            'TEMPLATE_LOADERS': (
+                'django.template.loaders.filesystem.Loader',
+            )
         }
         self.original_settings = self._setup_settings(self.custom_settings)
         order_handler.init_queues()
@@ -89,18 +84,6 @@ class CheckoutTest(TestCase):
     def tearDown(self):
         self._teardown_settings(self.original_settings, self.custom_settings)
         order_handler.init_queues()
-
-    def _test_status(self, url, method='get', *args, **kwargs):
-        status_code = kwargs.pop('status_code', 200)
-        client = kwargs.pop('client_instance', Client())
-        data = kwargs.pop('data', {})
-
-        response = getattr(client, method)(url, data=data, follow=False)
-        self.assertEqual(response.status_code, status_code,
-            'Incorrect status code for: %s, (%s, %s)! Expected: %s, received: %s. HTML:\n\n%s' % (
-                url.decode('utf-8'), args, kwargs, status_code, response.status_code,
-                response.content.decode('utf-8')))
-        return response
 
     def _get_or_create_cart_for_client(self, client=None, typ='satchless_cart'):
         client = client or self.client

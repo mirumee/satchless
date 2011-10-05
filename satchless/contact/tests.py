@@ -2,9 +2,11 @@
 from django.contrib.auth.models import User
 from django.core.urlresolvers import reverse
 from django.test import TestCase, Client
-from .models import *
 
-class ContactTest(TestCase):
+from ..util.tests import ViewsTestCase
+from . import models
+
+class ContactTest(ViewsTestCase):
     def setUp(self):
         self.user1 = User.objects.create(username="testuser")
         self.user2 = User.objects.create(username="testlooser")
@@ -13,27 +15,14 @@ class ContactTest(TestCase):
         self.user2.set_password(u"hasword")
         self.user2.save()
 
-    def _test_status(self, url, method='get', *args, **kwargs):
-        status_code = kwargs.pop('status_code', 200)
-        client = kwargs.pop('client_instance', Client())
-        data = kwargs.pop('data', {})
-
-        response = getattr(client, method)(url, data=data)
-        self.assertEqual(response.status_code, status_code,
-            'Incorrect status code for: %s, (%s, %s)! Expected: %s, received: %s. HTML:\n\n%s' % (
-                url, args, kwargs, status_code, response.status_code, response.content
-            )
-        )
-        return response
-
     def test_customer_creation(self):
-        c1 = Customer.objects.get_or_create_for_user(self.user1)
-        c2 = Customer.objects.get_or_create_for_user(self.user1)
+        c1 = models.Customer.objects.get_or_create_for_user(self.user1)
+        c2 = models.Customer.objects.get_or_create_for_user(self.user1)
         self.assertEqual(c1, c2)
         self.assertEqual(c1.email, self.user1.email)
 
     def test_address_creation(self):
-        c1 = Customer.objects.get_or_create_for_user(self.user1)
+        c1 = models.Customer.objects.get_or_create_for_user(self.user1)
         a1 = c1.addressbook.create(alias="Mirumee",
                 full_name="Test User", street_address_1="pl. Solny 13/42",
                 city=u"Wrocław", postal_code="50-061", country='PL')
@@ -41,7 +30,7 @@ class ContactTest(TestCase):
         self.assertEqual(a1.alias, unicode(a1))
 
     def test_views(self):
-        Customer.objects.get_or_create_for_user(self.user1)
+        models.Customer.objects.get_or_create_for_user(self.user1)
         cli_anon = Client()
         cli_user1 = Client()
         self.assert_(cli_user1.login(username="testuser", password=u"pasło"))
@@ -65,7 +54,7 @@ class ContactTest(TestCase):
                     'city': u"Wrocław", 'postal_code': "50-061", 'country': 'PL',
                     'set_as_default_billing': '1', 'set_as_default_shipping': '1'})
 
-        c2 = Customer.objects.get_or_create_for_user(self.user2)
+        c2 = models.Customer.objects.get_or_create_for_user(self.user2)
         a2 = c2.addressbook.create(alias="Biuro",
                 full_name=u"Józef Tkaczuk", company_name="Sejm RP",
                 street_address_1=u"ul. Wiejska 4/6/8", city="Warszawa",

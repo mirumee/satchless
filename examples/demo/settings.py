@@ -245,6 +245,9 @@ HAYSTACK_WHOOSH_PATH = os.path.join(PROJECT_ROOT, 'whoosh_index')
 
 INTERNAL_IPS = ['127.0.0.1']
 
+# http://south.aeracode.org/ticket/520
+SOUTH_TESTS_MIGRATE = False
+
 try:
     execfile(os.path.join(PROJECT_ROOT, 'local_settings.py'))
 except IOError:

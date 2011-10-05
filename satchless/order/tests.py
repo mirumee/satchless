@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 from decimal import Decimal
+import os
 
+from django.conf.urls.defaults import patterns, include, url
 from django.core.urlresolvers import reverse
 from django.test import TestCase, Client
 
@@ -8,8 +10,16 @@ from satchless.product.tests import DeadParrot
 from satchless.cart.models import Cart
 
 from . import models
+from . import urls
+from ..util.tests import ViewsTestCase
 
-class OrderTest(TestCase):
+class OrderTest(ViewsTestCase):
+    class urls:
+        urlpatterns = patterns('',
+            url(r'^order/', include(urls)),
+        )
+    urls = urls
+
     def setUp(self):
         self.macaw = DeadParrot.objects.create(slug='macaw',
                 species="Hyacinth Macaw")
@@ -34,6 +44,18 @@ class OrderTest(TestCase):
                                                              looks_alive=False)
 
         self.anon_client = Client()
+        app_dir = os.path.dirname(__file__)
+        self.custom_settings = {
+            'SATCHLESS_PRODUCT_VIEW_HANDLERS': ('satchless.cart.add_to_cart_handler',),
+            'TEMPLATE_DIRS': [os.path.join(app_dir, 'templates'),
+                              os.path.join(app_dir, '..', 'product',
+                                           'tests', 'templates')]
+        }
+        self.original_settings = self._setup_settings(self.custom_settings)
+
+    def tearDown(self):
+        self._teardown_settings(self.original_settings,
+                                self.custom_settings)
 
     def test_order_is_updated_when_cart_content_changes(self):
         cart = Cart.objects.create(typ='satchless.test_cart')
@@ -58,6 +80,5 @@ class OrderTest(TestCase):
         cart.set_quantity(self.cockatoo_white_a, Decimal('2.45'))
 
         order = models.Order.objects.get_from_cart(cart)
-        response = self.client.get(reverse('satchless-order-view',
-                                           args=(order.token,)))
-        self.assertEqual(response.status_code, 200)
+        self._test_GET_status(reverse('satchless-order-view',
+                                      args=(order.token,)))

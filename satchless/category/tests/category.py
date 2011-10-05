@@ -1,8 +1,10 @@
+import os
+
 from django.conf.urls.defaults import patterns, include, url
 from django.core.urlresolvers import reverse, NoReverseMatch
 from django.test import TestCase
 
-from ...util.tests import ViewTestCase
+from ...util.tests import ViewsTestCase
 from ...product.tests import DeadParrot
 
 from ..models import Category
@@ -15,13 +17,25 @@ urlpatterns = patterns('',
     url(r'^products/', include(product_app.urls)),
 )
 
-class Views(ViewTestCase):
+class Views(ViewsTestCase):
+    urls = 'satchless.category.tests'
+
     def setUp(self):
         self.animals = Category.objects.create(slug='animals', name=u'Animals')
         self.birds = Category.objects.create(slug='birds', name=u'Birds',
                                              parent=self.animals)
         self.parrots = Category.objects.create(slug='parrots', name=u'Parrorts',
                                                parent=self.birds)
+        test_dir = os.path.dirname(__file__)
+        self.custom_settings = {
+            'TEMPLATE_DIRS': (os.path.join(test_dir, '..', 'templates'),
+                              os.path.join(test_dir, 'templates')),
+        }
+        self.original_settings = self._setup_settings(self.custom_settings)
+
+    def tearDown(self):
+        self._teardown_settings(self.original_settings,
+                                self.custom_settings)
 
     def test_category_list(self):
         self._test_GET_status(reverse('satchless-category-list'))
@@ -99,18 +113,15 @@ class CategorizedProductUrlTests(TestCase):
 
     def test_categorised_product_url(self):
         self.animals.products.add(self.parrot_macaw)
-        self.assertEqual('/products/animals/+macaw/',
-                         self.parrot_macaw.get_absolute_url())
+        self.assertTrue('/products/animals/+macaw/' in self.parrot_macaw.get_absolute_url())
 
     def test_second_tier_categorised_product_url(self):
         self.birds.products.add(self.parrot_macaw)
-        self.assertEqual('/products/animals/birds/+macaw/',
-                         self.parrot_macaw.get_absolute_url())
+        self.assertTrue('/products/animals/birds/+macaw/' in self.parrot_macaw.get_absolute_url())
 
     def test_third_tier_categorised_product_url(self):
         self.parrots.products.add(self.parrot_macaw)
-        self.assertEqual('/products/animals/birds/parrots/+macaw/',
-                         self.parrot_macaw.get_absolute_url())
+        self.assertTrue('/products/animals/birds/parrots/+macaw/' in self.parrot_macaw.get_absolute_url())
 
     def test_product_url(self):
         """Products not in a Category should raise an exception."""
@@ -118,8 +129,8 @@ class CategorizedProductUrlTests(TestCase):
 
 
 class NonCategorizedProductUrlTests(TestCase):
-
     """Urls include satchless-product-details"""
+
     urls = 'satchless.category.tests'
 
     def setUp(self):
@@ -133,20 +144,16 @@ class NonCategorizedProductUrlTests(TestCase):
 
     def test_categorised_product_url(self):
         self.animals.products.add(self.parrot_macaw)
-        self.assertEqual('/products/animals/+macaw/',
-                         self.parrot_macaw.get_absolute_url())
+        self.assertTrue('/products/animals/+macaw/' in self.parrot_macaw.get_absolute_url())
 
     def test_second_tier_categorised_product_url(self):
         self.birds.products.add(self.parrot_macaw)
-        self.assertEqual('/products/animals/birds/+macaw/',
-                         self.parrot_macaw.get_absolute_url())
+        self.assertTrue('/products/animals/birds/+macaw/' in self.parrot_macaw.get_absolute_url())
 
     def test_third_tier_categorised_product_url(self):
         self.parrots.products.add(self.parrot_macaw)
-        self.assertEqual('/products/animals/birds/parrots/+macaw/',
-                         self.parrot_macaw.get_absolute_url())
+        self.assertTrue('/products/animals/birds/parrots/+macaw/' in self.parrot_macaw.get_absolute_url())
 
     def test_product_url(self):
         """Products not in a Category should have a url."""
-        self.assertEqual('/products/+1-macaw/',
-                         self.parrot_macaw.get_absolute_url())
+        self.assertTrue('/products/+1-macaw/' in self.parrot_macaw.get_absolute_url())

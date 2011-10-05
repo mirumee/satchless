@@ -1,13 +1,16 @@
 # -*- coding: utf-8 -*-
+import os
+
 from django.conf import settings
 from django.conf.urls.defaults import patterns, include, url
 from django.core.urlresolvers import reverse
 from django.db import connection, reset_queries
 from django.test import TestCase, Client
 
+from ...util.tests import ViewsTestCase
+from ..app import product_app
 from ..forms import FormRegistry, variant_form_for_product
 from ..models import Variant, Product
-from ..app import product_app
 
 from . import DeadParrot, DeadParrotVariant, ZombieParrot, DeadParrotVariantForm
 
@@ -68,7 +71,7 @@ class Models(TestCase):
             self.assertEqual(type(variant.get_subtype_instance()), DeadParrotVariant)
 
     def test_product_url(self):
-        self.assertEqual('/products/+1-macaw/', self.macaw.get_absolute_url())
+        self.assertTrue('/products/+1-macaw/' in self.macaw.get_absolute_url())
 
 
 class Registry(TestCase):
@@ -82,13 +85,24 @@ class Registry(TestCase):
                          DeadParrotVariantForm)
 
 
-class Views(TestCase):
+class Views(ViewsTestCase):
     urls = 'satchless.product.tests.product'
 
     def setUp(self):
         self.macaw = DeadParrot.objects.create(slug='macaw',
                 species='Hyacinth Macaw')
         self.client_test = Client()
+        self.ORIGINAL_TEMPLATE_DIRS = settings.TEMPLATE_DIRS
+        test_dir = os.path.dirname(__file__)
+        self.custom_settings = {
+            'TEMPLATE_DIRS': [os.path.join(test_dir, '..', 'templates'),
+                              os.path.join(test_dir, 'templates')]
+        }
+        self.original_settings = self._setup_settings(self.custom_settings)
+
+    def tearDown(self):
+        self._teardown_settings(self.original_settings,
+                                self.custom_settings)
 
     def test_product_details_view(self):
         response = self.client.get(reverse('satchless-product-details',

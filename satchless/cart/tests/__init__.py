@@ -1,39 +1,30 @@
 # -*- coding: utf-8 -*-
 from decimal import Decimal
 from django.conf import settings
+from django.conf.urls.defaults import patterns, include, url
 from django.contrib.auth.models import User
 from django.core.urlresolvers import reverse
 from django.test import TestCase, Client
 import os
 
 from ...product import handler
-from ...product.tests import (DeadParrot, ZombieParrot, DeadParrotVariantForm)
+from ...category.app import product_app
 from ...category.models import Category
+from ...product.tests import (DeadParrot, ZombieParrot, DeadParrotVariantForm)
+from ...util.tests import BaseTestCase
 from .. import models
 from .. import signals
+from .. import urls
 
-class ParrotTest(TestCase):
-    def _setup_settings(self, custom_settings):
-        original_settings = {}
-        for setting_name, value in custom_settings.items():
-            if hasattr(settings, setting_name):
-                original_settings[setting_name] = getattr(settings,
-                                                          setting_name)
-            setattr(settings, setting_name, value)
-        return original_settings
+urlpatterns = patterns('',
+    url(r'^cart/', include(urls)),
+    url(r'^products/', include(product_app.urls)),
+)
 
-    def _teardown_settings(self, original_settings, custom_settings=None):
-        custom_settings = custom_settings or {}
-        for setting_name, value in custom_settings.items():
-            if setting_name in original_settings:
-                setattr(settings, setting_name, value)
-            else:
-                delattr(settings, setting_name)
+class ParrotTest(BaseTestCase):
+    urls = 'satchless.cart.tests'
 
     def setUp(self):
-        self.ORIGINAL_TEMPLATE_DIRS = settings.TEMPLATE_DIRS
-        settings.TEMPLATE_DIRS = [os.path.join(os.path.dirname(__file__),
-                                               'templates')]
         self.category_birds = Category.objects.create(name='birds', slug='birds')
         self.macaw = DeadParrot.objects.create(slug='macaw',
                 species='Hyacinth Macaw')
@@ -64,15 +55,20 @@ class ParrotTest(TestCase):
         self.user1.set_password(u"pasło")
         self.category_birds.products.add(self.macaw)
         self.user1.save()
+
+        test_dir = os.path.dirname(__file__)
         self.custom_settings = {
             'SATCHLESS_PRODUCT_VIEW_HANDLERS': ('satchless.cart.add_to_cart_handler',),
+            'TEMPLATE_DIRS': [os.path.join(test_dir, '..', '..',
+                                           'category', 'templates'),
+                              os.path.join(test_dir, 'templates')]
         }
         self.original_settings = self._setup_settings(self.custom_settings)
         handler.init_queue()
 
     def tearDown(self):
-        settings.TEMPLATE_DIRS = self.ORIGINAL_TEMPLATE_DIRS
-        self._teardown_settings(self.original_settings, self.custom_settings)
+        self._teardown_settings(self.original_settings,
+                                self.custom_settings)
         handler.init_queue()
 
     def _test_status(self, url, method='get', *args, **kwargs):
@@ -154,8 +150,7 @@ class ParrotTest(TestCase):
         self._test_status(reverse('satchless-cart-view',
                                   kwargs={'typ': 'satchless_cart'}),
                           client_instance=client, status_code=200)
-        self._test_status(reverse('satchless-product-details',
-                                  args=(self.macaw.pk, self.macaw.slug)),
+        self._test_status(self.macaw.get_absolute_url(),
                           method='post',
                           data={'typ': 'satchless_cart',
                                 'color': self.macaw_blue_fake.color,
@@ -179,9 +174,7 @@ class ParrotTest(TestCase):
 
     def test_add_to_cart_form_handles_incorrect_data(self):
         cli_anon = Client()
-        response = self._test_status(reverse('satchless-product-details',
-                                             args=(self.macaw.pk,
-                                                   self.macaw.slug)),
+        response = self._test_status(self.macaw.get_absolute_url(),
                                      method='post',
                                      data={'typ': 'satchless_cart',
                                            'color': 'blue',

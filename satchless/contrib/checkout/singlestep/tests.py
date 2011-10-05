@@ -30,7 +30,11 @@ class TestPaymentProviderWithConfirmation(TestPaymentProvider):
 
 
 class CheckoutTest(TestCase):
-    urls = 'satchless.contrib.checkout.singlestep.tests'
+    class urls:
+        urlpatterns = patterns('',
+            url(r'^cart/', include('satchless.cart.urls')),
+            url(r'^checkout/', include('satchless.contrib.checkout.singlestep.urls')),
+        )
 
     def _setup_settings(self, custom_settings):
         original_settings = {}

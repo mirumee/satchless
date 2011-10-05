@@ -21,7 +21,6 @@ class OrderTest(ViewsTestCase):
         urlpatterns = patterns('',
             url(r'^order/', include(urls)),
         )
-    urls = urls
 
     def setUp(self):
         self.macaw = DeadParrot.objects.create(slug='macaw',

@@ -1,15 +1,6 @@
-from django.conf.urls.defaults import patterns, include, url
+from .category import (Views, Models, CategorizedProductUrlTests,
+                       NonCategorizedProductUrlTests)
 
-from ..app import CategorizedProductApp
+__all__ = ['Views', 'Models', 'CategorizedProductUrlTests',
+           'NonCategorizedProductUrlTests']
 
-class CategorizedProductAppWithOrphans(CategorizedProductApp):
-    """A CategorizedProductApp that allows Products not in Categories"""
-
-    allow_uncategorized_product_urls = True
-
-urlpatterns = patterns('',
-    url(r'^products/', include(CategorizedProductAppWithOrphans().get_urls())),
-)
-
-
-from .category import *

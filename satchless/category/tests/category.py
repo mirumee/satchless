@@ -8,17 +8,17 @@ from ...util.tests import ViewsTestCase
 from ...product.tests import DeadParrot
 
 from ..models import Category
-from ..app import product_app
+from ..app import product_app, CategorizedProductApp
 
 __all__ = ['Views', 'Models', 'CategorizedProductUrlTests',
             'NonCategorizedProductUrlTests']
-
-urlpatterns = patterns('',
-    url(r'^products/', include(product_app.urls)),
-)
+class urls:
+    urlpatterns = patterns('',
+        url(r'^products/', include(product_app.urls)),
+    )
 
 class Views(ViewsTestCase):
-    urls = 'satchless.category.tests'
+    urls = urls
 
     def setUp(self):
         self.animals = Category.objects.create(slug='animals', name=u'Animals')
@@ -100,7 +100,7 @@ class Models(TestCase):
 
 
 class CategorizedProductUrlTests(TestCase):
-    urls = 'satchless.category.tests.category'
+    urls = urls
 
     def setUp(self):
         self.animals = Category.objects.create(slug='animals', name=u'Animals')
@@ -128,10 +128,19 @@ class CategorizedProductUrlTests(TestCase):
         self.assertRaises(NoReverseMatch, self.parrot_macaw.get_absolute_url)
 
 
+class CategorizedProductAppWithOrphans(CategorizedProductApp):
+    """A CategorizedProductApp that allows Products not in Categories"""
+
+    allow_uncategorized_product_urls = True
+
+
 class NonCategorizedProductUrlTests(TestCase):
     """Urls include satchless-product-details"""
 
-    urls = 'satchless.category.tests'
+    class urls:
+        urlpatterns = patterns('',
+            url(r'^products/', include(CategorizedProductAppWithOrphans().get_urls())),
+        )
 
     def setUp(self):
         self.animals = Category.objects.create(slug='animals', name=u'Animals')

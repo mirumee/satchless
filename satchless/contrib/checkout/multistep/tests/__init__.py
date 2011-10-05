@@ -23,19 +23,19 @@ from ...common.decorators import require_order
 from ...common.views import prepare_order, reactivate_order
 from .. import views
 
-urlpatterns = patterns('',
-    url(r'^cart/', include('satchless.cart.urls')),
-    url(r'^checkout/', include('satchless.contrib.checkout.multistep.urls')),
-    url(r'^order/', include('satchless.order.urls')),
-)
-
 class TestPaymentProviderWithConfirmation(TestPaymentProvider):
     def confirm(self, order):
         raise ConfirmationFormNeeded(action='http://test.payment.gateway.example.com')
 
 
 class CheckoutTest(ViewsTestCase):
-    urls = 'satchless.contrib.checkout.multistep.tests'
+    class urls:
+        urlpatterns = patterns('',
+            url(r'^cart/', include('satchless.cart.urls')),
+            url(r'^checkout/', include('satchless.contrib.checkout.multistep.urls')),
+            url(r'^order/', include('satchless.order.urls')),
+        )
+
 
     def setUp(self):
         self.macaw = DeadParrot.objects.create(slug='macaw',

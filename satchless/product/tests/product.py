@@ -16,12 +16,13 @@ from . import DeadParrot, DeadParrotVariant, ZombieParrot, DeadParrotVariantForm
 
 __all__ = ['Models', 'Registry', 'Views']
 
-urlpatterns = patterns('',
-    url(r'^products/', include(product_app.urls)),
-)
+class urls:
+    urlpatterns = patterns('',
+        url(r'^products/', include(product_app.urls)),
+    )
 
 class Models(TestCase):
-    urls = 'satchless.product.tests.product'
+    urls = urls
 
     def setUp(self):
         settings.DEBUG = True
@@ -86,7 +87,7 @@ class Registry(TestCase):
 
 
 class Views(ViewsTestCase):
-    urls = 'satchless.product.tests.product'
+    urls = urls
 
     def setUp(self):
         self.macaw = DeadParrot.objects.create(slug='macaw',

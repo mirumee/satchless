@@ -16,13 +16,12 @@ from .. import models
 from .. import signals
 from .. import urls
 
-urlpatterns = patterns('',
-    url(r'^cart/', include(urls)),
-    url(r'^products/', include(product_app.urls)),
-)
-
 class ParrotTest(BaseTestCase):
-    urls = 'satchless.cart.tests'
+    class urls:
+        urlpatterns = patterns('',
+            url(r'^cart/', include(urls)),
+            url(r'^products/', include(product_app.urls)),
+        )
 
     def setUp(self):
         self.category_birds = Category.objects.create(name='birds', slug='birds')

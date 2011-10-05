@@ -9,7 +9,9 @@ from django.core.urlresolvers import reverse
 from django.test import Client
 
 from .....cart.models import Cart, CART_SESSION_KEY
+from .....cart import urls as cart_urls
 from .....contrib.delivery.simplepost.models import PostShippingType
+from .....order import urls as order_urls
 from .....order import handler as order_handler
 from .....order.models import Order
 from .....payment import ConfirmationFormNeeded
@@ -21,6 +23,7 @@ from .....util.tests import ViewsTestCase
 
 from ...common.decorators import require_order
 from ...common.views import prepare_order, reactivate_order
+from .. import urls
 from .. import views
 
 class TestPaymentProviderWithConfirmation(TestPaymentProvider):
@@ -31,9 +34,9 @@ class TestPaymentProviderWithConfirmation(TestPaymentProvider):
 class CheckoutTest(ViewsTestCase):
     class urls:
         urlpatterns = patterns('',
-            url(r'^cart/', include('satchless.cart.urls')),
-            url(r'^checkout/', include('satchless.contrib.checkout.multistep.urls')),
-            url(r'^order/', include('satchless.order.urls')),
+            url(r'^cart/', include(urls)),
+            url(r'^checkout/', include(cart_urls)),
+            url(r'^order/', include(order_urls)),
         )
 
 

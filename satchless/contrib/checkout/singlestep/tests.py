@@ -5,6 +5,7 @@ from django.core.urlresolvers import reverse
 from django.test import TestCase, Client
 
 from ....cart.models import Cart, CART_SESSION_KEY
+from ....cart import urls as cart_urls
 from ....delivery.tests import TestDeliveryProvider
 from ....order import handler as order_handler
 from ....order.models import Order
@@ -17,6 +18,7 @@ from satchless.product.tests.pricing import FiveZlotyPriceHandler
 from satchless.pricing import handler
 
 from ..common.views import prepare_order, confirmation
+from . import urls
 from . import views
 
 urlpatterns = patterns('',
@@ -32,8 +34,8 @@ class TestPaymentProviderWithConfirmation(TestPaymentProvider):
 class CheckoutTest(TestCase):
     class urls:
         urlpatterns = patterns('',
-            url(r'^cart/', include('satchless.cart.urls')),
-            url(r'^checkout/', include('satchless.contrib.checkout.singlestep.urls')),
+            url(r'^cart/', include(cart_urls)),
+            url(r'^checkout/', include(urls)),
         )
 
     def _setup_settings(self, custom_settings):

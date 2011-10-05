@@ -3,6 +3,8 @@ import os
 import re
 from localeurl.models import patch_reverse
 patch_reverse()
+from satchless.contrib.pricing.cache import PricingCacheHandler
+
 from django.core.urlresolvers import reverse
 from django.utils.translation import ugettext_lazy as _
 
@@ -203,18 +205,19 @@ SATCHLESS_DEFAULT_CURRENCY = 'GBP'
 
 INTERNAL_IPS = ['127.0.0.1']
 
-from satchless.contrib.pricing.cache import PricingCacheHandler
-
 class CustomCacheHandler(PricingCacheHandler):
     def get_cache_key(self, *args, **kwargs):
-        key = super(self, CustomCacheHandler).get_cache_key(**kwargs)
-        key['discount'] = bool(kwargs.get('discount', True))
+        discount = bool(kwargs.pop('discount', True))
+        key = super(CustomCacheHandler, self).get_cache_key(*args, **kwargs)
+        key['discount'] = discount
         return key
+
 SATCHLESS_PRICING_HANDLERS = [
-    #CustomCacheHandler(
+    CustomCacheHandler(
         'satchless.contrib.pricing.simpleqty.SimpleQtyPricingHandler',
         'satchless.contrib.tax.flatgroups.FlatGroupPricingHandler',
-        'sale.SalePricingHandler'#)
+        'sale.SalePricingHandler',
+        lazy=True)
 ]
 SATCHLESS_PRODUCT_VIEW_HANDLERS = [
     'carts.handler.carts_handler',

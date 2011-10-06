@@ -22,14 +22,6 @@ CLASSIFIERS = [
     'Topic :: Software Development :: Libraries :: Python Modules',
 ]
 
-PACKAGE_DATA = {
-    '': [
-        'locale/**/*.mo',
-        'templates/*.*',
-        'templates/**/*.*',
-    ],
-}
-
 REQUIREMENTS = [
     'Django >= 1.3',
     'django-mptt >= 0.4.2',
@@ -55,7 +47,7 @@ setup(name='satchless',
       url='http://satchless.com/',
       packages=find_packages(exclude=['doc*', 'examples*', 'tests*',
                                       'website*']),
-      package_data=PACKAGE_DATA,
+      include_package_data=True,
       classifiers=CLASSIFIERS,
       install_requires=REQUIREMENTS,
       extras_require=EXTRAS,

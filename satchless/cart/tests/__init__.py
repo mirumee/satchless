@@ -3,6 +3,7 @@ from decimal import Decimal
 from django.conf.urls.defaults import patterns, include, url
 from django.contrib.auth.models import User
 from django.core.urlresolvers import reverse
+from django.http import HttpResponse
 from django.test import Client
 import os
 
@@ -20,6 +21,8 @@ class Cart(BaseTestCase):
         urlpatterns = patterns('',
             url(r'^cart/', include(urls)),
             url(r'^products/', include(product_app.urls)),
+            url(r'^checkout/', lambda request, *args, **kwargs: HttpResponse("OK"),
+                name='satchless-checkout-prepare-order')
         )
 
     def setUp(self):
@@ -57,6 +60,7 @@ class Cart(BaseTestCase):
             ),
             'TEMPLATE_DIRS': [os.path.join(test_dir, '..', '..',
                                            'category', 'templates'),
+                              os.path.join(test_dir, '..', 'templates'),
                               os.path.join(test_dir, 'templates')]
         }
         self.original_settings = self._setup_settings(self.custom_settings)

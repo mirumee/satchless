@@ -48,19 +48,14 @@ class Models(TestCase):
             self.assertEqual(type(product.get_subtype_instance()), DeadParrot)
 
     def test_variants(self):
-        self.macaw.variants.create(color='blue', sku='M-BL-D',
-                                   looks_alive=False)
-        self.macaw.variants.create(color='blue', sku='M-BL-A', looks_alive=True)
+        self.macaw.variants.create(color='blue', looks_alive=False)
+        self.macaw.variants.create(color='blue', looks_alive=True)
         self.assertEqual(2, self.macaw.variants.count())
 
-        self.cockatoo.variants.create(color='white', sku='C-WH-A',
-                                      looks_alive=True)
-        self.cockatoo.variants.create(color='white', sku='C-WH-D',
-                                      looks_alive=False)
-        self.cockatoo.variants.create(color='blue', sku='C-BL-A',
-                                      looks_alive=True)
-        self.cockatoo.variants.create(color='blue', sku='C-BL-D',
-                                      looks_alive=False)
+        self.cockatoo.variants.create(color='white', looks_alive=True)
+        self.cockatoo.variants.create(color='white', looks_alive=False)
+        self.cockatoo.variants.create(color='blue', looks_alive=True)
+        self.cockatoo.variants.create(color='blue', looks_alive=False)
         self.assertEqual(4, self.cockatoo.variants.count())
 
         for variant in Variant.objects.all():

@@ -14,16 +14,12 @@ class ParrotTaxTest(TestCase):
         self.cockatoo = DeadParrot.objects.create(slug='cockatoo',
                                                   species="White Cockatoo")
         self.macaw_blue_a = self.macaw.variants.create(color='blue',
-                                                       sku='M-BL-A',
                                                        looks_alive=True)
         self.macaw_blue_d = self.macaw.variants.create(color='blue',
-                                                       sku='M-BL-D',
                                                        looks_alive=False)
         self.cockatoo_white_a = self.cockatoo.variants.create(color='white',
-                                                              sku='C-WH-A',
                                                               looks_alive=True)
         self.cockatoo_green_a = self.cockatoo.variants.create(color='green',
-                                                              sku='C-GR-A-',
                                                               looks_alive=True)
         macaw_price = ProductPrice.objects.create(product=self.macaw,
                                                   price=Decimal('10.0'))

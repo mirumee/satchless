@@ -6,18 +6,19 @@ from satchless.contrib.pricing.cache import PricingCacheHandler
 
 from decimal import Decimal
 
-class ParrotTest(TestCase):
+class Cache(TestCase):
     def setUp(self):
-        self.parrot = DeadParrot.objects.create(slug='parrot', species="Parrot")
-        self.parrot_a = self.parrot.variants.create(color='white', looks_alive=True, sku=1)
+        self.parrot = DeadParrot.objects.create(slug='parrot', species='Parrot')
+        self.parrot_a = self.parrot.variants.create(color='white',
+                                                    looks_alive=True)
         self.parrot.price = Decimal(10)
         self.parrot_a.price = Decimal(11)
-
-        self.cockatoo = DeadParrot.objects.create(slug='cockatoo', species="Cockatoo")
-        self.cockatoo_a = self.cockatoo.variants.create(color='white', looks_alive=True)
+        self.cockatoo = DeadParrot.objects.create(slug='cockatoo',
+                                                  species='Cockatoo')
+        self.cockatoo_a = self.cockatoo.variants.create(color='white',
+                                                        looks_alive=True)
         self.cockatoo.price = Decimal(20)
         self.cockatoo_a.price = Decimal(21)
-
         self.cached_queue = PricingQueue(PricingCacheHandler(ProductFieldGetter))
         self.non_cached_queue = PricingQueue(ProductFieldGetter)
 

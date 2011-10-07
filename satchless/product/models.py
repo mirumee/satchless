@@ -58,9 +58,3 @@ class Variant(Subtyped):
     Base class for variants. It identifies a concrete product instance,
     which goes to a cart. Custom variants inherit from it.
     """
-    sku = models.CharField(_('SKU'), max_length=128, db_index=True, unique=True,
-                           help_text=_('ID of the product variant used'
-                                       ' internally in the shop.'))
-
-    def __unicode__(self):
-        return '%s' % self.sku

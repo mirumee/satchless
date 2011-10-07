@@ -1,10 +1,9 @@
 # -*- coding: utf-8 -*-
 from decimal import Decimal
-from django.conf import settings
 from django.conf.urls.defaults import patterns, include, url
 from django.contrib.auth.models import User
 from django.core.urlresolvers import reverse
-from django.test import TestCase, Client
+from django.test import Client
 import os
 
 from ...product import handler
@@ -16,7 +15,7 @@ from .. import models
 from .. import signals
 from .. import urls
 
-class ParrotTest(BaseTestCase):
+class Cart(BaseTestCase):
     class urls:
         urlpatterns = patterns('',
             url(r'^cart/', include(urls)),
@@ -24,29 +23,25 @@ class ParrotTest(BaseTestCase):
         )
 
     def setUp(self):
-        self.category_birds = Category.objects.create(name='birds', slug='birds')
+        self.category_birds = Category.objects.create(name='birds',
+                                                      slug='birds')
         self.macaw = DeadParrot.objects.create(slug='macaw',
-                species='Hyacinth Macaw')
+                                               species='Hyacinth Macaw')
         self.cockatoo = DeadParrot.objects.create(slug='cockatoo',
-                species='White Cockatoo')
+                                                  species='White Cockatoo')
         self.category_birds.products.add(self.macaw)
         self.category_birds.products.add(self.cockatoo)
-        self.macaw_blue = self.macaw.variants.create(color='blue', sku='M-BL-D',
+        self.macaw_blue = self.macaw.variants.create(color='blue',
                                                      looks_alive=False)
         self.macaw_blue_fake = self.macaw.variants.create(color='blue',
-                                                          sku='M-BL-A',
                                                           looks_alive=True)
         self.cockatoo_white_a = self.cockatoo.variants.create(color='white',
-                                                              sku='C-WH-A',
                                                               looks_alive=True)
         self.cockatoo_white_d = self.cockatoo.variants.create(color='white',
-                                                              sku='C-WH-D',
                                                               looks_alive=False)
         self.cockatoo_blue_a = self.cockatoo.variants.create(color='blue',
-                                                             sku='C-BL-A',
                                                              looks_alive=True)
         self.cockatoo_blue_d = self.cockatoo.variants.create(color='blue',
-                                                             sku='C-BL-D',
                                                              looks_alive=False)
         # only staff users can view uncategorized products
         self.user1 = User.objects.create(username="testuser", is_staff=True,
@@ -57,7 +52,9 @@ class ParrotTest(BaseTestCase):
 
         test_dir = os.path.dirname(__file__)
         self.custom_settings = {
-            'SATCHLESS_PRODUCT_VIEW_HANDLERS': ('satchless.cart.add_to_cart_handler',),
+            'SATCHLESS_PRODUCT_VIEW_HANDLERS': (
+                'satchless.cart.add_to_cart_handler',
+            ),
             'TEMPLATE_DIRS': [os.path.join(test_dir, '..', '..',
                                            'category', 'templates'),
                               os.path.join(test_dir, 'templates')]
@@ -126,9 +123,10 @@ class ParrotTest(BaseTestCase):
 
     def _get_or_create_cart_for_client(self, client=None, typ='satchless_cart'):
         client = client or self.client
-        self._test_status(reverse('satchless-cart-view'), client_instance=client)
-        return models.Cart.objects.get(pk=client.session[models.CART_SESSION_KEY % typ],
-                                       typ=typ)
+        self._test_status(reverse('satchless-cart-view'),
+                          client_instance=client)
+        session_key = models.CART_SESSION_KEY % (typ, )
+        return models.Cart.objects.get(pk=client.session[session_key], typ=typ)
 
     def test_add_to_cart_form_on_product_view(self):
         response = self._test_status(self.macaw.get_absolute_url(),
@@ -160,7 +158,8 @@ class ParrotTest(BaseTestCase):
         self.assertTrue(cart.items.count(), 1)
         cart_item = cart.items.get()
         self.assertTrue(cart_item.quantity, 2)
-        self.assertEqual(self.macaw_blue_fake, cart_item.variant.get_subtype_instance())
+        self.assertEqual(self.macaw_blue_fake,
+                         cart_item.variant.get_subtype_instance())
 
     def test_add_by_view_for_anonymous(self):
         cli_anon = Client()

@@ -58,7 +58,6 @@ class CheckoutTest(TestCase):
         self.parrot = DeadParrot.objects.create(slug='parrot',
                                                 species='Hyacinth Macaw')
         self.dead_parrot = self.parrot.variants.create(color='blue',
-                                                       sku='P-BL-D',
                                                        looks_alive=False)
 
         self.custom_settings = {

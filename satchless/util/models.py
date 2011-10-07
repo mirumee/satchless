@@ -24,7 +24,7 @@ class SubtypedManager(models.Manager):
 
 
 class Subtyped(models.Model):
-    subtype_attr = models.CharField(max_length=500)
+    subtype_attr = models.CharField(max_length=500, editable=False)
     __in_unicode = False
 
     objects = SubtypedManager()

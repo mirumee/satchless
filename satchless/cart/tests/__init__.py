@@ -13,9 +13,9 @@ from ...category.models import Category
 from ...checkout.app import CheckoutApp
 from ...product.tests import (DeadParrot, ZombieParrot, DeadParrotVariantForm)
 from ...util.tests import BaseTestCase
+from ..app import cart_app
 from .. import models
 from .. import signals
-from .. import urls
 
 
 class FakeCheckoutApp(CheckoutApp):
@@ -93,7 +93,7 @@ class Cart(BaseTestCase):
         return response
 
     def test_basic_cart_ops(self):
-        cart = models.Cart.objects.create(typ='satchless.test_cart')
+        cart = cart_app.cart_model.objects.create(typ='satchless.test_cart')        
         cart.set_quantity(self.macaw_blue, 1)
         cart.set_quantity(self.macaw_blue_fake, Decimal('2.45'))
         cart.set_quantity(self.cockatoo_white_a, Decimal('2.45'))
@@ -108,13 +108,13 @@ class Cart(BaseTestCase):
         self.assertEqual(cart.get_quantity(self.macaw_blue), Decimal('1'))
         self.assertEqual(cart.get_quantity(self.macaw_blue_fake), Decimal('2'))
         self.assertEqual(cart.get_quantity(self.cockatoo_white_a), 0)
-        self.assertRaises(models.CartItem.DoesNotExist, cart.items.get,
+        self.assertRaises(cart_app.cart_item_model.DoesNotExist, cart.items.get,
                           variant=self.cockatoo_white_a)
         self.assertEqual(cart.get_quantity(self.cockatoo_white_d), Decimal('0'))
-        self.assertRaises(models.CartItem.DoesNotExist, cart.items.get,
+        self.assertRaises(cart_app.cart_item_model.DoesNotExist, cart.items.get,
                           variant=self.cockatoo_white_d)
         self.assertEqual(cart.get_quantity(self.cockatoo_blue_a), Decimal('0.0'))
-        self.assertRaises(models.CartItem.DoesNotExist, cart.items.get,
+        self.assertRaises(cart_app.cart_item_model.DoesNotExist, cart.items.get,
                           variant=self.cockatoo_blue_a)
         self.assertEqual(cart.get_quantity(self.cockatoo_blue_d), Decimal('2'))
 
@@ -134,10 +134,9 @@ class Cart(BaseTestCase):
 
     def _get_or_create_cart_for_client(self, client=None, typ='satchless_cart'):
         client = client or self.client
-        self._test_status(reverse('satchless-cart-view'),
-                          client_instance=client)
-        session_key = models.CART_SESSION_KEY % (typ, )
-        return models.Cart.objects.get(pk=client.session[session_key], typ=typ)
+        self._test_status(reverse('satchless-cart-view'), client_instance=client)
+        return cart_app.cart_model.objects.get(pk=client.session[models.CART_SESSION_KEY % typ],
+                                       typ=typ)
 
     def test_add_to_cart_form_on_product_view(self):
         response = self._test_status(self.macaw.get_absolute_url(),
@@ -155,8 +154,7 @@ class Cart(BaseTestCase):
 
     def _test_add_by_view(self, client):
         cart = self._get_or_create_cart_for_client(client)
-        self._test_status(reverse('satchless-cart-view',
-                                  kwargs={'typ': 'satchless_cart'}),
+        self._test_status(reverse('satchless-cart-view'),
                           client_instance=client, status_code=200)
         self._test_status(self.macaw.get_absolute_url(),
                           method='post',
@@ -169,8 +167,7 @@ class Cart(BaseTestCase):
         self.assertTrue(cart.items.count(), 1)
         cart_item = cart.items.get()
         self.assertTrue(cart_item.quantity, 2)
-        self.assertEqual(self.macaw_blue_fake,
-                         cart_item.variant.get_subtype_instance())
+        self.assertEqual(self.macaw_blue_fake, cart_item.variant.get_subtype_instance())
 
     def test_add_by_view_for_anonymous(self):
         cli_anon = Client()
@@ -204,7 +201,7 @@ class Cart(BaseTestCase):
             elif not variant.looks_alive:
                 result.append((Decimal('1'), u"Parrots don't rest in groups"))
 
-        cart = models.Cart.objects.create(typ='satchless.test_cart_with_signals')
+        cart = cart_app.cart_model.objects.create(typ='satchless.test_cart_with_signals')
         signals.cart_quantity_change_check.connect(modify_qty)
         result = cart.set_quantity(self.macaw_blue, 10, dry_run=True)
         self.assertEqual((result.new_quantity, result.reason),

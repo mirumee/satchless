@@ -1,6 +1,7 @@
 from django.conf.urls.defaults import patterns, url
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
+from django.template.response import TemplateResponse
 
 from ..core.app import SatchlessApp
 
@@ -21,12 +22,12 @@ class OrderApp(SatchlessApp):
             'orders': orders,
         })
 
-    def view_order(self, request, order_token):
+    def view(self, request, order_token):
         if request.user.is_authenticated():
             orders = self.order_model.objects.filter(user=request.user)
         else:
             orders = self.order_model.objects.filter(user=None)
-        order = self.get_order(request, token=order_token)
+        order = self.get_order(request, order_token=order_token)
         return TemplateResponse(request, 'satchless/order/view.html', {
             'order': order,
         })
@@ -45,7 +46,7 @@ class OrderApp(SatchlessApp):
         prefix = prefix or self.app_name
         return patterns('',
             url(r'^my-orders/$', self.my_orders, name='satchless-order-my-orders'),
-            url(r'^(?P<order_token>[0-9a-zA-Z]+)/$', self.view_order, name='satchless-order-view'),
+            url(r'^(?P<order_token>[0-9a-zA-Z]+)/$', self.view, name='satchless-order-view'),
         )
 
 order_app = OrderApp()

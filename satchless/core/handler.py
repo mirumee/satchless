@@ -12,6 +12,10 @@ class QueueHandler(object):
             self._build_queue()
         super(QueueHandler, self).__init__(**kwargs)
 
+    @property
+    def queue(self):
+        return self._build_queue()
+
     def _build_queue(self):
         if not hasattr(self, '_queue'):
             queue = []
@@ -48,4 +52,10 @@ class QueueHandler(object):
                 queue.append((unique_id, item))
             self._queue = queue
         return self._queue
-    queue = property(_build_queue)
+
+    def get_by_id(self, unique_id):
+        handler_dict = dict(self.queue)
+        provider = handler_dict.get(unique_id)
+        if not provider:
+            raise ValueError('No provider found for %s.' % unique_id)
+        return provider

@@ -12,6 +12,17 @@ class ConfirmationFormNeeded(Exception):
         self.method = method
 
 
+class PaymentType(object):
+    unique_id = None
+    typ = None
+    name = None
+
+    def __init__(self, unique_id, typ, name):
+        self.unique_id = unique_id
+        self.typ = typ
+        self.name = name
+
+
 class PaymentProvider(object):
     unique_id = None
 
@@ -23,14 +34,14 @@ class PaymentProvider(object):
         '''
         raise NotImplementedError()
 
-    def get_configuration_form(self, order, typ, data):
+    def get_configuration_form(self, order, data):
         '''
         If applicable, return a form responsible for getting any additional
         payment data.
         '''
         return None
 
-    def create_variant(self, order, typ, form):
+    def create_variant(self, order, form):
         '''
         Take a valid form instance if any and create a PaymentVariant instance.
         '''

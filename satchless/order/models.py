@@ -94,6 +94,7 @@ class Order(models.Model):
     billing_phone = models.CharField(_("phone number"),
                                      max_length=30, blank=True)
     payment_type = models.CharField(max_length=256, blank=True)
+    payment_provider = models.CharField(max_length=256, blank=True)
     token = models.CharField(max_length=32, blank=True, default='')
     objects = OrderManager()
 
@@ -152,6 +153,7 @@ class Order(models.Model):
 class DeliveryGroup(models.Model):
     order = models.ForeignKey(Order, related_name='groups')
     delivery_type = models.CharField(max_length=256, blank=True)
+    delivery_provider = models.CharField(max_length=256, blank=True)
 
     def subtotal(self):
         return sum([i.price() for i in self.items.all()],

@@ -9,14 +9,14 @@ class DeliveryProvider(object):
         '''
         raise NotImplementedError()
 
-    def get_configuration_form(self, delivery_group, typ, data):
+    def get_configuration_form(self, delivery_group, data):
         '''
         If applicable, return a form responsible for getting any additional
         delivery data.
         '''
         return None
 
-    def create_variant(self, delivery_group, typ, form):
+    def create_variant(self, delivery_group, form):
         '''
         Take a valid form instance if any and creates a DeliveryVariant instance.
         '''

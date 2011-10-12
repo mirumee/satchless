@@ -1,17 +1,16 @@
 from django.utils.translation import ugettext as _
-from satchless.delivery import DeliveryProvider
+from satchless.delivery import DeliveryProvider, DeliveryType
 
 from . import forms
 from . import models
 
 class PostDeliveryProvider(DeliveryProvider):
-    unique_id = 'post'
-
     def __unicode__(self):
         return _("Post delivery")
 
     def enum_types(self, customer=None, delivery_group=None):
-        return ([(t.typ, t.name) for t in models.PostShippingType.objects.all()])
+        for record in models.PostShippingType.objects.all():
+          yield self, DeliveryType(typ=record.typ, name=record.name)
 
     def get_configuration_form(self, delivery_group, typ, data):
         typ = models.PostShippingType.objects.get(typ=typ)

@@ -1,14 +1,14 @@
 from mamona.utils import get_backend_choices
 
-from satchless.payment import PaymentProvider, ConfirmationFormNeeded
+from satchless.payment import (PaymentProvider, ConfirmationFormNeeded,
+                               PaymentType)
 from . import models
 from . import listeners
 
 class MamonaProvider(PaymentProvider):
-    unique_id = 'mamona'
-
     def enum_types(self, order=None, customer=None):
-        return get_backend_choices()
+        for typ, name in get_backend_choices():
+            yield self, PaymentType(typ=typ, name=name)
 
     def create_variant(self, order, typ, form):
         variant = models.MamonaPaymentVariant.objects.get_or_create(order=order,

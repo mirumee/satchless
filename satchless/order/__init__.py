@@ -7,5 +7,10 @@ listeners.start_listening()
 
 
 class Partitioner(object):
-    def partition(self, cart):
+    '''
+    Base Partitioner class
+
+    Class responsible for slicing orders into delivery groups.
+    '''
+    def partition(self, cart, items):
         raise NotImplementedError()

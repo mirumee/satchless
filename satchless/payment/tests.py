@@ -11,28 +11,27 @@ from django.test import TestCase
 
 from . import fields
 from . import models
-from . import PaymentProvider
+from . import PaymentProvider, PaymentType
 
 class TestPaymentVariant(models.PaymentVariant):
     pass
 
 
 class TestPaymentProvider(PaymentProvider):
-    unique_id = 'test'
-
     def enum_types(self, order=None, customer=None):
-        return (('gold', 'gold'),)
+        yield self, PaymentType('gold', 'gold')
 
-    def get_configuration_form(self, order, typ, data):
+    def get_configuration_form(self, order, data, typ=None):
         return None
 
-    def create_variant(self, order, typ, form):
+    def create_variant(self, order, form, typ=None):
+        typ = typ or order.payment_type
         payment_variant = TestPaymentVariant.objects.create(order=order,
                                                             price=0,
                                                             name='test')
         return payment_variant
 
-    def confirm(self, order):
+    def confirm(self, order, typ=None):
         pass
 
 class CreditCardNumberFieldTest(TestCase):

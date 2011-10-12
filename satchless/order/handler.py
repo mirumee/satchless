@@ -1,29 +1,21 @@
 from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
-from urllib import urlencode
-from urlparse import parse_qs
 
 from satchless.core.handler import QueueHandler
 
-from ..delivery import DeliveryProvider
+from ..delivery import DeliveryProvider, DeliveryType
 from ..delivery.models import DeliveryVariant
-from ..payment import PaymentProvider
+from ..payment import PaymentProvider, PaymentType
 from ..payment.models import PaymentVariant
 from . import Partitioner
 
-
 ### PARTITIONERS
-partitioners = getattr(settings, 'SATCHLESS_ORDER_PARTITIONERS', [
-    'satchless.contrib.order.partitioner.simple',
-])
-
 class PartitionerQueue(Partitioner, QueueHandler):
     element_class = Partitioner
-    require_unique_id = True
 
-    def partition(self, cart):
+    def partition(self, cart, items=None):
         groups = []
-        remaining_items = list(cart.items.all())
+        remaining_items = items or list(cart.items.all())
         for handler in self.queue:
             handled_groups, remaining_items = handler.partition(cart,
                                                                 remaining_items)
@@ -32,75 +24,97 @@ class PartitionerQueue(Partitioner, QueueHandler):
             raise ImproperlyConfigured('Unhandled items remaining in cart.')
         return groups
 
-partitioners_queue = PartitionerQueue(*partitioners)
+
+partitioners = getattr(settings, 'SATCHLESS_ORDER_PARTITIONERS', [
+    'satchless.contrib.order.partitioner.simple.SimplePartitioner',
+])
+partitioner_queue = PartitionerQueue(*partitioners)
 
 
 ### PAYMENT PROVIDERS
-if not getattr(settings, 'SATCHLESS_PAYMENT_PROVIDERS', None):
-    raise ImproperlyConfigured('You need to configure '
-                               'SATCHLESS_PAYMENT_PROVIDERS')
-
 class PaymentQueue(PaymentProvider, QueueHandler):
     element_class = PaymentProvider
-    require_unique_id = True
 
     def enum_types(self, order=None, customer=None):
-        for unique_id, provider in self.queue:
-            types = provider.enum_types(order=order)
-            for typ in types:
-                yield typ
+        for provider in self.queue:
+            types = provider.enum_types(order=order, customer=customer)
+            for provider, typ in types:
+                if not isinstance(typ, PaymentType):
+                    raise ValueError('Payment types must be instances of'
+                                     ' PaymentType type, not %s.' %
+                                     (repr(typ, )))
+                yield provider, typ
 
-    def get_configuration_form(self, order, data):
-        provider, typ_short = self.get_provider(order.payment_type)
-        return provider.get_configuration_form(order=order, typ=typ_short, data=data)
+    def _get_provider(self, order, typ):
+        for provider, payment_type in self.enum_types(order):
+            if payment_type.typ == typ:
+                return provider
+        raise ValueError('Unable to find a payment provider for type %s' %
+                         (typ, ))
 
-    def create_variant(self, order, typ, form):
-        provider, typ_short = self.get_provider(order.payment_type)
+    def get_configuration_form(self, order, data, typ=None):
+        typ = typ or order.payment_type
+        provider = self._get_provider(order, typ)
+        return provider.get_configuration_form(order=order, data=data, typ=typ)
+
+    def create_variant(self, order, form, typ=None):
+        typ = typ or order.payment_type
+        provider = self._get_provider(order, typ)
         try:
             order.paymentvariant.delete()
         except PaymentVariant.DoesNotExist:
             pass
-        return provider.create_variant(order, typ_short, form)
+        return provider.create_variant(order=order, form=form, typ=typ)
 
-    def confirm(self, order):
-        provider, typ_short = self.get_provider(order.payment_type)
-        return provider.confirm(order)
+    def confirm(self, order, typ=None):
+        typ = typ or order.payment_type
+        provider = self._get_provider(order, typ)
+        return provider.confirm(order=order, typ=typ)
 
-payment_queue = PaymentQueue(*settings.SATCHLESS_PAYMENT_PROVIDERS)
+
+payment_providers = getattr(settings, 'SATCHLESS_PAYMENT_PROVIDERS', [])
+payment_queue = PaymentQueue(*payment_providers)
 
 
 ### DELIVERY PROVIDERS
-if not getattr(settings, 'SATCHLESS_DELIVERY_PROVIDERS', None):
-    raise ImproperlyConfigured('You need to configure '
-                               'SATCHLESS_DELIVERY_PROVIDERS')
-
 class DeliveryQueue(DeliveryProvider, QueueHandler):
     element_class = DeliveryProvider
-    require_unique_id = True
 
-    def enum_types(self, delivery_group):
-        result = []
-        for provider_id, provider in self.queue:
-            types = provider.enum_types(delivery_group=delivery_group)
-            for type_id, type_name in types:
-                data = {
-                    'provider': provider_id,
-                    'type': type_id,
-                }
-                result.append((urlencode(data), type_name))
-        return result
+    def enum_types(self, delivery_group=None, customer=None):
+        for provider in self.queue:
+            types = provider.enum_types(delivery_group=delivery_group,
+                                        customer=customer)
+            for provider, typ in types:
+                if not isinstance(typ, DeliveryType):
+                    raise ValueError('Delivery types must be instances of'
+                                     ' DeliveryType type, not %s.' %
+                                     (repr(typ, )))
+                yield provider, typ
 
-    def get_delivery_form(self, delivery_group, data):
-        provider = self.get_provider(delivery_group.delivery_provider)
-        return provider.get_configuration_form(delivery_group, data)
+    def _get_provider(self, delivery_group, typ):
+        for provider, delivery_type in self.enum_types(delivery_group):
+            if delivery_type.typ == typ:
+                return provider
+        raise ValueError('Unable to find a delivery provider for type %s' %
+                         (typ, ))
 
-    def create_delivery_variant(self, delivery_group, form):
-        provider = self.get_provider(delivery_group.delivery_provider)
+    def get_configuration_form(self, delivery_group, data, typ=None):
+        typ = typ or delivery_group.delivery_type
+        provider = self._get_provider(delivery_group, typ)
+        return provider.get_configuration_form(delivery_group=delivery_group,
+                                               data=data, typ=typ)
+
+    def create_variant(self, delivery_group, form, typ=None):
+        typ = typ or delivery_group.delivery_type
+        provider = self._get_provider(delivery_group, typ)
         # XXX: Do we really need it here?
         try:
             delivery_group.deliveryvariant.delete()
         except DeliveryVariant.DoesNotExist:
             pass
-        return provider.create_variant(delivery_group, form)
+        return provider.create_variant(delivery_group=delivery_group,
+                                       form=form, typ=typ)
 
-delivery_queue = DeliveryQueue(*settings.SATCHLESS_DELIVERY_PROVIDERS)
+
+delivery_providers = getattr(settings, 'SATCHLESS_DELIVERY_PROVIDERS', [])
+delivery_queue = DeliveryQueue(*delivery_providers)

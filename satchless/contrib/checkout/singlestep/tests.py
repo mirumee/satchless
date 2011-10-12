@@ -11,11 +11,10 @@ from ....order import handler as order_handler
 from ....order.models import Order
 from ....payment import ConfirmationFormNeeded
 from ....payment.tests import TestPaymentProvider
+from ....pricing import handler as pricing_handler
 from ....product import handler as product_handler
 from ....product.tests import DeadParrot
-
-from satchless.product.tests.pricing import FiveZlotyPriceHandler
-from satchless.pricing import handler
+from ....product.tests.pricing import FiveZlotyPriceHandler
 
 from ..common.views import prepare_order, confirmation
 from . import urls
@@ -27,7 +26,7 @@ urlpatterns = patterns('',
 )
 
 class TestPaymentProviderWithConfirmation(TestPaymentProvider):
-    def confirm(self, order):
+    def confirm(self, order, typ=None):
         raise ConfirmationFormNeeded(action='http://test.payment.gateway.example.com')
 
 
@@ -62,21 +61,19 @@ class CheckoutTest(TestCase):
 
         self.custom_settings = {
             'SATCHLESS_PRODUCT_VIEW_HANDLERS': ('satchless.cart.add_to_cart_handler',),
-            'SATCHLESS_DELIVERY_PROVIDERS': [TestDeliveryProvider],
-            'SATCHLESS_PAYMENT_PROVIDERS': [TestPaymentProviderWithConfirmation],
         }
         self.original_settings = self._setup_settings(self.custom_settings)
         product_handler.init_queue()
-        order_handler.init_queues()
+        order_handler.delivery_queue = order_handler.DeliveryQueue(TestDeliveryProvider)
+        order_handler.payment_queue = order_handler.PaymentQueue(TestPaymentProviderWithConfirmation)
         self.anon_client = Client()
-        self.original_handlers = settings.SATCHLESS_PRICING_HANDLERS
-        handler.pricing_queue = handler.PricingQueue(FiveZlotyPriceHandler)
+        self.original_pricing_handlers = settings.SATCHLESS_PRICING_HANDLERS
+        pricing_handler.pricing_queue = pricing_handler.PricingQueue(FiveZlotyPriceHandler)
 
     def tearDown(self):
         self._teardown_settings(self.original_settings, self.custom_settings)
         product_handler.init_queue()
-        order_handler.init_queues()
-        handler.pricing_queue = handler.PricingQueue(*self.original_handlers)
+        pricing_handler.pricing_queue = pricing_handler.PricingQueue(*self.original_pricing_handlers)
 
     def _test_status(self, url, method='get', *args, **kwargs):
         status_code = kwargs.pop('status_code', 200)

@@ -2,21 +2,20 @@ from unidecode import unidecode
 import urllib2
 from django.utils.translation import ugettext as _
 from satchless.delivery.models import DeliveryVariant, PhysicalShippingVariant
-from satchless.payment import PaymentProvider, PaymentFailure
+from satchless.payment import PaymentProvider, PaymentFailure, PaymentType
 from authorizenet.utils import process_payment
 
 from . import forms
 from . import models
 
 class AuthorizeNetProvider(PaymentProvider):
-    unique_id = 'authorize.net'
     form_class = forms.PaymentForm
 
     def __init__(self, capture=True):
         self.capture = capture
 
     def enum_types(self, order=None, customer=None):
-        return (('authorizenet', 'Authorize.net'),)
+        yield self, PaymentType(typ='authorizenet', name='Authorize.net')
 
     def get_configuration_form(self, order, typ, data):
         instance = models.AuthorizeNetVariant(order=order, price=0)

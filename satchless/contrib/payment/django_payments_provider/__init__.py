@@ -7,11 +7,9 @@ from . import listeners
 from . import models
 
 class DjangoPaymentsProvider(PaymentProvider):
-    unique_id = 'django-payments'
-
     def enum_types(self, order=None, customer=None):
         for typ, name in settings.SATCHLESS_DJANGO_PAYMENT_TYPES:
-            yield PaymentType(unique_id=self.unique_id, typ=typ, name=name)
+            yield self, PaymentType(typ=typ, name=name)
 
     def create_variant(self, order, typ, form):
         factory = payments.factory(typ)

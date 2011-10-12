@@ -22,7 +22,7 @@ class OrderManager(models.Manager):
         orders created for this cart. If session is given, the order ID will be
         stored there.
         '''
-        from .handler import partition
+        from .handler import partitioner_queue
         if cart.is_empty():
             raise EmptyCart("Cannot create empty order.")
         previous_orders = self.filter(cart=cart)
@@ -36,7 +36,7 @@ class OrderManager(models.Manager):
                 order.paymentvariant.delete()
             except ObjectDoesNotExist:
                 pass
-        groups = partition(cart)
+        groups = partitioner_queue.partition(cart)
         for group in groups:
             delivery_group = order.groups.create(order=order)
             for item in group:
@@ -94,7 +94,6 @@ class Order(models.Model):
     billing_phone = models.CharField(_("phone number"),
                                      max_length=30, blank=True)
     payment_type = models.CharField(max_length=256, blank=True)
-    payment_provider = models.CharField(max_length=256, blank=True)
     token = models.CharField(max_length=32, blank=True, default='')
     objects = OrderManager()
 
@@ -153,7 +152,6 @@ class Order(models.Model):
 class DeliveryGroup(models.Model):
     order = models.ForeignKey(Order, related_name='groups')
     delivery_type = models.CharField(max_length=256, blank=True)
-    delivery_provider = models.CharField(max_length=256, blank=True)
 
     def subtotal(self):
         return sum([i.price() for i in self.items.all()],

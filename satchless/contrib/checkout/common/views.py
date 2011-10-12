@@ -47,7 +47,7 @@ def confirmation(request, order_token):
     signals.order_pre_confirm.send(sender=models.Order, instance=order,
                                    request=request)
     try:
-        handler.confirm(order)
+        handler.payment_queue.confirm(order=order)
     except ConfirmationFormNeeded, e:
         return TemplateResponse(request, 'satchless/checkout/confirmation.html', {
             'formdata': e,

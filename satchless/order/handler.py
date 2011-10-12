@@ -1,167 +1,120 @@
 from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
-from django.utils.importlib import import_module
-from urllib import urlencode
-from urlparse import parse_qs
 
-from ..delivery import DeliveryProvider
+from satchless.core.handler import QueueHandler
+
+from ..delivery import DeliveryProvider, DeliveryType
 from ..delivery.models import DeliveryVariant
-from ..payment import PaymentProvider
+from ..payment import PaymentProvider, PaymentType
 from ..payment.models import PaymentVariant
+from . import Partitioner
 
-_partitioners_queue = None
-_delivery_providers_queue = None
-_payment_providers_queue = None
+### PARTITIONERS
+class PartitionerQueue(Partitioner, QueueHandler):
+    element_class = Partitioner
 
-def partition(cart):
-    groups = []
-    remaining_items = list(cart.items.all())
-    for handler in _partitioners_queue:
-        handled_groups, remaining_items = handler.partition(cart,
-                                                            remaining_items)
-        groups += handled_groups
-    if remaining_items:
-        raise ImproperlyConfigured('Unhandled items remaining in cart.')
-    return groups
+    def partition(self, cart, items=None):
+        groups = []
+        remaining_items = items or list(cart.items.all())
+        for handler in self.queue:
+            handled_groups, remaining_items = handler.partition(cart,
+                                                                remaining_items)
+            groups += handled_groups
+        if remaining_items:
+            raise ImproperlyConfigured('Unhandled items remaining in cart.')
+        return groups
 
-def get_delivery_types(delivery_group):
-    result = []
-    for provider_id, provider in _delivery_providers_queue:
-        types = provider.enum_types(delivery_group=delivery_group)
-        for type_id, type_name in types:
-            data = {
-                'provider': provider_id,
-                'type': type_id,
-            }
-            result.append((urlencode(data), type_name))
-    return result
 
-def get_delivery_type_name(typ):
-    provider, short_typ = get_delivery_provider(typ)
-    delivery_types = dict(provider.enum_types())
-    return delivery_types[short_typ]
+partitioners = getattr(settings, 'SATCHLESS_ORDER_PARTITIONERS', [
+    'satchless.contrib.order.partitioner.simple.SimplePartitioner',
+])
+partitioner_queue = PartitionerQueue(*partitioners)
 
-def get_delivery_provider(typ):
-    data = parse_qs(typ)
-    provider_id = data.get('provider', [None]).pop()
-    type_name = data.get('type', [None]).pop()
-    if not provider_id or not type_name:
-        raise ValueError('Malformed delivery type: %s.' % typ)
-    provider_dict = dict(_delivery_providers_queue)
-    provider = provider_dict.get(provider_id)
-    if not provider:
-        raise ValueError('No provider found for delivery type %s.' % typ)
-    return provider, type_name
 
-def get_delivery_form(delivery_group, data):
-    provider, typ_short = get_delivery_provider(delivery_group.delivery_type)
-    return provider.get_configuration_form(delivery_group, typ_short, data)
+### PAYMENT PROVIDERS
+class PaymentQueue(PaymentProvider, QueueHandler):
+    element_class = PaymentProvider
 
-def create_delivery_variant(delivery_group, form):
-    provider, typ_short = get_delivery_provider(delivery_group.delivery_type)
-    try:
-        delivery_group.deliveryvariant.delete()
-    except DeliveryVariant.DoesNotExist:
-        pass
-    return provider.create_variant(delivery_group, typ_short, form)
+    def enum_types(self, order=None, customer=None):
+        for provider in self.queue:
+            types = provider.enum_types(order=order, customer=customer)
+            for provider, typ in types:
+                if not isinstance(typ, PaymentType):
+                    raise ValueError('Payment types must be instances of'
+                                     ' PaymentType type, not %s.' %
+                                     (repr(typ, )))
+                yield provider, typ
 
-def get_payment_types(order):
-    result = []
-    for provider_id, provider in _payment_providers_queue:
-        types = provider.enum_types(order=order)
-        for type_id, type_name in types:
-            data = {
-                'provider': provider_id,
-                'type': type_id,
-            }
-            result.append((urlencode(data), type_name))
-    return result
+    def _get_provider(self, order, typ):
+        for provider, payment_type in self.enum_types(order):
+            if payment_type.typ == typ:
+                return provider
+        raise ValueError('Unable to find a payment provider for type %s' %
+                         (typ, ))
 
-def get_payment_provider(typ):
-    data = parse_qs(typ)
-    provider_id = data.get('provider', [None]).pop()
-    type_name = data.get('type', [None]).pop()
-    if not provider_id or not type_name:
-        raise ValueError('Malformed payment type: %s.' % typ)
-    provider_dict = dict(_payment_providers_queue)
-    provider = provider_dict.get(provider_id)
-    if not provider:
-        raise ValueError('No provider found for payment type %s.' % typ)
-    return provider, type_name
+    def get_configuration_form(self, order, data, typ=None):
+        typ = typ or order.payment_type
+        provider = self._get_provider(order, typ)
+        return provider.get_configuration_form(order=order, data=data, typ=typ)
 
-def get_payment_form(order, data):
-    provider, typ_short = get_payment_provider(order.payment_type)
-    return provider.get_configuration_form(order, typ_short, data)
+    def create_variant(self, order, form, typ=None):
+        typ = typ or order.payment_type
+        provider = self._get_provider(order, typ)
+        try:
+            order.paymentvariant.delete()
+        except PaymentVariant.DoesNotExist:
+            pass
+        return provider.create_variant(order=order, form=form, typ=typ)
 
-def create_payment_variant(order, form):
-    provider, typ_short = get_payment_provider(order.payment_type)
-    try:
-        order.paymentvariant.delete()
-    except PaymentVariant.DoesNotExist:
-        pass
-    return provider.create_variant(order, typ_short, form)
+    def confirm(self, order, typ=None):
+        typ = typ or order.payment_type
+        provider = self._get_provider(order, typ)
+        return provider.confirm(order=order, typ=typ)
 
-def confirm(order):
-    provider, typ_short = get_payment_provider(order.payment_type)
-    return provider.confirm(order)
 
-def init_queues():
-    global _partitioners_queue
-    _partitioners_queue = []
-    handlers = getattr(settings, 'SATCHLESS_ORDER_PARTITIONERS', [
-        'satchless.contrib.order.partitioner.simple',
-    ])
-    for handler_setting in handlers:
-        if isinstance(handler_setting, str):
-            mod_name, han_name = handler_setting.rsplit('.', 1)
-            module = import_module(mod_name)
-            handler = getattr(module, han_name)
-        else:
-            handler = handler_setting
-        if not callable(getattr(handler, 'partition', None)):
-            raise ImproperlyConfigured('%s in SATCHLESS_ORDER_PARTITIONERS '
-                                       'does not implement partition() method' %
-                                       handler_setting)
-        _partitioners_queue.append(handler)
+payment_providers = getattr(settings, 'SATCHLESS_PAYMENT_PROVIDERS', [])
+payment_queue = PaymentQueue(*payment_providers)
 
-    def build_q_from_paths(setting_name, required_type):
-        queue = []
-        registered_ids = set()
-        elements = getattr(settings, setting_name, [])
-        for item in elements:
-            if isinstance(item, str):
-                mod_name, attr_name = item.rsplit('.', 1)
-                module = import_module(mod_name)
-                if not hasattr(module, attr_name):
-                    raise ImproperlyConfigured(
-                        '%s in %s does not exist.' % (item, setting_name))
-                item = getattr(module, attr_name)
-            if isinstance(item, type):
-                item = item()
-            if not isinstance(item, required_type):
-                raise ImproperlyConfigured('%r in %s is not a proper subclass '
-                                           'of %s' %
-                                           (item, setting_name,
-                                            required_type.__name__))
-            if not item.unique_id:
-                raise ImproperlyConfigured('%r in %s does not have a unique '
-                                           'ID.' % (item, setting_name))
-            if item.unique_id in registered_ids:
-                previous = dict(queue).get(item.unique_id)
-                raise ImproperlyConfigured('%r in %s provides an ID of %s that '
-                                           'was already claimed by %r. Did you '
-                                           'include the same object twice?' %
-                                           (item, setting_name, item.unique_id,
-                                            previous))
-            registered_ids.add(item.unique_id)
-            queue.append((item.unique_id, item))
-        return queue
 
-    global _delivery_providers_queue
-    _delivery_providers_queue = build_q_from_paths(
-            'SATCHLESS_DELIVERY_PROVIDERS', DeliveryProvider)
-    global _payment_providers_queue
-    _payment_providers_queue = build_q_from_paths(
-            'SATCHLESS_PAYMENT_PROVIDERS', PaymentProvider)
+### DELIVERY PROVIDERS
+class DeliveryQueue(DeliveryProvider, QueueHandler):
+    element_class = DeliveryProvider
 
-init_queues()
+    def enum_types(self, delivery_group=None, customer=None):
+        for provider in self.queue:
+            types = provider.enum_types(delivery_group=delivery_group,
+                                        customer=customer)
+            for provider, typ in types:
+                if not isinstance(typ, DeliveryType):
+                    raise ValueError('Delivery types must be instances of'
+                                     ' DeliveryType type, not %s.' %
+                                     (repr(typ, )))
+                yield provider, typ
+
+    def _get_provider(self, delivery_group, typ):
+        for provider, delivery_type in self.enum_types(delivery_group):
+            if delivery_type.typ == typ:
+                return provider
+        raise ValueError('Unable to find a delivery provider for type %s' %
+                         (typ, ))
+
+    def get_configuration_form(self, delivery_group, data, typ=None):
+        typ = typ or delivery_group.delivery_type
+        provider = self._get_provider(delivery_group, typ)
+        return provider.get_configuration_form(delivery_group=delivery_group,
+                                               data=data, typ=typ)
+
+    def create_variant(self, delivery_group, form, typ=None):
+        typ = typ or delivery_group.delivery_type
+        provider = self._get_provider(delivery_group, typ)
+        # XXX: Do we really need it here?
+        try:
+            delivery_group.deliveryvariant.delete()
+        except DeliveryVariant.DoesNotExist:
+            pass
+        return provider.create_variant(delivery_group=delivery_group,
+                                       form=form, typ=typ)
+
+
+delivery_providers = getattr(settings, 'SATCHLESS_DELIVERY_PROVIDERS', [])
+delivery_queue = DeliveryQueue(*delivery_providers)

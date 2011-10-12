@@ -16,7 +16,7 @@ from .....order import handler as order_handler
 from .....order.models import Order
 from .....payment import ConfirmationFormNeeded
 from .....payment.tests import TestPaymentProvider
-from .....pricing import handler
+from .....pricing import handler as pricing_handler
 from .....product.tests import DeadParrot
 from .....product.tests.pricing import FiveZlotyPriceHandler
 from .....util.tests import ViewsTestCase
@@ -27,7 +27,7 @@ from .. import urls
 from .. import views
 
 class TestPaymentProviderWithConfirmation(TestPaymentProvider):
-    def confirm(self, order):
+    def confirm(self, order, typ=None):
         raise ConfirmationFormNeeded(action='http://test.payment.gateway.example.com')
 
 
@@ -61,9 +61,6 @@ class CheckoutTest(ViewsTestCase):
         test_dir = os.path.dirname(__file__)
         satchless_dir = os.path.join(test_dir, '..', '..', '..', '..')
         self.custom_settings = {
-            'SATCHLESS_DELIVERY_PROVIDERS': ['satchless.contrib.delivery.simplepost.PostDeliveryProvider'],
-            'SATCHLESS_ORDER_PARTITIONERS': ['satchless.contrib.order.partitioner.simple'],
-            'SATCHLESS_PAYMENT_PROVIDERS': [TestPaymentProviderWithConfirmation],
             'SATCHLESS_DJANGO_PAYMENT_TYPES': ['dummy'],
             'PAYMENT_VARIANTS': {'dummy': ('payments.dummy.DummyProvider', {'url': '/', })},
             'TEMPLATE_DIRS': (os.path.join(satchless_dir, 'category', 'templates'),
@@ -75,7 +72,9 @@ class CheckoutTest(ViewsTestCase):
             )
         }
         self.original_settings = self._setup_settings(self.custom_settings)
-        order_handler.init_queues()
+        order_handler.delivery_queue = order_handler.DeliveryQueue('satchless.contrib.delivery.simplepost.PostDeliveryProvider')
+        order_handler.payment_queue = order_handler.PaymentQueue(TestPaymentProviderWithConfirmation)
+        order_handler.partitioner_queue = order_handler.PartitionerQueue('satchless.contrib.order.partitioner.simple.SimplePartitioner')
 
         self.anon_client = Client()
 
@@ -83,12 +82,11 @@ class CheckoutTest(ViewsTestCase):
         PostShippingType.objects.create(price=20, typ='list', name='List zwykly')
 
         self.original_handlers = settings.SATCHLESS_PRICING_HANDLERS
-        handler.pricing_queue = handler.PricingQueue(FiveZlotyPriceHandler)
+        pricing_handler.pricing_queue = pricing_handler.PricingQueue(FiveZlotyPriceHandler)
 
     def tearDown(self):
         self._teardown_settings(self.original_settings, self.custom_settings)
-        order_handler.init_queues()
-        handler.pricing_queue = handler.PricingQueue(*self.original_handlers)
+        pricing_handler.pricing_queue = pricing_handler.PricingQueue(*self.original_handlers)
 
     def _get_or_create_cart_for_client(self, client=None, typ='satchless_cart'):
         client = client or self.client
@@ -206,8 +204,8 @@ class CheckoutTest(ViewsTestCase):
                                      client_instance=self.anon_client,
                                      status_code=200)
         group = order.groups.get()
-        dtypes = order_handler.get_delivery_types(group)
-        dtype = dtypes[0][0]
+        dtypes = list(order_handler.delivery_queue.enum_types(group))
+        dtype = dtypes[0][1].typ
         df = response.context['delivery_formset']
         data = {'billing_first_name': 'First',
                 'billing_last_name': 'Last',
@@ -232,8 +230,8 @@ class CheckoutTest(ViewsTestCase):
     def test_delivery_details_view(self):
         order = self._create_order(self.anon_client)
         group = order.groups.get()
-        dtypes = order_handler.get_delivery_types(group)
-        group.delivery_type = dtypes[0][0]
+        dtypes = list(order_handler.delivery_queue.enum_types(group))
+        group.delivery_type = dtypes[0][1].typ
         group.save()
         self._test_status(reverse(views.delivery_details,
                                   kwargs={'order_token': order.token}),

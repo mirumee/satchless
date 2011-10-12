@@ -22,7 +22,7 @@ class OrderManager(models.Manager):
         orders created for this cart. If session is given, the order ID will be
         stored there.
         '''
-        from .handler import partition
+        from .handler import partitioner_queue
         if cart.is_empty():
             raise EmptyCart("Cannot create empty order.")
         previous_orders = self.filter(cart=cart)
@@ -36,7 +36,7 @@ class OrderManager(models.Manager):
                 order.paymentvariant.delete()
             except ObjectDoesNotExist:
                 pass
-        groups = partition(cart)
+        groups = partitioner_queue.partition(cart)
         for group in groups:
             delivery_group = order.groups.create(order=order)
             for item in group:

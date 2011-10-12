@@ -1,5 +1,4 @@
 from django import forms
-from django.core.exceptions import ObjectDoesNotExist
 from django.forms.models import modelformset_factory
 from django.utils.translation import ugettext as _
 
@@ -15,8 +14,9 @@ class DeliveryMethodForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super(DeliveryMethodForm, self).__init__(*args, **kwargs)
-        types = handler.get_delivery_types(self.instance)
+        types = handler.delivery_queue.as_choices(delivery_group=self.instance)
         self.fields['delivery_type'].choices = types
+
 
 DeliveryMethodFormset = modelformset_factory(models.DeliveryGroup,
                                              form=DeliveryMethodForm, extra=0)
@@ -29,8 +29,7 @@ def get_delivery_details_forms_for_groups(groups, data):
     groups_and_forms = []
     for group in groups:
         delivery_type = group.delivery_type
-        form = None
-        form = handler.get_delivery_form(group, data)
+        form = handler.delivery_queue.get_configuration_form(group, data)
         groups_and_forms.append((group, delivery_type, form))
     return groups_and_forms
 
@@ -43,11 +42,13 @@ class PaymentMethodForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super(PaymentMethodForm, self).__init__(*args, **kwargs)
-        types = handler.get_payment_types(self.instance)
+        types = list(handler.payment_queue.as_choices(order=self.instance))
         self.fields['payment_type'].choices = types
 
+
 def get_payment_details_form(order, data):
-    return handler.get_payment_form(order, data)
+    return handler.payment_queue.get_configuration_form(order, data)
+
 
 class BillingForm(forms.ModelForm):
     REQUIRED_FIELDS = (

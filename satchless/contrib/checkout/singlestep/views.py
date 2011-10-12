@@ -19,11 +19,11 @@ def checkout(request, order_token, billing_form_class=forms.BillingForm):
         return redirect('satchless-cart-view')
     delivery_groups = order.groups.all()
     for group in delivery_groups:
-        delivery_types = handler.get_delivery_types(group)
+        delivery_types = list(handler.delivery_queue.enum_types(group))
         if len(delivery_types) != 1:
             raise ImproperlyConfigured("The singlestep checkout requires "
                                        "exactly one delivery type per group.")
-        group.delivery_type = delivery_types[0][0]
+        group.delivery_type = delivery_types[0][1].typ
         group.save()
     delivery_group_forms = forms.get_delivery_details_forms_for_groups(delivery_groups,
                                                                        request.POST)
@@ -33,11 +33,11 @@ def checkout(request, order_token, billing_form_class=forms.BillingForm):
         for group, typ, form in delivery_group_forms:
             if form:
                 delivery_valid = delivery_valid and form.is_valid()
-    payment_types = handler.get_payment_types(order)
+    payment_types = list(handler.payment_queue.enum_types(order))
     if len(payment_types) != 1:
         raise ImproperlyConfigured("The singlestep checkout requires "
                                    "exactly one payment methods.")
-    order.payment_type = payment_types[0][0]
+    order.payment_type = payment_types[0][1].typ
     order.save()
     billing_form = billing_form_class(request.POST or None, instance=order)
     payment_form = forms.get_payment_details_form(order, request.POST)
@@ -47,8 +47,8 @@ def checkout(request, order_token, billing_form_class=forms.BillingForm):
         if billing_valid and delivery_valid and payment_valid:
             order = billing_form.save()
             for group, typ, form in delivery_group_forms:
-                handler.create_delivery_variant(group, form)
-            handler.create_payment_variant(order, payment_form)
+                handler.delivery_queue.create_variant(group, form)
+            handler.payment_queue.create_variant(order, payment_form)
             order.set_status('payment-pending')
             return redirect('satchless-checkout-confirmation',
                             order_token=order.token)

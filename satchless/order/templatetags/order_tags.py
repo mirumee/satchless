@@ -5,5 +5,6 @@ register = Library()
 
 @register.filter
 def delivery_type(typ):
-    return handler.get_delivery_type_name(typ)
-
+    for provider, delivery_type in handler.delivery_queue.enum_types():
+        if delivery_type.typ == typ:
+            return delivery_type.name

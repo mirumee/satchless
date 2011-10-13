@@ -223,7 +223,7 @@ SATCHLESS_PRODUCT_VIEW_HANDLERS = [
     'carts.handler.carts_handler',
 ]
 SATCHLESS_ORDER_PARTITIONERS = [
-    'satchless.contrib.order.partitioner.simple',
+    'satchless.contrib.order.partitioner.simple.SimplePartitioner',
 ]
 SATCHLESS_DELIVERY_PROVIDERS = [
     'satchless.contrib.delivery.simplepost.PostDeliveryProvider',

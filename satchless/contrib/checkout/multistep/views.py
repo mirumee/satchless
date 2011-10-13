@@ -106,5 +106,4 @@ def payment_details(request, order_token):
             'form': form,
             'order': order,
         })
-    else:
-        return proceed(order, form)
+    return proceed(order, form)

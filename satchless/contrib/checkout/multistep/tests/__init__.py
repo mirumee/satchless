@@ -259,6 +259,29 @@ class CheckoutTest(ViewsTestCase):
         self.assertRedirects(response, reverse(views.payment_choice,
                                                kwargs={'order_token': order.token}))
 
+    def test_payment_choice_view(self):
+        order = self._create_order(self.anon_client)
+        group = order.groups.get()
+        dtypes = list(order_handler.delivery_queue.enum_types(group))
+        group.delivery_type = dtypes[0][1].typ
+        group.save()
+
+        pprovider, ptype = list(order_handler.payment_queue.enum_types(group))[0]
+        self._test_GET_status(reverse(views.payment_choice,
+                                      kwargs={'order_token': order.token}),
+                              client_instance=self.anon_client)
+        data = {
+            'payment_type': ptype.typ
+        }
+        response = self._test_POST_status(reverse(views.payment_choice,
+                                                  kwargs={'order_token': order.token}),
+                                                  data=data,
+                                          client_instance=self.anon_client)
+        # TestPaymentProvider doesn't provide any additional form so
+        # payment details view redirects to confirmation page
+        self.assertRedirects(response, reverse(views.payment_details,
+                                               kwargs={'order_token': order.token}),
+                             target_status_code=302)
 
     def test_delivery_details_view_redirects_to_checkout_when_delivery_type_is_missing(self):
         order = self._create_order(self.anon_client)

@@ -1,6 +1,6 @@
 from mamona.utils import get_backend_choices
 
-from satchless.payment import (PaymentProvider, ConfirmationFormNeeded,
+from ....payment import (PaymentProvider, ConfirmationFormNeeded,
                                PaymentType)
 from . import models
 from . import listeners

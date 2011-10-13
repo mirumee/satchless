@@ -1,7 +1,8 @@
 import authorizenet
 from django.db import models
 from django.utils.translation import ugettext_lazy as _
-from satchless.payment.models import PaymentVariant
+
+from ....payment.models import PaymentVariant
 
 class AuthorizeNetVariant(PaymentVariant):
     cc_name = models.CharField(_('Name on Credit Card'), max_length=128)

@@ -1,6 +1,7 @@
 from django.core.exceptions import ObjectDoesNotExist
 from mamona.models import build_payment_model
-from satchless.payment.models import PaymentVariant
+
+from ....payment.models import PaymentVariant
 
 class MamonaPaymentVariant(PaymentVariant):
     def __unicode__(self):

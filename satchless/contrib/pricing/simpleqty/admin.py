@@ -2,7 +2,7 @@ from django import forms
 from django.forms.models import BaseInlineFormSet
 from django.contrib import admin
 
-from satchless.forms.widgets import DecimalInput
+from ....forms.widgets import DecimalInput
 from . import models
 
 class PriceQtyOverrideForm(forms.ModelForm):

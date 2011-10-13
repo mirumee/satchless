@@ -1,10 +1,10 @@
 from unidecode import unidecode
 import urllib2
 from django.utils.translation import ugettext as _
-from satchless.delivery.models import DeliveryVariant, PhysicalShippingVariant
-from satchless.payment import PaymentProvider, PaymentFailure, PaymentType
 from authorizenet.utils import process_payment
 
+from ....delivery.models import DeliveryVariant, PhysicalShippingVariant
+from ....payment import PaymentProvider, PaymentFailure, PaymentType
 from . import forms
 from . import models
 

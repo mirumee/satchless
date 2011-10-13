@@ -1,6 +1,7 @@
 from django.db import models
 from django.utils.translation import ugettext_lazy as _
-from satchless.delivery.models import PhysicalShippingVariant
+
+from ....delivery.models import PhysicalShippingVariant
 
 class PostShippingType(models.Model):
     typ = models.SlugField(max_length=50, unique=True)

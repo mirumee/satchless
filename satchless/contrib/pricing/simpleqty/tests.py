@@ -1,12 +1,11 @@
 from decimal import Decimal
-
 from django.conf import settings
 from django.test import TestCase
 
-from satchless.cart.models import Cart
-from satchless.pricing import Price, PriceRange
-from satchless.pricing.handler import PricingQueue
-from satchless.product.tests import DeadParrot
+from ....cart.models import Cart
+from ....pricing import Price, PriceRange
+from ....pricing.handler import PricingQueue
+from ....product.tests import DeadParrot
 from .models import ProductPrice
 
 

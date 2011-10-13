@@ -1,9 +1,9 @@
 from django import forms
 from django.core import validators
 from django.utils.translation import ugettext_lazy as _
-from satchless.payment.fields import (CreditCardExpirationField,
-                                      CreditCardNumberField)
 
+from ....payment.fields import (CreditCardExpirationField,
+                                      CreditCardNumberField)
 from . import models
 
 CVV_VALIDATOR = validators.RegexValidator('^[0-9]{1,4}$',

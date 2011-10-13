@@ -1,5 +1,6 @@
 from django.utils.translation import ugettext as _
-from satchless.cart.signals import cart_quantity_change_check
+
+from ....cart.signals import cart_quantity_change_check
 
 def max_stock_level_to_cart(sender, instance=None,
     variant=None, old_quantity=None, new_quantity=None, result=None, **kwargs):

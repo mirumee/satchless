@@ -1,8 +1,7 @@
 from django.core.urlresolvers import reverse
-
-from satchless.order.models import OrderedItem
-
 from mamona import signals
+
+from ....order.models import OrderedItem
 
 def payment_status_changed_listener(sender, instance=None, old_status=None, new_status=None, **kwargs):
     if new_status == 'paid':

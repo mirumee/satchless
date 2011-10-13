@@ -1,6 +1,6 @@
 from decimal import Decimal
-from satchless.pricing import Price, PriceRange, LinearTax, PricingHandler
 
+from ....pricing import Price, PriceRange, LinearTax, PricingHandler
 from . import models
 
 class FlatGroupPricingHandler(PricingHandler):

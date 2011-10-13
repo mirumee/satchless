@@ -1,6 +1,7 @@
 from django.db import models
 from django.utils.translation import ugettext_lazy as _
-from satchless.product.models import Product
+
+from ....product.models import Product
 
 class TaxGroup(models.Model):
     name = models.CharField(_("group name"), max_length=100)

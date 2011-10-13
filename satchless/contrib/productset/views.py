@@ -1,7 +1,7 @@
 from django.shortcuts import get_object_or_404
 from django.template.response import TemplateResponse
-from satchless.product import signals
 
+from ...product import signals
 from . import models
 
 def index(request, *args, **kwargs):

@@ -1,7 +1,7 @@
 from django.conf import settings
 import payments
 
-from satchless.payment import (PaymentProvider, ConfirmationFormNeeded,
+from ....payment import (PaymentProvider, ConfirmationFormNeeded,
                                PaymentType)
 from . import listeners
 from . import models

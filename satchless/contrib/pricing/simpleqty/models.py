@@ -2,7 +2,7 @@ from django.core.exceptions import ValidationError
 from django.db import models
 from django.utils.translation import ugettext_lazy as _
 
-from satchless.product.models import Product, Variant
+from ....product.models import Product, Variant
 
 class ProductPrice(models.Model):
     QTY_MODE_CHOICES = (

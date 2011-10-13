@@ -1,10 +1,10 @@
 from decimal import Decimal
 from django.test import TestCase
-from satchless.contrib.pricing.simpleqty.models import ProductPrice
-from satchless.product.tests import DeadParrot
-from satchless.pricing import Price, PriceRange
-from satchless.pricing.handler import PricingQueue
 
+from ....contrib.pricing.simpleqty.models import ProductPrice
+from ....product.tests import DeadParrot
+from ....pricing import Price, PriceRange
+from ....pricing.handler import PricingQueue
 from . import models
 
 class ParrotTaxTest(TestCase):

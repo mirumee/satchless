@@ -1,8 +1,8 @@
 from django.test import TestCase
-from satchless.pricing.handler import PricingQueue
-from satchless.product.tests import DeadParrot
-from satchless.contrib.pricing.field import ProductFieldGetter
-from satchless.contrib.pricing.cache import PricingCacheHandler
+from ....pricing.handler import PricingQueue
+from ....product.tests import DeadParrot
+from ....contrib.pricing.field import ProductFieldGetter
+from ....contrib.pricing.cache import PricingCacheHandler
 
 from decimal import Decimal
 

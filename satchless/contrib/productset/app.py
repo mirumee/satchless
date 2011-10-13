@@ -3,11 +3,9 @@ from django.http import HttpResponse
 from django.template.response import TemplateResponse
 from django.shortcuts import get_object_or_404
 
-from satchless.core.app import SatchlessApp
-from satchless.product import handler
-
+from ...core.app import SatchlessApp
+from ...product import handler
 from . import models
-
 
 class ProductSetApp(SatchlessApp):
     app_name = 'satchless-product-set'

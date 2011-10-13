@@ -1,7 +1,7 @@
 import urllib
-from satchless.core.handler import QueueHandler
-from ....pricing import PricingHandler
 
+from ....core.handler import QueueHandler
+from ....pricing import PricingHandler
 
 class PricingCacheHandler(PricingHandler, QueueHandler):
     def get_cache_key(self, currency=None, product=None, variant=None, **kwargs):

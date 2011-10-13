@@ -1,6 +1,6 @@
 from django.utils.translation import ugettext as _
-from satchless.delivery import DeliveryProvider, DeliveryType
 
+from ....delivery import DeliveryProvider, DeliveryType
 from . import forms
 from . import models
 

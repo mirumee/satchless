@@ -1,8 +1,8 @@
 from django.test import TestCase
 from django.db import models
-from satchless.product.models import ProductAbstract, Variant
-from satchless.cart.models import Cart
 
+from ....product.models import ProductAbstract, Variant
+from ....cart.models import Cart
 from .models import VariantStockLevelMixin
 
 # Models for tests

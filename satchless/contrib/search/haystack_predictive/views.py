@@ -1,14 +1,11 @@
 # -*- coding:utf-8 -*-
 from django.conf import settings
-
 from django.core.paginator import Paginator, InvalidPage
 from django.http import Http404
 from django.template.response import TemplateResponse
-
 from haystack.query import RelatedSearchQuerySet
 
-from satchless.product.models import Product
-
+from ....product.models import Product
 from . import forms
 
 PRODUCTS_PER_PAGE = 5

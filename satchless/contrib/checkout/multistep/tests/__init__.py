@@ -221,11 +221,13 @@ class CheckoutTest(ViewsTestCase):
         for form in df.forms:
             data[form.add_prefix('delivery_type')] = dtype
             data[form.add_prefix('id')] = group.id
-        self._test_status(reverse(views.checkout, kwargs={'order_token':
-                                                          order.token}),
-                          data=data, status_code=302,
-                          client_instance=self.anon_client, method='post')
+        response = self._test_status(reverse(views.checkout,
+                                             kwargs={'order_token': order.token}),
+                                     data=data, status_code=302,
+                                     client_instance=self.anon_client, method='post')
         self.assertEqual(order.groups.get().delivery_type, dtype)
+        self.assertRedirects(response, reverse(views.delivery_details,
+                                               kwargs={'order_token': order.token}))
 
     def test_delivery_details_view(self):
         order = self._create_order(self.anon_client)
@@ -233,9 +235,30 @@ class CheckoutTest(ViewsTestCase):
         dtypes = list(order_handler.delivery_queue.enum_types(group))
         group.delivery_type = dtypes[0][1].typ
         group.save()
-        self._test_status(reverse(views.delivery_details,
-                                  kwargs={'order_token': order.token}),
-                          client_instance=self.anon_client, method='get')
+        response = self._test_status(reverse(views.delivery_details,
+                                             kwargs={'order_token': order.token}),
+                                     client_instance=self.anon_client, method='get')
+        group, delivery_type, form = response.context['delivery_group_forms'][0]
+
+        data = {
+                u'shipping_first_name': u'First',
+                u'shipping_last_name': u'Last',
+                u'shipping_company_name': u'TV Company',
+                u'shipping_street_address_1': u'Woronicza',
+                u'shipping_street_address_2': u'',
+                u'shipping_postal_code': u'66-620',
+                u'shipping_city': u'Warszawa',
+                u'shipping_country_area': u'Mazowieckie',
+                u'shipping_phone': u'022 000 888',
+                u'shipping_country': u'PL'}
+
+        data = dict((form.add_prefix(key), data[key]) for key in data)
+        response = self._test_POST_status(reverse(views.delivery_details,
+                                                  kwargs={'order_token': order.token}),
+                                          data=data, client_instance=self.anon_client)
+        self.assertRedirects(response, reverse(views.payment_choice,
+                                               kwargs={'order_token': order.token}))
+
 
     def test_delivery_details_view_redirects_to_checkout_when_delivery_type_is_missing(self):
         order = self._create_order(self.anon_client)

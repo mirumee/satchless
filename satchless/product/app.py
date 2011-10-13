@@ -11,15 +11,13 @@ class ProductApp(SatchlessApp):
     app_name = 'satchless-product'
     product_model = models.Product
     product_details_templates = [
-        'satchless/product/%(product_app)s/%(product_model)s/view.html',
-        'satchless/product/%(product_app)s/view.html',
+        'satchless/product/%(product_model)s/view.html',
         'satchless/product/view.html',
     ]
 
     def get_template_names(self, product, **kwargs):
         product_data = {
-            'product_app': product._meta.module_name,
-            'product_model': product._meta.object_name.lower(),
+            'product_model': product._meta.module_name,
         }
         return [t % product_data for t in self.product_details_templates]
 
@@ -27,9 +25,6 @@ class ProductApp(SatchlessApp):
         product = get_object_or_404(self.product_model, pk=product_pk,
                                     slug=product_slug)
         return product.get_subtype_instance()
-
-    def get_context_data(self, request, **kwargs):
-        return kwargs
 
     def product_details(self, request, **kwargs):
         product = self.get_product(request, **kwargs)

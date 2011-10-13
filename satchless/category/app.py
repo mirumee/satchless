@@ -9,13 +9,11 @@ class CategorizedProductApp(app.ProductApp):
     app_name = 'satchless-category'
     category_model = models.Category
     category_details_templates = [
-        'satchless/category/%(category_app)s/%(category_model)s/view.html',
-        'satchless/category/%(category_app)s/view.html',
+        'satchless/category/%(category_model)s/view.html',
         'satchless/category/view.html',
     ]
     category_list_templates = [
-        'satchless/category/%(category_app)s/%(category_model)s/list.html',
-        'satchless/category/%(category_app)s/list.html',
+        'satchless/category/%(category_model)s/list.html',
         'satchless/category/list.html',
     ]
     allow_uncategorized_product_urls = False
@@ -54,20 +52,17 @@ class CategorizedProductApp(app.ProductApp):
     def get_template_names(self, product=None, category=None, **kwargs):
         if product:
             template_data = {
-                'product_app': product._meta.module_name,
-                'product_model': product._meta.object_name.lower(),
+                'product_model': product._meta.module_name,
             }
             template_names = self.product_details_templates
         elif category:
             template_data = {
-                'category_app': category._meta.module_name,
-                'category_model': category._meta.object_name.lower(),
+                'category_model': category._meta.module_name,
             }
             template_names = self.category_details_templates
         else:
             template_data = {
-                'category_app': self.category_model._meta.module_name,
-                'category_model': self.category_model._meta.object_name.lower(),
+                'category_model': self.category_model._meta.module_name,
             }
             template_names = self.category_list_templates
         return [t % template_data for t in template_names]

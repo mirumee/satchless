@@ -53,7 +53,7 @@ def delivery_details(request, order_token):
             are_valid = are_valid and form.is_valid()
         if are_valid:
             for group, typ, form in delivery_group_forms:
-                handler.create_delivery_variant(group, form)
+                handler.delivery_queue.create_variant(group, form)
             return redirect('satchless-checkout-payment-choice',
                             order_token=order.token)
     return TemplateResponse(request, 'satchless/checkout/delivery_details.html', {
@@ -93,7 +93,7 @@ def payment_details(request, order_token):
                         order_token=order.token)
     form = forms.get_payment_details_form(order, request.POST)
     def proceed(order, form):
-        variant = handler.create_payment_variant(order, form)
+        variant = handler.payment_queue.create_variant(order, form)
         order.payment_variant = variant
         order.set_status('payment-pending')
         return redirect('satchless-checkout-confirmation',

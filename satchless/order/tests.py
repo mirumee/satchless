@@ -11,15 +11,15 @@ from satchless.pricing import handler
 from satchless.product.tests import DeadParrot
 from satchless.product.tests.pricing import FiveZlotyPriceHandler
 from satchless.cart.models import Cart
-
-from . import models
-from . import urls
+from .app import order_app
+#from . import models
+#from . import urls
 from ..util.tests import ViewsTestCase
 
 class OrderTest(ViewsTestCase):
     class urls:
         urlpatterns = patterns('',
-            url(r'^order/', include(urls)),
+            url(r'^order/', include(order_app.urls)),
         )
 
     def setUp(self):
@@ -61,7 +61,7 @@ class OrderTest(ViewsTestCase):
         cart = Cart.objects.create(typ='satchless.test_cart')
         cart.set_quantity(self.macaw_blue, 1)
 
-        order = models.Order.objects.get_from_cart(cart)
+        order = order_app.order_model.objects.get_from_cart(cart)
 
         cart.set_quantity(self.macaw_blue_fake, Decimal('2.45'))
         cart.set_quantity(self.cockatoo_white_a, Decimal('2.45'))
@@ -79,6 +79,6 @@ class OrderTest(ViewsTestCase):
         cart.set_quantity(self.macaw_blue_fake, Decimal('2.45'))
         cart.set_quantity(self.cockatoo_white_a, Decimal('2.45'))
 
-        order = models.Order.objects.get_from_cart(cart)
+        order = order_app.order_model.objects.get_from_cart(cart)
         self._test_GET_status(reverse('satchless-order-view',
                                       args=(order.token,)))

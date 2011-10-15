@@ -7,7 +7,7 @@ from django.test import Client
 
 from ...cart import urls as cart_urls
 from ...cart.models import CART_SESSION_KEY
-from ...order import urls as order_urls
+from ...order.app import order_app
 from ...pricing import handler as pricing_handler
 from ...product.tests import DeadParrot
 from ...product.tests.pricing import FiveZlotyPriceHandler
@@ -21,7 +21,7 @@ class BaseCheckoutAppTests(ViewsTestCase):
             self.urlpatterns = patterns('',
                 url(r'^cart/', include(cart_urls)),
                 url(r'^checkout/', include(checkout_app.get_urls())),
-                url(r'^order/', include(order_urls)),
+                url(r'^order/', include(order_app.get_urls())),
             )
 
     def _create_cart(self, client):

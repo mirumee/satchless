@@ -6,6 +6,7 @@ import satchless.cart.views
 from categories.app import product_app
 from satchless.order.app import order_app
 from satchless.contrib.productset.app import productset_app
+from satchless.contrib.checkout.multistep.app import checkout_app
 import core.views
 
 urlpatterns = patterns('',
@@ -20,7 +21,7 @@ urlpatterns = patterns('',
     url(r'^cart/', include('satchless.cart.urls')),
     url(r'^carts/', include('carts.urls')),
     url(r'^order/', include(order_app.urls)),
-    url(r'^checkout/', include('satchless.contrib.checkout.multistep.urls')),
+    url(r'^checkout/', include(checkout_app.get_urls())),
     url(r'^product-set/', include(productset_app.urls)),
     url(r'^sale/', include('sale.urls')),
     url(r'^localeurl/', include('localeurl.urls')),

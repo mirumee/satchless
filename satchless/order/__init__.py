@@ -14,3 +14,4 @@ class Partitioner(object):
     '''
     def partition(self, cart, items):
         raise NotImplementedError()
+

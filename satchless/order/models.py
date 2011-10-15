@@ -11,9 +11,7 @@ from ..pricing import Price
 from ..product.models import Variant
 from ..util import countries
 from . import signals
-
-class EmptyCart(Exception):
-    pass
+from .exceptions import EmptyCart
 
 class OrderManager(models.Manager):
     def get_from_cart(self, cart, instance=None):
@@ -52,6 +50,7 @@ class OrderManager(models.Manager):
                                           .filter(status='checkout'))
         previous_orders.delete()
         return order
+
 
 class Order(models.Model):
     STATUS_CHOICES = (

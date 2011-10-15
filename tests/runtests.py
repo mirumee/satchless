@@ -36,6 +36,7 @@ TESTED_APPS = [
     'satchless.cart',
     'satchless.category',
     'satchless.contact',
+    'satchless.checkout',
     'satchless.contrib.checkout.multistep',
     'satchless.contrib.checkout.singlestep',
     'satchless.contrib.delivery.simplepost',

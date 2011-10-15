@@ -17,8 +17,7 @@ class OrderManager(models.Manager):
     def get_from_cart(self, cart, instance=None):
         '''
         Create an order from the user's cart, possibly discarding any previous
-        orders created for this cart. If session is given, the order ID will be
-        stored there.
+        orders created for this cart.
         '''
         from .handler import partitioner_queue
         if cart.is_empty():

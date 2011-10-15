@@ -22,7 +22,7 @@ class MulitStepCheckoutApp(app.CheckoutApp):
             if all([billing_form.is_valid(), delivery_formset.is_valid()]):
                 order = billing_form.save()
                 delivery_formset.save()
-                return redirect('satchless-checkout-delivery-details',
+                return redirect(self.delivery_details,
                                 order_token=order.token)
         return TemplateResponse(request, 'satchless/checkout/checkout.html', {
             'billing_form': billing_form,
@@ -41,13 +41,13 @@ class MulitStepCheckoutApp(app.CheckoutApp):
             return self.redirect_order(order)
         groups = order.groups.all()
         if filter(lambda g: not g.delivery_type, groups):
-            return redirect('satchless-checkout', order_token=order.token)
+            return redirect(self.checkout, order_token=order.token)
         delivery_group_forms = forms.get_delivery_details_forms_for_groups(order.groups.all(),
                                                                            request.POST)
         groups_with_forms = filter(lambda gf: gf[2], delivery_group_forms)
         if len(groups_with_forms) == 0:
             # all forms are None, no details needed
-            return redirect('satchless-checkout-payment-choice',
+            return redirect(self.payment_choice,
                             order_token=order.token)
         if request.method == 'POST':
             are_valid = True
@@ -56,7 +56,7 @@ class MulitStepCheckoutApp(app.CheckoutApp):
             if are_valid:
                 for group, typ, form in delivery_group_forms:
                     handler.delivery_queue.create_variant(group, form)
-                return redirect('satchless-checkout-payment-choice',
+                return redirect(self.payment_choice,
                                 order_token=order.token)
         return TemplateResponse(request, 'satchless/checkout/delivery_details.html', {
             'delivery_group_forms': groups_with_forms,
@@ -76,7 +76,7 @@ class MulitStepCheckoutApp(app.CheckoutApp):
         if request.method == 'POST':
             if payment_form.is_valid():
                 payment_form.save()
-                return redirect('satchless-checkout-payment-details',
+                return redirect(self.payment_details,
                                 order_token=order.token)
         return TemplateResponse(request, 'satchless/checkout/payment_choice.html', {
             'order': order,
@@ -93,14 +93,14 @@ class MulitStepCheckoutApp(app.CheckoutApp):
         if not order or order.status != 'checkout':
             return self.redirect_order(order)
         if not order.payment_type:
-            return redirect('satchless-checkout-payment-choice',
+            return redirect(self.payment_choice,
                             order_token=order.token)
         form = forms.get_payment_details_form(order, request.POST)
         def proceed(order, form):
             variant = handler.payment_queue.create_variant(order, form)
             order.payment_variant = variant
             order.set_status('payment-pending')
-            return redirect('satchless-checkout-confirmation',
+            return redirect(self.confirmation,
                             order_token=order.token)
         if form:
             if request.method == 'POST':
@@ -112,14 +112,15 @@ class MulitStepCheckoutApp(app.CheckoutApp):
             })
         return proceed(order, form)
 
-    def get_urls(self):
+    def get_urls(self, prefix=None):
+        prefix = prefix or self.app_name
         return super(MulitStepCheckoutApp, self).get_urls() + patterns('',
             url(r'^(?P<order_token>\w+)/delivery-details/$', self.delivery_details,
-                name='satchless-checkout-delivery-details'),
+                name='%s-delivery-details' % prefix),
             url(r'^(?P<order_token>\w+)/payment-choice/$', self.payment_choice,
-                name='satchless-checkout-payment-choice'),
+                name='%s-payment-choice' % prefix),
             url(r'^(?P<order_token>\w+)/payment-details/$', self.payment_details,
-                name='satchless-checkout-payment-details'),
+                name='%s-payment-details' % prefix),
         )
 
 checkout_app = MulitStepCheckoutApp()

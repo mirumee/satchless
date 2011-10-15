@@ -93,16 +93,17 @@ class CheckoutApp(SatchlessApp):
             order.set_status('payment-complete')
         return redirect('satchless-order-view', order_token=order.token)
 
-    def get_urls(self):
+    def get_urls(self, prefix=None):
+        prefix = prefix or self.app_name
         return patterns('',
             url(r'^prepare/$', self.prepare_order, {'typ': 'satchless_cart'},
-                name='%s-prepare-order' % self.app_name),
+                name='%s-prepare-order' % prefix),
             url(r'^(?P<order_token>\w+)/$', self.checkout,
-                name='%s' % self.app_name),
+                name='%s' % prefix),
             url(r'^(?P<order_token>\w+)/confirmation/$', self.confirmation,
-                name='%s-confirmation' % self.app_name),
+                name='%s-confirmation' % prefix),
             url(r'^(?P<order_token>\w+)/reactivate/$', self.reactivate_order,
-                name='%s-reactivate-order' % self.app_name),
+                name='%s-reactivate-order' % prefix),
         )
 
 

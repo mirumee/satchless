@@ -32,7 +32,7 @@ class OrderApp(SatchlessApp):
         else:
             return self.get_template_names_for_list(order=order, **kwargs)
 
-    def get_template_names_for_list(self, order=None, **kwargs):
+    def get_template_names_for_list(self, **kwargs):
         format_data = {
             'order_model': self.order_model._meta.module_name
         }

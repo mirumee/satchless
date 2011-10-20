@@ -6,6 +6,9 @@ from ....checkout import app
 from ....order import forms, handler
 
 class SingleStepCheckoutApp(app.CheckoutApp):
+    checkout_templates = [
+        'satchless/checkout/checkout.html'
+    ]
     def checkout(self, request, order_token,
                  billing_form_class=forms.BillingForm):
         """
@@ -51,7 +54,7 @@ class SingleStepCheckoutApp(app.CheckoutApp):
                 order.set_status('payment-pending')
                 return redirect('satchless-checkout-confirmation',
                                 order_token=order.token)
-        return TemplateResponse(request, 'satchless/checkout/checkout.html', {
+        return TemplateResponse(request, self.checkout_templates, {
             'billing_form': billing_form,
             'delivery_group_forms': delivery_group_forms,
             'order': order,

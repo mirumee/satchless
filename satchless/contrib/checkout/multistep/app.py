@@ -8,6 +8,19 @@ from ....order import forms
 from ....order import handler
 
 class MulitStepCheckoutApp(app.CheckoutApp):
+    checkout_templates = [
+        'satchless/checkout/checkout.html'
+    ]
+    delivery_details_templates = [
+        'satchless/checkout/delivery_details.html'
+    ]
+    payment_choice_templates = [
+        'satchless/checkout/payment_choice.html'
+    ]
+    payment_details_templates = [
+        'satchless/checkout/payment_details.html'
+    ]
+
     def checkout(self, request, order_token, billing_form_class=forms.BillingForm):
         """
         Checkout step 1
@@ -24,7 +37,7 @@ class MulitStepCheckoutApp(app.CheckoutApp):
                 delivery_formset.save()
                 return redirect(self.delivery_details,
                                 order_token=order.token)
-        return TemplateResponse(request, 'satchless/checkout/checkout.html', {
+        return TemplateResponse(request, self.checkout_templates, {
             'billing_form': billing_form,
             'delivery_formset': delivery_formset,
             'order': order,
@@ -58,7 +71,7 @@ class MulitStepCheckoutApp(app.CheckoutApp):
                     handler.delivery_queue.create_variant(group, form)
                 return redirect(self.payment_choice,
                                 order_token=order.token)
-        return TemplateResponse(request, 'satchless/checkout/delivery_details.html', {
+        return TemplateResponse(request, self.delivery_details_templates, {
             'delivery_group_forms': groups_with_forms,
             'order': order,
         })
@@ -78,7 +91,7 @@ class MulitStepCheckoutApp(app.CheckoutApp):
                 payment_form.save()
                 return redirect(self.payment_details,
                                 order_token=order.token)
-        return TemplateResponse(request, 'satchless/checkout/payment_choice.html', {
+        return TemplateResponse(request, self.payment_choice_templates, {
             'order': order,
             'payment_form': payment_form,
         })
@@ -106,7 +119,7 @@ class MulitStepCheckoutApp(app.CheckoutApp):
             if request.method == 'POST':
                 if form.is_valid():
                     return proceed(order, form)
-            return TemplateResponse(request, 'satchless/checkout/payment_details.html', {
+            return TemplateResponse(request, self.payment_details, {
                 'form': form,
                 'order': order,
             })

@@ -16,7 +16,10 @@ class CheckoutApp(SatchlessApp):
     app_name = 'satchless-checkout'
     cart_model = Cart
     order_model = Order
-    no_order_redirect_url = '/'
+
+    confirmation_templates = [
+        'satchless/checkout/confirmation.html',
+    ]
 
     def get_order(self, request, order_token):
         user = request.user if request.user.is_authenticated() else None
@@ -26,7 +29,7 @@ class CheckoutApp(SatchlessApp):
             return
 
     def get_no_order_redirect_url(self):
-        return self.no_order_redirect_url
+        return '/'
 
     def redirect_order(self, order):
         if not order:
@@ -83,7 +86,7 @@ class CheckoutApp(SatchlessApp):
         try:
             handler.payment_queue.confirm(order=order)
         except ConfirmationFormNeeded, e:
-            return TemplateResponse(request, 'satchless/checkout/confirmation.html', {
+            return TemplateResponse(request, self.confirmation_templates, {
                 'formdata': e,
                 'order': order,
             })

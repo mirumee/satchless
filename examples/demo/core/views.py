@@ -4,7 +4,6 @@ from django.shortcuts import redirect
 from django.template.response import TemplateResponse
 from django.utils.translation import ugettext_lazy as _
 
-from satchless.contrib.checkout.common.decorators import require_order
 from satchless.order.app import order_app
 
 
@@ -23,9 +22,10 @@ def thank_you_page(request, order_token):
         'order': order,
     })
 
-@require_order(status='payment-failed')
 def payment_failed(request, order_token):
     order = order_app.get_order(request, order_token)
+    if order.status != 'payment-failed':
+        return redirect(order)
     return TemplateResponse(request, 'satchless/checkout/payment_failed.html', {
         'order': order,
     })

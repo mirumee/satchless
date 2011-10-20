@@ -11,16 +11,13 @@ from ..pricing import Price
 from ..product.models import Variant
 from ..util import countries
 from . import signals
-
-class EmptyCart(Exception):
-    pass
+from .exceptions import EmptyCart
 
 class OrderManager(models.Manager):
     def get_from_cart(self, cart, instance=None):
         '''
         Create an order from the user's cart, possibly discarding any previous
-        orders created for this cart. If session is given, the order ID will be
-        stored there.
+        orders created for this cart.
         '''
         from .handler import partitioner_queue
         if cart.is_empty():
@@ -52,6 +49,7 @@ class OrderManager(models.Manager):
                                           .filter(status='checkout'))
         previous_orders.delete()
         return order
+
 
 class Order(models.Model):
     STATUS_CHOICES = (

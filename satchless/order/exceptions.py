@@ -1,0 +1,3 @@
+class EmptyCart(Exception):
+    pass
+

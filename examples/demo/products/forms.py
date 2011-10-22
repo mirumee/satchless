@@ -36,8 +36,9 @@ class VariantWithSizeAndColorForm(BaseVariantForm):
             self.fields[field_name].widget.choices = choices
 
     def _get_variant_queryset(self):
-        return self.product.variants.filter(color=self.cleaned_data['color'],
-                                            size=self.cleaned_data['size'])
+        color = self.cleaned_data.get('color')
+        size = self.cleaned_data.get('size')
+        return self.product.variants.filter(color=color, size=size)
 
     def clean(self):
         if not self._get_variant_queryset().exists():

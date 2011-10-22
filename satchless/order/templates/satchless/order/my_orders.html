@@ -4,7 +4,7 @@
 {% block title %}{% trans "My orders" %}{% endblock %}
 {% block breadcrumbs %}
 {{ block.super }}
-    <li><a href="{% url 'satchless-order-my-orders' %}">{% trans "My orders" %}</a></li>
+    <li><a href="{% url 'order:index' %}">{% trans "My orders" %}</a></li>
 {% endblock %}
 {% block content %}
 <h1>{% trans "My orders" %}</h1>

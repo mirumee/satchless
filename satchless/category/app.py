@@ -7,7 +7,7 @@ from ..product import app
 from . import models
 
 class CategorizedProductApp(app.ProductApp):
-    app_name = 'satchless-category'
+    app_name = 'category'
     category_model = models.Category
     category_details_templates = [
         'satchless/category/%(category_model)s/view.html',
@@ -88,21 +88,20 @@ class CategorizedProductApp(app.ProductApp):
         product.category_path = path
         return product
 
-    def get_urls(self, prefix=None):
-        prefix = prefix or 'satchless-category'
+    def get_urls(self):
         url_patterns = patterns('',
             # '+' predeces product slug to prevent conflicts with categories
             # paths
             url(r'^$', self.category_list,
-                name='%s-list' % prefix),
+                name='category-index'),
             # this url simplifies url templatetag usage ({% url slug %} instead of {% url '' slug %})
             url(r'^(?P<category_slug>[a-z0-9_-]+)/$',
-                self.category_details, name='%s-details' % prefix,
+                self.category_details, name='category-details',
                 kwargs={'parent_slugs': ''}),
             url(r'^(?P<parent_slugs>([a-z0-9_-]+/)*)(?P<category_slug>[a-z0-9_-]+)/$',
-                self.category_details, name='%s-details' % prefix),
+                self.category_details, name='category-details'),
             url(r'^(?P<category_slugs>([a-z0-9_-]+/)+)\+(?P<product_slug>[a-z0-9_-]+)/$',
-                self.product_details, name='%s-product-details' % prefix),
+                self.product_details, name='details'),
         )
         if self.allow_uncategorized_product_urls:
             url_patterns += super(CategorizedProductApp, self).get_urls()

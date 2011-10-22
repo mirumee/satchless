@@ -101,6 +101,6 @@ class Views(ViewsTestCase):
                                 self.custom_settings)
 
     def test_product_details_view(self):
-        response = self.client.get(reverse('satchless-product-details',
+        response = self.client.get(reverse('product:details',
                                            args=(self.macaw.pk, self.macaw.slug)))
         self.assertEqual(response.status_code, 200)

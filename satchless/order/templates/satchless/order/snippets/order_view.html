@@ -35,7 +35,7 @@
         {% with item.product_variant.get_subtype_instance.product as product %}
         <tr>
             <td>
-                {% url 'satchless-product-product' product.slug product.pk as product_url %}
+                {% url 'product:details' product.slug product.pk as product_url %}
                 {% if product_url %}
                 <a href="{{ product_url }}">{{ item.product_name }}</a>
                 {% else %}

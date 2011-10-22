@@ -13,7 +13,7 @@
     <a href="{% url satchless-cart-view %}">1. {% trans "Cart" %}</a>
 </li>
 <li>
-    <a href="{% url satchless-checkout order.token %}">2. {% trans "Delivery" %}</a>
+    <a href="{% url checkout:checkout order.token %}">2. {% trans "Delivery" %}</a>
 </li>
 <li class="active">
     3. {% trans "Payment" %}

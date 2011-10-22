@@ -66,7 +66,7 @@ class App(BaseCheckoutAppTests):
         cart.set_quantity(self.dead_parrot, 1)
         order = self._get_or_create_order_for_client(self.anon_client)
 
-        response = self._test_status(reverse(checkout_app.checkout,
+        response = self._test_status(reverse('checkout:checkout',
                                              kwargs={'order_token':
                                                      order.token}),
                                      client_instance=self.anon_client,
@@ -83,16 +83,16 @@ class App(BaseCheckoutAppTests):
         for g, typ, form in dg:
             data[form.add_prefix('email')] = 'foo@example.com'
 
-        response = self._test_status(reverse(checkout_app.checkout,
-                                             kwargs={'order_token':
-                                                     order.token}),
+        response = self._test_status(self.checkout_app.reverse('checkout',
+                                                               kwargs={'order_token':
+                                                                       order.token}),
                                      client_instance=self.anon_client,
                                      status_code=302, method='post', data=data,
                                      follow=True)
 
         order = self.checkout_app.order_model.objects.get(pk=order.pk)
 
-        self.assertRedirects(response, reverse(checkout_app.confirmation,
+        self.assertRedirects(response, reverse('checkout:confirmation',
                                                kwargs={'order_token':
                                                        order.token}))
         self.assertEqual(order.status, 'payment-pending')
@@ -104,13 +104,13 @@ class App(BaseCheckoutAppTests):
 
         order = self._get_or_create_order_for_client(self.anon_client)
         # without payment
-        self._test_status(reverse(checkout_app.confirmation, kwargs={'order_token':
-                                                        order.token}),
+        self._test_status(reverse('checkout:confirmation',
+                                  kwargs={'order_token': order.token}),
                           client_instance=self.anon_client, status_code=302)
         # finish checkout view
-        response = self._test_status(reverse(checkout_app.checkout,
-                                             kwargs={'order_token':
-                                                     order.token}),
+        response = self._test_status(self.checkout_app.reverse('checkout',
+                                                               kwargs={'order_token':
+                                                                       order.token}),
                                      client_instance=self.anon_client,
                                      data={'email': 'foo@example.com'})
         dg = response.context['delivery_group_forms']
@@ -125,14 +125,15 @@ class App(BaseCheckoutAppTests):
         for g, typ, form in dg:
             data[form.add_prefix('email')] = 'foo@example.com'
 
-        response = self._test_status(reverse(checkout_app.checkout,
-                                             kwargs={'order_token':
-                                                     order.token}),
+        response = self._test_status(self.checkout_app.reverse('checkout',
+                                                               kwargs={'order_token':
+                                                                       order.token}),
                                      client_instance=self.anon_client,
                                      status_code=302, method='post', data=data,
                                      follow=True)
 
-        self._test_status(reverse(checkout_app.confirmation, kwargs={'order_token':
-                                                        order.token}),
+        self._test_status(self.checkout_app.reverse('confirmation',
+                                                    kwargs={'order_token':
+                                                            order.token}),
                           client_instance=self.anon_client,
                           status_code=200)

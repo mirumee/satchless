@@ -80,5 +80,5 @@ class OrderTest(ViewsTestCase):
         cart.set_quantity(self.cockatoo_white_a, Decimal('2.45'))
 
         order = order_app.order_model.objects.get_from_cart(cart)
-        self._test_GET_status(reverse('satchless-order-view',
+        self._test_GET_status(reverse('order:details',
                                       args=(order.token,)))

@@ -1,16 +1,16 @@
 from django.core.exceptions import ImproperlyConfigured
-from django.shortcuts import redirect
 from django.template.response import TemplateResponse
 
 from ....checkout import app
 from ....order import forms, handler
 
 class SingleStepCheckoutApp(app.CheckoutApp):
+    billing_form_class = forms.BillingForm
     checkout_templates = [
         'satchless/checkout/checkout.html'
     ]
-    def checkout(self, request, order_token,
-                 billing_form_class=forms.BillingForm):
+
+    def checkout(self, request, order_token):
         """
         Checkout step 1 of 1
         The order is split into delivery groups and the user gets to pick both the
@@ -41,7 +41,8 @@ class SingleStepCheckoutApp(app.CheckoutApp):
                                        "exactly one payment methods.")
         order.payment_type = payment_types[0][1].typ
         order.save()
-        billing_form = billing_form_class(request.POST or None, instance=order)
+        billing_form = self.billing_form_class(request.POST or None,
+                                               instance=order)
         payment_form = forms.get_payment_details_form(order, request.POST)
         if request.method == 'POST':
             billing_valid = billing_form.is_valid()
@@ -52,8 +53,8 @@ class SingleStepCheckoutApp(app.CheckoutApp):
                     handler.delivery_queue.create_variant(group, form)
                 handler.payment_queue.create_variant(order, payment_form)
                 order.set_status('payment-pending')
-                return redirect('satchless-checkout-confirmation',
-                                order_token=order.token)
+                return self.redirect('confirmation',
+                                     order_token=order.token)
         return TemplateResponse(request, self.checkout_templates, {
             'billing_form': billing_form,
             'delivery_group_forms': delivery_group_forms,

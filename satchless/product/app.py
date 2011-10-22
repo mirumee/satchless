@@ -9,7 +9,8 @@ from . import models
 from . import handler
 
 class ProductApp(SatchlessApp):
-    app_name = 'satchless-product'
+    app_name = 'product'
+    namespace = 'product'
     product_model = models.Product
     product_details_templates = [
         'satchless/product/%(product_model)s/view.html',
@@ -34,13 +35,12 @@ class ProductApp(SatchlessApp):
         templates = [t % product_data for t in self.product_details_templates]
         return TemplateResponse(request, templates, context)
 
-    def get_urls(self, prefix=None):
-        prefix = prefix or 'satchless-product'
+    def get_urls(self):
         return patterns('',
             # '+' predeces product slug to prevent conflicts with categories
             # paths
             url(r'^\+(?P<product_pk>[0-9]+)-(?P<product_slug>[a-z0-9_-]+)/$',
-                self.product_details, name='%s-details' % prefix),
+                self.product_details, name='details'),
         )
 
 product_app = ProductApp()

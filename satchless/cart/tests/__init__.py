@@ -10,20 +10,27 @@ import os
 from ...product import handler
 from ...category.app import product_app
 from ...category.models import Category
+from ...checkout.app import CheckoutApp
 from ...product.tests import (DeadParrot, ZombieParrot, DeadParrotVariantForm)
 from ...util.tests import BaseTestCase
 from .. import models
 from .. import signals
 from .. import urls
 
+
+class FakeCheckoutApp(CheckoutApp):
+    def prepare_order(self, *args, **kwargs):
+        return HttpResponse("OK")
+
+
 class Cart(BaseTestCase):
     class urls:
         urlpatterns = patterns('',
             url(r'^cart/', include(urls)),
             url(r'^products/', include(product_app.urls)),
-            url(r'^checkout/', lambda request, *args, **kwargs: HttpResponse("OK"),
-                name='satchless-checkout-prepare-order')
+            url(r'^checkout/', include(FakeCheckoutApp().urls))
         )
+
 
     def setUp(self):
         self.category_birds = Category.objects.create(name='birds',

@@ -13,7 +13,7 @@ class CategoryManager(models.Manager):
                 raise ValueError('Cannot generate url for product'
                                  ' without categories')
             category = product.categories.all()[0]
-        return ('satchless-category-product-details',
+        return ('product:details',
                 ('%s%s/' % (category.parents_slug_path(),
                             category.slug),
                  product.slug))
@@ -40,7 +40,7 @@ class Category(MPTTModel):
 
     @models.permalink
     def get_absolute_url(self):
-        return ('satchless-category-details',
+        return ('product:category-details',
                 (self.parents_slug_path(), self.slug))
 
     def parents_slug_path(self):

@@ -29,7 +29,7 @@ class Product(Subtyped):
         if categories and categories.count() > 0:
             return categories.get_product_url(product=self, category=category)
 
-        return 'satchless-product-details', (self.pk, self.slug)
+        return 'product:details', (self.pk, self.slug)
 
     def sanitize_quantity(self, quantity):
         """

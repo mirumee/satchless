@@ -6,7 +6,8 @@ from ..core.app import SatchlessApp
 from . import models
 
 class OrderApp(SatchlessApp):
-    app_name = 'satchless-order'
+    app_name = 'order'
+    namespace = 'order'
     order_model = models.Order
     order_details_templates = [
         'satchless/order/view.html',
@@ -17,7 +18,7 @@ class OrderApp(SatchlessApp):
         'satchless/order/%(order_model)s/my_orders.html'
     ]
 
-    def my_orders(self, request):
+    def index(self, request):
         orders = self.order_model.objects.filter(user=request.user)
         context = self.get_context_data(request, orders=orders)
         format_data = {
@@ -26,7 +27,7 @@ class OrderApp(SatchlessApp):
         templates = [p % format_data for p in self.order_list_templates]
         return TemplateResponse(request, templates, context)
 
-    def view(self, request, order_token):
+    def details(self, request, order_token):
         order = self.get_order(request, order_token=order_token)
         context = self.get_context_data(request, order=order)
         format_data = {
@@ -46,8 +47,9 @@ class OrderApp(SatchlessApp):
     def get_urls(self, prefix=None):
         prefix = prefix or self.app_name
         return patterns('',
-            url(r'^my-orders/$', self.my_orders, name='%s-my-orders' % prefix),
-            url(r'^(?P<order_token>[0-9a-zA-Z]+)/$', self.view, name='%s-view' % prefix),
+            url(r'^$', self.index, name='index'),
+            url(r'^(?P<order_token>[0-9a-zA-Z]+)/$', self.details,
+                name='details'),
         )
 
 order_app = OrderApp()

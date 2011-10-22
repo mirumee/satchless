@@ -29,7 +29,7 @@
             <tr class="item">
                 <td rowspan="2">{{ forloop.counter }}</td>
                 <td rowspan="2">{% promote form.instance.variant as variant %}
-                    <a href="{% url satchless-product-product variant.product.slug variant.product.pk %}">{{ variant }}</a>
+                    <a href="{% url product:details variant.product.slug variant.product.pk %}">{{ variant }}</a>
                 </td>
                 <td class="numerical unitPrice">
                     {{ unit_price|gross|floatformat:2 }} <span class="currency">{{ cart.currency }}</span><br />
@@ -81,7 +81,7 @@
             </tr>
         </tfoot>
     </table>
-    <form action="{% url satchless-checkout-prepare-order %}" method="post">
+    <form action="{% url checkout:prepare-order %}" method="post">
         {% csrf_token %}
         <button type="submit">{% trans "Check out" %}</button>
     </form>

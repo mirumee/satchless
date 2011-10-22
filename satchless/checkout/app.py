@@ -13,8 +13,10 @@ from ..payment import PaymentFailure, ConfirmationFormNeeded
 from ..core.app import SatchlessApp
 
 class CheckoutApp(SatchlessApp):
-    app_name = 'satchless-checkout'
+    app_name = 'checkout'
+    namespace = 'checkout'
     cart_model = Cart
+    cart_type = 'satchless_cart'
     order_model = Order
     confirmation_templates = [
         'satchless/checkout/confirmation.html',
@@ -34,17 +36,17 @@ class CheckoutApp(SatchlessApp):
         if not order:
             return redirect(self.get_no_order_redirect_url())
         elif order.status == 'checkout':
-            return redirect(self.checkout,
-                            order_token=order.token)
+            return self.redirect('checkout',
+                                 order_token=order.token)
         elif order.status == 'payment-pending':
-            return redirect(self.confirmation,
-                            order_token=order.token)
-        return redirect('satchless-order-view',
-                        order_token=order.token)
+            return self.redirect('confirmation',
+                                 order_token=order.token)
+        return redirect('order:details', order_token=order.token)
 
     @method_decorator(require_POST)
-    def prepare_order(self, request, typ):
-        cart = self.cart_model.objects.get_or_create_from_request(request, typ)
+    def prepare_order(self, request):
+        cart = self.cart_model.objects.get_or_create_from_request(request,
+                                                                  self.cart_type)
         order_pk = request.session.get('satchless_order')
         previous_orders = self.order_model.objects.filter(pk=order_pk,
                                                           cart=cart,
@@ -55,9 +57,9 @@ class CheckoutApp(SatchlessApp):
             try:
                 order = self.order_model.objects.get_from_cart(cart)
             except EmptyCart:
-                return redirect('satchless-cart-view', typ=typ)
+                return redirect('satchless-cart-view', typ=self.cart_type)
         request.session['satchless_order'] = order.pk
-        return redirect(self.checkout, order_token=order.token)
+        return self.redirect('checkout', order_token=order.token)
 
     @method_decorator(require_POST)
     def reactivate_order(self, request, order_token):
@@ -65,7 +67,7 @@ class CheckoutApp(SatchlessApp):
         if not order or order.status != 'payment-failed':
             return self.redirect_order(order)
         order.set_status('checkout')
-        return redirect('satchless-checkout', order_token=order.token)
+        return self.redirect('checkout', order_token=order.token)
 
     def checkout(self, request, order_token):
         raise NotImplementedError()
@@ -81,7 +83,7 @@ class CheckoutApp(SatchlessApp):
             return self.redirect_order(order)
 
         order_pre_confirm.send(sender=self.order_model, instance=order,
-                                       request=request)
+                               request=request)
         try:
             handler.payment_queue.confirm(order=order)
         except ConfirmationFormNeeded, e:
@@ -93,17 +95,16 @@ class CheckoutApp(SatchlessApp):
             order.set_status('payment-failed')
         else:
             order.set_status('payment-complete')
-        return redirect('satchless-order-view', order_token=order.token)
+        return redirect('order:details', order_token=order.token)
 
-    def get_urls(self, prefix=None):
-        prefix = prefix or self.app_name
+    def get_urls(self):
         return patterns('',
-            url(r'^prepare/$', self.prepare_order, {'typ': 'satchless_cart'},
-                name='%s-prepare-order' % prefix),
+            url(r'^prepare/$', self.prepare_order,
+                name='prepare-order'),
             url(r'^(?P<order_token>\w+)/$', self.checkout,
-                name='%s' % prefix),
+                name='checkout'),
             url(r'^(?P<order_token>\w+)/confirmation/$', self.confirmation,
-                name='%s-confirmation' % prefix),
+                name='confirmation'),
             url(r'^(?P<order_token>\w+)/reactivate/$', self.reactivate_order,
-                name='%s-reactivate-order' % prefix),
+                name='reactivate-order'),
         )

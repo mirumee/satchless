@@ -20,8 +20,8 @@ class BaseCheckoutAppTests(ViewsTestCase):
         def __init__(self, checkout_app):
             self.urlpatterns = patterns('',
                 url(r'^cart/', include(cart_urls)),
-                url(r'^checkout/', include(checkout_app.get_urls())),
-                url(r'^order/', include(order_app.get_urls())),
+                url(r'^checkout/', include(checkout_app.urls)),
+                url(r'^order/', include(order_app.urls)),
             )
 
     def _create_cart(self, client):
@@ -32,19 +32,22 @@ class BaseCheckoutAppTests(ViewsTestCase):
     def _get_or_create_cart_for_client(self, client, typ='satchless_cart'):
         self._test_status(reverse('satchless-cart-view'),
                           client_instance=client)
-        return self.checkout_app.cart_model.objects.get(pk=client.session[CART_SESSION_KEY % typ],
+        pk = client.session[CART_SESSION_KEY % typ]
+        return self.checkout_app.cart_model.objects.get(pk=pk,
                                                         typ=typ)
 
     def _get_or_create_order_for_client(self, client):
-        self._test_status(reverse(self.checkout_app.prepare_order), method='post',
-                          client_instance=client, status_code=302)
+        self._test_status(self.checkout_app.reverse('prepare-order'),
+                          method='post', client_instance=client,
+                          status_code=302)
         order_pk = client.session.get('satchless_order', None)
         return self.checkout_app.order_model.objects.get(pk=order_pk)
 
     def _create_order(self, client):
         self._create_cart(client)
-        self._test_status(reverse(self.checkout_app.prepare_order), method='post',
-                          client_instance=client, status_code=302)
+        self._test_status(self.checkout_app.reverse('prepare-order'),
+                          method='post', client_instance=client,
+                          status_code=302)
         return self._get_order_from_session(client.session)
 
     def _get_order_from_session(self, session):
@@ -68,7 +71,6 @@ class MockCheckoutApp(CheckoutApp):
 
 class App(BaseCheckoutAppTests):
     checkout_app = MockCheckoutApp()
-
     urls = BaseCheckoutAppTests.MockUrls(checkout_app)
 
     def setUp(self):
@@ -84,19 +86,19 @@ class App(BaseCheckoutAppTests):
         #self._teardown_settings(self.original_settings, self.custom_settings)
         pricing_handler.pricing_queue = pricing_handler.PricingQueue(*self.original_handlers)
 
-
     def test_reactive_order_view_redirects_to_checkout_for_correct_order(self):
         order = self._create_order(self.anon_client)
         order.set_status('payment-failed')
 
-        response = self._test_status(reverse(self.checkout_app.reactivate_order,
-                                     kwargs={'order_token':
-                                             order.token}),
+        response = self._test_status(self.checkout_app.reverse('reactivate-order',
+                                                               kwargs={'order_token':
+                                                                       order.token}),
                                      status_code=302,
                                      client_instance=self.anon_client,
                                      method='post')
-        self.assertRedirects(response, reverse(self.checkout_app.checkout,
-                                               args=(order.token,)))
+        self.assertRedirects(response,
+                             self.checkout_app.reverse('checkout',
+                                                       args=(order.token,)))
 
     def test_redirect_order(self):
         def assertRedirects(response, path):
@@ -106,18 +108,19 @@ class App(BaseCheckoutAppTests):
 
         order.set_status('payment-pending')
         assertRedirects(self.checkout_app.redirect_order(order),
-                        reverse(self.checkout_app.confirmation, args=(order.token,)))
+                        self.checkout_app.reverse('confirmation',
+                                                  args=(order.token,)))
 
         order.set_status('checkout')
         assertRedirects(self.checkout_app.redirect_order(order),
-                        reverse(self.checkout_app.checkout, args=(order.token,)))
+                        self.checkout_app.reverse('checkout',
+                                                  args=(order.token,)))
 
         for status in ('payment-failed', 'delivery', 'payment-complete', 'cancelled'):
             order.set_status(status)
             response = self.checkout_app.redirect_order(order)
             assertRedirects(response,
-                            reverse('satchless-order-view', args=(order.token,)))
+                            reverse('order:details', args=(order.token,)))
 
         assertRedirects(self.checkout_app.redirect_order(None),
                         self.checkout_app.get_no_order_redirect_url())
-

@@ -13,7 +13,7 @@
     </thead>
     <tbody>
         {% for order in orders %}
-        {% url 'satchless-order-view' order.token as order_url %}
+        {% url 'order:details' order.token as order_url %}
         <tr class="{% cycle odd even %}">
             <td><a href="{{ order_url }}">{{ order.pk }}</a></td>
             <td>{{ order.created|date }} {{ order.created|time }}</td>

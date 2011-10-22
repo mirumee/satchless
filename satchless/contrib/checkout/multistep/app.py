@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 from django.conf.urls.defaults import patterns, url
-from django.shortcuts import redirect
 from django.template.response import TemplateResponse
 
 from ....checkout import app
@@ -35,8 +34,8 @@ class MulitStepCheckoutApp(app.CheckoutApp):
             if all([billing_form.is_valid(), delivery_formset.is_valid()]):
                 order = billing_form.save()
                 delivery_formset.save()
-                return redirect(self.delivery_details,
-                                order_token=order.token)
+                return self.redirect('delivery-details',
+                                     order_token=order.token)
         return TemplateResponse(request, self.checkout_templates, {
             'billing_form': billing_form,
             'delivery_formset': delivery_formset,
@@ -54,14 +53,13 @@ class MulitStepCheckoutApp(app.CheckoutApp):
             return self.redirect_order(order)
         groups = order.groups.all()
         if filter(lambda g: not g.delivery_type, groups):
-            return redirect(self.checkout, order_token=order.token)
+            return self.redirect('checkout', order_token=order.token)
         delivery_group_forms = forms.get_delivery_details_forms_for_groups(order.groups.all(),
                                                                            request.POST)
         groups_with_forms = filter(lambda gf: gf[2], delivery_group_forms)
         if len(groups_with_forms) == 0:
             # all forms are None, no details needed
-            return redirect(self.payment_choice,
-                            order_token=order.token)
+            return self.redirect('payment-choice', order_token=order.token)
         if request.method == 'POST':
             are_valid = True
             for group, typ, form in delivery_group_forms:
@@ -69,8 +67,7 @@ class MulitStepCheckoutApp(app.CheckoutApp):
             if are_valid:
                 for group, typ, form in delivery_group_forms:
                     handler.delivery_queue.create_variant(group, form)
-                return redirect(self.payment_choice,
-                                order_token=order.token)
+                return self.redirect('payment-choice', order_token=order.token)
         return TemplateResponse(request, self.delivery_details_templates, {
             'delivery_group_forms': groups_with_forms,
             'order': order,
@@ -89,8 +86,7 @@ class MulitStepCheckoutApp(app.CheckoutApp):
         if request.method == 'POST':
             if payment_form.is_valid():
                 payment_form.save()
-                return redirect(self.payment_details,
-                                order_token=order.token)
+                return self.redirect('payment-details', order_token=order.token)
         return TemplateResponse(request, self.payment_choice_templates, {
             'order': order,
             'payment_form': payment_form,
@@ -106,15 +102,13 @@ class MulitStepCheckoutApp(app.CheckoutApp):
         if not order or order.status != 'checkout':
             return self.redirect_order(order)
         if not order.payment_type:
-            return redirect(self.payment_choice,
-                            order_token=order.token)
+            return self.redirect('payment-choice', order_token=order.token)
         form = forms.get_payment_details_form(order, request.POST)
         def proceed(order, form):
             variant = handler.payment_queue.create_variant(order, form)
             order.payment_variant = variant
             order.set_status('payment-pending')
-            return redirect(self.confirmation,
-                            order_token=order.token)
+            return self.redirect('confirmation', order_token=order.token)
         if form:
             if request.method == 'POST':
                 if form.is_valid():
@@ -125,15 +119,14 @@ class MulitStepCheckoutApp(app.CheckoutApp):
             })
         return proceed(order, form)
 
-    def get_urls(self, prefix=None):
-        prefix = prefix or self.app_name
+    def get_urls(self):
         return super(MulitStepCheckoutApp, self).get_urls() + patterns('',
-            url(r'^(?P<order_token>\w+)/delivery-details/$', self.delivery_details,
-                name='%s-delivery-details' % prefix),
+            url(r'^(?P<order_token>\w+)/delivery-details/$',
+                self.delivery_details, name='delivery-details'),
             url(r'^(?P<order_token>\w+)/payment-choice/$', self.payment_choice,
-                name='%s-payment-choice' % prefix),
-            url(r'^(?P<order_token>\w+)/payment-details/$', self.payment_details,
-                name='%s-payment-details' % prefix),
+                name='payment-choice'),
+            url(r'^(?P<order_token>\w+)/payment-details/$',
+                self.payment_details, name='payment-details'),
         )
 
 checkout_app = MulitStepCheckoutApp()

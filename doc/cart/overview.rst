@@ -106,6 +106,6 @@ present. By overriding the template, it's possible to display other forms too.
    For more details, refer to the source code:
 
     * ``satchless/cart/handler.py``
-    * ``satchless/product/views.py``
+    * ``satchless/product/app.py``
     * and ``satchless/product/templates/satchless/product/view.html``
 

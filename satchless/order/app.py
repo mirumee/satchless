@@ -1,5 +1,6 @@
 from django.conf.urls.defaults import patterns, url
 from django.shortcuts import get_object_or_404
+from django.template.response import TemplateResponse
 
 from ..core.app import SatchlessApp
 from . import models
@@ -19,30 +20,20 @@ class OrderApp(SatchlessApp):
     def my_orders(self, request):
         orders = self.order_model.objects.filter(user=request.user)
         context = self.get_context_data(request, orders=orders)
-        return self.respond(request, context=context, orders=orders)
+        format_data = {
+            'order_model': self.order_model._meta.module_name
+        }
+        templates = [p % format_data for p in self.order_list_templates]
+        return TemplateResponse(request, templates, context)
 
     def view(self, request, order_token):
         order = self.get_order(request, order_token=order_token)
         context = self.get_context_data(request, order=order)
-        return self.respond(request, context=context, order=order)
-
-    def get_template_names(self, order=None, **kwargs):
-        if order:
-            return self.get_template_names_for_details(order=order, **kwargs)
-        else:
-            return self.get_template_names_for_list(order=order, **kwargs)
-
-    def get_template_names_for_list(self, **kwargs):
-        format_data = {
-            'order_model': self.order_model._meta.module_name
-        }
-        return [p % format_data for p in self.order_list_templates]
-
-    def get_template_names_for_details(self, order, **kwargs):
         format_data = {
             'order_model': order._meta.module_name
         }
-        return [p % format_data for p in self.order_details_templates]
+        templates = [p % format_data for p in self.order_details_templates]
+        return TemplateResponse(request, templates, context)
 
     def get_order(self, request, order_token):
         if request.user.is_authenticated():

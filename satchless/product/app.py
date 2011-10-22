@@ -1,6 +1,7 @@
 from django.conf.urls.defaults import patterns, url
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
+from django.template.response import TemplateResponse
 
 from ..core.app import SatchlessApp
 
@@ -15,12 +16,6 @@ class ProductApp(SatchlessApp):
         'satchless/product/view.html',
     ]
 
-    def get_template_names(self, product, **kwargs):
-        product_data = {
-            'product_model': product._meta.module_name,
-        }
-        return [t % product_data for t in self.product_details_templates]
-
     def get_product(self, request, product_pk, product_slug):
         product = get_object_or_404(self.product_model, pk=product_pk,
                                     slug=product_slug)
@@ -33,7 +28,11 @@ class ProductApp(SatchlessApp):
             return context
         context['product'] = product
         context = self.get_context_data(request, **context)
-        return self.respond(request, context, product=product)
+        product_data = {
+            'product_model': product._meta.module_name,
+        }
+        templates = [t % product_data for t in self.product_details_templates]
+        return TemplateResponse(request, templates, context)
 
     def get_urls(self, prefix=None):
         prefix = prefix or 'satchless-product'

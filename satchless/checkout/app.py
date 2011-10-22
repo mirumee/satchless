@@ -16,7 +16,6 @@ class CheckoutApp(SatchlessApp):
     app_name = 'satchless-checkout'
     cart_model = Cart
     order_model = Order
-
     confirmation_templates = [
         'satchless/checkout/confirmation.html',
     ]
@@ -108,5 +107,3 @@ class CheckoutApp(SatchlessApp):
             url(r'^(?P<order_token>\w+)/reactivate/$', self.reactivate_order,
                 name='%s-reactivate-order' % prefix),
         )
-
-

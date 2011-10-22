@@ -1,6 +1,7 @@
 from django.conf.urls.defaults import patterns, url
 from django.http import Http404
 from django.http import HttpResponseNotFound
+from django.template.response import TemplateResponse
 
 from ..product import app
 from . import models
@@ -37,7 +38,12 @@ class CategorizedProductApp(app.ProductApp):
         raise self.category_model.DoesNotExist
 
     def category_list(self, request):
-        return self.respond(request, self.get_context_data(request))
+        context = self.get_context_data(request)
+        format_data = {
+            'category_model': self.category_model._meta.module_name,
+        }
+        templates = [p % format_data for p in self.category_details_templates]
+        return TemplateResponse(request, templates, context)
 
     def category_details(self, request, parent_slugs, category_slug):
         slugs = filter(None, parent_slugs.split('/') + [category_slug])
@@ -47,25 +53,11 @@ class CategorizedProductApp(app.ProductApp):
             return HttpResponseNotFound()
         category = path[-1]
         context = self.get_context_data(request, category=category, path=path)
-        return self.respond(request, context, category=category)
-
-    def get_template_names(self, product=None, category=None, **kwargs):
-        if product:
-            template_data = {
-                'product_model': product._meta.module_name,
-            }
-            template_names = self.product_details_templates
-        elif category:
-            template_data = {
-                'category_model': category._meta.module_name,
-            }
-            template_names = self.category_details_templates
-        else:
-            template_data = {
-                'category_model': self.category_model._meta.module_name,
-            }
-            template_names = self.category_list_templates
-        return [t % template_data for t in template_names]
+        format_data = {
+            'category_model': category._meta.module_name,
+        }
+        templates = [p % format_data for p in self.category_details_templates]
+        return TemplateResponse(request, templates, context)
 
     def get_context_data(self, request, product=None, **kwargs):
         categories = self.category_model.objects.filter(parent__isnull=True)

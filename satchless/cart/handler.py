@@ -12,7 +12,8 @@ class AddToCartHandler(object):
     validates them and performs all the logic of adding an item to a cart.
     """
 
-    def __init__(self, typ='satchless_cart', addtocart_formclass=forms.AddToCartForm,
+    def __init__(self, typ='cart', details_view='cart:details',
+                 addtocart_formclass=forms.AddToCartForm,
                  form_attribute='cart_form'):
         """
         Sets up a parametrized handler for product view.
@@ -20,14 +21,17 @@ class AddToCartHandler(object):
         Accepts:
 
             * `typ`: the type of the cart to add to
+            * `details_view`: the cart view to redirect to
             * `addtocart_formclass`: form class responsible for adding to cart.
             * `form_attribute`: name of instance's attribute to save the form under.
         """
         self.typ = typ
+        self.details_view = details_view
         self.form_attribute = form_attribute
         self.addtocart_formclass = addtocart_formclass
 
-    def __call__(self, instances=None, request=None, extra_context=None, **kwargs):
+    def __call__(self, instances=None, request=None, extra_context=None,
+                 **kwargs):
         """
         Accepts a list of Product or Variant instances. For every of them finds
         add-to-cart form. For a POST request, performs validation and if it
@@ -69,7 +73,7 @@ class AddToCartHandler(object):
                     if request.is_ajax():
                         # FIXME: add cart details like number of items and new total
                         return JSONResponse({})
-                    return redirect('satchless-cart-view')
+                    return redirect(self.details_view)
                 elif request.is_ajax() and form.errors:
                     data = dict(form.errors)
                     return JSONResponse(data, status=400)

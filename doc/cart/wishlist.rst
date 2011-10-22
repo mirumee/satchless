@@ -13,8 +13,22 @@ just make the files manually::
 
     wishlist/
         __init__.py
+        app.py
         forms.py
         listeners.py
+
+The app
+-------
+
+Let's start by creating a custom ``CartApp`` and giving it a new namespace and
+a custom cart type. Do so in the ``app.py`` file::
+
+    class WishlistApp(app.CartApp):
+        app_name = 'wishlist'
+        namespace = 'wishlist'
+        cart_type = 'wishlist'
+
+    wishlist_app = WishlistApp()
 
 The form
 --------
@@ -48,9 +62,10 @@ does, and we will put it onto the top of our application module, that is
     from satchless.cart.handler import AddToCartHandler
     from . import forms
 
-    add_to_wishlist_handler = AddToCartHandler('satchless_wishlist',
-                addtocart_formclass=forms.AddToWishlistForm,
-                form_attribute='wishlist_form')
+    add_to_wishlist_handler = AddToCartHandler('wishlist',
+                                               details_view='wishlist:details',
+                                               addtocart_formclass=forms.AddToWishlistForm,
+                                               form_attribute='wishlist_form')
 
 This requires a little explanation:
 
@@ -93,24 +108,13 @@ instance (remember how we named it while :ref:`defining the signal listener
 
 .. _`Django documentation on loading templates`: http://docs.djangoproject.com/en/1.2/ref/templates/api/#loading-templates
 
-The workaround
---------------
+The urls
+--------
 
-Unfortunately, there is `a serious deficiency in Django`_ which requires us
-to add a workaround in the main ``urls.py`` file::
+What remains to be done is placing our new application in the main ``urls.py``
+file::
 
-    url(r'^cart/view/(?P<typ>satchless_cart|satchless_wishlist)/$',
-        'satchless.cart.views.cart', name='satchless-cart-view'),
-
-You should place it **before** the line which imports ``satchless.cart.urls``,
-that looks like this::
-
-    url(r'^cart/', include('satchless.cart.urls')),
-
-It's also good to match the prefix and hide original cart view under the
-workaround URL.
-
-.. _`a serious deficiency in Django`: http://code.djangoproject.com/ticket/13154
+    url(r'^wishlist/$',include(wishlist_app.urls)),
 
 Further customization
 ---------------------

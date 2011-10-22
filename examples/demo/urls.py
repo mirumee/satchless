@@ -24,7 +24,6 @@ urlpatterns = patterns('',
     url(r'^sale/', include('sale.urls')),
     url(r'^localeurl/', include('localeurl.urls')),
     url(r'^payment-gateways/django-payments/', include('payments.urls')),
-
     url(r'^search/', include('satchless.contrib.search.haystack_predictive.urls')),
     url(r'^grappelli/', include('grappelli.urls')),
     url(r'^admin/', include(gulliver_admin.urls)),

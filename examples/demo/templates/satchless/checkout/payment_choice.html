@@ -10,7 +10,7 @@
 {% block body-class %}{{ block.super }} payment-choice{% endblock %}
 {% block breadcrumbs %}
 <li>
-    <a href="{% url satchless-cart-view %}">1. {% trans "Cart" %}</a>
+    <a href="{% url cart:details %}">1. {% trans "Cart" %}</a>
 </li>
 <li>
     <a href="{% url checkout:checkout order.token %}">2. {% trans "Delivery" %}</a>

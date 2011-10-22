@@ -143,9 +143,7 @@ class CheckoutTest(BaseCheckoutAppTests):
                                      method='post',
                                      client_instance=self.anon_client,
                                      status_code=302)
-        # 'satchless_cart' is taken from multistep/urls.py:
-        # url(r'^prepare-order/$', prepare_order, {'typ': 'satchless_cart'}...)
-        self.assertRedirects(response, reverse('satchless-cart-view', args=('satchless_cart',)))
+        self.assertRedirects(response, reverse('cart:details'))
 
     def test_prepare_order_redirects_to_checkout_when_order_exists(self):
         order = self._create_order(self.anon_client)

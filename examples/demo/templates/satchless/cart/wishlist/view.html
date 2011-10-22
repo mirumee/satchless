@@ -17,8 +17,8 @@
     </div>
 </div>
 <div class="grid_20 omega">
-    <div class="products">
 {% if cart_item_forms %}
+    <div class="products">
         <ul>
     {% for form in cart_item_forms %}
         {% with form.instance as cart_item %}
@@ -69,7 +69,7 @@
                                 Inclusive VAT <br />
                                 Exclusive shipping costs<br />
                             </p>
-                            <form action="{% url carts-from-wishlist-to-cart cart_item.id %}" method="post">
+                            <form action="{% url wishlist:add-to-cart cart_item.id %}" method="post">
                                 {% csrf_token %}
                                 <input class="cart" name="satchless_cart" type="submit" value="{% trans "Add to cart" %}" />
                             </form>
@@ -82,12 +82,12 @@
         {% endwith %}
     {% endfor %}
         </ul>
-{% else %}
-        <p class="no-items">
-            {% trans "Your wishlist is empty" %}
-        </p>
-{% endif %}
     </div>
+{% else %}
+    <p class="no-items">
+        {% trans "Your wishlist is empty" %}
+    </p>
+{% endif %}
 </div>
 {% endblock %}
 

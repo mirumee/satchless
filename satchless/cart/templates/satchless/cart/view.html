@@ -55,7 +55,7 @@
                     {{ item_price|tax|floatformat:2 }} <span class="currency">{{ cart.currency }}</span>
                 </td>
                 <td rowspan="2">
-                    <form method="POST" action="{% url satchless-cart-remove-item cart.typ form.instance.id %}">
+                    <form method="POST" action="{% url cart:remove-item cart.typ form.instance.id %}">
                         {% csrf_token %}
                         <button type="submit">{% trans "Delete" %}</button>
                     </form>

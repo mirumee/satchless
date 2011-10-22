@@ -5,7 +5,7 @@ from django.core.urlresolvers import reverse
 from django.http import HttpResponse
 from django.test import Client
 
-from ...cart import urls as cart_urls
+from ...cart.app import cart_app
 from ...cart.models import CART_SESSION_KEY
 from ...order.app import order_app
 from ...pricing import handler as pricing_handler
@@ -19,7 +19,7 @@ class BaseCheckoutAppTests(ViewsTestCase):
     class MockUrls:
         def __init__(self, checkout_app):
             self.urlpatterns = patterns('',
-                url(r'^cart/', include(cart_urls)),
+                url(r'^cart/', include(cart_app.urls)),
                 url(r'^checkout/', include(checkout_app.urls)),
                 url(r'^order/', include(order_app.urls)),
             )
@@ -29,8 +29,8 @@ class BaseCheckoutAppTests(ViewsTestCase):
         cart.set_quantity(self.macaw_blue, 1)
         return cart
 
-    def _get_or_create_cart_for_client(self, client, typ='satchless_cart'):
-        self._test_status(reverse('satchless-cart-view'),
+    def _get_or_create_cart_for_client(self, client, typ='cart'):
+        self._test_status(reverse('cart:details'),
                           client_instance=client)
         pk = client.session[CART_SESSION_KEY % typ]
         return self.checkout_app.cart_model.objects.get(pk=pk,

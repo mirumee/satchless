@@ -47,14 +47,16 @@ Include neccessary applications in your ``INSTALLED_APPS`` tuple in Django
 Add neccessary entries to your ``urls.py`` file. The prefixes used here are
 just examples and you may change them freely.::
 
+    from satchless.cart.app import cart_app
     from satchless.category.app import product_app
+    from satchless.order.app import order_app
 
     urlpatterns = patterns('',
         url(r'^products/', include(product_app.urls)),
         url(r'^contact/', include('satchless.contact.urls')),
         url(r'^image/', include('satchless.image.urls')),
-        url(r'^cart/', include('satchless.cart.urls')),
-        url(r'^checkout/', include('satchless.order.urls')),
+        url(r'^cart/', include(cart_app.urls)),
+        url(r'^checkout/', include(order_app.urls)),
     )
 
 Run ``./manage.py syncdb`` to create the database tables.

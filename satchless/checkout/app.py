@@ -16,7 +16,7 @@ class CheckoutApp(SatchlessApp):
     app_name = 'checkout'
     namespace = 'checkout'
     cart_model = Cart
-    cart_type = 'satchless_cart'
+    cart_type = 'cart'
     order_model = Order
     confirmation_templates = [
         'satchless/checkout/confirmation.html',
@@ -57,7 +57,7 @@ class CheckoutApp(SatchlessApp):
             try:
                 order = self.order_model.objects.get_from_cart(cart)
             except EmptyCart:
-                return redirect('satchless-cart-view', typ=self.cart_type)
+                return redirect('cart:details')
         request.session['satchless_order'] = order.pk
         return self.redirect('checkout', order_token=order.token)
 

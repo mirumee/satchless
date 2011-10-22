@@ -2,7 +2,7 @@
 from decimal import Decimal
 from django.conf.urls.defaults import patterns, include, url
 from django.contrib.auth.models import User
-from django.core.urlresolvers import reverse
+from django.core.exceptions import ObjectDoesNotExist
 from django.http import HttpResponse
 from django.test import Client
 import os
@@ -26,7 +26,7 @@ class FakeCheckoutApp(CheckoutApp):
 class Cart(BaseTestCase):
     class urls:
         urlpatterns = patterns('',
-            url(r'^cart/', include(urls)),
+            url(r'^cart/', include(cart_app.urls)),
             url(r'^products/', include(product_app.urls)),
             url(r'^checkout/', include(FakeCheckoutApp().urls))
         )
@@ -93,7 +93,7 @@ class Cart(BaseTestCase):
         return response
 
     def test_basic_cart_ops(self):
-        cart = cart_app.cart_model.objects.create(typ='satchless.test_cart')        
+        cart = cart_app.cart_model.objects.create(typ='satchless.test_cart')
         cart.set_quantity(self.macaw_blue, 1)
         cart.set_quantity(self.macaw_blue_fake, Decimal('2.45'))
         cart.set_quantity(self.cockatoo_white_a, Decimal('2.45'))
@@ -108,13 +108,13 @@ class Cart(BaseTestCase):
         self.assertEqual(cart.get_quantity(self.macaw_blue), Decimal('1'))
         self.assertEqual(cart.get_quantity(self.macaw_blue_fake), Decimal('2'))
         self.assertEqual(cart.get_quantity(self.cockatoo_white_a), 0)
-        self.assertRaises(cart_app.cart_item_model.DoesNotExist, cart.items.get,
+        self.assertRaises(ObjectDoesNotExist, cart.items.get,
                           variant=self.cockatoo_white_a)
         self.assertEqual(cart.get_quantity(self.cockatoo_white_d), Decimal('0'))
-        self.assertRaises(cart_app.cart_item_model.DoesNotExist, cart.items.get,
+        self.assertRaises(ObjectDoesNotExist, cart.items.get,
                           variant=self.cockatoo_white_d)
         self.assertEqual(cart.get_quantity(self.cockatoo_blue_a), Decimal('0.0'))
-        self.assertRaises(cart_app.cart_item_model.DoesNotExist, cart.items.get,
+        self.assertRaises(ObjectDoesNotExist, cart.items.get,
                           variant=self.cockatoo_blue_a)
         self.assertEqual(cart.get_quantity(self.cockatoo_blue_d), Decimal('2'))
 
@@ -132,9 +132,9 @@ class Cart(BaseTestCase):
         self.assertEqual(cart.get_quantity(self.cockatoo_blue_a), Decimal('100'))
         self.assertEqual(cart.get_quantity(self.cockatoo_blue_d), Decimal('102'))
 
-    def _get_or_create_cart_for_client(self, client=None, typ='satchless_cart'):
+    def _get_or_create_cart_for_client(self, client=None, typ='cart'):
         client = client or self.client
-        self._test_status(reverse('satchless-cart-view'), client_instance=client)
+        self._test_status(cart_app.reverse('details'), client_instance=client)
         return cart_app.cart_model.objects.get(pk=client.session[models.CART_SESSION_KEY % typ],
                                        typ=typ)
 
@@ -154,20 +154,21 @@ class Cart(BaseTestCase):
 
     def _test_add_by_view(self, client):
         cart = self._get_or_create_cart_for_client(client)
-        self._test_status(reverse('satchless-cart-view'),
+        self._test_status(cart_app.reverse('details'),
                           client_instance=client, status_code=200)
         self._test_status(self.macaw.get_absolute_url(),
                           method='post',
-                          data={'typ': 'satchless_cart',
+                          data={'typ': 'cart',
                                 'color': self.macaw_blue_fake.color,
                                 'looks_alive': self.macaw_blue_fake.looks_alive,
                                 'quantity': 2},
                           client_instance=client,
                           status_code=302)
-        self.assertTrue(cart.items.count(), 1)
+        self.assertEqual(cart.items.count(), 1)
         cart_item = cart.items.get()
-        self.assertTrue(cart_item.quantity, 2)
-        self.assertEqual(self.macaw_blue_fake, cart_item.variant.get_subtype_instance())
+        self.assertEqual(cart_item.quantity, 2)
+        self.assertEqual(self.macaw_blue_fake,
+                         cart_item.variant.get_subtype_instance())
 
     def test_add_by_view_for_anonymous(self):
         cli_anon = Client()
@@ -182,7 +183,7 @@ class Cart(BaseTestCase):
         cli_anon = Client()
         response = self._test_status(self.macaw.get_absolute_url(),
                                      method='post',
-                                     data={'typ': 'satchless_cart',
+                                     data={'typ': 'cart',
                                            'color': 'blue',
                                            'looks_alive': 1,
                                            'quantity': 'alkjl'},

@@ -64,7 +64,8 @@ class CardiganTranslationInline(TranslationInline):
 
 
 class CardiganAdmin(ProductAdmin):
-    inlines = [CardiganTranslationInline, CardiganVariantInline, ProductImageInline]
+    inlines = [CardiganTranslationInline, CardiganVariantInline, PriceInline,
+               DiscountInline, ProductImageInline]
 
 
 class DressVariantInline(admin.TabularInline):

@@ -2,10 +2,10 @@ from satchless.cart.handler import AddToCartHandler
 
 from . import forms
 
-add_to_cart_handler = AddToCartHandler('satchless_cart',
+add_to_cart_handler = AddToCartHandler('cart',
                                        addtocart_formclass=forms.AddToCartForm)
 
-add_to_wishlist_handler = AddToCartHandler('satchless_wishlist',
+add_to_wishlist_handler = AddToCartHandler('wishlist',
                                            details_view='wishlist:details',
                                            addtocart_formclass=forms.AddToWishlistForm)
 

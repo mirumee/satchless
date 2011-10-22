@@ -19,8 +19,7 @@ class SatchlessApp(object):
         raise NotImplementedError()
 
     def redirect(self, to, *args, **kwargs):
-        to = '%s:%s' % (self.namespace, to)
-        uri = reverse(to, args=args, kwargs=kwargs, current_app=self.app_name)
+        uri = self.reverse(to, args=args, kwargs=kwargs)
         return redirect(uri)
 
     def reverse(self, to, args=None, kwargs=None):

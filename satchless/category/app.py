@@ -42,7 +42,7 @@ class CategorizedProductApp(app.ProductApp):
         format_data = {
             'category_model': self.category_model._meta.module_name,
         }
-        templates = [p % format_data for p in self.category_details_templates]
+        templates = [p % format_data for p in self.category_list_templates]
         return TemplateResponse(request, templates, context)
 
     def category_details(self, request, parent_slugs, category_slug):

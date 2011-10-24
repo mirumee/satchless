@@ -3,6 +3,7 @@ from django.conf.urls.defaults import patterns, url
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, redirect
 from django.template.response import TemplateResponse
+from django.utils.decorators import method_decorator
 from django.views.decorators.http import require_POST
 
 from ..core.app import SatchlessApp
@@ -24,9 +25,6 @@ class CartApp(SatchlessApp):
     def get_cart_for_request(self, request):
         return self.cart_model.objects.get_or_create_from_request(request,
                                                                   self.cart_type)
-
-    def on_cart_updated(self, item):
-        pass
 
     def _handle_cart(self, cart, request):
         cart_item_forms = []
@@ -61,12 +59,11 @@ class CartApp(SatchlessApp):
                                  'html': response.rendered_content})
         return response
 
-    @require_POST
+    @method_decorator(require_POST)
     def remove_item(self, request, item_pk):
         cart = self.get_cart_for_request(request)
         item = get_object_or_404(cart.items, pk=item_pk)
         cart.set_quantity(item.variant, 0)
-        self.on_item_deleted(item)
         return self.redirect('details')
 
     def get_urls(self):

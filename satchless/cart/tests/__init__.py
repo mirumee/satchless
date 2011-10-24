@@ -7,12 +7,15 @@ from django.http import HttpResponse
 from django.test import Client
 import os
 
-from ...product import handler
 from ...category.app import product_app
 from ...category.models import Category
 from ...checkout.app import CheckoutApp
+from ...pricing import handler as pricing_handler
+from ...product import handler
+from ...product.tests.pricing import FiveZlotyPriceHandler
 from ...product.tests import (DeadParrot, ZombieParrot, DeadParrotVariantForm)
 from ...util.tests import BaseTestCase
+
 from ..app import cart_app
 from .. import models
 from .. import signals
@@ -71,6 +74,7 @@ class Cart(BaseTestCase):
                               os.path.join(test_dir, 'templates')]
         }
         self.original_settings = self._setup_settings(self.custom_settings)
+        pricing_handler.pricing_queue = pricing_handler.PricingQueue(FiveZlotyPriceHandler)
         handler.init_queue()
 
     def tearDown(self):
@@ -138,6 +142,7 @@ class Cart(BaseTestCase):
         return cart_app.cart_model.objects.get(pk=client.session[models.CART_SESSION_KEY % typ],
                                        typ=typ)
 
+
     def test_add_to_cart_form_on_product_view(self):
         response = self._test_status(self.macaw.get_absolute_url(),
                                      method='get', status_code=200)
@@ -169,6 +174,21 @@ class Cart(BaseTestCase):
         self.assertEqual(cart_item.quantity, 2)
         self.assertEqual(self.macaw_blue_fake,
                          cart_item.variant.get_subtype_instance())
+
+    def test_remove_item_by_view(self):
+        cart = self._get_or_create_cart_for_client(self.client)
+        cart.set_quantity(self.macaw_blue_fake, Decimal('2.45'))
+        remove_item_url = cart_app.reverse('remove-item', args=(cart.items.get().id,))
+        response = self._test_status(remove_item_url, method='post',
+                                     status_code=302, client_instance=self.client)
+        self.assertRedirects(response, cart_app.reverse('details'))
+
+    def test_cart_view_with_item(self):
+        cart = self._get_or_create_cart_for_client(self.client)
+        cart.set_quantity(self.macaw_blue_fake, Decimal('2.45'))
+        self._test_status(cart_app.reverse('details'),
+                          client_instance=self.client, status_code=200)
+
 
     def test_add_by_view_for_anonymous(self):
         cli_anon = Client()

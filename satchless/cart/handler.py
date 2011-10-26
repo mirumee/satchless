@@ -5,6 +5,7 @@ from ..util import JSONResponse
 from . import forms
 from . import models
 from . import signals
+from .app import cart_app
 
 class AddToCartHandler(object):
     """
@@ -13,7 +14,7 @@ class AddToCartHandler(object):
     """
 
     def __init__(self, typ='cart', details_view='cart:details',
-                 addtocart_formclass=forms.AddToCartForm,
+                 addtocart_formclass=forms.AddToCartForm, cart_class=models.Cart,
                  form_attribute='cart_form'):
         """
         Sets up a parametrized handler for product view.
@@ -60,7 +61,7 @@ class AddToCartHandler(object):
             Form = forms.add_to_cart_variant_form_for_product(product,
                     addtocart_formclass=self.addtocart_formclass)
             if request.method == 'POST':
-                cart = models.Cart.objects.get_or_create_from_request(request,
+                cart = cart_app.cart_model.objects.get_or_create_from_request(request,
                                                                       self.typ)
                 form = Form(data=request.POST, cart=cart, product=product,
                             variant=variant, typ=self.typ)

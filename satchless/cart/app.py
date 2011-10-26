@@ -11,12 +11,15 @@ from ..util import JSONResponse
 from . import models
 from . import forms
 
+
 class CartApp(SatchlessApp):
     app_name = 'cart'
     namespace = 'cart'
     cart_type = 'cart'
     cart_item_form_class = forms.EditCartItemForm
+    cart_item_model = models.CartItem
     cart_model = models.Cart
+
     cart_templates = [
         'satchless/cart/%(cart_type)s/view.html',
         'satchless/cart/view.html'

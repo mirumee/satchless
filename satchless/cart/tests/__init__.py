@@ -1,11 +1,13 @@
 # -*- coding: utf-8 -*-
 from decimal import Decimal
 from django.conf.urls.defaults import patterns, include, url
+from django.db import models as dj_models
 from django.contrib.auth.models import User
 from django.core.exceptions import ObjectDoesNotExist
 from django.http import HttpResponse
 from django.test import Client
 import os
+from ...cart.models import Cart, CartItem
 
 from ...category.app import product_app
 from ...category.models import Category
@@ -25,6 +27,18 @@ class FakeCheckoutApp(CheckoutApp):
     def prepare_order(self, *args, **kwargs):
         return HttpResponse("OK")
 
+class TestCart(Cart):
+
+    class Meta:
+        proxy = True
+
+    def get_cart_item_class(self):
+        return TestCartItem
+
+
+class TestCartItem(CartItem):
+    cart = dj_models.ForeignKey(TestCart, related_name='items')
+
 
 class Cart(BaseTestCase):
     class urls:
@@ -36,6 +50,7 @@ class Cart(BaseTestCase):
 
 
     def setUp(self):
+        cart_app.cart_model = TestCart
         self.category_birds = Category.objects.create(name='birds',
                                                       slug='birds')
         self.macaw = DeadParrot.objects.create(slug='macaw',
@@ -65,6 +80,7 @@ class Cart(BaseTestCase):
 
         test_dir = os.path.dirname(__file__)
         self.custom_settings = {
+            'SATCHLESS_DEFAULT_CURRENCY': "PLN",
             'SATCHLESS_PRODUCT_VIEW_HANDLERS': (
                 'satchless.cart.add_to_cart_handler',
             ),

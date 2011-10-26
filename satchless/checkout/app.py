@@ -108,3 +108,5 @@ class CheckoutApp(SatchlessApp):
             url(r'^(?P<order_token>\w+)/reactivate/$', self.reactivate_order,
                 name='reactivate-order'),
         )
+
+checkout_app = CheckoutApp()

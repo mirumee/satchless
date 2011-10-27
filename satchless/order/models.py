@@ -6,50 +6,47 @@ from django.db import models
 from django.utils.translation import ugettext_lazy as _
 import random
 
-from ..cart.models import Cart
 from ..pricing import Price
 from ..product.models import Variant
 from ..util import countries
 from . import signals
 from .exceptions import EmptyCart
 
-class OrderManager(models.Manager):
-    def get_from_cart(self, cart, instance=None):
-        '''
-        Create an order from the user's cart, possibly discarding any previous
-        orders created for this cart.
-        '''
-        from .handler import partitioner_queue
-        if cart.is_empty():
-            raise EmptyCart("Cannot create empty order.")
-        previous_orders = self.filter(cart=cart)
-        if not instance:
-            order = Order.objects.create(cart=cart, user=cart.owner,
-                                         currency=cart.currency)
-        else:
-            order = instance
-            order.groups.all().delete()
-            try:
-                order.paymentvariant.delete()
-            except ObjectDoesNotExist:
-                pass
-        groups = partitioner_queue.partition(cart)
-        for group in groups:
-            delivery_group = order.groups.create(order=order)
-            for item in group:
-                price = item.get_unit_price()
-                variant = item.variant.get_subtype_instance()
-                name = unicode(variant)
-                delivery_group.items.create(product_variant=item.variant,
-                                            product_name=name,
-                                            quantity=item.quantity,
-                                            unit_price_net=price.net,
-                                            unit_price_gross=price.gross)
-        previous_orders = (previous_orders.exclude(pk=order.pk)
-                                          .filter(status='checkout'))
-        previous_orders.delete()
-        return order
-
+def get_from_cart(self, cart, instance=None):
+    '''
+    Create an order from the user's cart, possibly discarding any previous
+    orders created for this cart.
+    '''
+    from .handler import partitioner_queue
+    if cart.is_empty():
+        raise EmptyCart("Cannot create empty order.")
+    previous_orders = self.filter(cart=cart)
+    if not instance:
+        order = self.model.objects.create(cart=cart, user=cart.owner,
+                                     currency=cart.currency)
+    else:
+        order = instance
+        order.groups.all().delete()
+        try:
+            order.paymentvariant.delete()
+        except ObjectDoesNotExist:
+            pass
+    groups = partitioner_queue.partition(cart)
+    for group in groups:
+        delivery_group = order.groups.create(order=order)
+        for item in group:
+            price = item.get_unit_price()
+            variant = item.variant.get_subtype_instance()
+            name = unicode(variant)
+            delivery_group.items.create(product_variant=item.variant,
+                                        product_name=name,
+                                        quantity=item.quantity,
+                                        unit_price_net=price.net,
+                                        unit_price_gross=price.gross)
+    previous_orders = (previous_orders.exclude(pk=order.pk)
+                                      .filter(status='checkout'))
+    previous_orders.delete()
+    return order
 
 class Order(models.Model):
     STATUS_CHOICES = (
@@ -68,7 +65,6 @@ class Order(models.Model):
     last_status_change = models.DateTimeField(default=datetime.datetime.now,
                                    editable=False, blank=True)
     user = models.ForeignKey(User, blank=True, null=True, related_name='orders')
-    cart = models.ForeignKey(Cart, blank=True, null=True, related_name='orders')
     currency = models.CharField(max_length=3)
     billing_first_name = models.CharField(_("first name"),
                                           max_length=256, blank=True)
@@ -93,7 +89,6 @@ class Order(models.Model):
                                      max_length=30, blank=True)
     payment_type = models.CharField(max_length=256, blank=True)
     token = models.CharField(max_length=32, blank=True, default='')
-    objects = OrderManager()
 
     class Meta:
         # Use described string to resolve ambiguity of the word 'order' in English.

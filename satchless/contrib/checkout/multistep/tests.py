@@ -7,7 +7,8 @@ from django.core.urlresolvers import reverse
 from django.test import TestCase, Client
 
 from ....cart.app import cart_app
-from ....cart.models import Cart, CART_SESSION_KEY
+from ....cart.models import CART_SESSION_KEY
+from ....cart.tests import TestCart
 from ....contrib.delivery.simplepost.models import PostShippingType
 from ....order import handler as order_handler
 from ....order.models import Order
@@ -94,7 +95,7 @@ class CheckoutTest(TestCase):
 
     def _get_or_create_cart_for_client(self, client, typ='satchless_cart'):
         self._test_status(reverse('satchless-cart-view'), client_instance=self.anon_client)
-        return Cart.objects.get(pk=self.anon_client.session[CART_SESSION_KEY % typ], typ=typ)
+        return TestCart.objects.get(pk=self.anon_client.session[CART_SESSION_KEY % typ], typ=typ)
 
     def _get_order_from_session(self, session):
         order_pk = session.get('satchless_order', None)

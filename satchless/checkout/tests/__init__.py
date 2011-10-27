@@ -4,6 +4,7 @@ from django.conf import settings
 from django.core.urlresolvers import reverse
 from django.http import HttpResponse
 from django.test import Client
+from satchless.cart.tests import TestCart
 
 from ...cart.app import cart_app
 from ...cart.models import CART_SESSION_KEY
@@ -11,6 +12,7 @@ from ...order.app import order_app
 from ...pricing import handler as pricing_handler
 from ...product.tests import DeadParrot
 from ...product.tests.pricing import FiveZlotyPriceHandler
+from ...order.tests import TestOrder
 from ...util.tests import ViewsTestCase
 
 from ..app import CheckoutApp
@@ -65,6 +67,10 @@ class BaseCheckoutAppTests(ViewsTestCase):
 
 
 class MockCheckoutApp(CheckoutApp):
+
+    cart_model = TestCart
+    order_model = TestOrder
+
     def checkout(self, *args, **kwargs):
         return HttpResponse()
 

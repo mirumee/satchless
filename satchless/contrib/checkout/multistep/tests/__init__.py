@@ -17,6 +17,8 @@ from .....product.tests.pricing import FiveZlotyPriceHandler
 
 
 from .. import app
+from .....cart.tests import TestCart
+from .....order.tests import TestOrder
 
 class TestPaymentProviderWithConfirmation(TestPaymentProvider):
     def confirm(self, order, typ=None):
@@ -28,6 +30,8 @@ class CheckoutTest(BaseCheckoutAppTests):
     urls = BaseCheckoutAppTests.MockUrls(checkout_app=app.checkout_app)
 
     def setUp(self):
+        self.checkout_app.cart_model = TestCart
+        self.checkout_app.order_model = TestOrder
         self.macaw = DeadParrot.objects.create(slug='macaw',
                 species="Hyacinth Macaw")
         self.cockatoo = DeadParrot.objects.create(slug='cockatoo',
@@ -157,7 +161,7 @@ class CheckoutTest(BaseCheckoutAppTests):
 
     def test_order_is_deleted_when_all_cart_items_are_deleted(self):
         order = self._create_order(self.anon_client)
-        for cart_item in order.cart.items.all():
+        for cart_item in order.cart.get_all_items():
             self.assertTrue(self.checkout_app.order_model.objects.filter(pk=order.pk).exists())
             order.cart.set_quantity(cart_item.variant, 0)
         self.assertFalse(self.checkout_app.order_model.objects.filter(pk=order.pk).exists())

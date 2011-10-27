@@ -16,6 +16,8 @@ from .....product.tests import DeadParrot
 from .....product.tests.pricing import FiveZlotyPriceHandler
 
 from ..app import checkout_app
+from .....cart.tests import TestCart
+from .....order.tests import TestOrder
 
 
 class TestPaymentProviderWithConfirmation(TestPaymentProvider):
@@ -28,6 +30,8 @@ class App(BaseCheckoutAppTests):
     urls = BaseCheckoutAppTests.MockUrls(checkout_app=checkout_app)
 
     def setUp(self):
+        checkout_app.cart_model = TestCart
+        checkout_app.order_model = TestOrder
         self.parrot = DeadParrot.objects.create(slug='parrot',
                                                 species='Hyacinth Macaw')
         self.dead_parrot = self.parrot.variants.create(color='blue',

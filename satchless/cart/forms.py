@@ -1,5 +1,5 @@
 from django import forms
-from django.utils.translation import ugettext as _
+from django.utils.translation import ugettext_lazy as _, ugettext
 
 from . import models
 from ..forms.widgets import DecimalInput
@@ -9,7 +9,7 @@ class QuantityForm(object):
     def clean_quantity(self):
         val = self.cleaned_data['quantity']
         if val < 0:
-            raise forms.ValidationError(_("Quantity cannot be negative"))
+            raise forms.ValidationError(ugettext("Quantity cannot be negative"))
         return val
 
 class AddToCartForm(forms.Form, QuantityForm):

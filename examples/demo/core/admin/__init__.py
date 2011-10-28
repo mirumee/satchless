@@ -5,10 +5,10 @@ import django.forms
 
 from satchless.contrib.productset.models import ProductSet, ProductSetItem
 from satchless.contrib.productset.admin import ProductSetImageInline
-from satchless.contrib.search.haystack_predictive.views import search_products
 from satchless.product.models import Product, Variant
 
 from sale.models import DiscountGroup
+from search.haystack_predictive.views import search_products
 from . import widgets
 
 class GulliverAdminSite(admin.AdminSite):

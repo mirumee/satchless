@@ -12,19 +12,16 @@ from ..pricing import handler
 from ..product.tests import DeadParrot
 from ..product.tests.pricing import FiveZlotyPriceHandler
 from .app import order_app
-from .models import Order, get_from_cart
+from .models import Order, OrderManager
 #from . import models
 #from . import urls
 from ..cart.tests import TestCart
 
 from ..util.tests import ViewsTestCase
 
-class TestOrderManager(models.Manager):
-    get_from_cart = get_from_cart
-
 class TestOrder(Order):
     cart = models.ForeignKey(TestCart, blank=True, null=True, related_name='orders')
-    objects = TestOrderManager()
+    objects = OrderManager()
 
 class OrderTest(ViewsTestCase):
     class urls:

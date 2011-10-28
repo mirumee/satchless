@@ -12,41 +12,43 @@ from ..util import countries
 from . import signals
 from .exceptions import EmptyCart
 
-def get_from_cart(self, cart, instance=None):
-    '''
-    Create an order from the user's cart, possibly discarding any previous
-    orders created for this cart.
-    '''
-    from .handler import partitioner_queue
-    if cart.is_empty():
-        raise EmptyCart("Cannot create empty order.")
-    previous_orders = self.filter(cart=cart)
-    if not instance:
-        order = self.model.objects.create(cart=cart, user=cart.owner,
-                                     currency=cart.currency)
-    else:
-        order = instance
-        order.groups.all().delete()
-        try:
-            order.paymentvariant.delete()
-        except ObjectDoesNotExist:
-            pass
-    groups = partitioner_queue.partition(cart)
-    for group in groups:
-        delivery_group = order.groups.create(order=order)
-        for item in group:
-            price = item.get_unit_price()
-            variant = item.variant.get_subtype_instance()
-            name = unicode(variant)
-            delivery_group.items.create(product_variant=item.variant,
-                                        product_name=name,
-                                        quantity=item.quantity,
-                                        unit_price_net=price.net,
-                                        unit_price_gross=price.gross)
-    previous_orders = (previous_orders.exclude(pk=order.pk)
-                                      .filter(status='checkout'))
-    previous_orders.delete()
-    return order
+class OrderManager(models.Manager):
+    
+    def get_from_cart(self, cart, instance=None):
+        '''
+        Create an order from the user's cart, possibly discarding any previous
+        orders created for this cart.
+        '''
+        from .handler import partitioner_queue
+        if cart.is_empty():
+            raise EmptyCart("Cannot create empty order.")
+        previous_orders = self.filter(cart=cart)
+        if not instance:
+            order = self.model.objects.create(cart=cart, user=cart.owner,
+                                         currency=cart.currency)
+        else:
+            order = instance
+            order.groups.all().delete()
+            try:
+                order.paymentvariant.delete()
+            except ObjectDoesNotExist:
+                pass
+        groups = partitioner_queue.partition(cart)
+        for group in groups:
+            delivery_group = order.groups.create(order=order)
+            for item in group:
+                price = item.get_unit_price()
+                variant = item.variant.get_subtype_instance()
+                name = unicode(variant)
+                delivery_group.items.create(product_variant=item.variant,
+                                            product_name=name,
+                                            quantity=item.quantity,
+                                            unit_price_net=price.net,
+                                            unit_price_gross=price.gross)
+        previous_orders = (previous_orders.exclude(pk=order.pk)
+                                          .filter(status='checkout'))
+        previous_orders.delete()
+        return order
 
 class Order(models.Model):
     STATUS_CHOICES = (

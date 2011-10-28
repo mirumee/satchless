@@ -35,7 +35,6 @@ class CartApp(SatchlessApp):
                                              prefix=prefix)
             if request.method == 'POST' and form.is_valid():
                 item = form.save()
-                self.on_item_updated(item)
                 # redirect to ourselves
                 return redirect(request.get_full_path())
             cart_item_forms.append(form)

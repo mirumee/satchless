@@ -189,6 +189,21 @@ class Cart(BaseTestCase):
         self._test_status(cart_app.reverse('details'),
                           client_instance=self.client, status_code=200)
 
+    def test_cart_view_updates_item_quantity(self):
+        cart = self._get_or_create_cart_for_client(self.client)
+        cart.set_quantity(self.macaw_blue_fake, Decimal(1))
+        response = self._test_status(cart_app.reverse('details'),
+                                    client_instance=self.client, status_code=200)
+        cart_item_form = response.context['cart_item_forms'][0]
+        data = {
+            'quantity': 2
+        }
+        data = dict((cart_item_form.add_prefix(key), value) for (key, value) in data.items())
+        self._test_status(cart_app.reverse('details'), data=data,
+                          method='post', status_code=302,
+                          client_instance=self.client)
+        self.assertEqual(cart.items.count(), 1)
+        self.assertEqual(cart.items.all()[0].quantity, 2)
 
     def test_add_by_view_for_anonymous(self):
         cli_anon = Client()

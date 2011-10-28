@@ -30,6 +30,7 @@ class AddToCartHandler(object):
         self.details_view = details_view
         self.form_attribute = form_attribute
         self.addtocart_formclass = addtocart_formclass
+        self.cart_class = cart_class
 
     def __call__(self, instances=None, request=None, extra_context=None,
                  **kwargs):
@@ -61,7 +62,8 @@ class AddToCartHandler(object):
             Form = forms.add_to_cart_variant_form_for_product(product,
                     addtocart_formclass=self.addtocart_formclass)
             if request.method == 'POST':
-                cart = cart_app.cart_model.objects.get_or_create_from_request(request,
+                print cart_app.cart_model
+                cart = self.cart_class.objects.get_or_create_from_request(request,
                                                                       self.typ)
                 form = Form(data=request.POST, cart=cart, product=product,
                             variant=variant, typ=self.typ)

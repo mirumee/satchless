@@ -8,6 +8,8 @@ from django.http import HttpResponse
 from django.test import Client
 import os
 from ...cart.models import Cart, CartItem
+from ...cart.handler import AddToCartHandler
+from ...cart import forms as cart_forms
 
 from ...category.app import product_app
 from ...category.models import Category
@@ -35,10 +37,12 @@ class TestCart(Cart):
     def get_cart_item_class(self):
         return TestCartItem
 
-
 class TestCartItem(CartItem):
     cart = dj_models.ForeignKey(TestCart, related_name='items')
 
+add_to_cart_handler = AddToCartHandler('cart',
+    addtocart_formclass=cart_forms.AddToCartForm,
+    cart_class=TestCart)
 
 class Cart(BaseTestCase):
     class urls:
@@ -82,7 +86,7 @@ class Cart(BaseTestCase):
         self.custom_settings = {
             'SATCHLESS_DEFAULT_CURRENCY': "PLN",
             'SATCHLESS_PRODUCT_VIEW_HANDLERS': (
-                'satchless.cart.add_to_cart_handler',
+                'satchless.cart.tests.add_to_cart_handler',
             ),
             'TEMPLATE_DIRS': [os.path.join(test_dir, '..', '..',
                                            'category', 'templates'),

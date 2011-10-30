@@ -1,6 +1,6 @@
 from unidecode import unidecode
 import urllib2
-from django.utils.translation import ugettext as _
+from django.utils.translation import ugettext
 from authorizenet.utils import process_payment
 
 from ....delivery.models import DeliveryVariant, PhysicalShippingVariant
@@ -84,7 +84,7 @@ class AuthorizeNetProvider(PaymentProvider):
         try:
             response = process_payment(data, {})
         except urllib2.URLError:
-            raise PaymentFailure(_("Could not connect to the gateway."))
+            raise PaymentFailure(ugettext("Could not connect to the gateway."))
         v.cc_cvv2 = ''  # Forget the CVV2 number immediately after the transaction
         v.response = response
         v.save()

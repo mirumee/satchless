@@ -1,5 +1,5 @@
 # -*- coding:utf-8 -*-
-from django.utils.translation import ugettext as _
+from django.utils.translation import ugettext
 import django.db
 import django.forms
 
@@ -23,7 +23,7 @@ class TestDeliveryProvider(DeliveryProvider):
         self.types = delivery_types or (DeliveryType('pidgin', 'pidgin'), )
 
     def __unicode__(self):
-        return _("Test delivery")
+        return ugettext("Test delivery")
 
     def enum_types(self, delivery_group=None, customer=None):
         for typ in self.types:

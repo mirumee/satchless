@@ -1,5 +1,5 @@
 from django import forms
-from django.utils.translation import ugettext as _
+from django.utils.translation import ugettext_lazy as _
 from . import models
 
 class AddressForm(forms.ModelForm):
@@ -8,8 +8,10 @@ class AddressForm(forms.ModelForm):
         exclude = ('customer',)
 
 class AddressFormWithDefaultCheckboxes(AddressForm):
-    set_as_default_billing = forms.BooleanField(label=_("Set as default billing"), required=False)
-    set_as_default_shipping = forms.BooleanField(label=_("Set as default shipping"), required=False)
+    set_as_default_billing = forms.BooleanField(label=_("Set as default billing"),
+                                                required=False)
+    set_as_default_shipping = forms.BooleanField(label=_("Set as default shipping"),
+                                                 required=False)
 
     def __init__(self, *args, **kwargs):
         super(AddressFormWithDefaultCheckboxes, self).__init__(*args, **kwargs)

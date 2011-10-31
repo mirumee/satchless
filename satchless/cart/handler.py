@@ -63,7 +63,7 @@ class AddToCartHandler(object):
                     addtocart_formclass=self.addtocart_formclass)
             if request.method == 'POST':
                 cart = self.cart_class.objects.get_or_create_from_request(request,
-                                                                      self.typ)
+                                                                          self.typ)
                 form = Form(data=request.POST, cart=cart, product=product,
                             variant=variant, typ=self.typ)
                 if form.is_valid():

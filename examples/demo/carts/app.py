@@ -14,7 +14,7 @@ class WishlistApp(app.CartApp):
                                                            self.cart_type)
         item = get_object_or_404(wishlist.items.all(), id=wishlist_item_id)
         cart = Cart.objects.get_or_create_from_request(request, 'cart')
-        form_result = cart.add_quantity(variant=item.variant, quantity=1)
+        form_result = cart.add_item(variant=item.variant, quantity=1)
         signals.cart_item_added.send(sender=type(form_result.cart_item),
                                      instance=form_result.cart_item,
                                      result=form_result,

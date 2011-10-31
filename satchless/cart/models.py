@@ -4,6 +4,7 @@ from django.conf import settings
 from django.db import models
 from django.contrib.auth.models import User
 from django.utils.translation import ugettext_lazy as _
+from django.core.exceptions import ObjectDoesNotExist
 
 from ..product.models import Variant
 
@@ -55,7 +56,7 @@ class Cart(models.Model):
         else:
             return self.typ
 
-    def add_quantity(self, variant, quantity, dry_run=False, **kwargs):
+    def add_item(self, variant, quantity, dry_run=False, **kwargs):
         variant = variant.get_subtype_instance()
         quantity = variant.product.sanitize_quantity(quantity)
         item, old_qty = self.create_or_update_cart_item(variant, **kwargs)
@@ -82,7 +83,7 @@ class Cart(models.Model):
         return QuantityResult(item, new_qty, new_qty - old_qty, reason)
 
     def get_cart_item_class(self):
-        return CartItem
+        raise NotImplementedError("Must return a subclass of CartItem")
 
     def get_item(self, variant, **kwargs):
         cart_item_class = self.get_cart_item_class()
@@ -97,12 +98,12 @@ class Cart(models.Model):
         try:
             item = self.get_item(variant, **kwargs)
             old_qty = item.quantity
-        except cart_item_class.DoesNotExist:
+        except ObjectDoesNotExist:
             item = cart_item_class(cart=self, variant=variant, **kwargs)
             old_qty = Decimal('0')
         return (item, old_qty)
 
-    def set_quantity(self, variant, quantity, dry_run=False, **kwargs):
+    def replace_item(self, variant, quantity, dry_run=False, **kwargs):
         variant = variant.get_subtype_instance()
         quantity = variant.product.sanitize_quantity(quantity)
         item, old_qty = self.create_or_update_cart_item(variant, **kwargs)

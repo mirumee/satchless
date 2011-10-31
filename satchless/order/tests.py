@@ -67,12 +67,12 @@ class OrderTest(ViewsTestCase):
 
     def test_order_is_updated_when_cart_content_changes(self):
         cart = TestCart.objects.create(typ='satchless.test_cart')
-        cart.set_quantity(self.macaw_blue, 1)
+        cart.replace_item(self.macaw_blue, 1)
 
         order = order_app.order_model.objects.get_from_cart(cart)
 
-        cart.set_quantity(self.macaw_blue_fake, Decimal('2.45'))
-        cart.set_quantity(self.cockatoo_white_a, Decimal('2.45'))
+        cart.replace_item(self.macaw_blue_fake, Decimal('2.45'))
+        cart.replace_item(self.cockatoo_white_a, Decimal('2.45'))
 
         order_items = set()
         for group in order.groups.all():
@@ -83,9 +83,9 @@ class OrderTest(ViewsTestCase):
 
     def test_order_view(self):
         cart = TestCart.objects.create(typ='satchless.test_cart')
-        cart.set_quantity(self.macaw_blue, 1)
-        cart.set_quantity(self.macaw_blue_fake, Decimal('2.45'))
-        cart.set_quantity(self.cockatoo_white_a, Decimal('2.45'))
+        cart.replace_item(self.macaw_blue, 1)
+        cart.replace_item(self.macaw_blue_fake, Decimal('2.45'))
+        cart.replace_item(self.cockatoo_white_a, Decimal('2.45'))
 
         order = order_app.order_model.objects.get_from_cart(cart)
         self._test_GET_status(reverse('order:details',

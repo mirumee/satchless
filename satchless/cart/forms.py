@@ -31,13 +31,13 @@ class AddToCartForm(forms.Form, QuantityForm):
         data = super(AddToCartForm, self).clean()
         if 'quantity' in data:
             qty = data['quantity']
-            add_result = self.cart.add_quantity(self.get_variant(), qty, dry_run=True)
+            add_result = self.cart.add_item(self.get_variant(), qty, dry_run=True)
             if add_result.quantity_delta < qty:
                 raise forms.ValidationError(add_result.reason)
         return data
 
     def save(self):
-        return self.cart.add_quantity(self.get_variant(), self.cleaned_data['quantity'])
+        return self.cart.add_item(self.get_variant(), self.cleaned_data['quantity'])
 
 
 class EditCartItemForm(forms.ModelForm, QuantityForm):
@@ -50,14 +50,14 @@ class EditCartItemForm(forms.ModelForm, QuantityForm):
 
     def clean_quantity(self):
         qty = super(EditCartItemForm, self).clean_quantity()
-        qty_result = self.instance.cart.set_quantity(self.instance.variant, qty, dry_run=True)
+        qty_result = self.instance.cart.replace_item(self.instance.variant, qty, dry_run=True)
         if qty_result.new_quantity < qty:
             raise forms.ValidationError(qty_result.reason)
         return qty_result.new_quantity
 
     def save(self, commit=True):
-        """Do not call the original save() method, but use cart.set_quantity() instead."""
-        self.instance.cart.set_quantity(self.instance.variant, self.cleaned_data['quantity'])
+        """Do not call the original save() method, but use cart.replace_item() instead."""
+        self.instance.cart.replace_item(self.instance.variant, self.cleaned_data['quantity'])
 
 def add_to_cart_variant_form_for_product(product,
                                          addtocart_formclass=AddToCartForm,

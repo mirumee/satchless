@@ -25,7 +25,7 @@ class OrderManager(models.Manager):
         previous_orders = self.filter(cart=cart)
         if not instance:
             order = self.model.objects.create(cart=cart, user=cart.owner,
-                                         currency=cart.currency)
+                                              currency=cart.currency)
         else:
             order = instance
             order.groups.all().delete()

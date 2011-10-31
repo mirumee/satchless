@@ -28,7 +28,7 @@ class BaseCheckoutAppTests(ViewsTestCase):
 
     def _create_cart(self, client):
         cart = self._get_or_create_cart_for_client(client)
-        cart.set_quantity(self.macaw_blue, 1)
+        cart.replace_item(self.macaw_blue, 1)
         return cart
 
     def _get_or_create_cart_for_client(self, client, typ='cart'):

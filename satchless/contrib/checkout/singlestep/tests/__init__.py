@@ -67,7 +67,7 @@ class App(BaseCheckoutAppTests):
 
     def test_checkout_view_passes_with_correct_data(self):
         cart = self._get_or_create_cart_for_client(self.anon_client)
-        cart.set_quantity(self.dead_parrot, 1)
+        cart.replace_item(self.dead_parrot, 1)
         order = self._get_or_create_order_for_client(self.anon_client)
 
         response = self._test_status(reverse('checkout:checkout',
@@ -104,7 +104,7 @@ class App(BaseCheckoutAppTests):
 
     def test_confirmation_view_redirects_when_order_or_payment_is_missing(self):
         cart = self._get_or_create_cart_for_client(self.anon_client)
-        cart.set_quantity(self.dead_parrot, 1)
+        cart.replace_item(self.dead_parrot, 1)
 
         order = self._get_or_create_order_for_client(self.anon_client)
         # without payment

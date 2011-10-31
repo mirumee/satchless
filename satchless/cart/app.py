@@ -66,7 +66,7 @@ class CartApp(SatchlessApp):
     def remove_item(self, request, item_pk):
         cart = self.get_cart_for_request(request)
         item = get_object_or_404(cart.items, pk=item_pk)
-        cart.set_quantity(item.variant, 0)
+        cart.replace_item(item.variant, 0)
         return self.redirect('details')
 
     def get_urls(self):

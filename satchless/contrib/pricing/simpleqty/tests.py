@@ -150,8 +150,8 @@ class Pricing(TestCase):
         macaw_price.offsets.create(variant=self.macaw_blue_a,
                                    price_offset=Decimal('2.0'))
         cart = TestCart.objects.create(typ='test')
-        cart.set_quantity(self.macaw_blue_a, 4)
-        cart.set_quantity(self.macaw_blue_d, 4)
+        cart.replace_item(self.macaw_blue_a, 4)
+        cart.replace_item(self.macaw_blue_d, 4)
         item_macaw_blue_a = cart.items.get(variant=self.macaw_blue_a)
         item_macaw_blue_d = cart.items.get(variant=self.macaw_blue_d)
 
@@ -159,8 +159,8 @@ class Pricing(TestCase):
                          Price(Decimal('10.0'), currency='BTC'))
         self.assertEqual(item_macaw_blue_a.get_unit_price(currency='BTC'),
                          Price(Decimal('12.0'), currency='BTC'))
-        cart.add_quantity(self.macaw_blue_a, 1)
-        cart.add_quantity(self.macaw_blue_d, 1)
+        cart.add_item(self.macaw_blue_a, 1)
+        cart.add_item(self.macaw_blue_d, 1)
         item_macaw_blue_a = cart.items.get(variant=self.macaw_blue_a)
         item_macaw_blue_d = cart.items.get(variant=self.macaw_blue_d)
 

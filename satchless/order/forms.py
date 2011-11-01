@@ -54,8 +54,7 @@ class BillingForm(forms.ModelForm):
     REQUIRED_FIELDS = (
         'billing_first_name', 'billing_last_name',
         'billing_street_address_1', 'billing_city', 'billing_country_area',
-        'billing_country', 'billing_postal_code', 'billing_country',
-        'billing_phone'
+        'billing_country', 'billing_postal_code', 'billing_phone'
     )
 
     class Meta:
@@ -63,8 +62,8 @@ class BillingForm(forms.ModelForm):
         fields = ('billing_first_name', 'billing_last_name',
                   'billing_company_name', 'billing_street_address_1',
                   'billing_street_address_2', 'billing_city',
-                  'billing_country_area', 'billing_country',
-                  'billing_postal_code', 'billing_country', 'billing_tax_id',
+                  'billing_country_area', 'billing_postal_code',
+                  'billing_country', 'billing_tax_id',
                   'billing_phone')
 
     def __init__(self, *args, **kwargs):

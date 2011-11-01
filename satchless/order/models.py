@@ -24,8 +24,8 @@ class OrderManager(models.Manager):
             raise EmptyCart("Cannot create empty order.")
         previous_orders = self.filter(cart=cart)
         if not instance:
-            order = Order.objects.create(cart=cart, user=cart.owner,
-                                         currency=cart.currency)
+            order = self.model.objects.create(cart=cart, user=cart.owner,
+                                              currency=cart.currency)
         else:
             order = instance
             order.groups.all().delete()

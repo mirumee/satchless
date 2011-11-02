@@ -2,7 +2,7 @@
 from haystack.forms import SearchForm
 from haystack.query import RelatedSearchQuerySet
 
-from ....product.models import Product
+from satchless.product.models import Product
 
 class ProductPredictiveSearchForm(SearchForm):
     def __init__(self, *args, **kwargs):

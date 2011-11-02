@@ -1,4 +1,4 @@
-from django.utils.translation import ugettext as _
+from django.utils.translation import ugettext
 
 from ....delivery import DeliveryProvider, DeliveryType
 from . import forms
@@ -6,7 +6,7 @@ from . import models
 
 class PostDeliveryProvider(DeliveryProvider):
     def __unicode__(self):
-        return _("Post delivery")
+        return ugettext("Post delivery")
 
     def enum_types(self, customer=None, delivery_group=None):
         for record in models.PostShippingType.objects.all():

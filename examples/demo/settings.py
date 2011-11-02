@@ -160,7 +160,7 @@ INSTALLED_APPS = (
     'sale',
 
     'haystack',
-    'satchless.contrib.search.haystack_predictive',
+    'search.haystack_predictive',
     'payments',
     'payments.dummy',
     'satchless.contrib.payment.django_payments_provider',

@@ -2,7 +2,7 @@
 from django.conf import settings
 from django.core.urlresolvers import reverse
 from django.utils.safestring import mark_safe
-from django.utils.translation import ugettext as _
+from django.utils.translation import ugettext
 import django.forms
 
 from products.models import Product
@@ -13,7 +13,7 @@ class RawIdWidget(django.forms.TextInput):
 
     def render(self, *args, **kwargs):
         html = super(RawIdWidget, self).render(*args, **kwargs)
-        title = _("Search product id")
+        title = ugettext("Search product id")
         button = ('<a class="related-lookup" href="%s" target="_blank">'
                   '<img width="16" height="16" alt="Lookup" src="%s" alt="%s" title="%s">'
                   '</a>') % (self.get_related_lookup_url(),

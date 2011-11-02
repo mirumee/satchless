@@ -1,6 +1,6 @@
 from django import forms
 from django.forms.models import modelformset_factory
-from django.utils.translation import ugettext as _
+from django.utils.translation import ugettext_lazy as _
 
 from . import handler
 from . import models

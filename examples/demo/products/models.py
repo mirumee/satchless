@@ -3,7 +3,7 @@ import os
 
 from django.conf import settings
 from django.db import models
-from django.utils.translation import ugettext as _
+from django.utils.translation import ugettext_lazy as _
 from mothertongue.models import MothertongueModelTranslate
 from satchless.image.models import Image
 import satchless.product.models
@@ -49,7 +49,7 @@ class ProductTranslation(models.Model):
     language = models.CharField(max_length=5, choices=settings.LANGUAGES[1:])
     name = models.CharField(_('name'), max_length=128)
     description = models.TextField(_('description'), blank=True)
-    manufacture = models.TextField(_("Manufacture"), default='', blank=True)
+    manufacture = models.TextField(_("manufacture"), default='', blank=True)
     meta_description = models.TextField(_('meta description'), blank=True,
             help_text=_("Description used by search and indexing engines"))
 
@@ -179,7 +179,7 @@ class TShirtVariant(ColoredVariant):
     size = models.CharField(choices=SIZE_CHOICES, max_length=2)
 
     def __unicode__(self):
-        return '%s / %s / %s' % (self.product, self.get_color_display(), self.get_size_display())
+        return u'%s / %s / %s' % (self.product, self.get_color_display(), self.get_size_display())
 
 
 class Trousers(Product):

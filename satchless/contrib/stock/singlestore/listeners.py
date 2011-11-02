@@ -1,4 +1,4 @@
-from django.utils.translation import ugettext as _
+from django.utils.translation import ugettext
 
 from ....cart.signals import cart_quantity_change_check
 
@@ -12,9 +12,9 @@ def max_stock_level_to_cart(sender, instance=None,
     if new_quantity <= stock_level:
         return
     if stock_level == 0:
-        reason = _("There is no more %s in stock.") % variant
+        reason = ugettext("There is no more %s in stock.") % variant
     else:
-        reason = _("You have ordered more %s than we have currently in stock.") % variant
+        reason = ugettext("You have ordered more %s than we have currently in stock.") % variant
     result.append((stock_level, reason))
 
 def start_listening():

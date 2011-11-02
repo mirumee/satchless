@@ -11,12 +11,15 @@ from ..util import JSONResponse
 from . import models
 from . import forms
 
+
 class CartApp(SatchlessApp):
     app_name = 'cart'
     namespace = 'cart'
     cart_type = 'cart'
     cart_item_form_class = forms.EditCartItemForm
+    cart_item_model = models.CartItem
     cart_model = models.Cart
+
     cart_templates = [
         'satchless/cart/%(cart_type)s/view.html',
         'satchless/cart/view.html'
@@ -62,7 +65,7 @@ class CartApp(SatchlessApp):
     def remove_item(self, request, item_pk):
         cart = self.get_cart_for_request(request)
         item = get_object_or_404(cart.items, pk=item_pk)
-        cart.set_quantity(item.variant, 0)
+        cart.replace_item(item.variant, 0)
         return self.redirect('details')
 
     def get_urls(self):

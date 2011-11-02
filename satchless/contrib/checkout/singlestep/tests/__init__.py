@@ -16,6 +16,8 @@ from .....product.tests import DeadParrot
 from .....product.tests.pricing import FiveZlotyPriceHandler
 
 from ..app import checkout_app
+from .....cart.tests import TestCart
+from .....order.tests import TestOrder
 
 
 class TestPaymentProviderWithConfirmation(TestPaymentProvider):
@@ -28,6 +30,8 @@ class App(BaseCheckoutAppTests):
     urls = BaseCheckoutAppTests.MockUrls(checkout_app=checkout_app)
 
     def setUp(self):
+        checkout_app.cart_model = TestCart
+        checkout_app.order_model = TestOrder
         self.parrot = DeadParrot.objects.create(slug='parrot',
                                                 species='Hyacinth Macaw')
         self.dead_parrot = self.parrot.variants.create(color='blue',
@@ -63,7 +67,7 @@ class App(BaseCheckoutAppTests):
 
     def test_checkout_view_passes_with_correct_data(self):
         cart = self._get_or_create_cart_for_client(self.anon_client)
-        cart.set_quantity(self.dead_parrot, 1)
+        cart.replace_item(self.dead_parrot, 1)
         order = self._get_or_create_order_for_client(self.anon_client)
 
         response = self._test_status(reverse('checkout:checkout',
@@ -100,7 +104,7 @@ class App(BaseCheckoutAppTests):
 
     def test_confirmation_view_redirects_when_order_or_payment_is_missing(self):
         cart = self._get_or_create_cart_for_client(self.anon_client)
-        cart.set_quantity(self.dead_parrot, 1)
+        cart.replace_item(self.dead_parrot, 1)
 
         order = self._get_or_create_order_for_client(self.anon_client)
         # without payment

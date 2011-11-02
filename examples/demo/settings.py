@@ -158,6 +158,8 @@ INSTALLED_APPS = (
     'core',
     'carts',
     'sale',
+    'orders',
+    'checkouts',
 
     'haystack',
     'search.haystack_predictive',

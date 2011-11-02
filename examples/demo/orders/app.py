@@ -1,8 +1,8 @@
-from satchless.order.app import OrderApp
+from satchless.order import app
 from models import DemoOrder
 
-class DemoOrderApp(OrderApp):
+class OrderApp(app.OrderApp):
 
     order_model = DemoOrder
 
-order_app = DemoOrderApp()
+order_app = OrderApp()

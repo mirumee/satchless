@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 from decimal import Decimal
+from django.db import models
 import os
 
 from django.conf.urls.defaults import patterns, include, url
@@ -7,14 +8,20 @@ from django.conf import settings
 from django.core.urlresolvers import reverse
 from django.test import Client
 
-from satchless.pricing import handler
-from satchless.product.tests import DeadParrot
-from satchless.product.tests.pricing import FiveZlotyPriceHandler
-from satchless.cart.models import Cart
+from ..pricing import handler
+from ..product.tests import DeadParrot
+from ..product.tests.pricing import FiveZlotyPriceHandler
 from .app import order_app
+from .models import Order, OrderManager
 #from . import models
 #from . import urls
+from ..cart.tests import TestCart
+
 from ..util.tests import ViewsTestCase
+
+class TestOrder(Order):
+    cart = models.ForeignKey(TestCart, blank=True, null=True, related_name='orders')
+    objects = OrderManager()
 
 class OrderTest(ViewsTestCase):
     class urls:
@@ -23,6 +30,7 @@ class OrderTest(ViewsTestCase):
         )
 
     def setUp(self):
+        order_app.order_model = TestOrder
         self.macaw = DeadParrot.objects.create(slug='macaw',
                 species="Hyacinth Macaw")
         self.cockatoo = DeadParrot.objects.create(slug='cockatoo',
@@ -58,13 +66,13 @@ class OrderTest(ViewsTestCase):
                                 self.custom_settings)
 
     def test_order_is_updated_when_cart_content_changes(self):
-        cart = Cart.objects.create(typ='satchless.test_cart')
-        cart.set_quantity(self.macaw_blue, 1)
+        cart = TestCart.objects.create(typ='satchless.test_cart')
+        cart.replace_item(self.macaw_blue, 1)
 
         order = order_app.order_model.objects.get_from_cart(cart)
 
-        cart.set_quantity(self.macaw_blue_fake, Decimal('2.45'))
-        cart.set_quantity(self.cockatoo_white_a, Decimal('2.45'))
+        cart.replace_item(self.macaw_blue_fake, Decimal('2.45'))
+        cart.replace_item(self.cockatoo_white_a, Decimal('2.45'))
 
         order_items = set()
         for group in order.groups.all():
@@ -74,10 +82,10 @@ class OrderTest(ViewsTestCase):
                          order_items)
 
     def test_order_view(self):
-        cart = Cart.objects.create(typ='satchless.test_cart')
-        cart.set_quantity(self.macaw_blue, 1)
-        cart.set_quantity(self.macaw_blue_fake, Decimal('2.45'))
-        cart.set_quantity(self.cockatoo_white_a, Decimal('2.45'))
+        cart = TestCart.objects.create(typ='satchless.test_cart')
+        cart.replace_item(self.macaw_blue, 1)
+        cart.replace_item(self.macaw_blue_fake, Decimal('2.45'))
+        cart.replace_item(self.cockatoo_white_a, Decimal('2.45'))
 
         order = order_app.order_model.objects.get_from_cart(cart)
         self._test_GET_status(reverse('order:details',

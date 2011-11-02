@@ -1,11 +1,15 @@
 # -*- coding: utf-8 -*-
 from decimal import Decimal
 from django.conf.urls.defaults import patterns, include, url
+from django.db import models as dj_models
 from django.contrib.auth.models import User
 from django.core.exceptions import ObjectDoesNotExist
 from django.http import HttpResponse
 from django.test import Client
 import os
+from ...cart.models import Cart, CartItem
+from ...cart.handler import AddToCartHandler
+from ...cart import forms as cart_forms
 
 from ...category.app import product_app
 from ...category.models import Category
@@ -25,6 +29,20 @@ class FakeCheckoutApp(CheckoutApp):
     def prepare_order(self, *args, **kwargs):
         return HttpResponse("OK")
 
+class TestCart(Cart):
+
+    class Meta:
+        proxy = True
+
+    def get_cart_item_class(self):
+        return TestCartItem
+
+class TestCartItem(CartItem):
+    cart = dj_models.ForeignKey(TestCart, related_name='items')
+
+add_to_cart_handler = AddToCartHandler('cart',
+    addtocart_formclass=cart_forms.AddToCartForm,
+    cart_class=TestCart)
 
 class Cart(ViewsTestCase):
     class urls:
@@ -36,6 +54,7 @@ class Cart(ViewsTestCase):
 
 
     def setUp(self):
+        cart_app.cart_model = TestCart
         self.category_birds = Category.objects.create(name='birds',
                                                       slug='birds')
         self.macaw = DeadParrot.objects.create(slug='macaw',
@@ -65,8 +84,9 @@ class Cart(ViewsTestCase):
 
         test_dir = os.path.dirname(__file__)
         self.custom_settings = {
+            'SATCHLESS_DEFAULT_CURRENCY': "PLN",
             'SATCHLESS_PRODUCT_VIEW_HANDLERS': (
-                'satchless.cart.add_to_cart_handler',
+                'satchless.cart.tests.add_to_cart_handler',
             ),
             'TEMPLATE_DIRS': [os.path.join(test_dir, '..', '..',
                                            'category', 'templates'),
@@ -84,16 +104,16 @@ class Cart(ViewsTestCase):
 
     def test_basic_cart_ops(self):
         cart = cart_app.cart_model.objects.create(typ='satchless.test_cart')
-        cart.set_quantity(self.macaw_blue, 1)
-        cart.set_quantity(self.macaw_blue_fake, Decimal('2.45'))
-        cart.set_quantity(self.cockatoo_white_a, Decimal('2.45'))
-        cart.set_quantity(self.cockatoo_white_d, '4.11')
-        cart.set_quantity(self.cockatoo_blue_a, 6)
-        cart.set_quantity(self.cockatoo_blue_d, Decimal('2'))
+        cart.replace_item(self.macaw_blue, 1)
+        cart.replace_item(self.macaw_blue_fake, Decimal('2.45'))
+        cart.replace_item(self.cockatoo_white_a, Decimal('2.45'))
+        cart.replace_item(self.cockatoo_white_d, '4.11')
+        cart.replace_item(self.cockatoo_blue_a, 6)
+        cart.replace_item(self.cockatoo_blue_d, Decimal('2'))
         # remove three items
-        cart.set_quantity(self.cockatoo_white_d, 0)
-        cart.set_quantity(self.cockatoo_blue_a, Decimal('0'))
-        cart.set_quantity(self.cockatoo_white_a, '0.0')
+        cart.replace_item(self.cockatoo_white_d, 0)
+        cart.replace_item(self.cockatoo_blue_a, Decimal('0'))
+        cart.replace_item(self.cockatoo_white_a, '0.0')
 
         self.assertEqual(cart.get_quantity(self.macaw_blue), Decimal('1'))
         self.assertEqual(cart.get_quantity(self.macaw_blue_fake), Decimal('2'))
@@ -108,12 +128,12 @@ class Cart(ViewsTestCase):
                           variant=self.cockatoo_blue_a)
         self.assertEqual(cart.get_quantity(self.cockatoo_blue_d), Decimal('2'))
 
-        cart.add_quantity(self.macaw_blue, 100)
-        cart.add_quantity(self.macaw_blue_fake, 100)
-        cart.add_quantity(self.cockatoo_white_a, 100)
-        cart.add_quantity(self.cockatoo_white_d, 100)
-        cart.add_quantity(self.cockatoo_blue_a, 100)
-        cart.add_quantity(self.cockatoo_blue_d, 100)
+        cart.add_item(self.macaw_blue, 100)
+        cart.add_item(self.macaw_blue_fake, 100)
+        cart.add_item(self.cockatoo_white_a, 100)
+        cart.add_item(self.cockatoo_white_d, 100)
+        cart.add_item(self.cockatoo_blue_a, 100)
+        cart.add_item(self.cockatoo_blue_d, 100)
 
         self.assertEqual(cart.get_quantity(self.macaw_blue), Decimal('101'))
         self.assertEqual(cart.get_quantity(self.macaw_blue_fake), Decimal('102'))
@@ -163,7 +183,7 @@ class Cart(ViewsTestCase):
 
     def test_remove_item_by_view(self):
         cart = self._get_or_create_cart_for_client(self.client)
-        cart.set_quantity(self.macaw_blue_fake, Decimal('2.45'))
+        cart.replace_item(self.macaw_blue_fake, Decimal('2.45'))
         remove_item_url = cart_app.reverse('remove-item', args=(cart.items.get().id,))
         response = self._test_status(remove_item_url, method='post',
                                      status_code=302, client_instance=self.client)
@@ -171,13 +191,13 @@ class Cart(ViewsTestCase):
 
     def test_cart_view_with_item(self):
         cart = self._get_or_create_cart_for_client(self.client)
-        cart.set_quantity(self.macaw_blue_fake, Decimal('2.45'))
+        cart.replace_item(self.macaw_blue_fake, Decimal('2.45'))
         self._test_status(cart_app.reverse('details'),
                           client_instance=self.client, status_code=200)
 
     def test_cart_view_updates_item_quantity(self):
         cart = self._get_or_create_cart_for_client(self.client)
-        cart.set_quantity(self.macaw_blue_fake, Decimal(1))
+        cart.replace_item(self.macaw_blue_fake, Decimal(1))
         response = self._test_status(cart_app.reverse('details'),
                                     client_instance=self.client, status_code=200)
         cart_item_form = response.context['cart_item_forms'][0]
@@ -225,28 +245,28 @@ class Cart(ViewsTestCase):
 
         cart = cart_app.cart_model.objects.create(typ='satchless.test_cart_with_signals')
         signals.cart_quantity_change_check.connect(modify_qty)
-        result = cart.set_quantity(self.macaw_blue, 10, dry_run=True)
+        result = cart.replace_item(self.macaw_blue, 10, dry_run=True)
         self.assertEqual((result.new_quantity, result.reason),
                          (0, u"Out of stock"))
         self.assertEqual(0, cart.get_quantity(self.macaw_blue))
-        result = cart.set_quantity(self.macaw_blue, 10)
+        result = cart.replace_item(self.macaw_blue, 10)
         self.assertEqual((result.new_quantity, result.reason),
                          (0, u"Out of stock"))
         self.assertEqual(0, cart.get_quantity(self.macaw_blue))
-        result = cart.add_quantity(self.macaw_blue, 10)
+        result = cart.add_item(self.macaw_blue, 10)
         self.assertEqual((result.new_quantity, result.quantity_delta,
                           result.reason),
                          (0, 0, u"Out of stock"))
         self.assertEqual(0, cart.get_quantity(self.macaw_blue))
-        result = cart.set_quantity(self.cockatoo_white_d, 10, dry_run=True)
+        result = cart.replace_item(self.cockatoo_white_d, 10, dry_run=True)
         self.assertEqual((result.new_quantity, result.reason),
                          (1, u"Parrots don't rest in groups"))
         self.assertEqual(0, cart.get_quantity(self.cockatoo_white_d))
-        result = cart.set_quantity(self.cockatoo_white_d, 10)
+        result = cart.replace_item(self.cockatoo_white_d, 10)
         self.assertEqual((result.new_quantity, result.reason),
                          (1, u"Parrots don't rest in groups"))
         self.assertEqual(1, cart.get_quantity(self.cockatoo_white_d))
-        result = cart.add_quantity(self.cockatoo_white_d, 10)
+        result = cart.add_item(self.cockatoo_white_d, 10)
         self.assertEqual((result.new_quantity,
                           result.quantity_delta,
                           result.reason),

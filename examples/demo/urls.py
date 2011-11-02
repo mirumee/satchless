@@ -4,9 +4,9 @@ from django.conf.urls.defaults import patterns, include, url
 from core.admin import gulliver_admin
 from carts.app import cart_app, wishlist_app
 from categories.app import product_app
-from satchless.order.app import order_app
+from orders.app import order_app
 from satchless.contrib.productset.app import productset_app
-from satchless.contrib.checkout.multistep.app import checkout_app
+from checkouts.app import checkout_app
 import core.views
 
 urlpatterns = patterns('',

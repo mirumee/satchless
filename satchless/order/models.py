@@ -6,7 +6,6 @@ from django.db import models
 from django.utils.translation import ugettext_lazy as _
 import random
 
-from ..cart.models import Cart
 from ..pricing import Price
 from ..product.models import Variant
 from ..util import countries
@@ -14,6 +13,7 @@ from . import signals
 from .exceptions import EmptyCart
 
 class OrderManager(models.Manager):
+    
     def get_from_cart(self, cart, instance=None):
         '''
         Create an order from the user's cart, possibly discarding any previous
@@ -50,7 +50,6 @@ class OrderManager(models.Manager):
         previous_orders.delete()
         return order
 
-
 class Order(models.Model):
     STATUS_CHOICES = (
         ('checkout', _('undergoing checkout')),
@@ -68,7 +67,6 @@ class Order(models.Model):
     last_status_change = models.DateTimeField(default=datetime.datetime.now,
                                    editable=False, blank=True)
     user = models.ForeignKey(User, blank=True, null=True, related_name='orders')
-    cart = models.ForeignKey(Cart, blank=True, null=True, related_name='orders')
     currency = models.CharField(max_length=3)
     billing_first_name = models.CharField(_("first name"),
                                           max_length=256, blank=True)
@@ -93,7 +91,6 @@ class Order(models.Model):
                                      max_length=30, blank=True)
     payment_type = models.CharField(max_length=256, blank=True)
     token = models.CharField(max_length=32, blank=True, default='')
-    objects = OrderManager()
 
     class Meta:
         # Use described string to resolve ambiguity of the word 'order' in English.

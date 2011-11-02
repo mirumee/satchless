@@ -4,6 +4,7 @@ from django.conf import settings
 from django.db import models
 from django.contrib.auth.models import User
 from django.utils.translation import ugettext_lazy as _
+from django.core.exceptions import ObjectDoesNotExist
 
 from ..product.models import Variant
 
@@ -21,14 +22,14 @@ class CartManager(models.Manager):
             if cart.owner is None and request.user.is_authenticated():
                 cart.owner = request.user
                 cart.save()
-        except (Cart.DoesNotExist, KeyError):
-            raise Cart.DoesNotExist()
+        except (self.model.DoesNotExist, KeyError):
+            raise self.model.DoesNotExist()
         return cart
 
     def get_or_create_from_request(self, request, typ):
         try:
             return self.get_from_request(request, typ)
-        except (Cart.DoesNotExist, KeyError):
+        except (self.model.DoesNotExist, KeyError):
             owner = request.user if request.user.is_authenticated() else None
             cart = self.create(typ=typ, owner=owner)
             request.session[CART_SESSION_KEY % typ] = cart.pk
@@ -55,15 +56,10 @@ class Cart(models.Model):
         else:
             return self.typ
 
-    def add_quantity(self, variant, quantity, dry_run=False):
+    def add_item(self, variant, quantity, dry_run=False, **kwargs):
         variant = variant.get_subtype_instance()
         quantity = variant.product.sanitize_quantity(quantity)
-        try:
-            item = self.items.get(variant=variant)
-            old_qty = item.quantity
-        except CartItem.DoesNotExist:
-            item = CartItem(cart=self, variant=variant)
-            old_qty = Decimal('0')
+        item, old_qty = self.create_or_update_cart_item(variant, **kwargs)
         new_qty = old_qty + quantity
         result = []
         reason = u""
@@ -86,15 +82,31 @@ class Cart(models.Model):
             signals.cart_content_changed.send(sender=type(self), instance=self)
         return QuantityResult(item, new_qty, new_qty - old_qty, reason)
 
-    def set_quantity(self, variant, quantity, dry_run=False):
+    def get_cart_item_class(self):
+        raise NotImplementedError("Must return a subclass of CartItem")
+
+    def get_item(self, variant, **kwargs):
+        cart_item_class = self.get_cart_item_class()
+        return cart_item_class.objects.get(cart=self, variant=variant, **kwargs)
+
+    def get_all_items(self):
+        cart_item_class = self.get_cart_item_class()
+        return cart_item_class.objects.filter(cart=self)
+
+    def create_or_update_cart_item(self, variant, **kwargs):
+        cart_item_class = self.get_cart_item_class()
+        try:
+            item = self.get_item(variant, **kwargs)
+            old_qty = item.quantity
+        except ObjectDoesNotExist:
+            item = cart_item_class(cart=self, variant=variant, **kwargs)
+            old_qty = Decimal('0')
+        return (item, old_qty)
+
+    def replace_item(self, variant, quantity, dry_run=False, **kwargs):
         variant = variant.get_subtype_instance()
         quantity = variant.product.sanitize_quantity(quantity)
-        try:
-            item = self.items.get(variant=variant)
-            old_qty = item.quantity
-        except CartItem.DoesNotExist:
-            item = CartItem(cart=self, variant=variant)
-            old_qty = Decimal('0')
+        item, old_qty = self.create_or_update_cart_item(variant, **kwargs)
         result = []
         reason = u""
         signals.cart_quantity_change_check.send(sender=type(self),
@@ -102,7 +114,8 @@ class Cart(models.Model):
                                                 variant=variant,
                                                 old_quantity=old_qty,
                                                 new_quantity=quantity,
-                                                result=result)
+                                                result=result,
+                                                **kwargs)
         assert(len(result) <= 1)
         if len(result) == 1:
             quantity, reason = result[0]
@@ -116,27 +129,29 @@ class Cart(models.Model):
             signals.cart_content_changed.send(sender=type(self), instance=self)
         return QuantityResult(item, quantity, quantity - old_qty, reason)
 
-    def get_quantity(self, variant):
+    def get_quantity(self, variant, **kwargs):
+        cart_item_class = self.get_cart_item_class()
         try:
-            return self.items.get(variant=variant).quantity
-        except CartItem.DoesNotExist:
+            return self.get_item(variant=variant, **kwargs).quantity
+        except cart_item_class.DoesNotExist:
             return Decimal('0')
 
     def is_empty(self):
-        return self.items.count() == 0
+        return self.get_all_items().count() == 0
 
     def total(self):
         from ..pricing import Price
-        return sum([i.price() for i in self.items.all()],
+        return sum([i.price() for i in self.get_all_items().all()],
                    Price(0, currency=self.currency))
 
 class CartItem(models.Model):
-    cart = models.ForeignKey(Cart, related_name='items')
+
     variant = models.ForeignKey(Variant, related_name='+')
     quantity = models.DecimalField(_("quantity"), max_digits=10,
                                    decimal_places=4)
 
     class Meta:
+        abstract = True
         unique_together = ('cart', 'variant')
 
     def __unicode__(self):

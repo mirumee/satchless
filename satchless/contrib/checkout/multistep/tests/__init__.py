@@ -17,6 +17,8 @@ from .....product.tests.pricing import FiveZlotyPriceHandler
 
 
 from .. import app
+from .....cart.tests import TestCart
+from .....order.tests import TestOrder
 
 class TestPaymentProviderWithConfirmation(TestPaymentProvider):
     def confirm(self, order, typ=None):
@@ -28,6 +30,8 @@ class CheckoutTest(BaseCheckoutAppTests):
     urls = BaseCheckoutAppTests.MockUrls(checkout_app=app.checkout_app)
 
     def setUp(self):
+        self.checkout_app.cart_model = TestCart
+        self.checkout_app.order_model = TestOrder
         self.macaw = DeadParrot.objects.create(slug='macaw',
                 species="Hyacinth Macaw")
         self.cockatoo = DeadParrot.objects.create(slug='cockatoo',
@@ -77,9 +81,9 @@ class CheckoutTest(BaseCheckoutAppTests):
 
     def test_order_from_cart_view_creates_proper_order(self):
         cart = self._get_or_create_cart_for_client(self.anon_client)
-        cart.set_quantity(self.macaw_blue, 1)
-        cart.set_quantity(self.macaw_blue_fake, Decimal('2.45'))
-        cart.set_quantity(self.cockatoo_white_a, Decimal('2.45'))
+        cart.replace_item(self.macaw_blue, 1)
+        cart.replace_item(self.macaw_blue_fake, Decimal('2.45'))
+        cart.replace_item(self.cockatoo_white_a, Decimal('2.45'))
 
         self._test_status(self.checkout_app.reverse('prepare-order'),
                           method='post', client_instance=self.anon_client,
@@ -94,9 +98,9 @@ class CheckoutTest(BaseCheckoutAppTests):
     def test_order_is_updated_after_cart_changes(self):
         cart = self._get_or_create_cart_for_client(self.anon_client)
 
-        cart.set_quantity(self.macaw_blue, 1)
-        cart.set_quantity(self.macaw_blue_fake, Decimal('2.45'))
-        cart.set_quantity(self.cockatoo_white_a, Decimal('2.45'))
+        cart.replace_item(self.macaw_blue, 1)
+        cart.replace_item(self.macaw_blue_fake, Decimal('2.45'))
+        cart.replace_item(self.cockatoo_white_a, Decimal('2.45'))
 
         self._test_status(self.checkout_app.reverse('prepare-order'),
                           method='post', client_instance=self.anon_client,
@@ -109,8 +113,8 @@ class CheckoutTest(BaseCheckoutAppTests):
                          order_items)
 
         # update cart
-        cart.add_quantity(self.macaw_blue, 100)
-        cart.add_quantity(self.macaw_blue_fake, 100)
+        cart.add_item(self.macaw_blue, 100)
+        cart.add_item(self.macaw_blue_fake, 100)
         self._test_status(self.checkout_app.reverse('prepare-order'),
                           method='post', client_instance=self.anon_client,
                           status_code=302)
@@ -126,7 +130,7 @@ class CheckoutTest(BaseCheckoutAppTests):
 
     def test_prepare_order_creates_order_and_redirects_to_checkout_when_cart_is_not_empty(self):
         cart = self._get_or_create_cart_for_client(self.anon_client)
-        cart.set_quantity(self.macaw_blue, 1)
+        cart.replace_item(self.macaw_blue, 1)
         response = self._test_status(self.checkout_app.reverse('prepare-order'),
                                      method='post',
                                      client_instance=self.anon_client,
@@ -157,9 +161,9 @@ class CheckoutTest(BaseCheckoutAppTests):
 
     def test_order_is_deleted_when_all_cart_items_are_deleted(self):
         order = self._create_order(self.anon_client)
-        for cart_item in order.cart.items.all():
+        for cart_item in order.cart.get_all_items():
             self.assertTrue(self.checkout_app.order_model.objects.filter(pk=order.pk).exists())
-            order.cart.set_quantity(cart_item.variant, 0)
+            order.cart.replace_item(cart_item.variant, 0)
         self.assertFalse(self.checkout_app.order_model.objects.filter(pk=order.pk).exists())
 
     def test_checkout_view(self):

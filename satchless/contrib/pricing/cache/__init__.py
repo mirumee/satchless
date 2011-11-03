@@ -39,7 +39,9 @@ class PricingCacheHandler(PricingHandler, QueueHandler):
     def get_product_price_range(self, product, currency, price_range, **context):
         # Visit cache for a matching entry first
         from django.core.cache import cache
-        key = 'pricerange:' + self._get_key(**context)
+        key = 'pricerange:' + self._get_key(currency=currency,
+                                            product=product,
+                                            **context)
         price_range = cache.get(key)
         if price_range:
             return price_range

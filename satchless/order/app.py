@@ -14,7 +14,7 @@ class OrderApp(SatchlessApp):
         'satchless/order/%(order_model)s/view.html'
     ]
     order_list_templates = [
-        'satchless/order/my_orders.html'
+        'satchless/order/my_orders.html',
         'satchless/order/%(order_model)s/my_orders.html'
     ]
 

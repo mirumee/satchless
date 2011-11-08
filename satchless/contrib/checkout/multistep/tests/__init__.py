@@ -4,6 +4,7 @@ import os
 from decimal import Decimal
 from django.conf import settings
 from django.core.urlresolvers import reverse
+from django import forms
 from django.test import Client
 
 from .....checkout.tests import BaseCheckoutAppTests
@@ -23,6 +24,15 @@ from .....order.tests import TestOrder
 class TestPaymentProviderWithConfirmation(TestPaymentProvider):
     def confirm(self, order, typ=None):
         raise ConfirmationFormNeeded(action='http://test.payment.gateway.example.com')
+
+
+class PaymentConfigurationForm(forms.Form):
+    customer_id = forms.CharField(max_length=64)
+
+
+class TestPaymentProviderWithForm(TestPaymentProvider):
+    def get_configuration_form(self, order, data, typ=None):
+        return PaymentConfigurationForm(data=data)
 
 
 class CheckoutTest(BaseCheckoutAppTests):
@@ -260,6 +270,24 @@ class CheckoutTest(BaseCheckoutAppTests):
                                                                  kwargs={'order_token':
                                                                          order.token}),
                              target_status_code=302)
+
+    def test_payment_details_view(self):
+        order = self._create_order(self.anon_client)
+        group = order.groups.get()
+        dtypes = list(order_handler.delivery_queue.enum_types(group))
+        group.delivery_type = dtypes[0][1].typ
+        group.save()
+
+        pprovider, ptype = list(order_handler.payment_queue.enum_types(group))[0]
+        order.payment_type = ptype.typ
+        order.save()
+
+        order_handler.payment_queue = order_handler.PaymentQueue(TestPaymentProviderWithForm)
+
+        self._test_status(self.checkout_app.reverse('payment-details',
+                                                    kwargs={'order_token': order.token}),
+                          status_code=200, client_instance=self.anon_client, method='get')
+
 
     def test_delivery_details_view_redirects_to_checkout_when_delivery_type_is_missing(self):
         order = self._create_order(self.anon_client)

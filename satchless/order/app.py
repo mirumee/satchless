@@ -1,6 +1,8 @@
 from django.conf.urls.defaults import patterns, url
+from django.contrib.auth.decorators import login_required
 from django.shortcuts import get_object_or_404
 from django.template.response import TemplateResponse
+from django.utils.decorators import method_decorator
 
 from ..core.app import SatchlessApp
 from . import models
@@ -18,6 +20,7 @@ class OrderApp(SatchlessApp):
         'satchless/order/%(order_model)s/my_orders.html'
     ]
 
+    @method_decorator(login_required)
     def index(self, request):
         orders = self.order_model.objects.filter(user=request.user)
         context = self.get_context_data(request, orders=orders)

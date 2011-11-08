@@ -3,9 +3,9 @@ from decimal import Decimal
 from django.db import models
 import os
 
+from django.contrib.auth.models import User
 from django.conf.urls.defaults import patterns, include, url
 from django.conf import settings
-from django.core.urlresolvers import reverse
 from django.test import Client
 
 from ..pricing import handler
@@ -13,8 +13,6 @@ from ..product.tests import DeadParrot
 from ..product.tests.pricing import FiveZlotyPriceHandler
 from .app import order_app
 from .models import Order, OrderManager
-#from . import models
-#from . import urls
 from ..cart.tests import TestCart
 
 from ..util.tests import ViewsTestCase
@@ -22,6 +20,7 @@ from ..util.tests import ViewsTestCase
 class TestOrder(Order):
     cart = models.ForeignKey(TestCart, blank=True, null=True, related_name='orders')
     objects = OrderManager()
+
 
 class OrderTest(ViewsTestCase):
     class urls:
@@ -47,8 +46,6 @@ class OrderTest(ViewsTestCase):
                                                              looks_alive=True)
         self.cockatoo_blue_d = self.cockatoo.variants.create(color='blue',
                                                              looks_alive=False)
-        self.anon_client = Client()
-
         self.original_handlers = settings.SATCHLESS_PRICING_HANDLERS
         handler.pricing_queue = handler.PricingQueue(FiveZlotyPriceHandler)
         app_dir = os.path.dirname(__file__)
@@ -88,5 +85,15 @@ class OrderTest(ViewsTestCase):
         cart.replace_item(self.cockatoo_white_a, Decimal('2.45'))
 
         order = order_app.order_model.objects.get_from_cart(cart)
-        self._test_GET_status(reverse('order:details',
-                                      args=(order.token,)))
+        self._test_GET_status(order_app.reverse('details',
+                                                args=(order.token,)))
+
+    def test_order_index_view(self):
+        username, password = 'foo', 'password'
+        User.objects.create_user(username=username, password=password,
+                                 email='test@example.com')
+        self.authorized_client = Client()
+        self.authorized_client.login(username=username,
+                                     password=password)
+        self._test_GET_status(order_app.reverse('index'),
+                              client_instance=self.authorized_client)

@@ -15,7 +15,7 @@ class PartitionerQueue(Partitioner, QueueHandler):
 
     def partition(self, cart, items=None):
         groups = []
-        remaining_items = items or list(cart.items.all())
+        remaining_items = items or list(cart.get_all_items())
         for handler in self.queue:
             handled_groups, remaining_items = handler.partition(cart,
                                                                 remaining_items)

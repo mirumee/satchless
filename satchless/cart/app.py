@@ -31,7 +31,7 @@ class CartApp(SatchlessApp):
 
     def _handle_cart(self, cart, request):
         cart_item_forms = []
-        for item in cart.items.all():
+        for item in cart.get_all_items():
             prefix = '%s-%i' % (self.cart_type, item.id)
             form = self.cart_item_form_class(data=request.POST or None,
                                              instance=item,

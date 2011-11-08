@@ -113,7 +113,7 @@ class MulitStepCheckoutApp(app.CheckoutApp):
             if request.method == 'POST':
                 if form.is_valid():
                     return proceed(order, form)
-            return TemplateResponse(request, self.payment_details, {
+            return TemplateResponse(request, self.payment_details_templates, {
                 'form': form,
                 'order': order,
             })

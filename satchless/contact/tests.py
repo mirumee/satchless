@@ -24,7 +24,7 @@ class ContactTest(ViewsTestCase):
     def test_address_creation(self):
         c1 = models.Customer.objects.get_or_create_for_user(self.user1)
         a1 = c1.addressbook.create(alias="Mirumee",
-                full_name="Test User", street_address_1="pl. Solny 13/42",
+                first_name='Test', last_name='User', street_address_1="pl. Solny 13/42",
                 city=u"Wrocław", postal_code="50-061", country='PL')
         self.assertEqual(a1.customer.user, self.user1)
         self.assertEqual(a1.alias, unicode(a1))
@@ -49,14 +49,14 @@ class ContactTest(ViewsTestCase):
                 client_instance=cli_user1, status_code=200)
         self._test_status(reverse('satchless-contact-address-new'),
                 client_instance=cli_user1, method='post', status_code=302,
-                data={'alias': "Mirumee", 'full_name': "Test User",
+                data={'alias': "Mirumee", 'first_name': 'Test', 'last_name': 'User',
                     'street_address_1': "pl. Solny 13/42", 'country_area': u'Dolnośląskie',
                     'city': u"Wrocław", 'postal_code': "50-061", 'country': 'PL',
                     'set_as_default_billing': '1', 'set_as_default_shipping': '1'})
 
         c2 = models.Customer.objects.get_or_create_for_user(self.user2)
         a2 = c2.addressbook.create(alias="Biuro",
-                full_name=u"Józef Tkaczuk", company_name="Sejm RP",
+                first_name=u'Józef', last_name=u'Tkaczuk', company_name="Sejm RP",
                 street_address_1=u"ul. Wiejska 4/6/8", city="Warszawa",
                 postal_code="00-902", country='PL')
 

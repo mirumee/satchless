@@ -8,7 +8,10 @@ class Address(models.Model):
     customer = models.ForeignKey('Customer', related_name='addressbook')
     alias = models.CharField(_("short alias"), max_length=30,
             help_text=_("User-defined alias which identifies this address"))
-    full_name = models.CharField(_("full person name"), max_length=256)
+    first_name = models.CharField(_("first name"),
+                                  max_length=256, blank=True)
+    last_name = models.CharField(_("last name"),
+                                 max_length=256, blank=True)
     company_name = models.CharField(_("company name"), max_length=256, blank=True)
     street_address_1 = models.CharField(_("street address 1"), max_length=256)
     street_address_2 = models.CharField(_("street address 2"), max_length=256, blank=True)

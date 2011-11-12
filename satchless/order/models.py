@@ -35,16 +35,11 @@ class OrderManager(models.Manager):
                 pass
         groups = partitioner_queue.partition(cart)
         for group in groups:
-            delivery_group = order.groups.create(order=order)
+            delivery_group = order.create_delivery_group()
             for item in group:
-                price = item.get_unit_price()
-                variant = item.variant.get_subtype_instance()
-                name = unicode(variant)
-                delivery_group.items.create(product_variant=item.variant,
-                                            product_name=name,
-                                            quantity=item.quantity,
-                                            unit_price_net=price.net,
-                                            unit_price_gross=price.gross)
+                ordered_item = order.create_ordered_item(delivery_group, item)
+                ordered_item.save()
+                
         previous_orders = (previous_orders.exclude(pk=order.pk)
                                           .filter(status='checkout'))
         previous_orders.delete()
@@ -143,6 +138,24 @@ class Order(models.Model):
         return payment_price + sum([g.total() for g in self.groups.all()],
                                    Price(0, currency=self.currency))
 
+    def create_delivery_group(self):
+        return self.groups.create(order=self)
+
+    def create_ordered_item(self, delivery_group, item):
+        price = item.get_unit_price()
+        variant = item.variant.get_subtype_instance()
+        name = unicode(variant)
+        ordered_item_class = self.get_ordered_item_class()
+        ordered_item = ordered_item_class(delivery_group=delivery_group,
+                                          product_variant=item.variant,
+                                          product_name=name,
+                                          quantity=item.quantity,
+                                          unit_price_net=price.net,
+                                          unit_price_gross=price.gross)
+        return ordered_item
+
+    def get_ordered_item_class(self):
+        return OrderedItem
 
 class DeliveryGroup(models.Model):
     order = models.ForeignKey(Order, related_name='groups')

@@ -10,7 +10,6 @@ class DeliveryVariant(Subtyped):
     Base class for all delivery variants. This is what gets assigned to an
     order shipping group at the checkout step.
     '''
-    delivery_group = models.OneToOneField(DeliveryGroup)
     name = models.CharField(_('name'), max_length=128)
     description = models.TextField(_('description'), blank=True)
     price = models.DecimalField(_('unit price'),
@@ -18,6 +17,9 @@ class DeliveryVariant(Subtyped):
 
     def __unicode__(self):
         return self.name
+    
+    class Meta:
+        abstract = True
 
 
 class PhysicalShippingVariant(DeliveryVariant):

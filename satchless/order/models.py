@@ -101,7 +101,7 @@ class Order(models.Model):
             for i in xrange(100):
                 token = ''.join(random.sample(
                                 '0123456789abcdefghijklmnopqrstuvwxyz', 32))
-                if not Order.objects.filter(token=token).count():
+                if not self.__class__.objects.filter(token=token).count():
                     self.token = token
                     break
         return super(Order, self).save(*args, **kwargs)
@@ -156,9 +156,11 @@ class Order(models.Model):
 
     def get_ordered_item_class(self):
         return OrderedItem
+    
+    class Meta:
+        abstract = True
 
 class DeliveryGroup(models.Model):
-    order = models.ForeignKey(Order, related_name='groups')
     delivery_type = models.CharField(max_length=256, blank=True)
 
     def subtotal(self):
@@ -176,10 +178,12 @@ class DeliveryGroup(models.Model):
         delivery_price = self.delivery_price()
         return delivery_price + sum([i.price() for i in self.items.all()],
                                     Price(0, currency=self.order.currency))
+    
+    class Meta:
+        abstract = True
 
 
 class OrderedItem(models.Model):
-    delivery_group = models.ForeignKey(DeliveryGroup, related_name='items')
     product_variant = models.ForeignKey(Variant, blank=True, null=True,
                                         related_name='+',
                                         on_delete=models.SET_NULL)
@@ -201,3 +205,6 @@ class OrderedItem(models.Model):
         return Price(net=net.quantize(decimal.Decimal('0.01')),
                      gross=gross.quantize(decimal.Decimal('0.01')),
                      currency=self.delivery_group.order.currency)
+    
+    class Meta:
+        abstract = True

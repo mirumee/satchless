@@ -13,7 +13,7 @@
         {{ billing_form.as_p }}
         {% for group, typ, form in delivery_group_forms %}
         <h2>{% trans "Delivery method" %}: {{ typ|delivery_type }}</h2>
-        <h3>{% trans "Items deliverd using this method" %}:</h3>
+        <h3>{% trans "Items delivered using this method" %}:</h3>
         <ul>
         {% include 'satchless/checkout/snippets/delivery_group.html' %}
         </ul>

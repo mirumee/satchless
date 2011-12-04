@@ -143,6 +143,9 @@ class Cart(models.Model):
         from ..pricing import Price
         return sum([i.price() for i in self.get_all_items().all()],
                    Price(0, currency=self.currency))
+    
+    class Meta:
+        abstract = True
 
 class CartItem(models.Model):
 

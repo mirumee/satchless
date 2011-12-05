@@ -65,7 +65,7 @@ class AuthorizeNetProvider(PaymentProvider):
             result['email'] = order.user.email
         return result
 
-    def confirm(self, order):
+    def confirm(self, order, typ=None):
         v = order.paymentvariant.get_subtype_instance()
         trans_type = self.capture and 'AUTH_CAPTURE' or 'AUTH_ONLY'
         data = {

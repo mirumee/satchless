@@ -6,7 +6,7 @@ from ....checkout import app
 from ....order import forms
 from ....order import handler
 
-class MulitStepCheckoutApp(app.CheckoutApp):
+class MultiStepCheckoutApp(app.CheckoutApp):
     checkout_templates = [
         'satchless/checkout/checkout.html'
     ]
@@ -20,15 +20,16 @@ class MulitStepCheckoutApp(app.CheckoutApp):
         'satchless/checkout/payment_details.html'
     ]
 
-    def checkout(self, request, order_token, billing_form_class=forms.BillingForm):
+    def checkout(self, request, order_token, billing_form_class=forms.BillingForm,
+                 delivery_formset_class=forms.DeliveryMethodFormset):
         """
         Checkout step 1
         The order is split into delivery groups. User chooses delivery method
         for each of the groups.
         """
         order = self.get_order(request, order_token)
-        billing_form = billing_form_class(request.POST or None, instance=order)
-        delivery_formset = forms.DeliveryMethodFormset(
+        billing_form = billing_form_class(data=request.POST or None, instance=order)
+        delivery_formset = delivery_formset_class(
                 data=request.POST or None, queryset=order.groups.all())
         if request.method == 'POST':
             if all([billing_form.is_valid(), delivery_formset.is_valid()]):
@@ -120,7 +121,7 @@ class MulitStepCheckoutApp(app.CheckoutApp):
         return proceed(order, form)
 
     def get_urls(self):
-        return super(MulitStepCheckoutApp, self).get_urls() + patterns('',
+        return super(MultiStepCheckoutApp, self).get_urls() + patterns('',
             url(r'^(?P<order_token>\w+)/delivery-details/$',
                 self.delivery_details, name='delivery-details'),
             url(r'^(?P<order_token>\w+)/payment-choice/$', self.payment_choice,
@@ -129,4 +130,4 @@ class MulitStepCheckoutApp(app.CheckoutApp):
                 self.payment_details, name='payment-details'),
         )
 
-checkout_app = MulitStepCheckoutApp()
+checkout_app = MultiStepCheckoutApp()

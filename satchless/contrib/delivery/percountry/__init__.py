@@ -13,8 +13,10 @@ class PostDeliveryProvider(DeliveryProvider):
         return ugettext("Post delivery")
 
     def enum_types(self, customer=None, delivery_group=None):
-        logging.critical('percountry enum_types')
-        for record in models.PostShippingType.objects.all():
+        filter_kwargs = {}
+        if delivery_group:
+            filter_kwargs['region__deliverycountry__code'] = delivery_group.shipping.shipping_country
+        for record in models.PostShippingType.objects.filter(**filter_kwargs):
             yield self, DeliveryType(typ=record.typ, name=record.name)
 
     def get_configuration_form(self, delivery_group, typ, data):

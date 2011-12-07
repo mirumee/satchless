@@ -12,12 +12,13 @@ class MamonaProvider(PaymentProvider):
 
     def create_variant(self, order, typ, form):
         variant = models.MamonaPaymentVariant.objects.get_or_create(order=order,
+                                                                    name=typ.name,
                                                                     price=0)[0]
         models.Payment.objects.create(order=variant, amount=order.total().gross,
                                       currency=order.currency, backend=typ)
         return variant
 
-    def confirm(self, order):
+    def confirm(self, order, typ):
         payment = order.paymentvariant.get_subtype_instance().payments.get()
         form = payment.get_processor().get_confirmation_form(payment)
         raise ConfirmationFormNeeded(**form)

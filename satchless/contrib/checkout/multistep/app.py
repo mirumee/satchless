@@ -143,7 +143,7 @@ class MultiStepCheckoutApp(app.CheckoutApp):
             return self.redirect('payment-choice', order_token=order.token)
         form = forms.get_payment_details_form(order, request.POST)
         def proceed(order, form):
-            variant = handler.payment_queue.create_variant(order, form)
+            variant = handler.payment_queue.create_variant(order, form=form)
             order.payment_variant = variant
             order.set_status('payment-pending')
             return self.redirect('confirmation', order_token=order.token)

@@ -16,7 +16,7 @@ class PaymentVariant(Subtyped):
 
     """
     add this to your concrete model:
-    order = models.ForeignKey(Order, related_name='payment')
+    order = models.ForeignKey(Order, related_name='paymentvariant')
     """
 
     def __unicode__(self):

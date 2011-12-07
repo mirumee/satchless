@@ -36,14 +36,28 @@ def get_delivery_details_forms_for_groups(groups, data):
 
 class PaymentMethodForm(forms.ModelForm):
     payment_type = forms.ChoiceField(choices=())
+    
     class Meta:
         model = models.Order
         fields = ('payment_type',)
-
+    
     def __init__(self, *args, **kwargs):
         super(PaymentMethodForm, self).__init__(*args, **kwargs)
-        types = list(handler.payment_queue.as_choices(order=self.instance))
+        types = get_payment_choices(self.instance)
         self.fields['payment_type'].choices = types
+
+
+def get_payment_choices(order):
+    return list(handler.payment_queue.as_choices(order=order))
+    
+def get_payment_type_display(order, value):
+    '''
+    Note:
+    Probably returns a django.utils.functional.__proxy__ object (lazy translation)
+    If you're not using it in a template (eg saving to db) then wrap the
+    returned value in unicode() to evaluate it.
+    '''
+    return next((x[1] for x in get_payment_choices(order) if x[0] == value), None)
 
 
 def get_payment_details_form(order, data):

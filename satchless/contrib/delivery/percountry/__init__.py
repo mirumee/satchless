@@ -21,9 +21,7 @@ class PostDeliveryProvider(DeliveryProvider):
 
     def get_configuration_form(self, delivery_group, typ, data):
         typ = models.PostShippingType.objects.get(typ=typ)
-        instance = DeliveryVariant(delivery_group=delivery_group,
-                                              name=typ.name,
-                                              price=typ.price)
+        instance = DeliveryVariant(delivery_group=delivery_group, price=typ.price)
         return self.form_class(data or None, instance=instance,
                                prefix='delivery_group-%d' %
                                delivery_group.pk)

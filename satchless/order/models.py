@@ -35,7 +35,7 @@ class OrderManager(models.Manager):
                 pass
         groups = partitioner_queue.partition(cart)
         for group in groups:
-            delivery_group = order.create_delivery_group()
+            delivery_group = order.create_delivery_group(group)
             for item in group:
                 ordered_item = order.create_ordered_item(delivery_group, item)
                 ordered_item.save()
@@ -46,6 +46,10 @@ class OrderManager(models.Manager):
         return order
 
 class Order(models.Model):
+    """
+    add this to your concrete model:
+    cart = models.ForeignKey(Cart, related_name='orders')
+    """
     STATUS_CHOICES = (
         ('checkout', _('undergoing checkout')),
         ('payment-pending', _('waiting for payment')),
@@ -138,7 +142,9 @@ class Order(models.Model):
         return payment_price + sum([g.total() for g in self.groups.all()],
                                    Price(0, currency=self.currency))
 
-    def create_delivery_group(self):
+    def create_delivery_group(self, group):
+        # override this if you need PhysicalShippingDetails
+        # (the group emitted by Partitioner class is now passed in)
         return self.groups.create(order=self)
 
     def create_ordered_item(self, delivery_group, item):
@@ -161,6 +167,10 @@ class Order(models.Model):
         abstract = True
 
 class DeliveryGroup(models.Model):
+    """
+    add this to your concrete model:
+    order = models.ForeignKey(Order, related_name='groups')
+    """
     delivery_type = models.CharField(max_length=256, blank=True)
 
     def subtotal(self):
@@ -184,6 +194,10 @@ class DeliveryGroup(models.Model):
 
 
 class OrderedItem(models.Model):
+    """
+    add this to your concrete model:
+    delivery_group = models.ForeignKey(DeliveryGroup, related_name='items')
+    """
     product_variant = models.ForeignKey(Variant, blank=True, null=True,
                                         related_name='+',
                                         on_delete=models.SET_NULL)

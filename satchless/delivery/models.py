@@ -1,9 +1,10 @@
 from django.db import models
 from django.utils.translation import ugettext_lazy as _
 
-from ..order.models import DeliveryGroup
-from ..util import countries
 from ..util.models import Subtyped
+from ..util import countries
+
+from ..order import models as order_models
 
 class DeliveryVariant(Subtyped):
     '''
@@ -22,7 +23,11 @@ class DeliveryVariant(Subtyped):
         abstract = True
 
 
-class PhysicalShippingVariant(DeliveryVariant):
+class PhysicalShippingDetails(Subtyped):
+    """
+    add this to your concrete model:
+    delivery_group = models.OneToOneField(DeliveryGroup, related_name='shipping')
+    """
     shipping_first_name = models.CharField(_("first name"), max_length=256)
     shipping_last_name = models.CharField(_("last name"), max_length=256)
     shipping_company_name = models.CharField(_("company name"),
@@ -40,14 +45,14 @@ class PhysicalShippingVariant(DeliveryVariant):
                                              max_length=128, blank=True)
     shipping_phone = models.CharField(_("phone number"),
                                       max_length=30, blank=True)
-
-    class Meta:
-        abstract = True
-
-    def __unicode__(self):
-        return "%s for %s, %s" % (self.name, self.shipping_full_name,
-                                  self.get_shipping_country_display())
-
+    
     @property
     def shipping_full_name(self):
         return u'%s %s' % (self.shipping_first_name, self.shipping_last_name)
+    
+    def __unicode__(self):
+        return "Shipping details for %s, %s" % (self.shipping_full_name,
+                                                self.get_shipping_country_display())
+    
+    class Meta:
+        abstract = True

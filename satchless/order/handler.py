@@ -1,5 +1,6 @@
+import logging
 from django.conf import settings
-from django.core.exceptions import ImproperlyConfigured
+from django.core.exceptions import ImproperlyConfigured, ObjectDoesNotExist
 
 from satchless.core.handler import QueueHandler
 
@@ -62,7 +63,7 @@ class PaymentQueue(PaymentProvider, QueueHandler):
         provider = self._get_provider(order, typ)
         try:
             order.paymentvariant.delete()
-        except PaymentVariant.DoesNotExist:
+        except ObjectDoesNotExist:
             pass
         return provider.create_variant(order=order, form=form, typ=typ)
 
@@ -92,6 +93,7 @@ class DeliveryQueue(DeliveryProvider, QueueHandler):
                 yield provider, typ
 
     def _get_provider(self, delivery_group, typ):
+        logging.critical('_get_provider: typ=%s, delivery_group.delivery_type=%s', typ, delivery_group.delivery_type)
         for provider, delivery_type in self.enum_types(delivery_group):
             if delivery_type.typ == typ:
                 return provider
@@ -99,6 +101,7 @@ class DeliveryQueue(DeliveryProvider, QueueHandler):
                          (typ, ))
 
     def get_configuration_form(self, delivery_group, data, typ=None):
+        logging.critical('get_configuration_form: typ=%s, delivery_group.delivery_type=%s', typ, delivery_group.delivery_type)
         typ = typ or delivery_group.delivery_type
         provider = self._get_provider(delivery_group, typ)
         return provider.get_configuration_form(delivery_group=delivery_group,
@@ -110,7 +113,7 @@ class DeliveryQueue(DeliveryProvider, QueueHandler):
         # XXX: Do we really need it here?
         try:
             delivery_group.deliveryvariant.delete()
-        except DeliveryVariant.DoesNotExist:
+        except ObjectDoesNotExist:
             pass
         return provider.create_variant(delivery_group=delivery_group,
                                        form=form, typ=typ)

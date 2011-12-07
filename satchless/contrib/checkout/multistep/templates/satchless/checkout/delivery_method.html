@@ -1,11 +1,10 @@
 {% extends 'satchless/checkout/base.html' %}
 {% load i18n %}
 {% block checkout %}
-    {% if order %}
+    <h2>{% trans "Choose delivery method" %}:</h3>
     <form method="post" action="">{% csrf_token %}
-        {{ shipping_formset.management_form }}
-        {% for form in shipping_formset.forms %}{% with form.instance as group %}
-            <h2>{% trans "Shipping address" %}:</h2>
+        {{ delivery_formset.management_form }}
+        {% for form in delivery_formset.forms %}{% with form.instance as group %}
           {% if order.groups.count > 1 %}
             <h3>{% trans "Delivery group" %}:</h3>
             <ul>
@@ -16,11 +15,4 @@
         {% endwith %}{% endfor %}
     <button type="submit">{% trans "Proceed" %}</button>
     </form>
-    {% else %}
-    <p>
-    {% blocktrans %}
-    Profound emptiness is gazing at you from the bottom of the cart. You turn back swiftly and
-    <a href="/">continue shopping</a>.
-    {% endblocktrans %}
-    {% endif %}
 {% endblock %}

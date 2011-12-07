@@ -1,0 +1,11 @@
+{% extends 'satchless/order/base.html' %}
+{% load i18n %}
+{% block title %}{{ block.super }} | {% trans "Checkout" %}{% endblock %}
+{% block breadcrumbs %}
+    {{ block.super }}
+    <li><a href="">{% trans "Checkout" %}</a></li>
+{% endblock %}
+{% block content %}
+    <h1>{% trans "Checkout" %}</h1>
+    {% block checkout %}{% endblock %}
+{% endblock %}

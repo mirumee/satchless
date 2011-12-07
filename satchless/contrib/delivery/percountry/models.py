@@ -1,8 +1,6 @@
 from django.db import models
 from django.utils.translation import ugettext_lazy as _
 
-from ....delivery.models import PhysicalShippingVariant
-
 
 
 class PostShippingType(models.Model):
@@ -34,9 +32,6 @@ class PostShippingType(models.Model):
         verbose_name = _('Post shipping type')
         verbose_name_plural = _('Post shipping types')
 
-
-class PostShippingVariant(PhysicalShippingVariant):
-    pass
 
 
 # provides display names for the two-letter continent codes we got from geonames

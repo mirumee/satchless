@@ -1,0 +1,18 @@
+{% extends 'satchless/checkout/base.html' %}
+{% load i18n %}
+{% block checkout %}
+    <form method="post" action="">{% csrf_token %}
+      {% for group, typ, form in delivery_group_forms %}
+        <h2>{% trans "Delivery method" %}: {{ typ|delivery_type }}</h2>
+        <h3>{% trans "Items delivered using this method" %}:</h3>
+        <ul>
+        {% include 'satchless/checkout/snippets/delivery_group.html' %}
+        </ul>
+        <h3>{% trans "Delivery details" %}:</h3>
+        {{ form.as_p }}
+      {% endfor %}
+        <h2>{% trans "Billing details" %}</h2>
+        {{ billing_form.as_p }}
+    <button type="submit">{% trans "Proceed" %}</button>
+    </form>
+{% endblock %}

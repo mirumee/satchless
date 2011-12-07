@@ -14,6 +14,11 @@ class PaymentVariant(Subtyped):
     price = models.DecimalField(_('unit price'),
                                 max_digits=12, decimal_places=4)
 
+    """
+    add this to your concrete model:
+    order = models.ForeignKey(Order, related_name='payment')
+    """
+
     def __unicode__(self):
         return self.name
 

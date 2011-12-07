@@ -1,13 +1,8 @@
-{% extends 'satchless/order/base.html' %}
+{% extends 'satchless/checkout/base.html' %}
 {% load i18n %}
-{% block title %}{{ block.super }} | {% trans "Payment" %}{% endblock %}
-{% block breadcrumbs %}
-    {{ block.super }}
-    <li><a href="">{% trans "Order (business)" %}</a></li>
-{% endblock %}
-{% block content %}
-    <h1>{% trans "Payment" %}</h1>
-    <h2>{% trans "Order #" %}{{ order.id }}</h2>
+{% block checkout %}
+    <h2>{% trans "Payment" %}</h2>
+    <h3>{% trans "Order #" %}{{ order.id }}</h3>
     {% include 'satchless/order/snippets/order_view.html' %}
     <form action="" method="post">{% csrf_token %}
         {{ payment_form.as_p }}

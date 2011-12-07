@@ -1,8 +1,8 @@
 from django import forms
 
-from . import models
+from ....delivery import models
 
-class PostShippingVariantForm(forms.ModelForm):
+class DeliveryVariantForm(forms.ModelForm):
     class Meta:
-        model = models.PostShippingVariant
+        model = models.DeliveryVariant
         exclude = ('delivery_group', 'name', 'description', 'price')

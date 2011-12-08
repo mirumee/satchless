@@ -1,5 +1,5 @@
 from django.conf.urls.defaults import patterns, url
-from django.shortcuts import redirect
+from django.shortcuts import get_object_or_404, redirect
 from django.template.response import TemplateResponse
 from django.utils.decorators import method_decorator
 from django.views.decorators.http import require_POST
@@ -44,9 +44,9 @@ class CheckoutApp(SatchlessApp):
         return redirect('order:details', order_token=order.token)
 
     @method_decorator(require_POST)
-    def prepare_order(self, request):
-        cart = self.cart_model.objects.get_or_create_from_request(request,
-                                                                  self.cart_type)
+    def prepare_order(self, request, cart_token):
+        cart = get_object_or_404(self.cart_model, token=cart_token,
+                                 typ=self.cart_type)
         order_pk = request.session.get('satchless_order')
         previous_orders = self.order_model.objects.filter(pk=order_pk,
                                                           cart=cart,
@@ -99,7 +99,7 @@ class CheckoutApp(SatchlessApp):
 
     def get_urls(self):
         return patterns('',
-            url(r'^prepare/$', self.prepare_order,
+            url(r'^prepare/(?P<cart_token>\w+)/$', self.prepare_order,
                 name='prepare-order'),
             url(r'^(?P<order_token>\w+)/$', self.checkout,
                 name='checkout'),

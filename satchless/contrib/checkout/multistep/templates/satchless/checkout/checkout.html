@@ -3,6 +3,8 @@
 {% block checkout %}
     {% if order %}
     <form method="post" action="">{% csrf_token %}
+        <h2>{% trans "Billing address" %}</h2>
+        {{ billing_form }}
         {{ shipping_formset.management_form }}
         {% for form in shipping_formset.forms %}{% with form.instance as group %}
             <h2>{% trans "Shipping address" %}:</h2>

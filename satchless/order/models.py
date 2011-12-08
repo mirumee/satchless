@@ -1,7 +1,6 @@
 import datetime
 import decimal
 from django.contrib.auth.models import User
-from django.core.exceptions import ObjectDoesNotExist
 from django.db import models
 from django.utils.translation import ugettext_lazy as _
 import random
@@ -13,7 +12,7 @@ from . import signals
 from .exceptions import EmptyCart
 
 class OrderManager(models.Manager):
-    
+
     def get_from_cart(self, cart, instance=None):
         '''
         Create an order from the user's cart, possibly discarding any previous
@@ -29,21 +28,18 @@ class OrderManager(models.Manager):
         else:
             order = instance
             order.groups.all().delete()
-            try:
-                order.paymentvariant.delete()
-            except ObjectDoesNotExist:
-                pass
         groups = partitioner_queue.partition(cart)
         for group in groups:
             delivery_group = order.create_delivery_group(group)
             for item in group:
                 ordered_item = order.create_ordered_item(delivery_group, item)
                 ordered_item.save()
-                
+
         previous_orders = (previous_orders.exclude(pk=order.pk)
                                           .filter(status='checkout'))
         previous_orders.delete()
         return order
+
 
 class Order(models.Model):
     """
@@ -89,10 +85,17 @@ class Order(models.Model):
     billing_phone = models.CharField(_("phone number"),
                                      max_length=30, blank=True)
     payment_type = models.CharField(max_length=256, blank=True)
+    payment_type_name = models.CharField(_('name'), max_length=128, blank=True,
+                                         editable=False)
+    payment_type_description = models.TextField(_('description'), blank=True)
+    payment_price = models.DecimalField(_('unit price'), max_digits=12,
+                                        decimal_places=4, default=0,
+                                        editable=False)
     token = models.CharField(max_length=32, blank=True, default='')
 
     class Meta:
         # Use described string to resolve ambiguity of the word 'order' in English.
+        abstract = True
         verbose_name = _('order (business)')
         verbose_name_plural = _('orders (business)')
         ordering = ('-last_status_change',)
@@ -122,30 +125,25 @@ class Order(models.Model):
         signals.order_status_changed.send(sender=type(self), instance=self,
                                           old_status=old_status)
 
-    def subtotal(self):
-        return sum([g.subtotal() for g in self.groups.all()],
+    def get_subtotal(self):
+        return sum([g.get_subtotal() for g in self.groups.all()],
                    Price(0, currency=self.currency))
 
-    def delivery_price(self):
-        return sum([g.delivery_price() for g in self.groups.all()],
+    def get_delivery_price(self):
+        return sum([g.get_delivery_price() for g in self.groups.all()],
                    Price(0, currency=self.currency))
 
-    def payment_price(self):
-        try:
-            return Price(self.paymentvariant.price,
-                         currency=self.currency)
-        except ObjectDoesNotExist:
-            return Price(0, currency=self.currency)
+    def get_payment_price(self):
+        return Price(self.payment_price, currency=self.currency)
 
-    def total(self):
-        payment_price = self.payment_price()
-        return payment_price + sum([g.total() for g in self.groups.all()],
+    def get_total(self):
+        payment_price = self.get_payment_price()
+        return payment_price + sum([g.get_total() for g in self.groups.all()],
                                    Price(0, currency=self.currency))
 
     def create_delivery_group(self, group):
-        # override this if you need PhysicalShippingDetails
-        # (the group emitted by Partitioner class is now passed in)
-        return self.groups.create(order=self)
+        return self.groups.create(order=self,
+                                  require_shipping_address=group.is_shipping)
 
     def create_ordered_item(self, delivery_group, item):
         price = item.get_unit_price()
@@ -161,36 +159,59 @@ class Order(models.Model):
         return ordered_item
 
     def get_ordered_item_class(self):
-        return OrderedItem
-    
-    class Meta:
-        abstract = True
+        raise NotImplementedError('You need to override Order\'s'
+                                  ' get_ordered_item_class()')
+
+    def get_payment_variant(self):
+        return None
+
 
 class DeliveryGroup(models.Model):
     """
     add this to your concrete model:
     order = models.ForeignKey(Order, related_name='groups')
     """
+    delivery_price = models.DecimalField(_('unit price'),
+                                         max_digits=12, decimal_places=4,
+                                         default=0, editable=False)
     delivery_type = models.CharField(max_length=256, blank=True)
+    delivery_type_name = models.CharField(_('name'), max_length=128, blank=True,
+                                          editable=False)
+    delivery_type_description = models.TextField(_('description'), blank=True,
+                                                 editable=False)
+    require_shipping_address = models.BooleanField(default=False, editable=False)
+    shipping_first_name = models.CharField(_("first name"), max_length=256)
+    shipping_last_name = models.CharField(_("last name"), max_length=256)
+    shipping_company_name = models.CharField(_("company name"),
+                                             max_length=256, blank=True)
+    shipping_street_address_1 = models.CharField(_("street address 1"),
+                                                 max_length=256)
+    shipping_street_address_2 = models.CharField(_("street address 2"),
+                                                 max_length=256, blank=True)
+    shipping_city = models.CharField(_("city"), max_length=256)
+    shipping_postal_code = models.CharField(_("postal code"), max_length=20)
+    shipping_country = models.CharField(_("country"),
+                                        choices=countries.COUNTRY_CHOICES,
+                                        max_length=2, blank=True)
+    shipping_country_area = models.CharField(_("country administrative area"),
+                                             max_length=128, blank=True)
+    shipping_phone = models.CharField(_("phone number"),
+                                      max_length=30, blank=True)
 
-    def subtotal(self):
+    class Meta:
+        abstract = True
+
+    def get_subtotal(self):
         return sum([i.price() for i in self.items.all()],
                    Price(0, currency=self.order.currency))
 
-    def delivery_price(self):
-        try:
-            return Price(self.deliveryvariant.price,
-                         currency=self.order.currency)
-        except ObjectDoesNotExist:
-            return Price(0, currency=self.order.currency)
+    def get_delivery_price(self):
+        return Price(self.delivery_price, currency=self.order.currency)
 
-    def total(self):
-        delivery_price = self.delivery_price()
+    def get_total(self):
+        delivery_price = self.get_delivery_price()
         return delivery_price + sum([i.price() for i in self.items.all()],
                                     Price(0, currency=self.order.currency))
-    
-    class Meta:
-        abstract = True
 
 
 class OrderedItem(models.Model):
@@ -209,6 +230,9 @@ class OrderedItem(models.Model):
     unit_price_gross = models.DecimalField(_('unit price (gross)'),
                                            max_digits=12, decimal_places=4)
 
+    class Meta:
+        abstract = True
+
     def unit_price(self):
         return Price(net=self.unit_price_net, gross=self.unit_price_gross,
                      currency=self.delivery_group.order.currency)
@@ -219,6 +243,3 @@ class OrderedItem(models.Model):
         return Price(net=net.quantize(decimal.Decimal('0.01')),
                      gross=gross.quantize(decimal.Decimal('0.01')),
                      currency=self.delivery_group.order.currency)
-    
-    class Meta:
-        abstract = True

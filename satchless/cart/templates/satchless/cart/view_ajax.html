@@ -81,7 +81,7 @@
             </tr>
         </tfoot>
     </table>
-    <form action="{% url checkout:prepare-order %}" method="post">
+    <form action="{% url checkout:prepare-order cart_token=cart.token %}" method="post">
         {% csrf_token %}
         <button type="submit">{% trans "Check out" %}</button>
     </form>

@@ -50,8 +50,8 @@ class SingleStepCheckoutApp(app.CheckoutApp):
             if billing_valid and delivery_valid and payment_valid:
                 order = billing_form.save()
                 for group, typ, form in delivery_group_forms:
-                    handler.delivery_queue.create_variant(group, form)
-                handler.payment_queue.create_variant(order, payment_form)
+                    handler.delivery_queue.save(group, form)
+                handler.payment_queue.save(order, payment_form)
                 order.set_status('payment-pending')
                 return self.redirect('confirmation',
                                      order_token=order.token)

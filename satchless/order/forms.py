@@ -1,5 +1,4 @@
 from django import forms
-from django.forms.models import modelformset_factory
 from django.utils.translation import ugettext_lazy as _
 
 from . import handler
@@ -8,18 +7,15 @@ from . import models
 class DeliveryMethodForm(forms.ModelForm):
     delivery_type = forms.ChoiceField(label=_('Delivery method'), choices=[])
 
-    class Meta:
-        model = models.DeliveryGroup
-        fields = ('delivery_type',)
-
     def __init__(self, *args, **kwargs):
         super(DeliveryMethodForm, self).__init__(*args, **kwargs)
         types = handler.delivery_queue.as_choices(delivery_group=self.instance)
         self.fields['delivery_type'].choices = types
 
 
-DeliveryMethodFormset = modelformset_factory(models.DeliveryGroup,
-                                             form=DeliveryMethodForm, extra=0)
+class DeliveryDetailsForm(forms.ModelForm):
+    pass
+
 
 def get_delivery_details_forms_for_groups(groups, data):
     '''
@@ -36,11 +32,11 @@ def get_delivery_details_forms_for_groups(groups, data):
 
 class PaymentMethodForm(forms.ModelForm):
     payment_type = forms.ChoiceField(choices=())
-    
+
     class Meta:
         model = models.Order
         fields = ('payment_type',)
-    
+
     def __init__(self, *args, **kwargs):
         super(PaymentMethodForm, self).__init__(*args, **kwargs)
         types = get_payment_choices(self.instance)
@@ -49,7 +45,7 @@ class PaymentMethodForm(forms.ModelForm):
 
 def get_payment_choices(order):
     return list(handler.payment_queue.as_choices(order=order))
-    
+
 def get_payment_type_display(order, value):
     '''
     Note:

@@ -26,13 +26,11 @@ from .. import signals
 
 
 class FakeCheckoutApp(CheckoutApp):
+
     def prepare_order(self, *args, **kwargs):
         return HttpResponse("OK")
 
 class TestCart(Cart):
-
-    class Meta:
-        proxy = True
 
     def get_cart_item_class(self):
         return TestCartItem
@@ -51,7 +49,6 @@ class Cart(ViewsTestCase):
             url(r'^products/', include(product_app.urls)),
             url(r'^checkout/', include(FakeCheckoutApp().urls))
         )
-
 
     def setUp(self):
         cart_app.cart_model = TestCart
@@ -145,9 +142,8 @@ class Cart(ViewsTestCase):
     def _get_or_create_cart_for_client(self, client=None, typ='cart'):
         client = client or self.client
         self._test_status(cart_app.reverse('details'), client_instance=client)
-        return cart_app.cart_model.objects.get(pk=client.session[models.CART_SESSION_KEY % typ],
-                                       typ=typ)
-
+        cart_pk = client.session[models.CART_SESSION_KEY % typ]
+        return cart_app.cart_model.objects.get(pk=cart_pk, typ=typ)
 
     def test_add_to_cart_form_on_product_view(self):
         response = self._test_status(self.macaw.get_absolute_url(),
@@ -184,9 +180,11 @@ class Cart(ViewsTestCase):
     def test_remove_item_by_view(self):
         cart = self._get_or_create_cart_for_client(self.client)
         cart.replace_item(self.macaw_blue_fake, Decimal('2.45'))
-        remove_item_url = cart_app.reverse('remove-item', args=(cart.items.get().id,))
+        remove_item_url = cart_app.reverse('remove-item',
+                                           args=(cart.items.get().id,))
         response = self._test_status(remove_item_url, method='post',
-                                     status_code=302, client_instance=self.client)
+                                     status_code=302,
+                                     client_instance=self.client)
         self.assertRedirects(response, cart_app.reverse('details'))
 
     def test_cart_view_with_item(self):
@@ -199,12 +197,14 @@ class Cart(ViewsTestCase):
         cart = self._get_or_create_cart_for_client(self.client)
         cart.replace_item(self.macaw_blue_fake, Decimal(1))
         response = self._test_status(cart_app.reverse('details'),
-                                    client_instance=self.client, status_code=200)
+                                     client_instance=self.client,
+                                     status_code=200)
         cart_item_form = response.context['cart_item_forms'][0]
         data = {
             'quantity': 2
         }
-        data = dict((cart_item_form.add_prefix(key), value) for (key, value) in data.items())
+        data = dict((cart_item_form.add_prefix(key), value)
+                    for (key, value) in data.items())
         self._test_status(cart_app.reverse('details'), data=data,
                           method='post', status_code=302,
                           client_instance=self.client)

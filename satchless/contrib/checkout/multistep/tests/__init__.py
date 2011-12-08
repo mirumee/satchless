@@ -9,6 +9,7 @@ from django.test import Client
 
 from .....checkout.tests import BaseCheckoutAppTests
 from .....contrib.delivery.simplepost.models import PostShippingType
+from .....delivery.tests import TestDeliveryProvider
 from .....order import handler as order_handler
 from .....payment import ConfirmationFormNeeded
 from .....payment.tests import TestPaymentProvider
@@ -19,6 +20,7 @@ from .....product.tests.pricing import FiveZlotyPriceHandler
 
 from .. import app
 from .....cart.tests import TestCart
+from .....delivery.tests import TestDeliveryVariant, TestDeliveryMethodForm, TestDeliveryDetailsForm
 from .....order.tests import TestOrder
 
 class TestPaymentProviderWithConfirmation(TestPaymentProvider):
@@ -35,9 +37,15 @@ class TestPaymentProviderWithForm(TestPaymentProvider):
         return PaymentConfigurationForm(data=data)
 
 
+class TestCheckoutApp(app.MultiStepCheckoutApp):
+    delivery_details_form_class = TestDeliveryDetailsForm
+    delivery_method_form_class = TestDeliveryMethodForm
+    shipping_details_model = TestDeliveryVariant
+
+
 class CheckoutTest(BaseCheckoutAppTests):
-    checkout_app = app.checkout_app
-    urls = BaseCheckoutAppTests.MockUrls(checkout_app=app.checkout_app)
+    checkout_app = TestCheckoutApp()
+    urls = BaseCheckoutAppTests.MockUrls(checkout_app=checkout_app)
 
     def setUp(self):
         self.checkout_app.cart_model = TestCart
@@ -63,7 +71,8 @@ class CheckoutTest(BaseCheckoutAppTests):
         satchless_dir = os.path.join(test_dir, '..', '..', '..', '..')
         self.custom_settings = {
             'SATCHLESS_DJANGO_PAYMENT_TYPES': ['dummy'],
-            'PAYMENT_VARIANTS': {'dummy': ('payments.dummy.DummyProvider', {'url': '/', })},
+            'PAYMENT_VARIANTS': {'dummy': ('payments.dummy.DummyProvider',
+                                           {'url': '/', })},
             'TEMPLATE_DIRS': (os.path.join(satchless_dir, 'category', 'templates'),
                               os.path.join(satchless_dir, 'order', 'templates'),
                               os.path.join(test_dir, '..', 'templates'),
@@ -73,21 +82,28 @@ class CheckoutTest(BaseCheckoutAppTests):
             )
         }
         self.original_settings = self._setup_settings(self.custom_settings)
-        order_handler.delivery_queue = order_handler.DeliveryQueue('satchless.contrib.delivery.simplepost.PostDeliveryProvider')
-        order_handler.payment_queue = order_handler.PaymentQueue(TestPaymentProviderWithConfirmation)
-        order_handler.partitioner_queue = order_handler.PartitionerQueue('satchless.contrib.order.partitioner.simple.SimplePartitioner')
+        order_handler.delivery_queue = order_handler.DeliveryQueue(
+            TestDeliveryProvider())
+        order_handler.payment_queue = order_handler.PaymentQueue(
+            TestPaymentProviderWithConfirmation)
+        order_handler.partitioner_queue = order_handler.PartitionerQueue(
+            'satchless.contrib.order.partitioner.simple.SimplePhysicalPartitioner')
 
         self.anon_client = Client()
 
-        PostShippingType.objects.create(price=12, typ='polecony', name='list polecony')
-        PostShippingType.objects.create(price=20, typ='list', name='List zwykly')
+        PostShippingType.objects.create(price=12, typ='polecony',
+                                        name='list polecony')
+        PostShippingType.objects.create(price=20, typ='list',
+                                        name='List zwykly')
 
         self.original_handlers = settings.SATCHLESS_PRICING_HANDLERS
-        pricing_handler.pricing_queue = pricing_handler.PricingQueue(FiveZlotyPriceHandler)
+        pricing_handler.pricing_queue = pricing_handler.PricingQueue(
+            FiveZlotyPriceHandler)
 
     def tearDown(self):
         self._teardown_settings(self.original_settings, self.custom_settings)
-        pricing_handler.pricing_queue = pricing_handler.PricingQueue(*self.original_handlers)
+        pricing_handler.pricing_queue = pricing_handler.PricingQueue(
+            *self.original_handlers)
 
     def test_order_from_cart_view_creates_proper_order(self):
         cart = self._get_or_create_cart_for_client(self.anon_client)
@@ -95,7 +111,9 @@ class CheckoutTest(BaseCheckoutAppTests):
         cart.replace_item(self.macaw_blue_fake, Decimal('2.45'))
         cart.replace_item(self.cockatoo_white_a, Decimal('2.45'))
 
-        self._test_status(self.checkout_app.reverse('prepare-order'),
+        self._test_status(self.checkout_app.reverse('prepare-order',
+                                                    kwargs={'cart_token':
+                                                            cart.token}),
                           method='post', client_instance=self.anon_client,
                           status_code=302)
 
@@ -112,7 +130,9 @@ class CheckoutTest(BaseCheckoutAppTests):
         cart.replace_item(self.macaw_blue_fake, Decimal('2.45'))
         cart.replace_item(self.cockatoo_white_a, Decimal('2.45'))
 
-        self._test_status(self.checkout_app.reverse('prepare-order'),
+        self._test_status(self.checkout_app.reverse('prepare-order',
+                                                    kwargs={'cart_token':
+                                                            cart.token}),
                           method='post', client_instance=self.anon_client,
                           status_code=302)
 
@@ -125,7 +145,9 @@ class CheckoutTest(BaseCheckoutAppTests):
         # update cart
         cart.add_item(self.macaw_blue, 100)
         cart.add_item(self.macaw_blue_fake, 100)
-        self._test_status(self.checkout_app.reverse('prepare-order'),
+        self._test_status(self.checkout_app.reverse('prepare-order',
+                                                    kwargs={'cart_token':
+                                                            cart.token}),
                           method='post', client_instance=self.anon_client,
                           status_code=302)
 
@@ -136,57 +158,92 @@ class CheckoutTest(BaseCheckoutAppTests):
         self.assertNotEqual(order, None)
         order_items = self._get_order_items(order)
         # compare cart and order
-        self.assertEqual(set(cart.items.values_list('variant', 'quantity')), order_items)
+        self.assertEqual(set(cart.items.values_list('variant', 'quantity')),
+                         order_items)
 
     def test_prepare_order_creates_order_and_redirects_to_checkout_when_cart_is_not_empty(self):
         cart = self._get_or_create_cart_for_client(self.anon_client)
         cart.replace_item(self.macaw_blue, 1)
-        response = self._test_status(self.checkout_app.reverse('prepare-order'),
-                                     method='post',
-                                     client_instance=self.anon_client,
-                                     status_code=302)
+        response = self._test_status(
+            self.checkout_app.reverse('prepare-order',
+                                      kwargs={'cart_token': cart.token}),
+            method='post', client_instance=self.anon_client, status_code=302)
         order_pk = self.anon_client.session.get('satchless_order', None)
         order = self.checkout_app.order_model.objects.get(pk=order_pk)
-        self.assertRedirects(response, self.checkout_app.reverse('checkout',
-                                                                 kwargs={'order_token':
-                                                                         order.token}))
+        self.assertRedirects(response,
+                             self.checkout_app.reverse('checkout',
+                                                       kwargs={'order_token':
+                                                               order.token}))
 
     def test_prepare_order_redirects_to_cart_when_cart_is_empty(self):
-        self._get_or_create_cart_for_client(self.anon_client)
-        response = self._test_status(self.checkout_app.reverse('prepare-order'),
-                                     method='post',
-                                     client_instance=self.anon_client,
-                                     status_code=302)
+        cart = self._get_or_create_cart_for_client(self.anon_client)
+        response = self._test_status(
+            self.checkout_app.reverse('prepare-order',
+                                      kwargs={'cart_token': cart.token}),
+            method='post', client_instance=self.anon_client, status_code=302)
         self.assertRedirects(response, reverse('cart:details'))
 
     def test_prepare_order_redirects_to_checkout_when_order_exists(self):
+        cart = self._get_or_create_cart_for_client(self.anon_client)
         order = self._create_order(self.anon_client)
-        response = self._test_status(self.checkout_app.reverse('prepare-order'),
-                                     method='post',
-                                     client_instance=self.anon_client,
-                                     status_code=302)
-        self.assertRedirects(response, self.checkout_app.reverse('checkout',
-                                                                 kwargs={'order_token':
-                                                                         order.token}))
+        response = self._test_status(
+            self.checkout_app.reverse('prepare-order',
+                                      kwargs={'cart_token': cart.token}),
+            method='post', client_instance=self.anon_client, status_code=302)
+        self.assertRedirects(response,
+                             self.checkout_app.reverse('checkout',
+                                                       kwargs={'order_token':
+                                                               order.token}))
 
     def test_order_is_deleted_when_all_cart_items_are_deleted(self):
         order = self._create_order(self.anon_client)
         for cart_item in order.cart.get_all_items():
-            self.assertTrue(self.checkout_app.order_model.objects.filter(pk=order.pk).exists())
+            self.assertTrue(
+                self.checkout_app.order_model.objects.filter(pk=order.pk)
+                                                     .exists())
             order.cart.replace_item(cart_item.variant, 0)
-        self.assertFalse(self.checkout_app.order_model.objects.filter(pk=order.pk).exists())
+        self.assertFalse(
+            self.checkout_app.order_model.objects.filter(pk=order.pk).exists())
+
+    def test_delivery_method_view(self):
+        order = self._create_order(self.anon_client)
+        group = order.groups.get()
+        self.assertTrue(group.require_shipping_address)
+        dtypes = list(order_handler.delivery_queue.enum_types(group))
+        dtype = dtypes[0][1].typ
+        response = self._test_status(
+            self.checkout_app.reverse('delivery-method',
+                                      kwargs={'order_token': order.token}),
+            client_instance=self.anon_client, status_code=200)
+        data = {}
+        df = response.context['delivery_formset']
+        data[df.add_prefix('INITIAL_FORMS')] = len(df.forms)
+        data[df.add_prefix('MAX_NUM_FORMS')] = ''
+        data[df.add_prefix('TOTAL_FORMS')] = len(df.forms)
+        for form in df.forms:
+            data[form.add_prefix('delivery_type')] = dtype
+            data[form.add_prefix('id')] = group.id
+        response = self._test_status(
+            self.checkout_app.reverse('delivery-method',
+                                      kwargs={'order_token': order.token}),
+            data=data, status_code=302, client_instance=self.anon_client,
+            method='post')
+        self.assertEqual(order.groups.get().delivery_type, dtype)
+        self.assertRedirects(response,
+                             self.checkout_app.reverse('payment-method',
+                                                       kwargs={'order_token':
+                                                               order.token}))
 
     def test_checkout_view(self):
         order = self._create_order(self.anon_client)
-        response = self._test_status(self.checkout_app.reverse('checkout',
-                                                               kwargs={'order_token':
-                                                                       order.token}),
-                                     client_instance=self.anon_client,
-                                     status_code=200)
         group = order.groups.get()
         dtypes = list(order_handler.delivery_queue.enum_types(group))
-        dtype = dtypes[0][1].typ
-        df = response.context['delivery_formset']
+        group.delivery_type = dtypes[0][1].typ
+        group.save()
+        response = self._test_status(
+            self.checkout_app.reverse('checkout',
+                                      kwargs={'order_token': order.token}),
+            client_instance=self.anon_client, method='get')
         data = {'billing_first_name': 'First',
                 'billing_last_name': 'Last',
                 'billing_street_address_1': 'Via Rodeo 1',
@@ -195,54 +252,34 @@ class CheckoutTest(BaseCheckoutAppTests):
                 'billing_country_area': 'AZ',
                 'billing_phone': '555-555-5555',
                 'billing_postal_code': '90210'}
-        data[df.add_prefix('INITIAL_FORMS')] = '1'
+        shipping_data = {
+                'shipping_first_name': 'First',
+                'shipping_last_name': 'Last',
+                'shipping_company_name': 'TV Company',
+                'shipping_street_address_1': 'Woronicza',
+                'shipping_street_address_2': '',
+                'shipping_postal_code': '66-620',
+                'shipping_city': 'Warszawa',
+                'shipping_country_area': 'Mazowieckie',
+                'shipping_phone': '022 000 888',
+                'shipping_country': 'PL'}
+        df = response.context['shipping_formset']
+        data[df.add_prefix('INITIAL_FORMS')] = len(df.forms)
         data[df.add_prefix('MAX_NUM_FORMS')] = ''
-        data[df.add_prefix('TOTAL_FORMS')] = '1'
+        data[df.add_prefix('TOTAL_FORMS')] = len(df.forms)
         for form in df.forms:
-            data[form.add_prefix('delivery_type')] = dtype
-            data[form.add_prefix('id')] = group.id
-        response = self._test_status(self.checkout_app.reverse('checkout',
-                                                               kwargs={'order_token':
-                                                                       order.token}),
-                                     data=data, status_code=302,
-                                     client_instance=self.anon_client, method='post')
-        self.assertEqual(order.groups.get().delivery_type, dtype)
-        self.assertRedirects(response, self.checkout_app.reverse('delivery-details',
-                                                                 kwargs={'order_token':
-                                                                         order.token}))
-
-    def test_delivery_details_view(self):
-        order = self._create_order(self.anon_client)
-        group = order.groups.get()
-        dtypes = list(order_handler.delivery_queue.enum_types(group))
-        group.delivery_type = dtypes[0][1].typ
-        group.save()
-        response = self._test_status(self.checkout_app.reverse('delivery-details',
-                                                               kwargs={'order_token':
-                                                                       order.token}),
-                                     client_instance=self.anon_client, method='get')
-        group, delivery_type, form = response.context['delivery_group_forms'][0]
-
-        data = {
-                u'shipping_first_name': u'First',
-                u'shipping_last_name': u'Last',
-                u'shipping_company_name': u'TV Company',
-                u'shipping_street_address_1': u'Woronicza',
-                u'shipping_street_address_2': u'',
-                u'shipping_postal_code': u'66-620',
-                u'shipping_city': u'Warszawa',
-                u'shipping_country_area': u'Mazowieckie',
-                u'shipping_phone': u'022 000 888',
-                u'shipping_country': u'PL'}
-
-        data = dict((form.add_prefix(key), data[key]) for key in data)
-        response = self._test_POST_status(self.checkout_app.reverse('delivery-details',
-                                                                    kwargs={'order_token':
-                                                                            order.token}),
-                                          data=data, client_instance=self.anon_client)
-        self.assertRedirects(response, self.checkout_app.reverse('payment-choice',
-                                                                 kwargs={'order_token':
-                                                                         order.token}))
+            form_data = dict((form.add_prefix(key), shipping_data[key])
+                                 for key in shipping_data)
+            form_data[form.add_prefix('id')] = group.id
+            data.update(form_data)
+        response = self._test_POST_status(
+            self.checkout_app.reverse('checkout',
+                                      kwargs={'order_token': order.token}),
+            data=data, client_instance=self.anon_client)
+        self.assertRedirects(response,
+                             self.checkout_app.reverse('delivery-method',
+                                                       kwargs={'order_token':
+                                                               order.token}))
 
     def test_payment_choice_view(self):
         order = self._create_order(self.anon_client)
@@ -252,23 +289,23 @@ class CheckoutTest(BaseCheckoutAppTests):
         group.save()
 
         pprovider, ptype = list(order_handler.payment_queue.enum_types(group))[0]
-        self._test_GET_status(self.checkout_app.reverse('payment-choice',
+        self._test_GET_status(self.checkout_app.reverse('payment-method',
                                                         kwargs={'order_token':
                                                                 order.token}),
                               client_instance=self.anon_client)
         data = {
             'payment_type': ptype.typ
         }
-        response = self._test_POST_status(self.checkout_app.reverse('payment-choice',
-                                                                    kwargs={'order_token':
-                                                                            order.token}),
-                                                  data=data,
-                                          client_instance=self.anon_client)
+        response = self._test_POST_status(
+            self.checkout_app.reverse('payment-method',
+                                      kwargs={'order_token': order.token}),
+            data=data, client_instance=self.anon_client)
         # TestPaymentProvider doesn't provide any additional form so
         # payment details view redirects to confirmation page
-        self.assertRedirects(response, self.checkout_app.reverse('payment-details',
-                                                                 kwargs={'order_token':
-                                                                         order.token}),
+        self.assertRedirects(response,
+                             self.checkout_app.reverse('payment-details',
+                                                       kwargs={'order_token':
+                                                               order.token}),
                              target_status_code=302)
 
     def test_payment_details_view(self):
@@ -282,36 +319,60 @@ class CheckoutTest(BaseCheckoutAppTests):
         order.payment_type = ptype.typ
         order.save()
 
-        order_handler.payment_queue = order_handler.PaymentQueue(TestPaymentProviderWithForm)
+        order_handler.payment_queue = order_handler.PaymentQueue(
+            TestPaymentProviderWithForm)
 
         self._test_status(self.checkout_app.reverse('payment-details',
-                                                    kwargs={'order_token': order.token}),
-                          status_code=200, client_instance=self.anon_client, method='get')
+                                                    kwargs={'order_token':
+                                                            order.token}),
+                          status_code=200, client_instance=self.anon_client,
+                          method='get')
 
-
-    def test_delivery_details_view_redirects_to_checkout_when_delivery_type_is_missing(self):
+    def test_delivery_details_view_redirects_to_delivery_method_when_delivery_type_is_missing(self):
         order = self._create_order(self.anon_client)
-        response = self._test_status(self.checkout_app.reverse('delivery-details',
-                                                               kwargs={'order_token':
-                                                                       order.token}),
-                                     status_code=302,
-                                     client_instance=self.anon_client,
-                                     method='get')
-        self.assertRedirects(response, self.checkout_app.reverse('checkout',
-                                                                 kwargs={'order_token':
-                                                                         order.token}))
+        response = self._test_status(
+            self.checkout_app.reverse('delivery-details',
+                                      kwargs={'order_token': order.token}),
+            status_code=302, client_instance=self.anon_client, method='get')
+        self.assertRedirects(response,
+                             self.checkout_app.reverse('delivery-method',
+                                                       kwargs={'order_token':
+                                                               order.token}))
+
+    def test_delivery_details_view(self):
+        order = self._create_order(self.anon_client)
+        group = order.groups.get()
+        dtypes = list(order_handler.delivery_queue.enum_types(group))
+        group.delivery_type = dtypes[0][1].typ
+        group.save()
+        response = self._test_status(
+            self.checkout_app.reverse('delivery-details',
+                                      kwargs={'order_token': order.token}),
+            status_code=200, client_instance=self.anon_client, method='get')
+        df = response.context['delivery_group_forms']
+        data = {}
+        for a, b, form in df:
+            data[form.add_prefix('id')] = group.id
+            data[form.add_prefix('email')] = 'test@example.com'
+        response = self._test_POST_status(
+            self.checkout_app.reverse('delivery-details',
+                                      kwargs={'order_token': order.token}),
+            data=data, client_instance=self.anon_client)
+        self.assertRedirects(response,
+                             self.checkout_app.reverse('payment-method',
+                                                       kwargs={'order_token':
+                                                               order.token}))
 
     def test_payment_view_redirects_to_payment_choice_view_when_payment_type_is_missing(self):
         order = self._create_order(self.anon_client)
-        response = self._test_status(self.checkout_app.reverse('payment-details',
-                                                               kwargs={'order_token':
-                                                                       order.token}),
-                                     status_code=302,
-                                     client_instance=self.anon_client,
-                                     method='get')
-        self.assertRedirects(response, self.checkout_app.reverse('payment-choice',
-                                                                 kwargs={'order_token':
-                                                                         order.token}))
+        response = self._test_status(
+            self.checkout_app.reverse('payment-details',
+                                      kwargs={'order_token': order.token}),
+            status_code=302, client_instance=self.anon_client, method='get')
+        self.assertRedirects(response,
+                             self.checkout_app.reverse('payment-method',
+                                                       kwargs={'order_token':
+                                                               order.token}))
 
     def test_checkout_views_redirects_to_confirmation_page_when_order_has_payment_pending_status(self):
         order = self._create_order(self.anon_client)
@@ -334,5 +395,6 @@ class CheckoutTest(BaseCheckoutAppTests):
                                   status_code=302,
                                   client_instance=self.anon_client,
                                   method='post')
-        self.assertEqual(self.checkout_app.order_model.objects.get(pk=order.pk).status, 'checkout')
-
+        self.assertEqual(
+            self.checkout_app.order_model.objects.get(pk=order.pk).status,
+            'checkout')

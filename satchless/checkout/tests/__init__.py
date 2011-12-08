@@ -39,15 +39,20 @@ class BaseCheckoutAppTests(ViewsTestCase):
                                                         typ=typ)
 
     def _get_or_create_order_for_client(self, client):
-        self._test_status(self.checkout_app.reverse('prepare-order'),
+        cart = self._get_or_create_cart_for_client(client)
+        self._test_status(self.checkout_app.reverse('prepare-order',
+                                                    kwargs={'cart_token':
+                                                            cart.token}),
                           method='post', client_instance=client,
                           status_code=302)
         order_pk = client.session.get('satchless_order', None)
         return self.checkout_app.order_model.objects.get(pk=order_pk)
 
     def _create_order(self, client):
-        self._create_cart(client)
-        self._test_status(self.checkout_app.reverse('prepare-order'),
+        cart = self._create_cart(client)
+        self._test_status(self.checkout_app.reverse('prepare-order',
+                                                    kwargs={'cart_token':
+                                                            cart.token}),
                           method='post', client_instance=client,
                           status_code=302)
         return self._get_order_from_session(client.session)

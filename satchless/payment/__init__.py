@@ -46,7 +46,7 @@ class PaymentProvider(object):
         '''
         return None
 
-    def create_variant(self, order, form, typ=None):
+    def save(self, order, form, typ=None):
         '''
         Take a valid form instance if any and create a PaymentVariant instance.
         '''

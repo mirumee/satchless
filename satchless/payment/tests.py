@@ -10,12 +10,7 @@ from django import forms
 from django.test import TestCase
 
 from . import fields
-from . import models
 from . import PaymentProvider, PaymentType
-
-class TestPaymentVariant(models.PaymentVariant):
-    pass
-
 
 class TestPaymentProvider(PaymentProvider):
     def enum_types(self, order=None, customer=None):
@@ -24,12 +19,10 @@ class TestPaymentProvider(PaymentProvider):
     def get_configuration_form(self, order, data, typ=None):
         return None
 
-    def create_variant(self, order, form, typ=None):
-        typ = typ or order.payment_type
-        payment_variant = TestPaymentVariant.objects.create(order=order,
-                                                            price=0,
-                                                            name='test')
-        return payment_variant
+    def save(self, order, form, typ=None):
+        order.payment_price = 0
+        order.payment_type_name = 'test'
+        order.save()
 
     def confirm(self, order, typ=None):
         pass

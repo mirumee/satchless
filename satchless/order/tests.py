@@ -8,18 +8,29 @@ from django.conf.urls.defaults import patterns, include, url
 from django.conf import settings
 from django.test import Client
 
+from .app import order_app
+from .models import Order, OrderManager, DeliveryGroup, OrderedItem
+from ..cart.tests import TestCart
 from ..pricing import handler
 from ..product.tests import DeadParrot
 from ..product.tests.pricing import FiveZlotyPriceHandler
-from .app import order_app
-from .models import Order, OrderManager
-from ..cart.tests import TestCart
-
 from ..util.tests import ViewsTestCase
 
 class TestOrder(Order):
     cart = models.ForeignKey(TestCart, blank=True, null=True, related_name='orders')
     objects = OrderManager()
+
+    def get_ordered_item_class(self):
+        return TestOrderedItem
+
+
+class TestDeliveryGroup(DeliveryGroup):
+    order = models.ForeignKey(TestOrder, related_name='groups', editable=False)
+
+
+class TestOrderedItem(OrderedItem):
+    delivery_group = models.ForeignKey(TestDeliveryGroup, related_name='items',
+                                       editable=False)
 
 
 class OrderTest(ViewsTestCase):

@@ -11,7 +11,10 @@ class Partition(list):
     It's likely custom Partioner classes will need to distinguish the groups they
     emit. By not using a raw list it is possible to setattr on the Partitions.
     '''
-    pass
+    def __init__(self, items, shipping=False):
+        super(Partition, self).__init__(items)
+        self.is_shipping = shipping
+
 
 class Partitioner(object):
     '''

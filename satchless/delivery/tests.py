@@ -3,18 +3,32 @@ from django.utils.translation import ugettext
 import django.db
 import django.forms
 
-from . import models
 from . import DeliveryProvider, DeliveryType
+from ..order.forms import DeliveryMethodForm, DeliveryDetailsForm
+from ..order.tests import TestDeliveryGroup
 
 
-class TestDeliveryVariant(models.DeliveryVariant):
+class TestDeliveryVariant(django.db.models.Model):
     email = django.db.models.EmailField()
+    delivery_group = django.db.models.OneToOneField(TestDeliveryGroup)
 
 
 class DeliveryForm(django.forms.ModelForm):
     class Meta:
         model = TestDeliveryVariant
         fields = ('email',)
+
+
+class TestDeliveryMethodForm(DeliveryMethodForm):
+    class Meta:
+        fields = ('delivery_type',)
+        model = TestDeliveryGroup
+
+
+class TestDeliveryDetailsForm(DeliveryDetailsForm):
+    class Meta:
+        exclude = ('delivery_type',)
+        model = TestDeliveryGroup
 
 
 class TestDeliveryProvider(DeliveryProvider):
@@ -31,9 +45,12 @@ class TestDeliveryProvider(DeliveryProvider):
 
     def get_configuration_form(self, delivery_group, data, typ=None):
         typ = typ or delivery_group.delivery_type
-        instance = TestDeliveryVariant(delivery_group=delivery_group,
-                                       name=typ, price=20)
+        instance = TestDeliveryVariant(delivery_group=delivery_group)
         return DeliveryForm(data or None, instance=instance)
 
-    def create_variant(self, delivery_group, form=None, typ=None):
-        return form.save()
+    def save(self, delivery_group, form=None, typ=None):
+        typ = typ or delivery_group.delivery_type
+        delivery_group.delivery_price = 20
+        delivery_group.delivery_type_name = typ
+        delivery_group.save()
+        form.save()

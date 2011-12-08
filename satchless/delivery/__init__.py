@@ -25,14 +25,14 @@ class DeliveryProvider(object):
                 for p, t in self.enum_types(delivery_group=delivery_group,
                                             customer=customer)]
 
-    def get_configuration_form(self, delivery_group, data):
+    def get_configuration_form(self, delivery_group, data, typ=None):
         '''
         If applicable, return a form responsible for getting any additional
         delivery data.
         '''
         return None
 
-    def create_variant(self, delivery_group, form):
+    def save(self, delivery_group, form):
         '''
         Take a valid form instance if any and creates a DeliveryVariant instance.
         '''

@@ -8,25 +8,19 @@ class SimplePartitioner(Partitioner):
     Gets whatever products are left in the cart and puts them all in a single
     delivery group.
     '''
+    shipping = False
 
     def partition(self, cart, items):
-        handled_groups = [Partition(list(items))]
+        handled_groups = [Partition(list(items), shipping=self.shipping)]
         remaining_items = ()
         return handled_groups, remaining_items
 
 
-
-class SimplePhysicalPartitioner(Partitioner):
+class SimplePhysicalPartitioner(SimplePartitioner):
     '''
     Simple order partitioner
 
     Gets whatever products are left in the cart and puts them all in a single
-    delivery group, which is marked as needing PhysicalShippingDetails.
+    delivery group, which is marked as needing a shipping address.
     '''
-
-    def partition(self, cart, items):
-        partition = Partition(list(items))
-        partition.use_shipping = True
-        handled_groups = [partition]
-        remaining_items = ()
-        return handled_groups, remaining_items
+    shipping = True

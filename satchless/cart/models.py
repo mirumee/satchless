@@ -5,10 +5,10 @@ from django.db import models
 from django.contrib.auth.models import User
 from django.utils.translation import ugettext_lazy as _
 from django.core.exceptions import ObjectDoesNotExist
-
-from ..product.models import Variant
+import random
 
 from . import signals
+from ..product.models import Variant
 
 CART_SESSION_KEY = '_satchless_cart-%s' # takes typ
 
@@ -47,14 +47,28 @@ class Cart(models.Model):
     typ = models.CharField(_("type"), max_length=100)
     currency = models.CharField(_("currency"), max_length=3,
                                 default=get_default_currency)
+    token = models.CharField(max_length=32, blank=True, default='')
 
     objects = CartManager()
+
+    class Meta:
+        abstract = True
 
     def __unicode__(self):
         if self.owner:
             return u"%s of %s" % (self.typ, self.owner.username)
         else:
             return self.typ
+
+    def save(self, *args, **kwargs):
+        if not self.token:
+            for i in xrange(100):
+                token = ''.join(random.sample(
+                                '0123456789abcdefghijklmnopqrstuvwxyz', 32))
+                if not self.__class__.objects.filter(token=token).count():
+                    self.token = token
+                    break
+        return super(Cart, self).save(*args, **kwargs)
 
     def add_item(self, variant, quantity, dry_run=False, **kwargs):
         variant = variant.get_subtype_instance()
@@ -143,9 +157,7 @@ class Cart(models.Model):
         from ..pricing import Price
         return sum([i.price() for i in self.get_all_items().all()],
                    Price(0, currency=self.currency))
-    
-    class Meta:
-        abstract = True
+
 
 class CartItem(models.Model):
 

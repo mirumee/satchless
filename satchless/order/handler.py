@@ -1,13 +1,10 @@
-import logging
 from django.conf import settings
-from django.core.exceptions import ImproperlyConfigured, ObjectDoesNotExist
+from django.core.exceptions import ImproperlyConfigured
 
 from satchless.core.handler import QueueHandler
 
 from ..delivery import DeliveryProvider, DeliveryType
-from ..delivery.models import DeliveryVariant
 from ..payment import PaymentProvider, PaymentType
-from ..payment.models import PaymentVariant
 from . import Partitioner
 
 ### PARTITIONERS
@@ -58,14 +55,10 @@ class PaymentQueue(PaymentProvider, QueueHandler):
         provider = self._get_provider(order, typ)
         return provider.get_configuration_form(order=order, data=data, typ=typ)
 
-    def create_variant(self, order, form, typ=None):
+    def save(self, order, form, typ=None):
         typ = typ or order.payment_type
         provider = self._get_provider(order, typ)
-        try:
-            order.paymentvariant.delete()
-        except ObjectDoesNotExist:
-            pass
-        return provider.create_variant(order=order, form=form, typ=typ)
+        return provider.save(order=order, form=form, typ=typ)
 
     def confirm(self, order, typ=None):
         typ = typ or order.payment_type
@@ -93,7 +86,6 @@ class DeliveryQueue(DeliveryProvider, QueueHandler):
                 yield provider, typ
 
     def _get_provider(self, delivery_group, typ):
-        logging.critical('_get_provider: typ=%s, delivery_group.delivery_type=%s', typ, delivery_group.delivery_type)
         for provider, delivery_type in self.enum_types(delivery_group):
             if delivery_type.typ == typ:
                 return provider
@@ -101,22 +93,15 @@ class DeliveryQueue(DeliveryProvider, QueueHandler):
                          (typ, ))
 
     def get_configuration_form(self, delivery_group, data, typ=None):
-        logging.critical('get_configuration_form: typ=%s, delivery_group.delivery_type=%s', typ, delivery_group.delivery_type)
         typ = typ or delivery_group.delivery_type
         provider = self._get_provider(delivery_group, typ)
         return provider.get_configuration_form(delivery_group=delivery_group,
                                                data=data, typ=typ)
 
-    def create_variant(self, delivery_group, form, typ=None):
+    def save(self, delivery_group, form, typ=None):
         typ = typ or delivery_group.delivery_type
         provider = self._get_provider(delivery_group, typ)
-        # XXX: Do we really need it here?
-        try:
-            delivery_group.deliveryvariant.delete()
-        except ObjectDoesNotExist:
-            pass
-        return provider.create_variant(delivery_group=delivery_group,
-                                       form=form, typ=typ)
+        return provider.save(delivery_group=delivery_group, form=form, typ=typ)
 
 
 delivery_providers = getattr(settings, 'SATCHLESS_DELIVERY_PROVIDERS', [])

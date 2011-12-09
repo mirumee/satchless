@@ -1,11 +1,11 @@
 from django import forms
 from django.utils.translation import ugettext_lazy as _, ugettext
 
-from . import models
 from ..forms.widgets import DecimalInput
 from ..product.forms import registry
 
 class QuantityForm(object):
+
     def clean_quantity(self):
         val = self.cleaned_data['quantity']
         if val < 0:
@@ -13,9 +13,13 @@ class QuantityForm(object):
         return val
 
 class AddToCartForm(forms.Form, QuantityForm):
-    """Form that adds a Variant quantity to a Cart.
+    """
+    Form that adds a Variant quantity to a Cart.
+
     It may be replaced by more advanced one, performing some checks, e.g.
-    verifying the number of items in stock."""
+    verifying the number of items in stock.
+    """
+
     quantity = forms.DecimalField(_('Quantity'), initial=1)
     typ = forms.CharField(max_length=100, widget=forms.HiddenInput())
 
@@ -40,27 +44,32 @@ class AddToCartForm(forms.Form, QuantityForm):
         return self.cart.add_item(self.get_variant(), qty, dry_run=True)
 
     def save(self):
-        return self.cart.add_item(self.get_variant(), self.cleaned_data['quantity'])
+        return self.cart.add_item(self.get_variant(),
+                                  self.cleaned_data['quantity'])
 
 
 class EditCartItemForm(forms.ModelForm, QuantityForm):
+
     class Meta:
-        model = models.CartItem
-        fields = ('quantity',)
         widgets = {
             'quantity': DecimalInput(min_decimal_places=0),
         }
 
     def clean_quantity(self):
         qty = super(EditCartItemForm, self).clean_quantity()
-        qty_result = self.instance.cart.replace_item(self.instance.variant, qty, dry_run=True)
+        qty_result = self.instance.cart.replace_item(self.instance.variant, qty,
+                                                     dry_run=True)
         if qty_result.new_quantity < qty:
             raise forms.ValidationError(qty_result.reason)
         return qty_result.new_quantity
 
     def save(self, commit=True):
-        """Do not call the original save() method, but use cart.replace_item() instead."""
-        self.instance.cart.replace_item(self.instance.variant, self.cleaned_data['quantity'])
+        """
+        Do not call the original save() method, but use cart.replace_item()
+        instead.
+        """
+        self.instance.cart.replace_item(self.instance.variant,
+                                        self.cleaned_data['quantity'])
 
 def add_to_cart_variant_form_for_product(product,
                                          addtocart_formclass=AddToCartForm,

@@ -16,6 +16,7 @@ def get_default_currency():
     return settings.SATCHLESS_DEFAULT_CURRENCY
 
 class CartManager(models.Manager):
+
     def get_from_request(self, request, typ):
         try:
             cart = self.get(typ=typ, pk=request.session[CART_SESSION_KEY % typ])
@@ -36,6 +37,7 @@ class CartManager(models.Manager):
             return cart
 
 class QuantityResult(object):
+
     def __init__(self, cart_item, new_quantity, quantity_delta, reason=None):
         self.cart_item = cart_item
         self.new_quantity = new_quantity
@@ -43,6 +45,7 @@ class QuantityResult(object):
         self.reason = reason
 
 class Cart(models.Model):
+
     owner = models.ForeignKey(User, null=True, blank=True, related_name='carts')
     typ = models.CharField(_("type"), max_length=100)
     currency = models.CharField(_("currency"), max_length=3,
@@ -83,7 +86,7 @@ class Cart(models.Model):
                                                 old_quantity=old_qty,
                                                 new_quantity=new_qty,
                                                 result=result)
-        assert(len(result) <= 1)
+        assert len(result) <= 1
         if len(result) == 1:
             new_qty, reason = result[0]
         if not dry_run:
@@ -130,7 +133,7 @@ class Cart(models.Model):
                                                 new_quantity=quantity,
                                                 result=result,
                                                 **kwargs)
-        assert(len(result) <= 1)
+        assert len(result) <= 1
         if len(result) == 1:
             quantity, reason = result[0]
         if not dry_run:
@@ -161,7 +164,7 @@ class Cart(models.Model):
 
 class CartItem(models.Model):
 
-    variant = models.ForeignKey(Variant, related_name='+')
+    variant = models.ForeignKey(Variant, related_name='+', editable=False)
     quantity = models.DecimalField(_("quantity"), max_digits=10,
                                    decimal_places=4)
 
@@ -173,7 +176,7 @@ class CartItem(models.Model):
         return u"%s × %.10g" % (self.variant, self.quantity)
 
     def save(self, *args, **kwargs):
-        assert(self.quantity > 0)
+        assert self.quantity > 0
         super(CartItem, self).save(*args, **kwargs)
 
     def get_unit_price(self, currency=None, **kwargs):

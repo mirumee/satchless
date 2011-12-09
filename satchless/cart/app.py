@@ -8,26 +8,30 @@ from django.views.decorators.http import require_POST
 
 from ..core.app import SatchlessApp
 from ..util import JSONResponse
-from . import models
-from . import forms
 
 
 class CartApp(SatchlessApp):
     app_name = 'cart'
     namespace = 'cart'
     cart_type = 'cart'
-    cart_item_form_class = forms.EditCartItemForm
-    cart_item_model = models.CartItem
-    cart_model = models.Cart
+    cart_item_form_class = None
+    cart_class = None
 
     cart_templates = [
         'satchless/cart/%(cart_type)s/view.html',
         'satchless/cart/view.html'
     ]
 
+    def __init__(self, *args, **kwargs):
+        super(CartApp, self).__init__(*args, **kwargs)
+        assert self.cart_class, ('You need to subclass CartApp and provide'
+                                 ' cart_class')
+        assert self.cart_item_form_class, ('You need to subclass CartApp and'
+                                           ' provide cart_item_form_class')
+
     def get_cart_for_request(self, request):
-        return self.cart_model.objects.get_or_create_from_request(request,
-                                                                  self.cart_type)
+        return self.cart_class.objects.get_or_create_from_request(
+            request, self.cart_type)
 
     def _handle_cart(self, cart, request):
         cart_item_forms = []
@@ -74,5 +78,3 @@ class CartApp(SatchlessApp):
             url(r'^remove/(?P<item_pk>[0-9]+)/$', self.remove_item,
                 name='remove-item'),
         )
-
-cart_app = CartApp()

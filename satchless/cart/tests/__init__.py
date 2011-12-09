@@ -7,20 +7,19 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.http import HttpResponse
 from django.test import Client
 import os
-from ...cart.models import Cart, CartItem
-from ...cart.handler import AddToCartHandler
-from ...cart import forms as cart_forms
 
 from ...category.app import product_app
 from ...category.models import Category
 from ...checkout.app import CheckoutApp
 from ...pricing import handler as pricing_handler
-from ...product import handler
+from ...product import handler as product_handler
 from ...product.tests.pricing import FiveZlotyPriceHandler
 from ...product.tests import (DeadParrot, ZombieParrot, DeadParrotVariantForm)
 from ...util.tests import ViewsTestCase
 
-from ..app import cart_app
+from .. import app
+from .. import handler as handler
+from .. import forms
 from .. import models
 from .. import signals
 
@@ -30,17 +29,34 @@ class FakeCheckoutApp(CheckoutApp):
     def prepare_order(self, *args, **kwargs):
         return HttpResponse("OK")
 
-class TestCart(Cart):
+
+class TestCart(models.Cart):
 
     def get_cart_item_class(self):
         return TestCartItem
 
-class TestCartItem(CartItem):
-    cart = dj_models.ForeignKey(TestCart, related_name='items')
 
-add_to_cart_handler = AddToCartHandler('cart',
-    addtocart_formclass=cart_forms.AddToCartForm,
+class TestCartItem(models.CartItem):
+    cart = dj_models.ForeignKey(TestCart, related_name='items', editable=False)
+
+
+class TestEditCartItemForm(forms.EditCartItemForm):
+    class Meta:
+        model = TestCartItem
+
+
+add_to_cart_handler = handler.AddToCartHandler('cart',
+    addtocart_formclass=forms.AddToCartForm,
     cart_class=TestCart)
+
+
+class TestCartApp(app.CartApp):
+    cart_class = TestCart
+    cart_item_form_class = TestEditCartItemForm
+
+
+cart_app = TestCartApp()
+
 
 class Cart(ViewsTestCase):
     class urls:
@@ -51,7 +67,6 @@ class Cart(ViewsTestCase):
         )
 
     def setUp(self):
-        cart_app.cart_model = TestCart
         self.category_birds = Category.objects.create(name='birds',
                                                       slug='birds')
         self.macaw = DeadParrot.objects.create(slug='macaw',
@@ -92,15 +107,15 @@ class Cart(ViewsTestCase):
         }
         self.original_settings = self._setup_settings(self.custom_settings)
         pricing_handler.pricing_queue = pricing_handler.PricingQueue(FiveZlotyPriceHandler)
-        handler.init_queue()
+        product_handler.init_queue()
 
     def tearDown(self):
         self._teardown_settings(self.original_settings,
                                 self.custom_settings)
-        handler.init_queue()
+        product_handler.init_queue()
 
     def test_basic_cart_ops(self):
-        cart = cart_app.cart_model.objects.create(typ='satchless.test_cart')
+        cart = TestCart.objects.create(typ='satchless.test_cart')
         cart.replace_item(self.macaw_blue, 1)
         cart.replace_item(self.macaw_blue_fake, Decimal('2.45'))
         cart.replace_item(self.cockatoo_white_a, Decimal('2.45'))
@@ -143,7 +158,7 @@ class Cart(ViewsTestCase):
         client = client or self.client
         self._test_status(cart_app.reverse('details'), client_instance=client)
         cart_pk = client.session[models.CART_SESSION_KEY % typ]
-        return cart_app.cart_model.objects.get(pk=cart_pk, typ=typ)
+        return TestCart.objects.get(pk=cart_pk, typ=typ)
 
     def test_add_to_cart_form_on_product_view(self):
         response = self._test_status(self.macaw.get_absolute_url(),
@@ -209,7 +224,7 @@ class Cart(ViewsTestCase):
                           method='post', status_code=302,
                           client_instance=self.client)
         self.assertEqual(cart.items.count(), 1)
-        self.assertEqual(cart.items.all()[0].quantity, 2)
+        self.assertEqual(cart.items.get().quantity, 2)
 
     def test_add_by_view_for_anonymous(self):
         cli_anon = Client()
@@ -243,7 +258,8 @@ class Cart(ViewsTestCase):
             elif not variant.looks_alive:
                 result.append((Decimal('1'), u"Parrots don't rest in groups"))
 
-        cart = cart_app.cart_model.objects.create(typ='satchless.test_cart_with_signals')
+        cart = TestCart.objects.create(
+            typ='satchless.test_cart_with_signals')
         signals.cart_quantity_change_check.connect(modify_qty)
         result = cart.replace_item(self.macaw_blue, 10, dry_run=True)
         self.assertEqual((result.new_quantity, result.reason),

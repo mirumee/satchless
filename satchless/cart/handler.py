@@ -5,7 +5,6 @@ from ..util import JSONResponse
 from . import forms
 from . import models
 from . import signals
-from .app import cart_app
 
 class AddToCartHandler(object):
     """

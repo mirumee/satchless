@@ -6,9 +6,9 @@ from django.http import HttpResponse
 from django.test import Client
 from satchless.cart.tests import TestCart
 
-from ...cart.app import cart_app
+from ...cart.tests import cart_app
 from ...cart.models import CART_SESSION_KEY
-from ...order.app import order_app
+from ...order.tests import order_app
 from ...pricing import handler as pricing_handler
 from ...product.tests import DeadParrot
 from ...product.tests.pricing import FiveZlotyPriceHandler
@@ -35,26 +35,23 @@ class BaseCheckoutAppTests(ViewsTestCase):
         self._test_status(reverse('cart:details'),
                           client_instance=client)
         pk = client.session[CART_SESSION_KEY % typ]
-        return self.checkout_app.cart_model.objects.get(pk=pk,
-                                                        typ=typ)
+        return self.checkout_app.cart_model.objects.get(pk=pk, typ=typ)
 
     def _get_or_create_order_for_client(self, client):
         cart = self._get_or_create_cart_for_client(client)
-        self._test_status(self.checkout_app.reverse('prepare-order',
-                                                    kwargs={'cart_token':
-                                                            cart.token}),
-                          method='post', client_instance=client,
-                          status_code=302)
+        self._test_status(
+            self.checkout_app.reverse('prepare-order',
+                                      kwargs={'cart_token': cart.token}),
+            method='post', client_instance=client, status_code=302)
         order_pk = client.session.get('satchless_order', None)
         return self.checkout_app.order_model.objects.get(pk=order_pk)
 
     def _create_order(self, client):
         cart = self._create_cart(client)
-        self._test_status(self.checkout_app.reverse('prepare-order',
-                                                    kwargs={'cart_token':
-                                                            cart.token}),
-                          method='post', client_instance=client,
-                          status_code=302)
+        self._test_status(
+            self.checkout_app.reverse('prepare-order',
+                                      kwargs={'cart_token': cart.token}),
+            method='post', client_instance=client, status_code=302)
         return self._get_order_from_session(client.session)
 
     def _get_order_from_session(self, session):
@@ -87,26 +84,26 @@ class App(BaseCheckoutAppTests):
     def setUp(self):
         self.anon_client = Client()
         self.macaw = DeadParrot.objects.create(slug='macaw',
-                species="Hyacinth Macaw")
+                                               species="Hyacinth Macaw")
         self.macaw_blue = self.macaw.variants.create(color='blue',
                                                      looks_alive=False)
         self.original_handlers = settings.SATCHLESS_PRICING_HANDLERS
-        pricing_handler.pricing_queue = pricing_handler.PricingQueue(FiveZlotyPriceHandler)
+        pricing_handler.pricing_queue = pricing_handler.PricingQueue(
+            FiveZlotyPriceHandler)
 
     def tearDown(self):
         #self._teardown_settings(self.original_settings, self.custom_settings)
-        pricing_handler.pricing_queue = pricing_handler.PricingQueue(*self.original_handlers)
+        pricing_handler.pricing_queue = pricing_handler.PricingQueue(
+            *self.original_handlers)
 
     def test_reactive_order_view_redirects_to_checkout_for_correct_order(self):
         order = self._create_order(self.anon_client)
         order.set_status('payment-failed')
 
-        response = self._test_status(self.checkout_app.reverse('reactivate-order',
-                                                               kwargs={'order_token':
-                                                                       order.token}),
-                                     status_code=302,
-                                     client_instance=self.anon_client,
-                                     method='post')
+        response = self._test_status(
+            self.checkout_app.reverse('reactivate-order',
+                                      kwargs={'order_token': order.token}),
+            status_code=302, client_instance=self.anon_client, method='post')
         self.assertRedirects(response,
                              self.checkout_app.reverse('checkout',
                                                        args=(order.token,)))
@@ -127,7 +124,8 @@ class App(BaseCheckoutAppTests):
                         self.checkout_app.reverse('checkout',
                                                   args=(order.token,)))
 
-        for status in ('payment-failed', 'delivery', 'payment-complete', 'cancelled'):
+        for status in ('payment-failed', 'delivery', 'payment-complete',
+                       'cancelled'):
             order.set_status(status)
             response = self.checkout_app.redirect_order(order)
             assertRedirects(response,

@@ -8,7 +8,7 @@ from django.conf.urls.defaults import patterns, include, url
 from django.conf import settings
 from django.test import Client
 
-from .app import order_app
+from .app import OrderApp
 from .models import Order, OrderManager, DeliveryGroup, OrderedItem
 from ..cart.tests import TestCart
 from ..pricing import handler
@@ -33,6 +33,13 @@ class TestOrderedItem(OrderedItem):
                                        editable=False)
 
 
+class TestOrderApp(OrderApp):
+    order_class = TestOrder
+
+
+order_app = TestOrderApp()
+
+
 class OrderTest(ViewsTestCase):
     class urls:
         urlpatterns = patterns('',
@@ -40,7 +47,6 @@ class OrderTest(ViewsTestCase):
         )
 
     def setUp(self):
-        order_app.order_model = TestOrder
         self.macaw = DeadParrot.objects.create(slug='macaw',
                 species="Hyacinth Macaw")
         self.cockatoo = DeadParrot.objects.create(slug='cockatoo',
@@ -77,7 +83,7 @@ class OrderTest(ViewsTestCase):
         cart = TestCart.objects.create(typ='satchless.test_cart')
         cart.replace_item(self.macaw_blue, 1)
 
-        order = order_app.order_model.objects.get_from_cart(cart)
+        order = TestOrder.objects.get_from_cart(cart)
 
         cart.replace_item(self.macaw_blue_fake, Decimal('2.45'))
         cart.replace_item(self.cockatoo_white_a, Decimal('2.45'))
@@ -95,7 +101,7 @@ class OrderTest(ViewsTestCase):
         cart.replace_item(self.macaw_blue_fake, Decimal('2.45'))
         cart.replace_item(self.cockatoo_white_a, Decimal('2.45'))
 
-        order = order_app.order_model.objects.get_from_cart(cart)
+        order = TestOrder.objects.get_from_cart(cart)
         self._test_GET_status(order_app.reverse('details',
                                                 args=(order.token,)))
 

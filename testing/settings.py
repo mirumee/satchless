@@ -10,8 +10,6 @@ DATABASES = {
 }
 
 INSTALLED_APPS = [
-    'django_nose',
-
     'django.contrib.admin',
     'django.contrib.admindocs',
     'django.contrib.auth',
@@ -21,6 +19,7 @@ INSTALLED_APPS = [
     'django.contrib.sites',
     'django.contrib.staticfiles',
 
+    'django_nose',
     'mamona',
     'payments',
 

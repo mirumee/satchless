@@ -137,6 +137,7 @@ INSTALLED_APPS = (
     'grappelli',
     'django.contrib.admin',
     'mptt',
+
     'satchless.product',
     'satchless.category',
     'satchless.image',
@@ -149,9 +150,11 @@ INSTALLED_APPS = (
     #'satchless.contrib.stock.singlestore',
     'satchless.order',
     'satchless.contrib.checkout.multistep',
+    #'satchless.contrib.checkout.singlestep',
     'satchless.delivery',
     'satchless.contrib.delivery.simplepost',
     'satchless.payment',
+
     'products',
     'south',
     'pagination',
@@ -166,6 +169,8 @@ INSTALLED_APPS = (
     'payments',
     'payments.dummy',
     'satchless.contrib.payment.django_payments_provider',
+    #'satchless.contrib.payment.authorizenet_provider',
+    #'satchless.contrib.payment.mamona_provider',
 )
 
 SATCHLESS_IMAGE_SIZES = {
@@ -202,6 +207,9 @@ SATCHLESS_IMAGE_SIZES = {
         'crop': True,
     },
 }
+
+AUTHNET_LOGIN_ID = 'fakeid'
+AUTHNET_TRANSACTION_KEY = 'fakekey'
 
 SATCHLESS_DEFAULT_CURRENCY = 'GBP'
 

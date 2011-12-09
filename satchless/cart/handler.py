@@ -13,8 +13,8 @@ class AddToCartHandler(object):
     """
 
     def __init__(self, typ='cart', details_view='cart:details',
-                 addtocart_formclass=forms.AddToCartForm, cart_class=models.Cart,
-                 form_attribute='cart_form'):
+                 addtocart_formclass=forms.AddToCartForm,
+                 cart_class=models.Cart, form_attribute='cart_form'):
         """
         Sets up a parametrized handler for product view.
 

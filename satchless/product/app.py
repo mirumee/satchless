@@ -6,7 +6,6 @@ from django.template.response import TemplateResponse
 from ..core.app import SatchlessApp
 
 from . import models
-from . import handler
 
 class ProductApp(SatchlessApp):
 
@@ -18,9 +17,11 @@ class ProductApp(SatchlessApp):
         'satchless/product/%(product_model)s/view.html',
         'satchless/product/view.html',
     ]
+    product_view_handlers_queue = None
 
     def __init__(self, *args, **kwargs):
         super(ProductApp, self).__init__(*args, **kwargs)
+        self.product_view_handlers_queue = set()
         assert self.Product, ('You need to subclass ProductApp and provide'
                               ' Product')
         assert self.Variant, ('You need to subclass ProductApp and provide'
@@ -33,7 +34,7 @@ class ProductApp(SatchlessApp):
 
     def product_details(self, request, **kwargs):
         product = self.get_product(request, **kwargs)
-        context = handler.product_view(instances=[product], request=request)
+        context = self.on_product_view(instances=[product], request=request)
         if isinstance(context, HttpResponse):
             return context
         context['product'] = product
@@ -43,6 +44,17 @@ class ProductApp(SatchlessApp):
         }
         templates = [t % product_data for t in self.product_details_templates]
         return TemplateResponse(request, templates, context)
+
+    def register_product_view_handler(self, handler):
+        self.product_view_handlers_queue.add(handler)
+
+    def on_product_view(self, instances, request):
+        context = {}
+        for handler in self.product_view_handlers_queue:
+            context = handler(instances, request=request, extra_context=context)
+            if isinstance(context, HttpResponse):
+                return context
+        return context
 
     def get_urls(self):
         return patterns('',

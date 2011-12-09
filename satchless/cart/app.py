@@ -8,6 +8,7 @@ from django.utils.decorators import method_decorator
 from django.views.decorators.http import require_POST
 
 from . import forms
+from . import handler
 from . import models
 from ..core.app import SatchlessApp
 from ..util import JSONResponse
@@ -95,6 +96,11 @@ class MagicCartApp(CartApp):
         self.CartItemForm = (
             self.CartItemForm or
             self.construct_cart_item_form_class(self.CartItem))
+        self.add_to_cart_handler = handler.AddToCartHandler(
+            self.cart_type,
+            addtocart_formclass=forms.AddToCartForm,
+            cart_class=self.Cart)
+        product_app.register_product_view_handler(self.add_to_cart_handler)
         super(MagicCartApp, self).__init__(**kwargs)
 
     def construct_cart_class(self):

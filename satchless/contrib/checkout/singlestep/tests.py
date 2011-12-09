@@ -11,7 +11,6 @@ from ....order import handler as order_handler
 from ....order.models import Order
 from ....payment import ConfirmationFormNeeded
 from ....payment.tests import TestPaymentProvider
-from ....product import handler as product_handler
 from ....product.tests import DeadParrot
 
 from ..common.views import prepare_order, confirmation
@@ -51,18 +50,15 @@ class CheckoutTest(TestCase):
         self.dead_parrot = self.parrot.variants.create(color='blue', looks_alive=False)
 
         self.custom_settings = {
-            'SATCHLESS_PRODUCT_VIEW_HANDLERS': ('satchless.cart.add_to_cart_handler',),
             'SATCHLESS_DELIVERY_PROVIDERS': [TestDeliveryProvider],
             'SATCHLESS_PAYMENT_PROVIDERS': [TestPaymentProviderWithConfirmation],
         }
         self.original_settings = self._setup_settings(self.custom_settings)
-        product_handler.init_queue()
         order_handler.init_queues()
         self.anon_client = Client()
 
     def tearDown(self):
         self._teardown_settings(self.original_settings, self.custom_settings)
-        product_handler.init_queue()
         order_handler.init_queues()
 
     def _test_status(self, url, method='get', *args, **kwargs):

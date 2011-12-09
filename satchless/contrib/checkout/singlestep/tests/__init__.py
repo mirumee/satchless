@@ -11,7 +11,6 @@ from .....order import handler as order_handler
 from .....payment import ConfirmationFormNeeded
 from .....payment.tests import TestPaymentProvider
 from .....pricing import handler as pricing_handler
-from .....product import handler as product_handler
 from .....product.tests import DeadParrot
 from .....product.tests.pricing import FiveZlotyPriceHandler
 
@@ -38,7 +37,6 @@ class App(BaseCheckoutAppTests):
 
         satchless_dir = os.path.join(os.path.dirname(__file__), '..', '..', '..', '..')
         self.custom_settings = {
-            'SATCHLESS_PRODUCT_VIEW_HANDLERS': ('satchless.cart.add_to_cart_handler',),
             'TEMPLATE_DIRS': (os.path.join(satchless_dir, 'category', 'templates'),
                               os.path.join(satchless_dir, 'order', 'templates'),
                               os.path.join(satchless_dir, 'cart', 'templates'),
@@ -52,7 +50,6 @@ class App(BaseCheckoutAppTests):
             )
         }
         self.original_settings = self._setup_settings(self.custom_settings)
-        product_handler.init_queue()
         order_handler.delivery_queue = order_handler.DeliveryQueue(TestDeliveryProvider)
         order_handler.payment_queue = order_handler.PaymentQueue(TestPaymentProviderWithConfirmation)
         self.anon_client = Client()
@@ -61,7 +58,6 @@ class App(BaseCheckoutAppTests):
 
     def tearDown(self):
         self._teardown_settings(self.original_settings, self.custom_settings)
-        product_handler.init_queue()
         pricing_handler.pricing_queue = pricing_handler.PricingQueue(*self.original_pricing_handlers)
 
     def test_checkout_view_passes_with_correct_data(self):

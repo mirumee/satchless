@@ -9,15 +9,12 @@ import os
 
 from ...checkout.app import CheckoutApp
 from ...pricing import handler as pricing_handler
-from ...product import handler as product_handler
 from ...product.tests.pricing import FiveZlotyPriceHandler
 from ...product.tests import (DeadParrot, ZombieParrot, DeadParrotVariantForm,
                               product_app)
 from ...util.tests import ViewsTestCase
 
 from .. import app
-from .. import handler as handler
-from .. import forms
 from .. import models
 from .. import signals
 
@@ -33,11 +30,6 @@ class TestCartApp(app.MagicCartApp):
 
 
 cart_app = TestCartApp(product_app)
-
-
-add_to_cart_handler = handler.AddToCartHandler('cart',
-    addtocart_formclass=forms.AddToCartForm,
-    cart_class=cart_app.Cart)
 
 
 class Cart(ViewsTestCase):
@@ -75,9 +67,6 @@ class Cart(ViewsTestCase):
         test_dir = os.path.dirname(__file__)
         self.custom_settings = {
             'SATCHLESS_DEFAULT_CURRENCY': "PLN",
-            'SATCHLESS_PRODUCT_VIEW_HANDLERS': (
-                'satchless.cart.tests.add_to_cart_handler',
-            ),
             'TEMPLATE_DIRS': [os.path.join(test_dir, '..', '..',
                                            'category', 'templates'),
                               os.path.join(test_dir, '..', 'templates'),
@@ -85,12 +74,10 @@ class Cart(ViewsTestCase):
         }
         self.original_settings = self._setup_settings(self.custom_settings)
         pricing_handler.pricing_queue = pricing_handler.PricingQueue(FiveZlotyPriceHandler)
-        product_handler.init_queue()
 
     def tearDown(self):
         self._teardown_settings(self.original_settings,
                                 self.custom_settings)
-        product_handler.init_queue()
 
     def test_basic_cart_ops(self):
         cart = cart_app.Cart.objects.create(typ='satchless.test_cart')

@@ -1,4 +1,3 @@
-from ....payment.models import PaymentVariant
 from django.db import models
 
 class StripeReceipt(models.Model):
@@ -6,6 +5,9 @@ class StripeReceipt(models.Model):
     Removed all validation as we want to log whatever we get back from Stripe
     no matter how mis-formed or broken.
     """
+    stripe_customer_id = models.CharField(max_length=50, blank=True, null=True)
+    stripe_card_id = models.CharField(max_length=50, blank=True, null=True)
+
     # when making a card charge
     description = models.TextField(blank=True, null=True)
 
@@ -27,8 +29,5 @@ class StripeReceipt(models.Model):
     last4 = models.CharField(max_length=4, blank=True, null=True)
     card_type = models.CharField(max_length=50, blank=True, null=True) # "type"
 
-class StripeVariant(PaymentVariant):
-    stripe_customer_id = models.CharField(max_length=50, blank=True, null=True)
-    stripe_card_id = models.CharField(max_length=50, blank=True, null=True)
-    receipt = models.ForeignKey(StripeReceipt, blank=True, null=True)
-
+    class Meta:
+        abstract = True

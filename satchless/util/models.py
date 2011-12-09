@@ -35,14 +35,14 @@ class Subtyped(models.Model):
     def __unicode__(self):
         # XXX: can we do it in more clean way?
         if self.__in_unicode:
-            return super(Subtyped, self).__unicode__()
-        elif type(self.get_subtype_instance()) == type(self):
+            return unicode(super(Subtyped, self))
+        subtype_instance = self.get_subtype_instance()
+        if type(subtype_instance) is type(self):
             self.__in_unicode = True
             res = self.__unicode__()
             self.__in_unicode = False
             return res
-        else:
-            return self.get_subtype_instance().__unicode__()
+        return subtype_instance.__unicode__()
 
     def get_subtype_instance(self):
         """

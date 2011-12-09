@@ -1,4 +1,3 @@
-import urllib2
 from django.conf import settings
 from django.utils.translation import ugettext_lazy as _
 
@@ -10,19 +9,23 @@ import stripe
 import datetime
 
 class StripeProvider(PaymentProvider):
-    form_class = forms.PaymentForm
+    form_class = forms.StripeReceiptForm
 
     def enum_types(self, order=None, customer=None):
         yield self, PaymentType(typ='stripe', name='Stripe.com')
 
     def get_configuration_form(self, order, typ, data):
-        instance = models.StripeVariant(order=order, price=0)
+        instance = models.StripeReceipt(order=order, price=0)
         return self.form_class(data or None, instance=instance)
 
-    def create_variant(self, order, form, typ=None):
+    def save(self, order, form, typ=None):
+        order.payment_price = 0
+        order.payment_type_name = 'Stripe.com'
+        order.payment_type_description = ''
         if form.is_valid():
-            return form.save()
-        raise PaymentFailure(_("Could not create Stripe Variant"))
+            form.save()
+        else:
+            raise PaymentFailure(_("Could not create Stripe Variant"))
 
     def confirm(self, order, typ=None):
         v = order.paymentvariant.get_subtype_instance()
@@ -66,4 +69,3 @@ class StripeProvider(PaymentProvider):
             if receipt_form.is_valid():
                 v.receipt = receipt_form.save()
                 v.save()
-

@@ -4,7 +4,6 @@ from django.utils.translation import ugettext_lazy as _
 
 from ....payment.fields import (CreditCardExpirationField,
                                       CreditCardNumberField)
-from . import models
 
 CVV_VALIDATOR = validators.RegexValidator('^[0-9]{1,4}$',
                                           _('Enter a valid security number.'))
@@ -19,6 +18,5 @@ class PaymentForm(forms.ModelForm):
                               label=_('CVV2 Security Number'), max_length=4)
 
     class Meta:
-        model = models.AuthorizeNetVariant
         fields = ('cc_name', 'cc_number', 'cc_expiration', 'cc_cvv2',
                   'billing_email')

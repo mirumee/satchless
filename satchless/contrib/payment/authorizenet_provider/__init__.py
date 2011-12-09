@@ -3,12 +3,11 @@ import urllib2
 from django.utils.translation import ugettext
 from authorizenet.utils import process_payment
 
-from ....delivery.models import DeliveryVariant, PhysicalShippingVariant
 from ....payment import PaymentProvider, PaymentFailure, PaymentType
 from . import forms
-from . import models
 
 class AuthorizeNetProvider(PaymentProvider):
+    payment_class = None
     form_class = forms.PaymentForm
 
     def __init__(self, capture=True):
@@ -18,32 +17,31 @@ class AuthorizeNetProvider(PaymentProvider):
         yield self, PaymentType(typ='authorizenet', name='Authorize.net')
 
     def get_configuration_form(self, order, typ, data):
-        instance = models.AuthorizeNetVariant(order=order, price=0)
+        instance = self.payment_class(order=order)
         return self.form_class(data or None, instance=instance)
 
-    def create_variant(self, order, typ, form):
-        return form.save()
+    def save(self, order, typ, form):
+        order.payment_price = 0
+        order.payment_type_name = typ.name
+        order.save()
+        form.save()
 
     def get_shipping_data(self, order):
         result = {}
         for dg in order.groups.all():
-            try:
-                shipping = dg.deliveryvariant.get_subtype_instance()
-                if isinstance(shipping, PhysicalShippingVariant):
-                    result['ship_to_first_name'] = shipping.shipping_first_name
-                    result['ship_to_last_name'] = shipping.shipping_last_name
-                    result['ship_to_company'] = shipping.shipping_company_name
-                    address = filter(None,
-                                     [shipping.shipping_street_address_1,
-                                      shipping.shipping_street_address_2])
-                    result['ship_to_address'] = '\n'.join(address)
-                    result['ship_to_city'] = shipping.shipping_city
-                    result['ship_to_state'] = shipping.shipping_country_area
-                    result['ship_to_zip'] = shipping.shipping_postal_code
-                    result['ship_to_country'] = shipping.get_shipping_country_display()
-                    break
-            except DeliveryVariant.DoesNotExist:
-                pass
+            if dg.require_shipping_address:
+                result['ship_to_first_name'] = dg.shipping_first_name
+                result['ship_to_last_name'] = dg.shipping_last_name
+                result['ship_to_company'] = dg.shipping_company_name
+                address = filter(None,
+                                 [dg.shipping_street_address_1,
+                                  dg.shipping_street_address_2])
+                result['ship_to_address'] = '\n'.join(address)
+                result['ship_to_city'] = dg.shipping_city
+                result['ship_to_state'] = dg.shipping_country_area
+                result['ship_to_zip'] = dg.shipping_postal_code
+                result['ship_to_country'] = dg.get_shipping_country_display()
+                break
         return result
 
     def get_billing_data(self, order):
@@ -90,6 +88,7 @@ class AuthorizeNetProvider(PaymentProvider):
         v.save()
         if not response.is_approved:
             raise PaymentFailure(response.response_reason_text)
+
 
 class AuthorizeNetPreauthProvider(AuthorizeNetProvider):
     def __init__(self):

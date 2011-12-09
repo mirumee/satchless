@@ -8,21 +8,20 @@ from ....payment import PaymentFailure
 
 import stripe
 
-class PaymentForm(forms.ModelForm):
+class StripeReceiptForm(forms.ModelForm):
     stripe_customer_id = forms.CharField(max_length=50, required=False,
                                          label=_('Stripe Customer ID'))
     stripe_card_id = forms.CharField(max_length=50, required=False,
                                      label=_('Stripe Card ID'))
 
     class Meta:
-        model = models.StripeVariant
-        fields = ('stripe_customer_id', 'stripe_card_id',)
+        model = models.StripeReceipt
 
     def clean(self):
-        if not self.cleaned_data.get('stripe_customer_id') \
-           and not self.cleaned_data.get('stripe_card_id'):
+        if (not self.cleaned_data.get('stripe_customer_id')
+            and not self.cleaned_data.get('stripe_card_id')):
             raise ValidationError(_("Either a Card or a Customer is required"))
-        return super(PaymentForm, self).clean()
+        return super(StripeReceiptForm, self).clean()
 
     def save(self, commit=True):
         stripe.api_key = settings.STRIPE_SECRET_KEY
@@ -38,9 +37,4 @@ class PaymentForm(forms.ModelForm):
                 self.instance.stripe_customer_id = customer.id
             except stripe.StripeError:
                 raise PaymentFailure(_("Payment denied or network error"))
-        return super(PaymentForm, self).save(commit)
-
-class StripeReceiptForm(forms.ModelForm):
-    class Meta:
-        model = models.StripeReceipt
-
+        return super(StripeReceiptForm, self).save(commit)

@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 from decimal import Decimal
 from django.conf.urls.defaults import patterns, include, url
-from django.db import models as dj_models
 from django.contrib.auth.models import User
 from django.core.exceptions import ObjectDoesNotExist
 from django.http import HttpResponse
@@ -30,32 +29,15 @@ class FakeCheckoutApp(CheckoutApp):
         return HttpResponse("OK")
 
 
-class TestCart(models.Cart):
+class TestCartApp(app.MagicCartApp):
+    pass
 
-    def get_cart_item_class(self):
-        return TestCartItem
-
-
-class TestCartItem(models.CartItem):
-    cart = dj_models.ForeignKey(TestCart, related_name='items', editable=False)
-
-
-class TestEditCartItemForm(forms.EditCartItemForm):
-    class Meta:
-        model = TestCartItem
+cart_app = TestCartApp()
 
 
 add_to_cart_handler = handler.AddToCartHandler('cart',
     addtocart_formclass=forms.AddToCartForm,
-    cart_class=TestCart)
-
-
-class TestCartApp(app.CartApp):
-    cart_class = TestCart
-    cart_item_form_class = TestEditCartItemForm
-
-
-cart_app = TestCartApp()
+    cart_class=cart_app.Cart)
 
 
 class Cart(ViewsTestCase):
@@ -115,7 +97,7 @@ class Cart(ViewsTestCase):
         product_handler.init_queue()
 
     def test_basic_cart_ops(self):
-        cart = TestCart.objects.create(typ='satchless.test_cart')
+        cart = cart_app.Cart.objects.create(typ='satchless.test_cart')
         cart.replace_item(self.macaw_blue, 1)
         cart.replace_item(self.macaw_blue_fake, Decimal('2.45'))
         cart.replace_item(self.cockatoo_white_a, Decimal('2.45'))
@@ -158,7 +140,7 @@ class Cart(ViewsTestCase):
         client = client or self.client
         self._test_status(cart_app.reverse('details'), client_instance=client)
         cart_pk = client.session[models.CART_SESSION_KEY % typ]
-        return TestCart.objects.get(pk=cart_pk, typ=typ)
+        return cart_app.Cart.objects.get(pk=cart_pk, typ=typ)
 
     def test_add_to_cart_form_on_product_view(self):
         response = self._test_status(self.macaw.get_absolute_url(),
@@ -258,7 +240,7 @@ class Cart(ViewsTestCase):
             elif not variant.looks_alive:
                 result.append((Decimal('1'), u"Parrots don't rest in groups"))
 
-        cart = TestCart.objects.create(
+        cart = cart_app.Cart.objects.create(
             typ='satchless.test_cart_with_signals')
         signals.cart_quantity_change_check.connect(modify_qty)
         result = cart.replace_item(self.macaw_blue, 10, dry_run=True)

@@ -93,6 +93,8 @@ class Order(models.Model):
                                         editable=False)
     token = models.CharField(max_length=32, blank=True, default='')
 
+    objects = OrderManager()
+
     class Meta:
         # Use described string to resolve ambiguity of the word 'order' in English.
         abstract = True
@@ -149,21 +151,13 @@ class Order(models.Model):
         price = item.get_unit_price()
         variant = item.variant.get_subtype_instance()
         name = unicode(variant)
-        ordered_item_class = self.get_ordered_item_class()
-        ordered_item = ordered_item_class(delivery_group=delivery_group,
-                                          product_variant=item.variant,
-                                          product_name=name,
-                                          quantity=item.quantity,
-                                          unit_price_net=price.net,
-                                          unit_price_gross=price.gross)
+        ordered_item = delivery_group.items.create(delivery_group=delivery_group,
+                                                   product_variant=item.variant,
+                                                   product_name=name,
+                                                   quantity=item.quantity,
+                                                   unit_price_net=price.net,
+                                                   unit_price_gross=price.gross)
         return ordered_item
-
-    def get_ordered_item_class(self):
-        raise NotImplementedError('You need to override Order\'s'
-                                  ' get_ordered_item_class()')
-
-    def get_payment_variant(self):
-        return None
 
 
 class DeliveryGroup(models.Model):

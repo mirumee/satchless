@@ -1,11 +1,14 @@
 # -*- coding: utf-8 -*-
 from django.conf.urls.defaults import patterns, url
+import django.db
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, redirect
 from django.template.response import TemplateResponse
 from django.utils.decorators import method_decorator
 from django.views.decorators.http import require_POST
 
+from . import forms
+from . import models
 from ..core.app import SatchlessApp
 from ..util import JSONResponse
 
@@ -14,8 +17,8 @@ class CartApp(SatchlessApp):
     app_name = 'cart'
     namespace = 'cart'
     cart_type = 'cart'
-    cart_item_form_class = None
-    cart_class = None
+    CartItemForm = None
+    Cart = None
 
     cart_templates = [
         'satchless/cart/%(cart_type)s/view.html',
@@ -24,22 +27,21 @@ class CartApp(SatchlessApp):
 
     def __init__(self, *args, **kwargs):
         super(CartApp, self).__init__(*args, **kwargs)
-        assert self.cart_class, ('You need to subclass CartApp and provide'
-                                 ' cart_class')
-        assert self.cart_item_form_class, ('You need to subclass CartApp and'
-                                           ' provide cart_item_form_class')
+        assert self.Cart, ('You need to subclass CartApp and provide Cart')
+        assert self.CartItemForm, ('You need to subclass CartApp and'
+                                   ' provide CartItemForm')
 
     def get_cart_for_request(self, request):
-        return self.cart_class.objects.get_or_create_from_request(
+        return self.Cart.objects.get_or_create_from_request(
             request, self.cart_type)
 
     def _handle_cart(self, cart, request):
         cart_item_forms = []
         for item in cart.get_all_items():
             prefix = '%s-%i' % (self.cart_type, item.id)
-            form = self.cart_item_form_class(data=request.POST or None,
-                                             instance=item,
-                                             prefix=prefix)
+            form = self.CartItemForm(data=request.POST or None,
+                                     instance=item,
+                                     prefix=prefix)
             if request.method == 'POST' and form.is_valid():
                 item = form.save()
                 # redirect to ourselves
@@ -78,3 +80,33 @@ class CartApp(SatchlessApp):
             url(r'^remove/(?P<item_pk>[0-9]+)/$', self.remove_item,
                 name='remove-item'),
         )
+
+class MagicCartApp(CartApp):
+    CartItem = None
+
+    def __init__(self, **kwargs):
+        self.Cart = self.Cart or self.construct_cart_class()
+        self.CartItem = (self.CartItem or
+                         self.construct_cart_item_class(self.Cart))
+        self.CartItemForm = (
+            self.CartItemForm or
+            self.construct_cart_item_form_class(self.CartItem))
+        super(MagicCartApp, self).__init__(**kwargs)
+
+    def construct_cart_class(self):
+        class Cart(models.Cart):
+            pass
+        return Cart
+
+    def construct_cart_item_class(self, cart_class):
+        class CartItem(models.CartItem):
+            cart = django.db.models.ForeignKey(cart_class,
+                                               related_name='items',
+                                               editable=False)
+        return CartItem
+
+    def construct_cart_item_form_class(self, cart_item_class):
+        class EditCartItemForm(forms.EditCartItemForm):
+            class Meta:
+                model = cart_item_class
+        return EditCartItemForm

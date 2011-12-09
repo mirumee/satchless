@@ -5,12 +5,12 @@ import django.forms
 
 from . import DeliveryProvider, DeliveryType
 from ..order.forms import DeliveryMethodForm, DeliveryDetailsForm
-from ..order.tests import TestDeliveryGroup
+from ..order.tests import order_app
 
 
 class TestDeliveryVariant(django.db.models.Model):
     email = django.db.models.EmailField()
-    delivery_group = django.db.models.OneToOneField(TestDeliveryGroup)
+    delivery_group = django.db.models.OneToOneField(order_app.DeliveryGroup)
 
 
 class DeliveryForm(django.forms.ModelForm):
@@ -22,13 +22,13 @@ class DeliveryForm(django.forms.ModelForm):
 class TestDeliveryMethodForm(DeliveryMethodForm):
     class Meta:
         fields = ('delivery_type',)
-        model = TestDeliveryGroup
+        model = order_app.DeliveryGroup
 
 
 class TestDeliveryDetailsForm(DeliveryDetailsForm):
     class Meta:
         exclude = ('delivery_type',)
-        model = TestDeliveryGroup
+        model = order_app.DeliveryGroup
 
 
 class TestDeliveryProvider(DeliveryProvider):

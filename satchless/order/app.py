@@ -1,16 +1,18 @@
 from django.conf.urls.defaults import patterns, url
 from django.contrib.auth.decorators import login_required
+import django.db
 from django.shortcuts import get_object_or_404
 from django.template.response import TemplateResponse
 from django.utils.decorators import method_decorator
 
 from ..core.app import SatchlessApp
+from . import models
 
 class OrderApp(SatchlessApp):
 
     app_name = 'order'
     namespace = 'order'
-    order_class = None
+    Order = None
     order_details_templates = [
         'satchless/order/view.html',
         'satchless/order/%(order_model)s/view.html'
@@ -22,15 +24,15 @@ class OrderApp(SatchlessApp):
 
     def __init__(self, *args, **kwargs):
         super(OrderApp, self).__init__(*args, **kwargs)
-        assert self.order_class, ('You need to subclass OrderApp and provide'
-                                  ' order_class')
+        assert self.Order, ('You need to subclass OrderApp and provide'
+                            ' Order')
 
     @method_decorator(login_required)
     def index(self, request):
-        orders = self.order_class.objects.filter(user=request.user)
+        orders = self.Order.objects.filter(user=request.user)
         context = self.get_context_data(request, orders=orders)
         format_data = {
-            'order_model': self.order_class._meta.module_name
+            'order_model': self.Order._meta.module_name
         }
         templates = [p % format_data for p in self.order_list_templates]
         return TemplateResponse(request, templates, context)
@@ -46,9 +48,9 @@ class OrderApp(SatchlessApp):
 
     def get_order(self, request, order_token):
         if request.user.is_authenticated():
-            orders = self.order_class.objects.filter(user=request.user)
+            orders = self.Order.objects.filter(user=request.user)
         else:
-            orders = self.order_class.objects.filter(user=None)
+            orders = self.Order.objects.filter(user=None)
         order = get_object_or_404(orders, token=order_token)
         return order
 
@@ -59,3 +61,39 @@ class OrderApp(SatchlessApp):
             url(r'^(?P<order_token>[0-9a-zA-Z]+)/$', self.details,
                 name='details'),
         )
+
+
+class MagicOrderApp(OrderApp):
+    DeliveryGroup = None
+    OrderedItem = None
+
+    def __init__(self, cart_app, **kwargs):
+        self.Order = (self.Order or
+                      self.construct_order_class(cart_app.Cart))
+        self.DeliveryGroup = (self.DeliveryGroup or
+                              self.construct_delivery_group_class(self.Order))
+        self.OrderedItem = (
+            self.OrderedItem or
+            self.construct_ordered_item_class(self.DeliveryGroup))
+        super(MagicOrderApp, self).__init__(**kwargs)
+
+    def construct_order_class(self, cart_class):
+        class Order(models.Order):
+            cart = django.db.models.ForeignKey(cart_class, blank=True,
+                                               null=True, related_name='orders')
+            pass
+        return Order
+
+    def construct_delivery_group_class(self, order_class):
+        class DeliveryGroup(models.DeliveryGroup):
+            order = django.db.models.ForeignKey(order_class,
+                                                related_name='groups',
+                                                editable=False)
+        return DeliveryGroup
+
+    def construct_ordered_item_class(self, delivery_group_class):
+        class OrderedItem(models.OrderedItem):
+            delivery_group = django.db.models.ForeignKey(delivery_group_class,
+                                                         related_name='items',
+                                                         editable=False)
+        return OrderedItem

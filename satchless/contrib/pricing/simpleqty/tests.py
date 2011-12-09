@@ -2,14 +2,14 @@ from decimal import Decimal
 from django.conf import settings
 from django.test import TestCase
 
-from ....cart.tests import TestCart
+from ....cart.tests import cart_app
 from ....pricing import Price, PriceRange
 from ....pricing.handler import PricingQueue
 from ....product.tests import DeadParrot
 from .models import ProductPrice
 
-
 class Pricing(TestCase):
+
     TEST_PRICING_HANDLERS = [
         'satchless.contrib.pricing.simpleqty.SimpleQtyPricingHandler',
     ]
@@ -149,7 +149,7 @@ class Pricing(TestCase):
         macaw_price.qty_overrides.create(min_qty=9, price=Decimal('9.0'))
         macaw_price.offsets.create(variant=self.macaw_blue_a,
                                    price_offset=Decimal('2.0'))
-        cart = TestCart.objects.create(typ='test')
+        cart = cart_app.Cart.objects.create(typ='test')
         cart.replace_item(self.macaw_blue_a, 4)
         cart.replace_item(self.macaw_blue_d, 4)
         item_macaw_blue_a = cart.items.get(variant=self.macaw_blue_a)

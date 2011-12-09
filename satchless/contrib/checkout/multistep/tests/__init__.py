@@ -19,9 +19,9 @@ from .....product.tests.pricing import FiveZlotyPriceHandler
 
 
 from .. import app
-from .....cart.tests import TestCart
+from .....cart.tests import cart_app
 from .....delivery.tests import TestDeliveryVariant, TestDeliveryMethodForm, TestDeliveryDetailsForm
-from .....order.tests import TestOrder
+from .....order.tests import order_app
 
 class TestPaymentProviderWithConfirmation(TestPaymentProvider):
     def confirm(self, order, typ=None):
@@ -48,8 +48,8 @@ class CheckoutTest(BaseCheckoutAppTests):
     urls = BaseCheckoutAppTests.MockUrls(checkout_app=checkout_app)
 
     def setUp(self):
-        self.checkout_app.cart_model = TestCart
-        self.checkout_app.order_model = TestOrder
+        self.checkout_app.cart_model = cart_app.Cart
+        self.checkout_app.order_model = order_app.Order
         self.macaw = DeadParrot.objects.create(slug='macaw',
                 species="Hyacinth Macaw")
         self.cockatoo = DeadParrot.objects.create(slug='cockatoo',

@@ -8,36 +8,18 @@ from django.conf.urls.defaults import patterns, include, url
 from django.conf import settings
 from django.test import Client
 
-from .app import OrderApp
-from .models import Order, OrderManager, DeliveryGroup, OrderedItem
-from ..cart.tests import TestCart
+from .app import MagicOrderApp
+from ..cart.tests import cart_app
 from ..pricing import handler
 from ..product.tests import DeadParrot
 from ..product.tests.pricing import FiveZlotyPriceHandler
 from ..util.tests import ViewsTestCase
 
-class TestOrder(Order):
-    cart = models.ForeignKey(TestCart, blank=True, null=True, related_name='orders')
-    objects = OrderManager()
-
-    def get_ordered_item_class(self):
-        return TestOrderedItem
+class TestOrderApp(MagicOrderApp):
+    pass
 
 
-class TestDeliveryGroup(DeliveryGroup):
-    order = models.ForeignKey(TestOrder, related_name='groups', editable=False)
-
-
-class TestOrderedItem(OrderedItem):
-    delivery_group = models.ForeignKey(TestDeliveryGroup, related_name='items',
-                                       editable=False)
-
-
-class TestOrderApp(OrderApp):
-    order_class = TestOrder
-
-
-order_app = TestOrderApp()
+order_app = TestOrderApp(cart_app=cart_app)
 
 
 class OrderTest(ViewsTestCase):
@@ -80,10 +62,10 @@ class OrderTest(ViewsTestCase):
                                 self.custom_settings)
 
     def test_order_is_updated_when_cart_content_changes(self):
-        cart = TestCart.objects.create(typ='satchless.test_cart')
+        cart = cart_app.Cart.objects.create(typ='satchless.test_cart')
         cart.replace_item(self.macaw_blue, 1)
 
-        order = TestOrder.objects.get_from_cart(cart)
+        order = order_app.Order.objects.get_from_cart(cart)
 
         cart.replace_item(self.macaw_blue_fake, Decimal('2.45'))
         cart.replace_item(self.cockatoo_white_a, Decimal('2.45'))
@@ -96,12 +78,12 @@ class OrderTest(ViewsTestCase):
                          order_items)
 
     def test_order_view(self):
-        cart = TestCart.objects.create(typ='satchless.test_cart')
+        cart = cart_app.Cart.objects.create(typ='satchless.test_cart')
         cart.replace_item(self.macaw_blue, 1)
         cart.replace_item(self.macaw_blue_fake, Decimal('2.45'))
         cart.replace_item(self.cockatoo_white_a, Decimal('2.45'))
 
-        order = TestOrder.objects.get_from_cart(cart)
+        order = order_app.Order.objects.get_from_cart(cart)
         self._test_GET_status(order_app.reverse('details',
                                                 args=(order.token,)))
 

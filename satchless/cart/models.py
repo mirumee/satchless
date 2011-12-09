@@ -76,56 +76,55 @@ class Cart(models.Model):
     def add_item(self, variant, quantity, dry_run=False, **kwargs):
         variant = variant.get_subtype_instance()
         quantity = variant.product.sanitize_quantity(quantity)
-        item, old_qty = self.create_or_update_cart_item(variant, **kwargs)
-        new_qty = old_qty + quantity
+        try:
+            item = self.get_item(variant, **kwargs)
+            old_qty = item.quantity
+        except ObjectDoesNotExist:
+            item = None
+            old_qty = Decimal(0)
+        quantity += old_qty
         result = []
         reason = u""
         signals.cart_quantity_change_check.send(sender=type(self),
                                                 instance=self,
                                                 variant=variant,
                                                 old_quantity=old_qty,
-                                                new_quantity=new_qty,
+                                                new_quantity=quantity,
                                                 result=result)
         assert len(result) <= 1
         if len(result) == 1:
-            new_qty, reason = result[0]
+            quantity, reason = result[0]
         if not dry_run:
-            if new_qty == 0:
-                if item.pk:
+            if not quantity:
+                if item:
                     item.delete()
             else:
-                item.quantity = new_qty
-                item.save()
+                if item:
+                    item.quantity = quantity
+                    item.save()
+                else:
+                    item = self.items.create(variant=variant, quantity=quantity,
+                                             **kwargs)
             signals.cart_content_changed.send(sender=type(self), instance=self)
-        return QuantityResult(item, new_qty, new_qty - old_qty, reason)
-
-    def get_cart_item_class(self):
-        raise NotImplementedError("Must return a subclass of CartItem")
+        return QuantityResult(item, quantity, quantity - old_qty, reason)
 
     def get_item(self, variant, **kwargs):
-        cart_item_class = self.get_cart_item_class()
-        return cart_item_class.objects.get(cart=self, variant=variant, **kwargs)
+        return self.items.get(variant=variant, **kwargs)
 
     def get_all_items(self):
-        cart_item_class = self.get_cart_item_class()
-        return cart_item_class.objects.filter(cart=self)
-
-    def create_or_update_cart_item(self, variant, **kwargs):
-        cart_item_class = self.get_cart_item_class()
-        try:
-            item = self.get_item(variant, **kwargs)
-            old_qty = item.quantity
-        except ObjectDoesNotExist:
-            item = cart_item_class(cart=self, variant=variant, **kwargs)
-            old_qty = Decimal('0')
-        return (item, old_qty)
+        return list(self.items.all())
 
     def replace_item(self, variant, quantity, dry_run=False, **kwargs):
         variant = variant.get_subtype_instance()
         quantity = variant.product.sanitize_quantity(quantity)
-        item, old_qty = self.create_or_update_cart_item(variant, **kwargs)
         result = []
         reason = u""
+        try:
+            item = self.get_item(variant, **kwargs)
+            old_qty = item.quantity
+        except ObjectDoesNotExist:
+            item = None
+            old_qty = Decimal(0)
         signals.cart_quantity_change_check.send(sender=type(self),
                                                 instance=self,
                                                 variant=variant,
@@ -137,28 +136,31 @@ class Cart(models.Model):
         if len(result) == 1:
             quantity, reason = result[0]
         if not dry_run:
-            if quantity == 0:
-                if item.pk:
+            if not quantity:
+                if item:
                     item.delete()
             else:
-                item.quantity = quantity
-                item.save()
+                if item:
+                    item.quantity = quantity
+                    item.save()
+                else:
+                    item = self.items.create(variant=variant, quantity=quantity,
+                                             **kwargs)
             signals.cart_content_changed.send(sender=type(self), instance=self)
         return QuantityResult(item, quantity, quantity - old_qty, reason)
 
     def get_quantity(self, variant, **kwargs):
-        cart_item_class = self.get_cart_item_class()
         try:
             return self.get_item(variant=variant, **kwargs).quantity
-        except cart_item_class.DoesNotExist:
+        except ObjectDoesNotExist:
             return Decimal('0')
 
     def is_empty(self):
-        return self.get_all_items().count() == 0
+        return not self.items.exists()
 
-    def total(self):
+    def get_total(self):
         from ..pricing import Price
-        return sum([i.price() for i in self.get_all_items().all()],
+        return sum([i.price() for i in self.get_all_items()],
                    Price(0, currency=self.currency))
 
 

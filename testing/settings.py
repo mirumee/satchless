@@ -21,6 +21,9 @@ INSTALLED_APPS = [
     'django.contrib.sites',
     'django.contrib.staticfiles',
 
+    'mamona',
+    'payments',
+
     'satchless.cart',
     'satchless.category',
     'satchless.checkout',
@@ -29,6 +32,10 @@ INSTALLED_APPS = [
     'satchless.contrib.checkout.singlestep',
     'satchless.contrib.delivery.percountry',
     'satchless.contrib.delivery.simplepost',
+    'satchless.contrib.payment.authorizenet_provider',
+    'satchless.contrib.payment.django_payments_provider',
+    'satchless.contrib.payment.mamona_provider',
+    'satchless.contrib.payment.stripe_provider',
     'satchless.contrib.pricing.cache',
     'satchless.contrib.pricing.simpleqty',
     'satchless.contrib.stock.singlestore',

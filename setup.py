@@ -37,6 +37,9 @@ EXTRAS = {
     'mamona payment provider': [
         'mamona',
     ],
+    'stripe payment provider': [
+        'stripe',
+    ],
 }
 
 setup(name='satchless',

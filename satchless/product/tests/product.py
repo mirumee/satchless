@@ -8,18 +8,28 @@ from django.core.urlresolvers import reverse
 from django.test import TestCase, Client
 
 from ...util.tests import ViewsTestCase
-from ..app import product_app
+from ..app import MagicProductApp
 from ..forms import FormRegistry, variant_form_for_product
-from ..models import Variant, Product
 
-from . import DeadParrot, DeadParrotVariant, ZombieParrot, DeadParrotVariantForm
+from . import (Parrot, ParrotVariant, DeadParrot, DeadParrotVariant,
+               ZombieParrot, DeadParrotVariantForm)
 
-__all__ = ['Models', 'Registry', 'Views']
+__all__ = ['Models', 'Registry', 'Views', 'product_app']
+
+
+class TestProductApp(MagicProductApp):
+    Product = Parrot
+    Variant = ParrotVariant
+
+
+product_app = TestProductApp()
+
 
 class urls:
     urlpatterns = patterns('',
         url(r'^products/', include(product_app.urls)),
     )
+
 
 class Models(TestCase):
     urls = urls
@@ -38,15 +48,6 @@ class Models(TestCase):
     #    product.get_subtype_instance()
     #    self.assertEqual(len(connection.queries), 1)
 
-    def test_product_subclass_promotion(self):
-        for product in Product.objects.all():
-            # test saving as base and promoted class
-            self.assertEqual(type(product.get_subtype_instance()), DeadParrot)
-            Product.objects.get(pk=product.pk).save()
-            self.assertEqual(type(product.get_subtype_instance()), DeadParrot)
-            DeadParrot.objects.get(pk=product.pk).save()
-            self.assertEqual(type(product.get_subtype_instance()), DeadParrot)
-
     def test_variants(self):
         self.macaw.variants.create(color='blue', looks_alive=False)
         self.macaw.variants.create(color='blue', looks_alive=True)
@@ -58,13 +59,13 @@ class Models(TestCase):
         self.cockatoo.variants.create(color='blue', looks_alive=False)
         self.assertEqual(4, self.cockatoo.variants.count())
 
-        for variant in Variant.objects.all():
+        for variant in product_app.Variant.objects.all():
             # test saving as base and promoted class
-            self.assertEqual(type(variant.get_subtype_instance()), DeadParrotVariant)
-            Variant.objects.get(pk=variant.pk).save()
-            self.assertEqual(type(variant.get_subtype_instance()), DeadParrotVariant)
+            self.assertEqual(type(variant.get_subtype_instance()),
+                             DeadParrotVariant)
             DeadParrotVariant.objects.get(pk=variant.pk).save()
-            self.assertEqual(type(variant.get_subtype_instance()), DeadParrotVariant)
+            self.assertEqual(type(variant.get_subtype_instance()),
+                             DeadParrotVariant)
 
     def test_product_url(self):
         self.assertTrue('/products/+1-macaw/' in self.macaw.get_absolute_url())
@@ -86,7 +87,7 @@ class Views(ViewsTestCase):
 
     def setUp(self):
         self.macaw = DeadParrot.objects.create(slug='macaw',
-                species='Hyacinth Macaw')
+                                               species='Hyacinth Macaw')
         self.client_test = Client()
         self.ORIGINAL_TEMPLATE_DIRS = settings.TEMPLATE_DIRS
         test_dir = os.path.dirname(__file__)
@@ -101,6 +102,6 @@ class Views(ViewsTestCase):
                                 self.custom_settings)
 
     def test_product_details_view(self):
-        response = self.client.get(reverse('product:details',
-                                           args=(self.macaw.pk, self.macaw.slug)))
+        response = self.client.get(
+            reverse('product:details', args=(self.macaw.pk, self.macaw.slug)))
         self.assertEqual(response.status_code, 200)

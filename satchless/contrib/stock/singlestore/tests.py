@@ -1,16 +1,16 @@
 from django.test import TestCase
 from django.db import models
 
-from ....product.models import ProductAbstract, Variant
+from ....product.tests import Parrot, ParrotVariant
 from ....cart.tests import cart_app
 from .models import VariantStockLevelMixin
 
 # Models for tests
-class StockedDeadParrot(ProductAbstract):
+class StockedDeadParrot(Parrot):
     species = models.CharField(max_length=20)
 
 
-class StockedDeadParrotVariant(Variant, VariantStockLevelMixin):
+class StockedDeadParrotVariant(ParrotVariant, VariantStockLevelMixin):
     COLOR_CHOICES = (
         ('blue', 'blue'),
         ('white', 'white'),

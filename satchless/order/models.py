@@ -213,9 +213,9 @@ class OrderedItem(models.Model):
     add this to your concrete model:
     delivery_group = models.ForeignKey(DeliveryGroup, related_name='items')
     """
-    product_variant = models.ForeignKey(Variant, blank=True, null=True,
-                                        related_name='+',
-                                        on_delete=models.SET_NULL)
+    #product_variant = models.ForeignKey(Variant, blank=True, null=True,
+    #                                    related_name='+',
+    #                                    on_delete=models.SET_NULL)
     product_name = models.CharField(max_length=128)
     quantity = models.DecimalField(_('quantity'),
                                    max_digits=10, decimal_places=4)

@@ -27,11 +27,10 @@ class Category(MPTTModel):
     slug = models.SlugField(max_length=50)
     parent = models.ForeignKey('self', null=True, blank=True,
                                related_name='children')
-    products = models.ManyToManyField(Product, related_name='categories',
-                                      blank=True)
     objects = CategoryManager()
 
     class Meta:
+        abstract = True
         verbose_name = _("category")
         verbose_name_plural = _("categories")
 

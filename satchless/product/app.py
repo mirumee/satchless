@@ -9,16 +9,25 @@ from . import models
 from . import handler
 
 class ProductApp(SatchlessApp):
+
     app_name = 'product'
     namespace = 'product'
-    product_model = models.Product
+    Product = None
+    Variant = None
     product_details_templates = [
         'satchless/product/%(product_model)s/view.html',
         'satchless/product/view.html',
     ]
 
+    def __init__(self, *args, **kwargs):
+        super(ProductApp, self).__init__(*args, **kwargs)
+        assert self.Product, ('You need to subclass ProductApp and provide'
+                              ' Product')
+        assert self.Variant, ('You need to subclass ProductApp and provide'
+                              ' Variant')
+
     def get_product(self, request, product_pk, product_slug):
-        product = get_object_or_404(self.product_model, pk=product_pk,
+        product = get_object_or_404(self.Product, pk=product_pk,
                                     slug=product_slug)
         return product.get_subtype_instance()
 
@@ -43,4 +52,22 @@ class ProductApp(SatchlessApp):
                 self.product_details, name='details'),
         )
 
-product_app = ProductApp()
+
+class MagicProductApp(ProductApp):
+
+    def __init__(self, **kwargs):
+        self.Product = (self.Product or
+                        self.construct_product_class())
+        self.Variant = (self.Variant or
+                        self.construct_variant_class(self.Product))
+        super(MagicProductApp, self).__init__(**kwargs)
+
+    def construct_product_class(self):
+        class Product(models.Product):
+            pass
+        return Product
+
+    def construct_variant_class(self, product_class):
+        class Variant(models.Variant):
+            pass
+        return Variant

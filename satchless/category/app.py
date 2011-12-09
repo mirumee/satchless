@@ -1,4 +1,5 @@
 from django.conf.urls.defaults import patterns, url
+import django.db
 from django.http import Http404
 from django.http import HttpResponseNotFound
 from django.template.response import TemplateResponse
@@ -8,7 +9,7 @@ from . import models
 
 class CategorizedProductApp(app.ProductApp):
     app_name = 'category'
-    category_model = models.Category
+    Category = None
     category_details_templates = [
         'satchless/category/%(category_model)s/view.html',
         'satchless/category/view.html',
@@ -19,15 +20,20 @@ class CategorizedProductApp(app.ProductApp):
     ]
     allow_uncategorized_product_urls = False
 
+    def __init__(self, *args, **kwargs):
+        super(CategorizedProductApp, self).__init__(*args, **kwargs)
+        assert self.Category, ('You need to subclass CategorizedProductApp and'
+                               ' provide Category')
+
     def path_from_slugs(self, slugs):
         """
         Returns list of Category instances matching given slug path.
         """
         if len(slugs) == 0:
             return []
-        leaves = self.category_model.objects.filter(slug=slugs[-1])
+        leaves = self.Category.objects.filter(slug=slugs[-1])
         if not leaves:
-            raise self.category_model.DoesNotExist, "slug='%s'" % slugs[-1]
+            raise self.Category.DoesNotExist, "slug='%s'" % slugs[-1]
         for leaf in leaves:
             path = leaf.get_ancestors()
             if len(path) + 1 != len(slugs):
@@ -35,12 +41,12 @@ class CategorizedProductApp(app.ProductApp):
             if [c.slug for c in path] != slugs[:-1]:
                 continue
             return list(path) + [leaf]
-        raise self.category_model.DoesNotExist
+        raise self.Category.DoesNotExist
 
     def category_list(self, request):
         context = self.get_context_data(request)
         format_data = {
-            'category_model': self.category_model._meta.module_name,
+            'category_model': self.Category._meta.module_name,
         }
         templates = [p % format_data for p in self.category_list_templates]
         return TemplateResponse(request, templates, context)
@@ -49,7 +55,7 @@ class CategorizedProductApp(app.ProductApp):
         slugs = filter(None, parent_slugs.split('/') + [category_slug])
         try:
             path = self.path_from_slugs(slugs)
-        except self.category_model.DoesNotExist:
+        except self.Category.DoesNotExist:
             return HttpResponseNotFound()
         category = path[-1]
         context = self.get_context_data(request, category=category, path=path)
@@ -60,7 +66,7 @@ class CategorizedProductApp(app.ProductApp):
         return TemplateResponse(request, templates, context)
 
     def get_context_data(self, request, product=None, **kwargs):
-        categories = self.category_model.objects.filter(parent__isnull=True)
+        categories = self.Category.objects.filter(parent__isnull=True)
         context = dict(kwargs, categories=categories)
         if product:
             context.update({
@@ -73,7 +79,7 @@ class CategorizedProductApp(app.ProductApp):
                     product_pk=None):
         slugs = category_slugs.split('/')
         path = self.path_from_slugs(filter(None, slugs))
-        products = self.product_model.objects.all()
+        products = self.Product.objects.all()
         if product_slug:
             products = products.filter(slug=product_slug)
         if product_pk:
@@ -107,4 +113,19 @@ class CategorizedProductApp(app.ProductApp):
             url_patterns += super(CategorizedProductApp, self).get_urls()
         return url_patterns
 
-product_app = CategorizedProductApp()
+
+class MagicCategorizedProductApp(app.MagicProductApp, CategorizedProductApp):
+
+    def __init__(self, **kwargs):
+        self.Product = (self.Product or
+                        self.construct_product_class())
+        self.Category = (self.Category or
+                         self.construct_category_class(self.Product))
+        super(MagicCategorizedProductApp, self).__init__(**kwargs)
+
+    def construct_category_class(self, product_class):
+        class Category(models.Category):
+            products = django.db.models.ManyToManyField(
+                product_class, related_name='categories', blank=True)
+            pass
+        return Category

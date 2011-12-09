@@ -166,7 +166,6 @@ class Cart(models.Model):
 
 class CartItem(models.Model):
 
-    variant = models.ForeignKey(Variant, related_name='+', editable=False)
     quantity = models.DecimalField(_("quantity"), max_digits=10,
                                    decimal_places=4)
 

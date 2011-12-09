@@ -64,7 +64,7 @@ ROOT_URLCONF = 'testing.urls'
 
 SATCHLESS_DEFAULT_CURRENCY = 'PLN'
 SATCHLESS_PRICING_HANDLERS = [
-    'satchless.contrib.pricing.simpleqty.SimpleQtyPricingHandler'
+    'satchless.contrib.pricing.simpleqty.tests.TestPricingHandler'
 ]
 SATCHLESS_DELIVERY_PROVIDER = [
     'satchless.contrib.delivery.simplepost.PostDeliveryProvider'

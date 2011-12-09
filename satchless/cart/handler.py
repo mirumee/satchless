@@ -1,6 +1,6 @@
 from django.shortcuts import redirect
 
-from ..product.models import ProductAbstract, Variant
+from ..product.models import Product, Variant
 from ..util import JSONResponse
 from . import forms
 from . import models
@@ -48,7 +48,7 @@ class AddToCartHandler(object):
             * `extra_context`: extra context that will be passed to template
         """
         for instance in instances:
-            if isinstance(instance, ProductAbstract):
+            if isinstance(instance, Product):
                 product = instance
                 variant = None
             elif isinstance(instance, Variant):

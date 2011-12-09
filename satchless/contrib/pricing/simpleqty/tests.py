@@ -1,17 +1,42 @@
 from decimal import Decimal
 from django.conf import settings
+from django.db import models
 from django.test import TestCase
 
-from ....cart.tests import cart_app
 from ....pricing import Price, PriceRange
 from ....pricing.handler import PricingQueue
-from ....product.tests import DeadParrot
-from .models import ProductPrice
+from ....product.tests import Parrot, ParrotVariant, DeadParrot
+from . import SimpleQtyPricingHandler
+from .models import ProductPrice, VariantPriceOffset, PriceQtyOverride
+
+
+class TestProductPrice(ProductPrice):
+    product = models.OneToOneField(Parrot)
+
+
+class TestVariantPriceOffset(VariantPriceOffset):
+    """
+    Holds optional price offset for a variant. Does not depend on quantity.
+    """
+    base_price = models.ForeignKey(TestProductPrice, related_name='offsets')
+    variant = models.OneToOneField(ParrotVariant, related_name='price_offset')
+
+
+class TestPriceQtyOverride(PriceQtyOverride):
+    base_price = models.ForeignKey(TestProductPrice,
+                                   related_name='qty_overrides')
+
+
+class TestPricingHandler(SimpleQtyPricingHandler):
+    ProductPrice = TestProductPrice
+    VariantPriceOffset = TestVariantPriceOffset
+    PriceQtyOverride = TestPriceQtyOverride
+
 
 class Pricing(TestCase):
 
     TEST_PRICING_HANDLERS = [
-        'satchless.contrib.pricing.simpleqty.SimpleQtyPricingHandler',
+        TestPricingHandler,
     ]
 
     def setUp(self):
@@ -40,7 +65,7 @@ class Pricing(TestCase):
         self.pricing_queue = PricingQueue(*self.TEST_PRICING_HANDLERS)
 
     def tearDown(self):
-        ProductPrice.objects.all().delete()
+        TestProductPrice.objects.all().delete()
         self.pricing_queue = PricingQueue(*self.TEST_PRICING_HANDLERS)
 
     def test_price(self):
@@ -57,8 +82,8 @@ class Pricing(TestCase):
         self.assertEqual(p1 * 3, Price(30,60))
 
     def test_basicprices(self):
-        macaw_price = ProductPrice.objects.create(product=self.macaw,
-                                                  price=Decimal('10.0'))
+        macaw_price = TestProductPrice.objects.create(product=self.macaw,
+                                                      price=Decimal('10.0'))
         macaw_price.qty_overrides.create(min_qty=5, price=Decimal('9.0'))
         macaw_price.qty_overrides.create(min_qty=10, price=Decimal('8.0'))
         macaw_price.offsets.create(variant=self.macaw_blue_a,
@@ -113,16 +138,16 @@ class Pricing(TestCase):
                          Price(Decimal('10.0'), currency='BTC'))
 
     def test_basicranges(self):
-        macaw_price = ProductPrice.objects.create(product=self.macaw,
-                                                  price=Decimal('10.0'))
+        macaw_price = TestProductPrice.objects.create(product=self.macaw,
+                                                      price=Decimal('10.0'))
         macaw_price.offsets.create(variant=self.macaw_blue_a,
                                    price_offset=Decimal('2.0'))
         macaw_price.offsets.create(variant=self.macaw_red_d,
                                    price_offset=Decimal('3.0'))
         macaw_price.offsets.create(variant=self.macaw_red_a,
                                    price_offset=Decimal('6.0'))
-        cockatoo_price = ProductPrice.objects.create(product=self.cockatoo,
-                                                     price=Decimal('12.0'))
+        cockatoo_price = TestProductPrice.objects.create(product=self.cockatoo,
+                                                         price=Decimal('12.0'))
         cockatoo_price.offsets.create(variant=self.cockatoo_white_d,
                                       price_offset=Decimal('-5.0'))
         cockatoo_price.offsets.create(variant=self.cockatoo_green_d,
@@ -143,9 +168,10 @@ class Pricing(TestCase):
                                                    currency='BTC')))
 
     def test_cartprices(self):
-        macaw_price = ProductPrice.objects.create(product=self.macaw,
-                                                  price=Decimal('10.0'),
-                                                  qty_mode='product')
+        from ....cart.tests import cart_app
+        macaw_price = TestProductPrice.objects.create(product=self.macaw,
+                                                      price=Decimal('10.0'),
+                                                      qty_mode='product')
         macaw_price.qty_overrides.create(min_qty=9, price=Decimal('9.0'))
         macaw_price.offsets.create(variant=self.macaw_blue_a,
                                    price_offset=Decimal('2.0'))

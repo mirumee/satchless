@@ -1,13 +1,21 @@
 from django.db.models import Sum, Min, Max
 
 from ....pricing import Price, PriceRange, PricingHandler
-from . import models
 
 class SimpleQtyPricingHandler(PricingHandler):
+    ProductPrice = None
+    VariantPriceOffset = None
+
+    def __init__(self, **kwargs):
+        super(SimpleQtyPricingHandler, self).__init__(**kwargs)
+        assert self.ProductPrice, ('You need to subclass'
+                                   ' SimpleQtyPricingHandler and provide'
+                                   ' ProductPrice')
+
     def get_variant_price(self, variant, currency, quantity=1, **kwargs):
         try:
-            base_price = models.ProductPrice.objects.get(product=variant.product)
-        except models.ProductPrice.DoesNotExist:
+            base_price = self.ProductPrice.objects.get(product=variant.product)
+        except self.ProductPrice.DoesNotExist:
             return kwargs.pop('price', None)
         cart = kwargs.get('cart', None)
         if base_price.qty_mode == 'product' and cart:
@@ -25,16 +33,16 @@ class SimpleQtyPricingHandler(PricingHandler):
         except IndexError:
             price = base_price.price
         try:
-            offset = variant.variantpriceoffset.price_offset
-        except models.VariantPriceOffset.DoesNotExist:
+            offset = variant.price_offset.price_offset
+        except self.VariantPriceOffset.DoesNotExist:
             offset = 0
         price = price + offset
         return Price(net=price, gross=price, currency=currency)
 
     def get_product_price_range(self, product, currency, **kwargs):
         try:
-            base_price = models.ProductPrice.objects.get(product=product)
-        except models.ProductPrice.DoesNotExist:
+            base_price = self.ProductPrice.objects.get(product=product)
+        except self.ProductPrice.DoesNotExist:
             return kwargs.pop('price', (None, None))
         price_overrides = (base_price.qty_overrides.filter(min_qty__lte=1)
                                                    .order_by('-min_qty'))

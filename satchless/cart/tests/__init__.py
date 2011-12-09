@@ -7,13 +7,12 @@ from django.http import HttpResponse
 from django.test import Client
 import os
 
-from ...category.app import product_app
-from ...category.models import Category
 from ...checkout.app import CheckoutApp
 from ...pricing import handler as pricing_handler
 from ...product import handler as product_handler
 from ...product.tests.pricing import FiveZlotyPriceHandler
-from ...product.tests import (DeadParrot, ZombieParrot, DeadParrotVariantForm)
+from ...product.tests import (DeadParrot, ZombieParrot, DeadParrotVariantForm,
+                              product_app)
 from ...util.tests import ViewsTestCase
 
 from .. import app
@@ -32,7 +31,8 @@ class FakeCheckoutApp(CheckoutApp):
 class TestCartApp(app.MagicCartApp):
     pass
 
-cart_app = TestCartApp()
+
+cart_app = TestCartApp(product_app)
 
 
 add_to_cart_handler = handler.AddToCartHandler('cart',
@@ -41,6 +41,7 @@ add_to_cart_handler = handler.AddToCartHandler('cart',
 
 
 class Cart(ViewsTestCase):
+
     class urls:
         urlpatterns = patterns('',
             url(r'^cart/', include(cart_app.urls)),
@@ -49,14 +50,10 @@ class Cart(ViewsTestCase):
         )
 
     def setUp(self):
-        self.category_birds = Category.objects.create(name='birds',
-                                                      slug='birds')
         self.macaw = DeadParrot.objects.create(slug='macaw',
                                                species='Hyacinth Macaw')
         self.cockatoo = DeadParrot.objects.create(slug='cockatoo',
                                                   species='White Cockatoo')
-        self.category_birds.products.add(self.macaw)
-        self.category_birds.products.add(self.cockatoo)
         self.macaw_blue = self.macaw.variants.create(color='blue',
                                                      looks_alive=False)
         self.macaw_blue_fake = self.macaw.variants.create(color='blue',
@@ -73,7 +70,6 @@ class Cart(ViewsTestCase):
         self.user1 = User.objects.create(username="testuser", is_staff=True,
                                          is_superuser=True)
         self.user1.set_password(u"pasło")
-        self.category_birds.products.add(self.macaw)
         self.user1.save()
 
         test_dir = os.path.dirname(__file__)
@@ -150,7 +146,6 @@ class Cart(ViewsTestCase):
 
         zombie = ZombieParrot.objects.create(slug='zombie-parrot',
                                              species='Zombie Parrot')
-        self.category_birds.products.add(zombie)
         response = self._test_status(zombie.get_absolute_url(),
                                      method='get', status_code=200)
         self.assertTrue(isinstance(response.context['product'].cart_form,

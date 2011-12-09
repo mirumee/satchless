@@ -1,16 +1,18 @@
 from decimal import Decimal
 
 from ....pricing import Price, PriceRange, LinearTax, PricingHandler
-from . import models
 
 class FlatGroupPricingHandler(PricingHandler):
+
+    TaxGroup = None
+
     def _tax_product(self, product, price):
         try:
-            group = product.taxgroup_set.get()
-        except models.TaxGroup.DoesNotExist:
+            group = product.tax_groups.get()
+        except self.TaxGroup.DoesNotExist:
             try:
-                group = models.TaxGroup.objects.get(default=True)
-            except models.TaxGroup.DoesNotExist:
+                group = self.TaxGroup.objects.get(default=True)
+            except self.TaxGroup.DoesNotExist:
                 return price
         if not isinstance(price, (Price, PriceRange)):
             raise TypeError("Price must be a Price instance or tuple.")

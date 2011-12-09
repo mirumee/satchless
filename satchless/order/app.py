@@ -64,6 +64,7 @@ class OrderApp(SatchlessApp):
 
 
 class MagicOrderApp(OrderApp):
+
     DeliveryGroup = None
     OrderedItem = None
 
@@ -74,7 +75,8 @@ class MagicOrderApp(OrderApp):
                               self.construct_delivery_group_class(self.Order))
         self.OrderedItem = (
             self.OrderedItem or
-            self.construct_ordered_item_class(self.DeliveryGroup))
+            self.construct_ordered_item_class(self.DeliveryGroup,
+                                              cart_app.product_app.Variant))
         super(MagicOrderApp, self).__init__(**kwargs)
 
     def construct_order_class(self, cart_class):
@@ -91,9 +93,12 @@ class MagicOrderApp(OrderApp):
                                                 editable=False)
         return DeliveryGroup
 
-    def construct_ordered_item_class(self, delivery_group_class):
+    def construct_ordered_item_class(self, delivery_group_class, variant_class):
         class OrderedItem(models.OrderedItem):
             delivery_group = django.db.models.ForeignKey(delivery_group_class,
                                                          related_name='items',
                                                          editable=False)
+            product_variant = django.db.models.ForeignKey(
+                variant_class, blank=True, null=True, related_name='+',
+                on_delete=django.db.models.SET_NULL)
         return OrderedItem

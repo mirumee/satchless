@@ -2,11 +2,15 @@ from django import forms
 from django.db import models
 
 from ..forms import variant_form_for_product, BaseVariantForm
-from ..models import ProductAbstract, Variant
+from ..models import Product, Variant
 
 #models for tests
 
-class DeadParrot(ProductAbstract):
+class Parrot(Product):
+    pass
+
+
+class DeadParrot(Parrot):
     species = models.CharField(max_length=20)
 
 
@@ -14,7 +18,11 @@ class ZombieParrot(DeadParrot):
     pass
 
 
-class DeadParrotVariant(Variant):
+class ParrotVariant(Variant):
+    pass
+
+
+class DeadParrotVariant(ParrotVariant):
     COLOR_CHOICES = (
         ('blue', 'blue'),
         ('white', 'white'),

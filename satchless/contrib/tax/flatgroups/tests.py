@@ -1,11 +1,21 @@
 from decimal import Decimal
+from django.db import models
 from django.test import TestCase
 
-from ....contrib.pricing.simpleqty.models import ProductPrice
-from ....product.tests import DeadParrot
+from ....contrib.pricing.simpleqty.tests import TestProductPrice
+from ....product.tests import DeadParrot, Parrot
 from ....pricing import Price, PriceRange
 from ....pricing.handler import PricingQueue
-from . import models
+from . import FlatGroupPricingHandler
+from .models import TaxGroup
+
+class TestTaxGroup(TaxGroup):
+    products = models.ManyToManyField(Parrot, related_name='tax_groups')
+
+
+class TestFlatGroupPricingHandler(FlatGroupPricingHandler):
+    TaxGroup = TestTaxGroup
+
 
 class ParrotTaxTest(TestCase):
     def setUp(self):
@@ -21,24 +31,24 @@ class ParrotTaxTest(TestCase):
                                                               looks_alive=True)
         self.cockatoo_green_a = self.cockatoo.variants.create(color='green',
                                                               looks_alive=True)
-        macaw_price = ProductPrice.objects.create(product=self.macaw,
-                                                  price=Decimal('10.0'))
+        macaw_price = TestProductPrice.objects.create(product=self.macaw,
+                                                      price=Decimal('10.0'))
         macaw_price.offsets.create(variant=self.macaw_blue_a,
                                    price_offset=Decimal('2.0'))
-        cockatoo_price = ProductPrice.objects.create(product=self.cockatoo,
-                                                     price=Decimal('20.0'))
+        cockatoo_price = TestProductPrice.objects.create(product=self.cockatoo,
+                                                         price=Decimal('20.0'))
         cockatoo_price.offsets.create(variant=self.cockatoo_green_a,
                                       price_offset=Decimal('5.0'))
         # create tax groups
-        self.vat8 = models.TaxGroup.objects.create(name="VAT 8%", rate=8,
-                                                   rate_name="8%")
-        self.vat23 = models.TaxGroup.objects.create(name="VAT 23%", rate=23,
-                                                    rate_name="23%")
+        self.vat8 = TestTaxGroup.objects.create(name="VAT 8%", rate=8,
+                                                rate_name="8%")
+        self.vat23 = TestTaxGroup.objects.create(name="VAT 23%", rate=23,
+                                                 rate_name="23%")
         self.vat8.products.add(self.macaw)
         # set the pricing pipeline
         self.pricing_queue = PricingQueue(
-            'satchless.contrib.pricing.simpleqty.SimpleQtyPricingHandler',
-            'satchless.contrib.tax.flatgroups.FlatGroupPricingHandler')
+            'satchless.contrib.pricing.simpleqty.tests.TestPricingHandler',
+            TestFlatGroupPricingHandler)
 
     def test_nodefault(self):
         # these have 8% VAT

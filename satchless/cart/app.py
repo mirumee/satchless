@@ -14,6 +14,7 @@ from ..util import JSONResponse
 
 
 class CartApp(SatchlessApp):
+
     app_name = 'cart'
     namespace = 'cart'
     cart_type = 'cart'
@@ -83,11 +84,14 @@ class CartApp(SatchlessApp):
 
 class MagicCartApp(CartApp):
     CartItem = None
+    product_app = None
 
-    def __init__(self, **kwargs):
+    def __init__(self, product_app, **kwargs):
+        self.product_app= product_app
         self.Cart = self.Cart or self.construct_cart_class()
         self.CartItem = (self.CartItem or
-                         self.construct_cart_item_class(self.Cart))
+                         self.construct_cart_item_class(self.Cart,
+                                                        product_app.Variant))
         self.CartItemForm = (
             self.CartItemForm or
             self.construct_cart_item_form_class(self.CartItem))
@@ -98,11 +102,14 @@ class MagicCartApp(CartApp):
             pass
         return Cart
 
-    def construct_cart_item_class(self, cart_class):
+    def construct_cart_item_class(self, cart_class, variant_class):
         class CartItem(models.CartItem):
             cart = django.db.models.ForeignKey(cart_class,
                                                related_name='items',
                                                editable=False)
+            variant = django.db.models.ForeignKey(variant_class,
+                                                  related_name='+',
+                                                  editable=False)
         return CartItem
 
     def construct_cart_item_form_class(self, cart_item_class):

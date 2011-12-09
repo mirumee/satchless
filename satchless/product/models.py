@@ -5,7 +5,7 @@ from django.utils.translation import ugettext_lazy as _
 
 from ..util.models import Subtyped
 
-__all__ = ('ProductAbstract', 'Variant')
+__all__ = ('Product', 'Variant')
 
 class Product(Subtyped):
     """
@@ -19,6 +19,9 @@ class Product(Subtyped):
                                         ' URL-friendly (letters, numbers,'
                                         ' hyphens and underscores only) and'
                                         ' descriptive for the SEO needs.'))
+
+    class Meta:
+        abstract = True
 
     def __unicode__(self):
         return self.slug
@@ -39,22 +42,11 @@ class Product(Subtyped):
         return Decimal(quantity).quantize(1)
 
 
-class ProductAbstract(Product):
-    """
-    Base class for every product to inherit from.
-    """
-    name = models.CharField(_('name'), max_length=128)
-    description = models.TextField(_('description'), blank=True)
-    meta_description = models.TextField(_('meta description'), blank=True,
-                                        help_text=_('Description used by search'
-                                                    ' and indexing engines.'))
-
-    class Meta:
-        abstract = True
-
-
 class Variant(Subtyped):
     """
     Base class for variants. It identifies a concrete product instance,
     which goes to a cart. Custom variants inherit from it.
     """
+
+    class Meta:
+        abstract = True

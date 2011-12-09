@@ -2,8 +2,8 @@
 from django.conf.urls.defaults import patterns, url, include
 
 from satchless.cart.tests import cart_app
-from satchless.category.app import product_app as category_app
-from satchless.product.app import product_app
+from satchless.category.tests import category_app
+from satchless.product.tests import product_app
 from satchless.order.tests import order_app
 
 urlpatterns = patterns('',

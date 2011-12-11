@@ -47,6 +47,5 @@ class Variant(Subtyped):
     Base class for variants. It identifies a concrete product instance,
     which goes to a cart. Custom variants inherit from it.
     """
-
     class Meta:
         abstract = True

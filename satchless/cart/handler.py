@@ -3,7 +3,6 @@ from django.shortcuts import redirect
 from ..product.models import Product, Variant
 from ..util import JSONResponse
 from . import forms
-from . import models
 from . import signals
 
 class AddToCartHandler(object):
@@ -12,9 +11,8 @@ class AddToCartHandler(object):
     validates them and performs all the logic of adding an item to a cart.
     """
 
-    def __init__(self, typ='cart', details_view='cart:details',
-                 addtocart_formclass=forms.AddToCartForm,
-                 cart_class=models.Cart, form_attribute='cart_form'):
+    def __init__(self, cart_app, addtocart_formclass=forms.AddToCartForm,
+                 form_attribute='cart_form'):
         """
         Sets up a parametrized handler for product view.
 
@@ -25,11 +23,9 @@ class AddToCartHandler(object):
             * `addtocart_formclass`: form class responsible for adding to cart.
             * `form_attribute`: name of instance's attribute to save the form under.
         """
-        self.typ = typ
-        self.details_view = details_view
+        self.cart_app = cart_app
         self.form_attribute = form_attribute
         self.addtocart_formclass = addtocart_formclass
-        self.cart_class = cart_class
 
     def __call__(self, instances=None, request=None, extra_context=None,
                  **kwargs):
@@ -61,10 +57,9 @@ class AddToCartHandler(object):
             Form = forms.add_to_cart_variant_form_for_product(product,
                     addtocart_formclass=self.addtocart_formclass)
             if request.method == 'POST':
-                cart = self.cart_class.objects.get_or_create_from_request(request,
-                                                                          self.typ)
+                cart = self.cart_app.get_cart_for_request(request)
                 form = Form(data=request.POST, cart=cart, product=product,
-                            variant=variant, typ=self.typ)
+                            variant=variant, typ=self.cart_app.cart_type)
                 if form.is_valid():
                     form_result = form.save()
                     signals.cart_item_added.send(sender=type(form_result.cart_item),
@@ -74,13 +69,13 @@ class AddToCartHandler(object):
                     if request.is_ajax():
                         # FIXME: add cart details like number of items and new total
                         return JSONResponse({})
-                    return redirect(self.details_view)
+                    return redirect(self.cart_app.reverse('details'))
                 elif request.is_ajax() and form.errors:
                     data = dict(form.errors)
                     return JSONResponse(data, status=400)
             else:
                 form = Form(data=None, product=product, variant=variant,
-                            typ=self.typ)
+                            typ=self.cart_app.cart_type)
             # Attach the form to instance
             setattr(instance, self.form_attribute, form)
         return extra_context

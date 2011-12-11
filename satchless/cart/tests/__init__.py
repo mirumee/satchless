@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 from decimal import Decimal
 from django.conf.urls.defaults import patterns, include, url
-from django.contrib.auth.models import User
 from django.core.exceptions import ObjectDoesNotExist
+from django.contrib.auth.models import User
 from django.http import HttpResponse
 from django.test import Client
 import os
@@ -15,12 +15,10 @@ from ...product.tests import (DeadParrot, ZombieParrot, DeadParrotVariantForm,
 from ...util.tests import ViewsTestCase
 
 from .. import app
-from .. import models
 from .. import signals
 
 
-class FakeCheckoutApp(CheckoutApp):
-
+class MockCheckoutApp(CheckoutApp):
     def prepare_order(self, *args, **kwargs):
         return HttpResponse("OK")
 
@@ -38,7 +36,7 @@ class Cart(ViewsTestCase):
         urlpatterns = patterns('',
             url(r'^cart/', include(cart_app.urls)),
             url(r'^products/', include(product_app.urls)),
-            url(r'^checkout/', include(FakeCheckoutApp().urls))
+            url(r'^checkout/', include(MockCheckoutApp().urls))
         )
 
     def setUp(self):
@@ -122,8 +120,8 @@ class Cart(ViewsTestCase):
     def _get_or_create_cart_for_client(self, client=None, typ='cart'):
         client = client or self.client
         self._test_status(cart_app.reverse('details'), client_instance=client)
-        cart_pk = client.session[models.CART_SESSION_KEY % typ]
-        return cart_app.Cart.objects.get(pk=cart_pk, typ=typ)
+        cart_token = client.session[cart_app.cart_session_key]
+        return cart_app.Cart.objects.get(token=cart_token, typ=typ)
 
     def test_add_to_cart_form_on_product_view(self):
         response = self._test_status(self.macaw.get_absolute_url(),
@@ -252,3 +250,4 @@ class Cart(ViewsTestCase):
                           result.reason),
                          (1, 0, u"Parrots don't rest in groups"))
         self.assertEqual(1, cart.get_quantity(self.cockatoo_white_d))
+

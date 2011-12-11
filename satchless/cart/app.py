@@ -1,8 +1,9 @@
 # -*- coding: utf-8 -*-
 from django.conf.urls.defaults import patterns, url
 import django.db
-from django.http import HttpResponse
-from django.shortcuts import get_object_or_404, redirect
+from django.core.exceptions import ObjectDoesNotExist
+from django.http import HttpResponse, HttpResponseNotFound
+from django.shortcuts import redirect
 from django.template.response import TemplateResponse
 from django.utils.decorators import method_decorator
 from django.views.decorators.http import require_POST
@@ -34,8 +35,7 @@ class CartApp(SatchlessApp):
                                    ' provide CartItemForm')
 
     def get_cart_for_request(self, request):
-        return self.Cart.objects.get_or_create_from_request(
-            request, self.cart_type)
+        raise NotImplementedError()
 
     def _handle_cart(self, cart, request):
         cart_item_forms = []
@@ -65,16 +65,20 @@ class CartApp(SatchlessApp):
         templates = [t % format_data for t in self.cart_templates]
         response = TemplateResponse(request, templates, context)
         if request.is_ajax():
-            return JSONResponse({'total': cart.items.count(),
+            return JSONResponse({'total': len(cart.get_all_items()),
                                  'html': response.rendered_content})
         return response
 
     @method_decorator(require_POST)
     def remove_item(self, request, item_pk):
         cart = self.get_cart_for_request(request)
-        item = get_object_or_404(cart.items, pk=item_pk)
+        try:
+            item = cart.get_item(pk=item_pk)
+        except ObjectDoesNotExist:
+            return HttpResponseNotFound()
         cart.replace_item(item.variant, 0)
         return self.redirect('details')
+
 
     def get_urls(self):
         return patterns('',
@@ -82,6 +86,7 @@ class CartApp(SatchlessApp):
             url(r'^remove/(?P<item_pk>[0-9]+)/$', self.remove_item,
                 name='remove-item'),
         )
+
 
 class MagicCartApp(CartApp):
     CartItem = None
@@ -96,11 +101,9 @@ class MagicCartApp(CartApp):
         self.CartItemForm = (
             self.CartItemForm or
             self.construct_cart_item_form_class(self.CartItem))
-        self.add_to_cart_handler = handler.AddToCartHandler(
-            self.cart_type,
-            addtocart_formclass=forms.AddToCartForm,
-            cart_class=self.Cart)
-        product_app.register_product_view_handler(self.add_to_cart_handler)
+        add_to_cart_handler = handler.AddToCartHandler(cart_app=self,
+                                                       addtocart_formclass=forms.AddToCartForm)
+        product_app.register_product_view_handler(add_to_cart_handler)
         super(MagicCartApp, self).__init__(**kwargs)
 
     def construct_cart_class(self):
@@ -123,3 +126,22 @@ class MagicCartApp(CartApp):
             class Meta:
                 model = cart_item_class
         return EditCartItemForm
+
+    @property
+    def cart_session_key(self):
+        return '_satchless_cart-%s' % self.cart_type
+
+    def get_cart_for_request(self, request):
+        try:
+            token = request.session[self.cart_session_key]
+            cart = self.Cart.objects.get(typ=self.cart_type,
+                                         token=token)
+        except (self.Cart.DoesNotExist, KeyError):
+            owner = request.user if request.user.is_authenticated() else None
+            cart = self.Cart.objects.create(typ=self.cart_type, owner=owner)
+            request.session[self.cart_session_key] = cart.token
+        if cart.owner is None and request.user.is_authenticated():
+            cart.owner = request.user
+            cart.save()
+        return cart
+

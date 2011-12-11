@@ -6,7 +6,6 @@ from django.http import HttpResponse
 from django.test import Client
 
 from ...cart.tests import cart_app
-from ...cart.models import CART_SESSION_KEY
 from ...order.tests import order_app
 from ...pricing import handler as pricing_handler
 from ...product.tests import DeadParrot
@@ -32,7 +31,7 @@ class BaseCheckoutAppTests(ViewsTestCase):
     def _get_or_create_cart_for_client(self, client, typ='cart'):
         self._test_status(reverse('cart:details'),
                           client_instance=client)
-        pk = client.session[CART_SESSION_KEY % typ]
+        pk = client.session[cart_app.cart_session_key]
         return self.checkout_app.cart_model.objects.get(pk=pk, typ=typ)
 
     def _get_or_create_order_for_client(self, client):

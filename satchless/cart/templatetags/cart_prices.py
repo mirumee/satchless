@@ -9,7 +9,7 @@ class CartItemPriceNode(BasePriceNode):
         return item.cart.currency
 
     def get_price(self, cartitem, currency, **kwargs):
-        return cartitem.price(currency=currency, **kwargs)
+        return cartitem.get_price(currency=currency, **kwargs)
 
 class CartItemUnitPriceNode(BasePriceNode):
     def get_currency_for_item(self, item):

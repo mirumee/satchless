@@ -140,11 +140,10 @@ INSTALLED_APPS = (
     'satchless.product',
     'satchless.category',
     'satchless.image',
-    'satchless.contrib.productset',
+    #'satchless.contrib.productset',
     #'satchless.contact',
     'satchless.cart',
     'satchless.pricing',
-    'satchless.contrib.pricing.simpleqty',
     'satchless.contrib.tax.flatgroups',
     #'satchless.contrib.stock.singlestore',
     'satchless.order',
@@ -165,7 +164,8 @@ INSTALLED_APPS = (
     'search.haystack_predictive',
     'payments',
     'payments.dummy',
-    'satchless.contrib.payment.django_payments_provider',
+    'pricing',
+    'demo_payments',
 )
 
 SATCHLESS_IMAGE_SIZES = {
@@ -186,8 +186,9 @@ SATCHLESS_IMAGE_SIZES = {
         'crop': True,
     },
     'product-detail': {
-        'size': (304, 304),
-        'crop': False,
+        'size': (308, 310),
+        'crop': True,
+        'upscale': True,
     },
     'product-thumb': {
         'size': (68, 68),
@@ -216,7 +217,7 @@ class CustomCacheHandler(PricingCacheHandler):
 
 SATCHLESS_PRICING_HANDLERS = [
     CustomCacheHandler(
-        'satchless.contrib.pricing.simpleqty.SimpleQtyPricingHandler',
+        'pricing.DemoPricingHandler',
         'satchless.contrib.tax.flatgroups.FlatGroupPricingHandler',
         'sale.SalePricingHandler',
         lazy=True)
@@ -231,7 +232,7 @@ SATCHLESS_DELIVERY_PROVIDERS = [
     'satchless.contrib.delivery.simplepost.PostDeliveryProvider',
 ]
 SATCHLESS_PAYMENT_PROVIDERS = [
-    'satchless.contrib.payment.django_payments_provider.DjangoPaymentsProvider',
+    'demo_payments.PaymentsProvider',
 ]
 SATCHLESS_DJANGO_PAYMENT_TYPES = (('dummy', _('Dummy Payment Provider')),)
 

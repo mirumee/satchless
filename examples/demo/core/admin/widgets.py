@@ -5,7 +5,7 @@ from django.utils.safestring import mark_safe
 from django.utils.translation import ugettext
 import django.forms
 
-from products.models import Product
+from categories.app import product_app
 
 class RawIdWidget(django.forms.TextInput):
     def get_related_lookup_url(self):
@@ -29,7 +29,7 @@ class ProductRawIdWidget(RawIdWidget):
     def render(self, name, value, attrs=None):
         html = super(ProductRawIdWidget, self).render(name, value, attrs)
         if value is not None:
-            product = Product.objects.get(id=value).get_subtype_instance()
+            product = product_app.Product.objects.get(id=value).get_subtype_instance()
             if product.main_image:
                 html = '<img class="icon" src="%s" alt="" /> %s' % (
                         product.main_image.get_absolute_url('admin-icon'), html)

@@ -1,4 +1,4 @@
-from satchless.category.models import Category
+from categories.app import product_app
 
 def root_categories(request):
-    return {'root_categories': Category.objects.filter(parent__isnull=True)}
+    return {'root_categories': product_app.Category.objects.filter(parent__isnull=True)}

@@ -5,11 +5,21 @@ from django.conf import settings
 from django.db import models
 from django.utils.translation import ugettext_lazy as _
 from mothertongue.models import MothertongueModelTranslate
+from satchless.contrib.tax.flatgroups.models import TaxedProductMixin
 from satchless.image.models import Image
 import satchless.product.models
 
+
+class Product(TaxedProductMixin, satchless.product.models.Product):
+    pass
+
+
+class Variant(satchless.product.models.Variant):
+    pass
+
+
 class ProductImage(Image):
-    product = models.ForeignKey(satchless.product.models.Product, related_name="images")
+    product = models.ForeignKey(Product, related_name="images")
     caption = models.CharField(_("Caption"), max_length=128, blank=True)
     order = models.PositiveIntegerField(blank=True)
 
@@ -33,7 +43,12 @@ class Make(models.Model):
         return self.name
 
 
-class Product(MothertongueModelTranslate, satchless.product.models.ProductAbstract):
+class ProductBase(MothertongueModelTranslate, Product):
+    name = models.CharField(_('name'), max_length=128)
+    description = models.TextField(_('description'), blank=True)
+    meta_description = models.TextField(_('meta description'), blank=True,
+                                        help_text=_('Description used by search'
+                                                    ' and indexing engines.'))
     make = models.ForeignKey(Make, null=True, blank=True, on_delete=models.SET_NULL,
         help_text=_("Product manufacturer"))
     main_image = models.ForeignKey(ProductImage, null=True, blank=True, on_delete=models.SET_NULL,
@@ -60,14 +75,14 @@ class ProductTranslation(models.Model):
         return "%s@%s" % (self.name, self.language)
 
 
-class ColoredVariant(satchless.product.models.Variant):
+class ColoredVariant(Variant):
     COLOR_CHOICES = (('red', _("Red")), ('green', _("Green")), ('blue', _("Blue")))
     color = models.CharField(max_length=32, choices=COLOR_CHOICES)
     class Meta:
         abstract = True
 
 
-class Cardigan(Product):
+class Cardigan(ProductBase):
     class Meta:
         verbose_name = _('Cardigan')
         verbose_name_plural = _('Cardigans')
@@ -86,7 +101,7 @@ class CardiganVariant(ColoredVariant):
         return '%s (%s / %s)' % (self.product, self.get_color_display(), self.get_size_display())
 
 
-class Dress(Product):
+class Dress(ProductBase):
     class Meta:
         verbose_name = _('Dress')
         verbose_name_plural = _('Dresses')
@@ -106,7 +121,7 @@ class DressVariant(ColoredVariant):
                                  self.get_size_display())
 
 
-class Hat(Product):
+class Hat(ProductBase):
     class Meta:
         verbose_name = _('Hat')
         verbose_name_plural = _('Hats')
@@ -116,14 +131,14 @@ class HatTranslation(ProductTranslation):
     product = models.ForeignKey(Hat, related_name='translations')
 
 
-class HatVariant(satchless.product.models.Variant):
+class HatVariant(Variant):
     product = models.ForeignKey(Hat, related_name='variants')
 
     def __unicode__(self):
         return unicode(self.product)
 
 
-class Jacket(Product):
+class Jacket(ProductBase):
     class Meta:
         verbose_name = _('Jacket')
         verbose_name_plural = _('Jackets')
@@ -143,7 +158,7 @@ class JacketVariant(ColoredVariant):
                                  self.get_size_display())
 
 
-class Shirt(Product):
+class Shirt(ProductBase):
     class Meta:
         verbose_name = _('Shirt')
         verbose_name_plural = _('Shirts')
@@ -163,7 +178,7 @@ class ShirtVariant(ColoredVariant):
                                  self.get_size_display())
 
 
-class TShirt(Product):
+class TShirt(ProductBase):
     class Meta:
         verbose_name = _('TShirt')
         verbose_name_plural = _('TShirts')
@@ -182,7 +197,7 @@ class TShirtVariant(ColoredVariant):
         return u'%s / %s / %s' % (self.product, self.get_color_display(), self.get_size_display())
 
 
-class Trousers(Product):
+class Trousers(ProductBase):
     class Meta:
         verbose_name = _('Trousers')
         verbose_name_plural = _('Trousers')

@@ -1,8 +1,5 @@
-from satchless.order import app
-from models import DemoOrder
+import satchless.order.app
 
-class OrderApp(app.OrderApp):
+from carts.app import cart_app
 
-    order_model = DemoOrder
-
-order_app = OrderApp()
+order_app = satchless.order.app.MagicOrderApp(cart_app=cart_app)

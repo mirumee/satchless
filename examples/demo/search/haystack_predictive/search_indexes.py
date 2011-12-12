@@ -1,7 +1,7 @@
 from haystack import site
 from haystack.indexes import EdgeNgramField, SearchIndex
 
-from satchless.product import models
+from products import models
 
 class ProductEdgeNgramField(EdgeNgramField):
     def __init__(self, fieldname, *args, **kwargs):

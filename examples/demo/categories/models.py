@@ -3,13 +3,17 @@ from django.conf import settings
 from django.db import models
 from django.utils.translation import ugettext_lazy as _
 from satchless.image.models import Image
+import satchless.category.models
 
 from localeurl.models import reverse
 from mothertongue.models import MothertongueModelTranslate
-from satchless.category import models as category_models
+from products.models import Product
 
-class Category(category_models.Category,
+class Category(satchless.category.models.Category,
                MothertongueModelTranslate):
+    products = models.ManyToManyField(Product,
+                                      related_name='categories',
+                                      blank=True)
     translated_fields = ('name', 'description', 'meta_description')
     translation_set = 'translations'
 

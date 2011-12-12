@@ -1,26 +1,29 @@
 from django.conf.urls.defaults import patterns, url
 from django.shortcuts import get_object_or_404, redirect
-from models import DemoCart
-from satchless.cart import app
-from satchless.cart import signals
-from satchless.cart.models import Cart
+import satchless.cart.app
+import satchless.cart.signals
 
-class WishlistApp(app.CartApp):
+from categories.app import product_app
+
+cart_app = satchless.cart.app.MagicCartApp(product_app)
+
+class WishlistApp(satchless.cart.app.MagicCartApp):
     app_name = 'wishlist'
     namespace = 'wishlist'
     cart_type = 'wishlist'
-    cart_model = DemoCart
+    Cart = cart_app.Cart
+    CartItem = cart_app.CartItem
 
     def add_to_cart(self, request, wishlist_item_id):
-        wishlist = Cart.objects.get_or_create_from_request(request,
+        wishlist = self.Cart.objects.get_or_create_from_request(request,
                                                            self.cart_type)
         item = get_object_or_404(wishlist.items.all(), id=wishlist_item_id)
-        cart = Cart.objects.get_or_create_from_request(request, 'cart')
+        cart = self.Cart.objects.get_or_create_from_request(request, 'cart')
         form_result = cart.add_item(variant=item.variant, quantity=1)
-        signals.cart_item_added.send(sender=type(form_result.cart_item),
-                                     instance=form_result.cart_item,
-                                     result=form_result,
-                                     request=request)
+        satchless.cart.signals.cart_item_added.send(sender=type(form_result.cart_item),
+                                                    instance=form_result.cart_item,
+                                                    result=form_result,
+                                                    request=request)
         return redirect('cart:details')
 
     def get_urls(self):
@@ -31,10 +34,4 @@ class WishlistApp(app.CartApp):
         )
 
 
-class CartApp(app.CartApp):
-    app_name = 'cart'
-    cart_type = 'cart'
-    cart_model = DemoCart
-
-wishlist_app = WishlistApp()
-cart_app = CartApp()
+wishlist_app = WishlistApp(product_app)

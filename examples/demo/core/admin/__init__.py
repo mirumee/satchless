@@ -3,19 +3,19 @@ from django.contrib import admin
 from django.utils.translation import ugettext_lazy as _
 import django.forms
 
-from satchless.contrib.productset.models import ProductSet, ProductSetItem
-from satchless.contrib.productset.admin import ProductSetImageInline
-from satchless.product.models import Product, Variant
+#from satchless.contrib.productset.models import ProductSet, ProductSetItem
+#from satchless.contrib.productset.admin import ProductSetImageInline
 
 from sale.models import DiscountGroup
+from categories.app import product_app
 from search.haystack_predictive.views import search_products
 from . import widgets
 
-class GulliverAdminSite(admin.AdminSite):
+class DemoShopAdminSite(admin.AdminSite):
     def get_urls(self):
         from django.conf.urls.defaults import patterns, url
 
-        urls = super(GulliverAdminSite, self).get_urls()
+        urls = super(DemoShopAdminSite, self).get_urls()
         urls += patterns('',
             url(r'^search/products/$', self.admin_view(search_products),
                 kwargs={'template_name': 'admin/product/search_products.html'},
@@ -23,17 +23,17 @@ class GulliverAdminSite(admin.AdminSite):
         )
         return urls
 
-gulliver_admin = GulliverAdminSite()
+demo_shop_admin = DemoShopAdminSite()
 
-# FIXME (register by hand?): UGLY HACK to register apps in gulliver_admin instance
+# FIXME (register by hand?): UGLY HACK to register apps in demo_shop_admin instance
 admin.autodiscover()
 for model, admin_class in admin.site._registry.items():
-    if model not in (DiscountGroup, ProductSet):
-        gulliver_admin.register(model, admin_class.__class__)
+    if model not in (DiscountGroup,):#, ProductSet):
+        demo_shop_admin.register(model, admin_class.__class__)
 
 class DiscountProductForm(django.forms.ModelForm):
     product = django.forms.ModelChoiceField(label=_("variant id"),
-                                            queryset=Product.objects.all(),
+                                            queryset=product_app.Product.objects.all(),
                                             widget=widgets.ProductRawIdWidget)
     class Meta:
         model = DiscountGroup.products.through
@@ -47,20 +47,21 @@ class DiscountGroupAdmin(admin.ModelAdmin):
     inlines = [ DiscountProductInline, ]
     exclude = ('products',)
 
-class ProductSetItemForm(django.forms.ModelForm):
-    variant = django.forms.ModelChoiceField(label=_("variant id"),
-                                            queryset=Variant.objects.all(),
-                                            widget=widgets.VariantRawIdWidget)
-    class Meta:
-        model = ProductSetItem
-
-class ProductSetItemInline(admin.TabularInline):
-    #form = ProductSetItemForm
-    model = ProductSetItem
-
-class ProductSetAdmin(admin.ModelAdmin):
-    prepopulated_fields = {'slug': ('name',)}
-    inlines = [ ProductSetItemInline, ProductSetImageInline, ]
-
-gulliver_admin.register(ProductSet, ProductSetAdmin)
-gulliver_admin.register(DiscountGroup, DiscountGroupAdmin)
+# FIXME: add product set application
+#class ProductSetItemForm(django.forms.ModelForm):
+#    variant = django.forms.ModelChoiceField(label=_("variant id"),
+#                                            queryset=Variant.objects.all(),
+#                                            widget=widgets.VariantRawIdWidget)
+#    class Meta:
+#        model = ProductSetItem
+#
+#class ProductSetItemInline(admin.TabularInline):
+#    #form = ProductSetItemForm
+#    model = ProductSetItem
+#
+#class ProductSetAdmin(admin.ModelAdmin):
+#    prepopulated_fields = {'slug': ('name',)}
+#    inlines = [ ProductSetItemInline, ProductSetImageInline, ]
+#
+#demo_shop_admin.register(ProductSet, ProductSetAdmin)
+demo_shop_admin.register(DiscountGroup, DiscountGroupAdmin)

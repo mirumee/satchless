@@ -1,9 +1,11 @@
-from satchless.category import app
+import satchless.category.app
 
-from .models import Category
+from . import models
+import products.models
 
-class CategorizedProductApp(app.CategorizedProductApp):
-    category_model = Category
+class CategoryApp(satchless.category.app.CategorizedProductApp):
+    Category = models.Category
+    Product = products.models.Product
+    Variant = products.models.Variant
 
-
-product_app = CategorizedProductApp()
+product_app = CategoryApp()

@@ -1,17 +1,18 @@
 # -*- coding:utf-8 -*-
-from django.conf import settings
+from django import forms
 from django.contrib import admin
+from django.conf import settings
 import django.db.models
 from django.db.models.query import EmptyQuerySet
 
-import satchless.category.admin
-import satchless.contrib.pricing.simpleqty.admin
-import satchless.product.models
-import satchless.product.admin
+from categories.app import product_app
+import pricing.models
 import sale.models
-
-from . import models
 from . import widgets
+from . import models
+
+from categories.admin.fields import CategoryMultipleChoiceField
+
 
 class TranslationInline(admin.StackedInline):
     extra = 1
@@ -24,18 +25,46 @@ class ImageInline(admin.TabularInline):
     }
 
 
-class ProductForm(satchless.category.admin.ProductForm):
+class ProductForm(forms.ModelForm):
+    categories = CategoryMultipleChoiceField(queryset=product_app.Category.objects
+                                             .order_by('tree_id', 'lft'), required=False)
+    class Meta:
+        model = product_app.Product
+
     def __init__(self, *args, **kwargs):
         super(ProductForm, self).__init__(*args, **kwargs)
+        if self.instance.pk:
+            self.fields['categories'].initial = [c.id for c in self.instance.categories.all()]
         if self.instance.id:
             self.fields['main_image'].queryset = (models.ProductImage.objects
                                                         .filter(product=self.instance))
         else:
             self.fields['main_image'].queryset = EmptyQuerySet(model=models.ProductImage)
 
+    def _save_categories(self, instance):
+        categories = self.cleaned_data['categories']
+        categories_for_removal = set(instance.categories.all())
+        for category in categories:
+            instance.categories.add(category)
+            if category in categories_for_removal:
+                categories_for_removal.remove(category)
+        for category in categories_for_removal:
+            instance.categories.remove(category)
 
-class ProductAdmin(satchless.category.admin.ProductAdmin):
+    def save(self, commit=True):
+        instance = super(ProductForm, self).save(commit=commit)
+        if commit:
+            self._update_categories(instance)
+        return instance
+
+
+class ProductAdmin(admin.ModelAdmin):
     form = ProductForm
+    prepopulated_fields = {'slug': ('name',)}
+
+    def save_model(self, request, obj, form, change):
+        obj.save()
+        form._save_categories(obj)
 
 
 class ProductImageInline(ImageInline):
@@ -46,8 +75,8 @@ class ProductImageInline(ImageInline):
 
 
 class PriceInline(admin.TabularInline):
-    model = satchless.contrib.pricing.simpleqty.models.ProductPrice
-    form = satchless.contrib.pricing.simpleqty.admin.ProductPriceForm
+    model = pricing.models.ProductPrice
+    #form = .pricing.simpleqty.admin.ProductPriceForm
 
 
 class DiscountInline(admin.TabularInline):
@@ -86,7 +115,7 @@ class HatTranslationInline(TranslationInline):
 
 
 class HatAdmin(ProductAdmin):
-    inlines = [HatTranslationInline, PriceInline, DiscountInline,
+    inlines = [HatTranslationInline, DiscountInline, PriceInline,
                ProductImageInline]
 
 
@@ -99,7 +128,7 @@ class JacketTranslationInline(TranslationInline):
 
 
 class JacketAdmin(ProductAdmin):
-    inlines = [JacketTranslationInline, PriceInline, DiscountInline,
+    inlines = [JacketTranslationInline, DiscountInline, PriceInline,
                JacketVariantInline, ProductImageInline]
 
 
@@ -113,7 +142,7 @@ class ShirtTranslationInline(TranslationInline):
 
 class ShirtAdmin(ProductAdmin):
     inlines = [ShirtTranslationInline, ShirtVariantInline,
-               PriceInline, DiscountInline, ProductImageInline]
+               DiscountInline, ProductImageInline, PriceInline]
 
 
 class TrousersVariantInline(admin.TabularInline):
@@ -126,7 +155,7 @@ class TrousersTranslationInline(TranslationInline):
 
 class TrousersAdmin(ProductAdmin):
     inlines = [TrousersTranslationInline, TrousersVariantInline,
-               PriceInline, DiscountInline, ProductImageInline]
+               DiscountInline, ProductImageInline, PriceInline]
 
 
 class TShirtVariantInline(admin.TabularInline):
@@ -139,7 +168,7 @@ class TShirtTranslationInline(TranslationInline):
 
 class TShirtAdmin(ProductAdmin):
     inlines = [TShirtTranslationInline, TShirtVariantInline,
-               PriceInline, DiscountInline, ProductImageInline]
+               DiscountInline, ProductImageInline, PriceInline]
 
 
 admin.site.register(models.Cardigan, CardiganAdmin)

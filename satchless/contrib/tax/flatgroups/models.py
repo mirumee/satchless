@@ -28,4 +28,5 @@ class TaxGroup(models.Model):
 
 class TaxedProductMixin(models.Model):
 
-    tax_group = models.ForeignKey(TaxGroup, related_name='products')
+    tax_group = models.ForeignKey(TaxGroup, related_name='products',
+                                  null=True)

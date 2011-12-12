@@ -8,9 +8,8 @@ class FlatGroupPricingHandler(PricingHandler):
     TaxGroup = models.TaxGroup
 
     def _tax_product(self, product, price):
-        try:
-            group = product.tax_groups.get()
-        except self.TaxGroup.DoesNotExist:
+        group = product.tax_group
+        if not group:
             try:
                 group = self.TaxGroup.objects.get(default=True)
             except self.TaxGroup.DoesNotExist:
@@ -26,4 +25,3 @@ class FlatGroupPricingHandler(PricingHandler):
 
     def get_product_price_range(self, product, price_range, **kwargs):
         return self._tax_product(product, price_range)
-

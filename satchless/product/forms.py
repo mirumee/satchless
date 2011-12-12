@@ -26,8 +26,8 @@ class FormRegistry(object):
         self.product_handlers = {}
 
     def register(self, product_class, form_class):
-        assert(issubclass(product_class, models.Product))
-        assert(issubclass(form_class, BaseVariantForm))
+        assert issubclass(product_class, models.Product)
+        assert issubclass(form_class, BaseVariantForm)
         self.product_handlers[product_class] = form_class
 
     def get_handler(self, product_class):

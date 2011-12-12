@@ -2,7 +2,6 @@ from django import forms
 from django.utils.translation import ugettext_lazy as _
 
 from . import handler
-from . import models
 
 class DeliveryMethodForm(forms.ModelForm):
     delivery_type = forms.ChoiceField(label=_('Delivery method'), choices=[])
@@ -34,7 +33,6 @@ class PaymentMethodForm(forms.ModelForm):
     payment_type = forms.ChoiceField(choices=())
 
     class Meta:
-        model = models.Order
         fields = ('payment_type',)
 
     def __init__(self, *args, **kwargs):
@@ -55,7 +53,6 @@ def get_payment_type_display(order, value):
     '''
     return next((x[1] for x in get_payment_choices(order) if x[0] == value), None)
 
-
 def get_payment_details_form(order, data):
     return handler.payment_queue.get_configuration_form(order, data)
 
@@ -68,7 +65,6 @@ class BillingForm(forms.ModelForm):
     )
 
     class Meta:
-        model = models.Order
         fields = ('billing_first_name', 'billing_last_name',
                   'billing_company_name', 'billing_street_address_1',
                   'billing_street_address_2', 'billing_city',

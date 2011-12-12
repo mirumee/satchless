@@ -4,6 +4,7 @@ import os
 from decimal import Decimal
 from django.conf import settings
 from django.core.urlresolvers import reverse
+from django.forms.models import modelform_factory
 from django import forms
 from django.test import Client
 
@@ -11,6 +12,7 @@ from .....checkout.tests import BaseCheckoutAppTests
 from .....contrib.delivery.simplepost.models import PostShippingType
 from .....delivery.tests import TestDeliveryProvider
 from .....order import handler as order_handler
+from .....order.forms import BillingForm
 from .....payment import ConfirmationFormNeeded
 from .....payment.tests import TestPaymentProvider
 from .....pricing import handler as pricing_handler
@@ -38,9 +40,13 @@ class TestPaymentProviderWithForm(TestPaymentProvider):
 
 
 class TestCheckoutApp(app.MultiStepCheckoutApp):
+    billing_details_form_class = modelform_factory(order_app.Order,
+                                                   BillingForm)
     delivery_details_form_class = TestDeliveryDetailsForm
     delivery_method_form_class = TestDeliveryMethodForm
     shipping_details_model = TestDeliveryVariant
+    Cart = cart_app.Cart
+    Order = order_app.Order
 
 
 class CheckoutTest(BaseCheckoutAppTests):

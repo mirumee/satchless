@@ -3,24 +3,35 @@ import os
 
 from django.conf import settings
 from django.core.urlresolvers import reverse
+from django.forms.models import modelform_factory
 from django.test import Client
 
 from .....checkout.tests import BaseCheckoutAppTests
 from .....delivery.tests import TestDeliveryProvider
 from .....order import handler as order_handler
+from .....order.forms import BillingForm
 from .....payment import ConfirmationFormNeeded
 from .....payment.tests import TestPaymentProvider
 from .....pricing import handler as pricing_handler
 from .....product.tests import DeadParrot
 from .....product.tests.pricing import FiveZlotyPriceHandler
 
-from ..app import checkout_app
+from ..app import SingleStepCheckoutApp
 from .....cart.tests import cart_app
 from .....order.tests import order_app
 
 class TestPaymentProviderWithConfirmation(TestPaymentProvider):
     def confirm(self, order, typ=None):
         raise ConfirmationFormNeeded(action='http://test.payment.gateway.example.com')
+
+
+class TestSingleStepCheckoutApp(SingleStepCheckoutApp):
+    Order = order_app.Order
+    Cart = cart_app.Cart
+    billing_details_form_class = modelform_factory(order_app.Order,
+                                                   BillingForm)
+
+checkout_app = TestSingleStepCheckoutApp()
 
 
 class App(BaseCheckoutAppTests):

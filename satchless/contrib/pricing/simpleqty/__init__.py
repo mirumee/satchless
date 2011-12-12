@@ -43,7 +43,7 @@ class SimpleQtyPricingHandler(PricingHandler):
         try:
             base_price = self.ProductPrice.objects.get(product=product)
         except self.ProductPrice.DoesNotExist:
-            return kwargs.pop('price', (None, None))
+            return kwargs.pop('price', None)
         price_overrides = (base_price.qty_overrides.filter(min_qty__lte=1)
                                                    .order_by('-min_qty'))
         try:

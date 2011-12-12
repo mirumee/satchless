@@ -8,16 +8,12 @@ class FlatGroupPricingHandler(PricingHandler):
     TaxGroup = models.TaxGroup
 
     def _tax_product(self, product, price):
-        group = product.tax_group
-        if not group:
-            try:
-                group = self.TaxGroup.objects.get(default=True)
-            except self.TaxGroup.DoesNotExist:
-                return price
+        if not product.tax_group or not price:
+            return price
         if not isinstance(price, (Price, PriceRange)):
             raise TypeError("Price must be a Price instance or tuple.")
-        multiplier = (group.rate + Decimal('100')) / Decimal('100')
-        tax = LinearTax(multiplier=multiplier, name=group.name)
+        multiplier = (product.tax_group.rate + Decimal('100')) / Decimal('100')
+        tax = LinearTax(multiplier=multiplier, name=product.tax_group.name)
         return price + tax
 
     def get_variant_price(self, variant, price, quantity=1, **kwargs):

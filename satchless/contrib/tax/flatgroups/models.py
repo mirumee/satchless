@@ -9,19 +9,6 @@ class TaxGroup(models.Model):
     rate_name = models.CharField(_("name of the rate"), max_length=30,
                                  help_text=_("Name of the rate which will be"
                                              " displayed to the user."))
-    default = models.BooleanField(_("Is default group?"), default=False,
-                                  help_text=_("Products not listed in other"
-                                              " tax groups will go to the"
-                                              " default one."))
-
-    def save(self, *args, **kwargs):
-        if self.default:
-            q = self.__class__.objects.filter(default=True)
-            if self.pk:
-                q = q.exclude(pk=self.pk)
-            q.update(default=False)
-        super(TaxGroup, self).save(*args, **kwargs)
-
     def __unicode__(self):
         return self.name
 

@@ -17,7 +17,6 @@ class TaxedParrot(TaxedProductMixin, Product):
 class ParrotVariant(Variant):
     product = models.ForeignKey(TaxedParrot,
                                 related_name='variants')
-    looks_alive = models.BooleanField(default=False)
 
 
 class ParrotTaxTest(TestCase):
@@ -31,18 +30,19 @@ class ParrotTaxTest(TestCase):
         self.macaw = TaxedParrot.objects.create(slug='macaw',
                                                 tax_group=self.vat8,
                                                 species="Hyacinth Macaw")
+        self.macaw_variant = self.macaw.variants.create()
+
         self.cockatoo = TaxedParrot.objects.create(slug='cockatoo',
                                                    species="White Cockatoo")
-        self.macaw_a = self.macaw.variants.create(looks_alive=True)
-        self.cockatoo_a = self.cockatoo.variants.create(looks_alive=True)
+        self.cockatoo_variant = self.cockatoo.variants.create()
 
         # set the pricing pipeline
         self.pricing_queue = PricingQueue(FiveZlotyPriceHandler,
                                           FlatGroupPricingHandler)
 
-    def test_nodefault(self):
-        # these have 8% VAT
-        self.assertEqual(self.pricing_queue.get_variant_price(self.macaw_a,
+    def test_taxed_product_price(self):
+        # 8% VAT
+        self.assertEqual(self.pricing_queue.get_variant_price(self.macaw_variant,
                                                               currency='PLN'),
                          Price(5, Decimal('5.40'), currency='PLN'))
         pr = self.pricing_queue.get_product_price_range(self.macaw, currency='PLN')
@@ -50,8 +50,10 @@ class ParrotTaxTest(TestCase):
                                                         currency='PLN'),
                                         max_price=Price(5, Decimal('5.40'),
                                                         currency='PLN')))
-        # while these have no tax group, hence the tax is zero
-        self.assertEqual(self.pricing_queue.get_variant_price(self.cockatoo_a,
+
+    def test_non_taxed_product_price(self):
+        # no tax group - tax should be zero
+        self.assertEqual(self.pricing_queue.get_variant_price(self.cockatoo_variant,
                                                               currency='PLN'),
                          Price(5, 5, currency='PLN'))
         pr = self.pricing_queue.get_product_price_range(self.cockatoo, currency='PLN')
@@ -60,24 +62,3 @@ class ParrotTaxTest(TestCase):
                                         max_price=Price(5, 5,
                                                         currency='PLN')))
 
-    def test_default(self):
-        self.vat20.default = True
-        self.vat20.save()
-        # these have 8% VAT
-        self.assertEqual(self.pricing_queue.get_variant_price(self.macaw_a,
-                                                   currency='PLN'),
-                         Price(5, Decimal('5.40'), currency='PLN'))
-        pr = self.pricing_queue.get_product_price_range(self.macaw, currency='PLN')
-        self.assertEqual(pr, PriceRange(min_price=Price(5, Decimal('5.40'),
-                                                        currency='PLN'),
-                                        max_price=Price(5, Decimal('5.40'),
-                                                        currency='PLN')))
-        # while these have default 20% VAT
-        self.assertEqual(self.pricing_queue.get_variant_price(self.cockatoo_a,
-                                                   currency='PLN'),
-                         Price(5, 6, currency='PLN'))
-        pr = self.pricing_queue.get_product_price_range(self.cockatoo, currency='PLN')
-        self.assertEqual(pr, PriceRange(min_price=Price(5, 6,
-                                                        currency='PLN'),
-                                        max_price=Price(5, 6,
-                                                        currency='PLN')))

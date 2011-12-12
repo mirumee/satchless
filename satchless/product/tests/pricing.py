@@ -60,8 +60,8 @@ class TenPercentDiscountPriceHandler(PricingHandler):
 class BasicHandlerTest(TestCase):
     def setUp(self):
         self.pricing_queue = PricingQueue(FiveZlotyPriceHandler,
-                                        NinetyPerecentTaxPriceHandler,
-                                        TenPercentDiscountPriceHandler)
+                                          NinetyPerecentTaxPriceHandler,
+                                          TenPercentDiscountPriceHandler)
 
     def tearDown(self):
         self.pricing_queue = PricingQueue(*settings.SATCHLESS_PRICING_HANDLERS)
@@ -86,8 +86,8 @@ class BasicHandlerTest(TestCase):
 class PricingTagsTest(TestCase):
     def setUp(self):
         self.pricing_queue = PricingQueue(FiveZlotyPriceHandler,
-                                        NinetyPerecentTaxPriceHandler,
-                                        TenPercentDiscountPriceHandler)
+                                          NinetyPerecentTaxPriceHandler,
+                                          TenPercentDiscountPriceHandler)
 
     def test_undiscounted_variant_price_tag_without_asvar(self):
         token = mock.Mock()

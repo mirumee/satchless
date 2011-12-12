@@ -14,9 +14,6 @@ class TaxGroup(models.Model):
                                               " tax groups will go to the"
                                               " default one."))
 
-    class Meta:
-        abstract = True
-
     def save(self, *args, **kwargs):
         if self.default:
             q = self.__class__.objects.filter(default=True)
@@ -29,9 +26,6 @@ class TaxGroup(models.Model):
         return self.name
 
 
-def _enforce_single_taxgroup(sender, instance, **kwargs):
-    if isinstance(instance, TaxGroup):
-        for p in instance.products.all():
-            p.tax_groups.clear()
-            p.tax_groups.add(instance)
-models.signals.m2m_changed.connect(_enforce_single_taxgroup)
+class TaxedProductMixin(models.Model):
+
+    tax_group = models.ForeignKey(TaxGroup)

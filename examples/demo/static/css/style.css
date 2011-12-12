@@ -362,34 +362,46 @@ body.store.product {
                 margin: 0 auto;
             }
         body.store.product #content form {
-            background: #fff;
-            border: 1px solid #dcdcdc;
-            color: #474747;
-            float: left;
-            font-size: 14px;
-            height: 250px;
-            padding: 30px;
-            width: 568px;
         }
-            body.store.product #content form .add-to-cart,
-            body.store.product #content form .product-description {
-                float: left;
-                width: 375px;
+            body.store.product #content form .product-details {
+                background: #fff;
+                border: 1px solid #dcdcdc;
+                color: #474747;
+                font-size: 14px;
             }
-            body.store.product #content form .product-description {
-            }
-                body.store.product #content form .product-description #id_quantity {
-                    width: 2em;
-                    text-align: right;
+                body.store.product #content form .product-info,
+                body.store.product #content form .sidebar {
+                    padding: 15px;
+                    float: left;
                 }
+                    body.store.product #content form .product-info {
+                        width: 337px;
+                    }
+                    body.store.product #content form .sidebar {
+                        border-width: 0 0 0 1px;
+                        width: 230px;
+                    }
+
+            /*
+            body.store.product #content form .product-info {
+                height: 280px;
+                padding: 15px;
+            }
+                body.store.product #content form .product-info .product-description {
+                    float: left;
+                }
+                    body.store.product #content form .product-info .product-description #id_quantity {
+                        width: 2em;
+                        text-align: right;
+                    }
             body.store.product #content form .add-to-cart {
-                margin-left: 15px;
                 text-align: right;
             }
                 body.store.product #content form .add-to-cart .text {
                     color: #6e6e6e;
                     text-align: left;
                 }
+            */
         body.store.product #content .thumbs {
         }
             body.store.product #content .thumbs a {

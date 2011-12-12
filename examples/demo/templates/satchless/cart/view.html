@@ -64,7 +64,7 @@
             </tr>
             <tr class="checkout">
                 <td colspan="5">
-                <form action="{% url checkout:prepare-order %}" method="post">
+                <form action="{% url checkout:prepare-order cart.token %}" method="post">
                     {% csrf_token %}
                     <button class="button" type="submit"><span>{% trans "Go to checkout" %}</span></button>
                 </form>

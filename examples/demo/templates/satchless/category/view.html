@@ -34,11 +34,7 @@ $(function() {
                 {% with product.get_subtype_instance as product %}
                 {% with product|product_in_category_url:category as product_url %}
     <div class="product grid_5 {% cycle 'alpha' '' 'omega' %}">
-        <a href="{{ product_url }}" class="product-photo">
-                    {% if product.main_image %}
-            <img src="{{ product.main_image|at_size:'product-detail' }}" alt="{{ product.name }} image"/>
-                    {% endif %}
-        </a>
+        <a href="{{ product_url }}" class="product-photo">{% if product.main_image %}<img src="{{ product.main_image|at_size:'product-detail' }}" alt="{{ product.name }} image"/>{% endif %} </a>
         <div class="description">
             <span class="manufacture">
                 {% if product.make %}

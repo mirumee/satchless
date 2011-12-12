@@ -39,54 +39,55 @@
     </div>
 </div>
 
-<div class="grid_16 omega product-details">
-    <div class="grid_11 alpha">
-        <form action="" method="post">
+{% product_price_range product as price_range %}
+<form action="" method="post" class="grid_16 omega">
+    <div class="product-details">
+        <div class="product-info">
             <div class="product-description">
-                {% if product.make %}
-                    <span class="manufacture">{{ product.make }}</span>
-                {% endif %}
-                    <h1>{{ product.name }}</h1>
-                    <div class="text">
-                        {{ product.description|linebreaks }}
-                    </div>
+{% if product.make %}
+                <span class="manufacture">{{ product.make }}</span>
+{% endif %}
+                <h1>{{ product.name }}</h1>
+                <div class="text">
+                {{ product.description|linebreaks }}
+                </div>
             </div>
-            <div class="grid_11 alpha">
-                {% csrf_token %}
-                <table>
-                    {{ product.cart_form.as_table }}
-                </table>
-            </div>
-    </div>
-    <div class="grid_5 omega">
+{% if price_range %}
+        {% csrf_token %}
+            <table>
+            {{ product.cart_form.as_table }}
+            </table>
+{% endif %}
+        </div>
         <div class="sidebar">
             <div class="add-to-cart">
+{% if price_range %}
                 <div class="product-price">
-            {% product_price_range product as price_range %}
             {% product_price_range product discount=0 as undiscounted_price_range %}
-            {% if price_range.min_price != price_range.max_price %}
-                {% if price_range.min_price != undiscounted_price_range.min_price or price_range.max_price != undiscounted_price_range.max_price %}
-                        <span class="strike">{{ undiscounted_price_range.min_price|gross|floatformat:2 }} – {{ undiscounted_price_range.max_price|gross|floatformat:2 }}</span>
-                {% endif %}
-                        <span class="fullprice">{{ price_range.min_price|gross|floatformat:2 }}</span><span class="currency">{{ price_range.min_price|currency }}</span> – <span class="fullprice">{{ price_range.max_price|gross|floatformat:2 }}</span><span class="currency">{{ price_range.max_price|currency }}</span>
-            {% else %}
-                {% if price_range.max_price != undiscounted_price_range.max_price %}
-                        <span class="strike">{{ undiscounted_price_range.max_price|gross|floatformat:2 }}</span>
-                {% endif %}
-                        <span class="fullprice">{{ price_range.min_price|gross|floatformat:2 }}</span><span class="currency">{{ price_range.min_price|currency }}</span>
-            {% endif %}
-                        <p class="info">
-                            Inclusive VAT <br />
-                            Exclusive shipping costs<br />
-                        </p>
-                    </div>
-                    <input class="button cart" name="cart" type="submit" value="{% trans "Add to cart" %}" />
-                    <input class="wishlist" name="wishlist" type="submit" value="{% trans "Add to whishlist" %}" />
+    {% if price_range.min_price != price_range.max_price %}
+        {% if price_range.min_price != undiscounted_price_range.min_price or price_range.max_price != undiscounted_price_range.max_price %}
+                    <span class="strike">{{ undiscounted_price_range.min_price|gross|floatformat:2 }} – {{ undiscounted_price_range.max_price|gross|floatformat:2 }}</span>
+        {% endif %}
+                    <span class="fullprice">{{ price_range.min_price|gross|floatformat:2 }}</span><span class="currency">{{ price_range.min_price|currency }}</span> – <span class="fullprice">{{ price_range.max_price|gross|floatformat:2 }}</span><span class="currency">{{ price_range.max_price|currency }}</span>
+    {% else %}
+        {% if price_range.max_price != undiscounted_price_range.max_price %}
+                    <span class="strike">{{ undiscounted_price_range.max_price|gross|floatformat:2 }}</span>
+        {% endif %}
+                    <span class="fullprice">{{ price_range.min_price|gross|floatformat:2 }}</span><span class="currency">{{ price_range.min_price|currency }}</span>
+    {% endif %}
+                    <p class="info">
+                    Inclusive VAT <br />
+                    Exclusive shipping costs<br />
+                    </p>
+                </div>
+                <input class="button cart" name="cart" type="submit" value="{% trans "Add to cart" %}" />
+                <input class="wishlist" name="wishlist" type="submit" value="{% trans "Add to whishlist" %}" />
+{% endif %}
             </div>
         </div>
-        </form>
+        <div class="clear"></div>
     </div>
-</div>
+</form>
 <div class="clear"></div>
 
 <div class="thumbs grid_8 alpha">

@@ -5,10 +5,15 @@ from ....checkout import app
 from ....order import forms, handler
 
 class SingleStepCheckoutApp(app.CheckoutApp):
-    billing_form_class = forms.BillingForm
+    billing_details_form_class = None
     checkout_templates = [
         'satchless/checkout/checkout.html'
     ]
+
+    def __init__(self, *args, **kwargs):
+        super(SingleStepCheckoutApp, self).__init__(*args, **kwargs)
+        assert self.billing_details_form_class, ('You need to subclass SingleStepCheckoutApp '
+                                                 'and provide billing_details_form_class')
 
     def checkout(self, request, order_token):
         """
@@ -41,8 +46,8 @@ class SingleStepCheckoutApp(app.CheckoutApp):
                                        "exactly one payment methods.")
         order.payment_type = payment_types[0][1].typ
         order.save()
-        billing_form = self.billing_form_class(request.POST or None,
-                                               instance=order)
+        billing_form = self.billing_details_form_class(request.POST or None,
+                                                       instance=order)
         payment_form = forms.get_payment_details_form(order, request.POST)
         if request.method == 'POST':
             billing_valid = billing_form.is_valid()
@@ -62,4 +67,3 @@ class SingleStepCheckoutApp(app.CheckoutApp):
             'payment_form': payment_form,
         })
 
-checkout_app = SingleStepCheckoutApp()

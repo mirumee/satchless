@@ -31,8 +31,8 @@ class BaseCheckoutAppTests(ViewsTestCase):
     def _get_or_create_cart_for_client(self, client, typ='cart'):
         self._test_status(reverse('cart:details'),
                           client_instance=client)
-        pk = client.session[cart_app.cart_session_key]
-        return self.checkout_app.cart_model.objects.get(pk=pk, typ=typ)
+        token = client.session[cart_app.cart_session_key]
+        return self.checkout_app.Cart.objects.get(token=token, typ=typ)
 
     def _get_or_create_order_for_client(self, client):
         cart = self._get_or_create_cart_for_client(client)
@@ -41,7 +41,7 @@ class BaseCheckoutAppTests(ViewsTestCase):
                                       kwargs={'cart_token': cart.token}),
             method='post', client_instance=client, status_code=302)
         order_pk = client.session.get('satchless_order', None)
-        return self.checkout_app.order_model.objects.get(pk=order_pk)
+        return self.checkout_app.Order.objects.get(pk=order_pk)
 
     def _create_order(self, client):
         cart = self._create_cart(client)
@@ -54,7 +54,7 @@ class BaseCheckoutAppTests(ViewsTestCase):
     def _get_order_from_session(self, session):
         order_pk = session.get('satchless_order', None)
         if order_pk:
-            return self.checkout_app.order_model.objects.get(pk=order_pk)
+            return self.checkout_app.Order.objects.get(pk=order_pk)
         return None
 
     def _get_order_items(self, order):
@@ -67,8 +67,8 @@ class BaseCheckoutAppTests(ViewsTestCase):
 
 class MockCheckoutApp(CheckoutApp):
 
-    cart_model = cart_app.Cart
-    order_model = order_app.Order
+    Cart = cart_app.Cart
+    Order = order_app.Order
 
     def checkout(self, *args, **kwargs):
         return HttpResponse()

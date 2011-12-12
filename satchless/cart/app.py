@@ -93,7 +93,7 @@ class MagicCartApp(CartApp):
     product_app = None
 
     def __init__(self, product_app, **kwargs):
-        self.product_app= product_app
+        self.product_app = product_app
         self.Cart = self.Cart or self.construct_cart_class()
         self.CartItem = (self.CartItem or
                          self.construct_cart_item_class(self.Cart,

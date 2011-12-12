@@ -125,7 +125,7 @@ class MagicCategorizedProductApp(app.MagicProductApp, CategorizedProductApp):
 
     def construct_category_class(self, product_class):
         class Category(models.Category):
-            products = django.db.models.ManyToManyField(
-                product_class, related_name='categories', blank=True)
-            pass
+            products = django.db.models.ManyToManyField(product_class,
+                                                        related_name='categories',
+                                                        blank=True)
         return Category

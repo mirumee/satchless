@@ -24,16 +24,22 @@ class MultiStepCheckoutApp(app.CheckoutApp):
         'satchless/checkout/payment_details.html'
     ]
 
-    billing_details_form_class = forms.BillingForm
+    billing_details_form_class = None
     billing_details_formset_class = None
-    delivery_details_form_class = forms.DeliveryDetailsForm
+    delivery_details_form_class = None
     delivery_details_formset_class = None
-    delivery_method_form_class = forms.DeliveryMethodForm
+    delivery_method_form_class = None
     delivery_method_formset_class = None
     shipping_details_class = None
 
     def __init__(self, *args, **kwargs):
         super(MultiStepCheckoutApp, self).__init__(self, *args, **kwargs)
+        assert (self.billing_details_form_class and
+                self.delivery_details_form_class and
+                self.delivery_method_form_class), ('You need to subclass MultiStepCheckoutApp '
+                                                   'and provide billing_details_form_class, '
+                                                   'delivery_method_form_class, '
+                                                   'delivery_details_form_class')
         self.billing_details_formset_class = (
             self.billing_details_formset_class or
             modelformset_factory(self.billing_details_form_class._meta.model,
@@ -171,3 +177,5 @@ class MultiStepCheckoutApp(app.CheckoutApp):
             url(r'^(?P<order_token>\w+)/payment-details/$',
                 self.payment_details, name='payment-details'),
         )
+
+

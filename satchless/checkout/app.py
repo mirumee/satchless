@@ -4,10 +4,8 @@ from django.template.response import TemplateResponse
 from django.utils.decorators import method_decorator
 from django.views.decorators.http import require_POST
 
-from ..cart.models import Cart
 from ..order import handler
 from ..order.exceptions import EmptyCart
-from ..order.models import Order
 from ..order.signals import order_pre_confirm
 from ..payment import PaymentFailure, ConfirmationFormNeeded
 from ..core.app import SatchlessApp
@@ -15,18 +13,23 @@ from ..core.app import SatchlessApp
 class CheckoutApp(SatchlessApp):
     app_name = 'checkout'
     namespace = 'checkout'
-    cart_model = Cart
+    Cart = None
     cart_type = 'cart'
-    order_model = Order
+    Order = None
     confirmation_templates = [
         'satchless/checkout/confirmation.html',
     ]
 
+    def __init__(self, *args, **kwargs):
+        super(CheckoutApp, self).__init__(*args, **kwargs)
+        assert self.Order, ('You need to subclass CheckoutApp and provide Order')
+        assert self.Cart, ('You need to subclass CheckoutApp and provide Cart')
+
     def get_order(self, request, order_token):
         user = request.user if request.user.is_authenticated() else None
         try:
-            return self.order_model.objects.get(token=order_token, user=user)
-        except self.order_model.DoesNotExist:
+            return self.Order.objects.get(token=order_token, user=user)
+        except self.Order.DoesNotExist:
             return
 
     def get_no_order_redirect_url(self):
@@ -45,17 +48,17 @@ class CheckoutApp(SatchlessApp):
 
     @method_decorator(require_POST)
     def prepare_order(self, request, cart_token):
-        cart = get_object_or_404(self.cart_model, token=cart_token,
+        cart = get_object_or_404(self.Cart, token=cart_token,
                                  typ=self.cart_type)
         order_pk = request.session.get('satchless_order')
-        previous_orders = self.order_model.objects.filter(pk=order_pk,
-                                                          cart=cart,
-                                                          status='checkout')
+        previous_orders = self.Order.objects.filter(pk=order_pk,
+                                                    cart=cart,
+                                                    status='checkout')
         try:
             order = previous_orders.get()
-        except self.order_model.DoesNotExist:
+        except self.Order.DoesNotExist:
             try:
-                order = self.order_model.objects.get_from_cart(cart)
+                order = self.Order.objects.get_from_cart(cart)
             except EmptyCart:
                 return redirect('cart:details')
         request.session['satchless_order'] = order.pk
@@ -82,7 +85,7 @@ class CheckoutApp(SatchlessApp):
         if not order or order.status != 'payment-pending':
             return self.redirect_order(order)
 
-        order_pre_confirm.send(sender=self.order_model, instance=order,
+        order_pre_confirm.send(sender=self.Order, instance=order,
                                request=request)
         try:
             handler.payment_queue.confirm(order=order)
@@ -108,3 +111,5 @@ class CheckoutApp(SatchlessApp):
             url(r'^(?P<order_token>\w+)/reactivate/$', self.reactivate_order,
                 name='reactivate-order'),
         )
+
+

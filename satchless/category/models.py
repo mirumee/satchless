@@ -1,10 +1,10 @@
 from django.db import models
 from django.utils.translation import ugettext_lazy as _
-from mptt.models import MPTTModel
+from mptt.models import MPTTModel, TreeManager
 
 __all__ = ('Category', 'CategoryManager')
 
-class CategoryManager(models.Manager):
+class CategoryManager(TreeManager):
 
     def get_product_url(self, product, category):
         if not category:

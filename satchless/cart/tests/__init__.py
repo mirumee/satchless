@@ -17,17 +17,19 @@ from ...util.tests import ViewsTestCase
 from .. import app
 from .. import signals
 
-
-class MockCheckoutApp(CheckoutApp):
-    def prepare_order(self, *args, **kwargs):
-        return HttpResponse("OK")
-
-
 class TestCartApp(app.MagicCartApp):
     pass
 
 
 cart_app = TestCartApp(product_app)
+
+
+class MockCheckoutApp(CheckoutApp):
+
+    Cart = cart_app.Cart
+    Order = object
+    def prepare_order(self, *args, **kwargs):
+        return HttpResponse("OK")
 
 
 class Cart(ViewsTestCase):

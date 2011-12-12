@@ -1,10 +1,11 @@
 from decimal import Decimal
 
 from ....pricing import Price, PriceRange, LinearTax, PricingHandler
+from . import models
 
 class FlatGroupPricingHandler(PricingHandler):
 
-    TaxGroup = None
+    TaxGroup = models.TaxGroup
 
     def _tax_product(self, product, price):
         try:
@@ -25,3 +26,4 @@ class FlatGroupPricingHandler(PricingHandler):
 
     def get_product_price_range(self, product, price_range, **kwargs):
         return self._tax_product(product, price_range)
+

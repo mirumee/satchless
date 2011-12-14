@@ -5,7 +5,7 @@ from django.http import HttpResponseNotFound
 from django.template.response import TemplateResponse
 
 from ..product import app
-from ..product.models import Product as ProductBase
+from ..product import models as product_models
 from . import models
 
 class CategorizedProductApp(app.ProductApp):
@@ -125,7 +125,7 @@ class MagicCategorizedProductApp(CategorizedProductApp, app.MagicProductApp):
         super(MagicCategorizedProductApp, self).__init__(**kwargs)
 
     def construct_product_class(self, category_class):
-        class Product(models.CategorizedProductMixin, ProductBase):
+        class Product(models.CategorizedProductMixin, product_models.Product):
             categories = django.db.models.ManyToManyField(category_class,
                                                           related_name='products',
                                                           null=True)

@@ -33,6 +33,8 @@ class Category(MPTTModel):
 
 
 class CategorizedProductMixin(models.Model):
+    class Meta:
+        abstract = True
 
     def get_categories(self):
         return self.categories.all()
@@ -47,5 +49,3 @@ class CategorizedProductMixin(models.Model):
 
             return reverse('product:details', args=args)
         return super(CategorizedProductMixin, self).get_absolute_url()
-
-

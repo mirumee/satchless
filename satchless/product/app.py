@@ -1,5 +1,6 @@
 from django.conf.urls.defaults import patterns, url
-from django.http import HttpResponse
+from django.core.exceptions import ObjectDoesNotExist
+from django.http import HttpResponse, HttpResponseNotFound
 from django.shortcuts import get_object_or_404
 from django.template.response import TemplateResponse
 
@@ -13,10 +14,6 @@ class ProductApp(SatchlessApp):
     namespace = 'product'
     Product = None
     Variant = None
-    product_details_templates = [
-        'satchless/product/%(product_model)s/view.html',
-        'satchless/product/view.html',
-    ]
     product_view_handlers_queue = None
 
     def __init__(self, *args, **kwargs):
@@ -27,22 +24,23 @@ class ProductApp(SatchlessApp):
         assert self.Variant, ('You need to subclass ProductApp and provide'
                               ' Variant')
 
-    def get_product(self, request, product_pk, product_slug):
-        product = get_object_or_404(self.Product, pk=product_pk,
-                                    slug=product_slug)
-        return product.get_subtype_instance()
+    def get_product(self, request, **kwargs):
+        raise NotImplementedError()
+
+    def get_product_details_templates(self, product):
+        return ['satchless/product/view.html']
 
     def product_details(self, request, **kwargs):
-        product = self.get_product(request, **kwargs)
+        try:
+            product = self.get_product(request, **kwargs)
+        except ObjectDoesNotExist:
+            return HttpResponseNotFound()
         context = self.on_product_view(instances=[product], request=request)
         if isinstance(context, HttpResponse):
             return context
         context['product'] = product
         context = self.get_context_data(request, **context)
-        product_data = {
-            'product_model': product._meta.module_name,
-        }
-        templates = [t % product_data for t in self.product_details_templates]
+        templates = self.get_product_details_templates(product)
         return TemplateResponse(request, templates, context)
 
     def register_product_view_handler(self, handler):
@@ -73,6 +71,11 @@ class MagicProductApp(ProductApp):
         self.Variant = (self.Variant or
                         self.construct_variant_class(self.Product))
         super(MagicProductApp, self).__init__(**kwargs)
+
+    def get_product(self, request, product_pk, product_slug):
+        product = get_object_or_404(self.Product, pk=product_pk,
+                                    slug=product_slug)
+        return product.get_subtype_instance()
 
     def construct_product_class(self):
         class Product(models.Product):

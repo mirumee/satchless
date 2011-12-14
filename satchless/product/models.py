@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
-from decimal import Decimal
 from django.db import models
 from django.utils.translation import ugettext_lazy as _
+import decimal
 
 from ..util.models import Subtyped
 
@@ -20,6 +20,9 @@ class Product(Subtyped):
                                         ' hyphens and underscores only) and'
                                         ' descriptive for the SEO needs.'))
 
+    quantity_quantizer = decimal.Decimal(1)
+    quantity_rounding = decimal.ROUND_HALF_UP
+
     class Meta:
         abstract = True
 
@@ -34,12 +37,13 @@ class Product(Subtyped):
 
         return 'product:details', (self.pk, self.slug)
 
-    def sanitize_quantity(self, quantity):
+    def quantize_quantity(self, quantity):
         """
         Returns sanitized quantity. By default it rounds the value to the
         nearest integer.
         """
-        return Decimal(quantity).quantize(1)
+        return decimal.Decimal(quantity).quantize(self.quantity_quantizer,
+                                                  rounding=self.quantity_rounding)
 
 
 class Variant(Subtyped):

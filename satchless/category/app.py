@@ -114,7 +114,7 @@ class CategorizedProductApp(app.ProductApp):
         return url_patterns
 
 
-class MagicCategorizedProductApp(app.MagicProductApp, CategorizedProductApp):
+class MagicCategorizedProductApp(CategorizedProductApp, app.MagicProductApp):
 
     def __init__(self, **kwargs):
         self.Product = (self.Product or

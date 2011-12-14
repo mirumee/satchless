@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 from decimal import Decimal
-from django.db import models
 import os
 
 from django.contrib.auth.models import User

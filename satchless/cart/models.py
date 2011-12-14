@@ -48,7 +48,7 @@ class Cart(models.Model):
 
     def add_item(self, variant, quantity, dry_run=False, **kwargs):
         variant = variant.get_subtype_instance()
-        quantity = variant.product.sanitize_quantity(quantity)
+        quantity = variant.product.quantize_quantity(quantity)
         try:
             item = self.get_item(variant=variant, **kwargs)
             old_qty = item.quantity
@@ -89,7 +89,7 @@ class Cart(models.Model):
 
     def replace_item(self, variant, quantity, dry_run=False, **kwargs):
         variant = variant.get_subtype_instance()
-        quantity = variant.product.sanitize_quantity(quantity)
+        quantity = variant.product.quantize_quantity(quantity)
         result = []
         reason = u""
         try:

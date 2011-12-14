@@ -1,5 +1,6 @@
 from django import forms
 from django.db import models
+import decimal
 
 from ..forms import variant_form_for_product, BaseVariantForm
 from ..models import Product, Variant
@@ -19,6 +20,14 @@ class ZombieParrot(DeadParrot):
 
 
 class ParrotVariant(Variant):
+    pass
+
+
+class Cheese(Product):
+    quantity_quantizer = decimal.Decimal('0.01')
+
+
+class CheeseVariant(Product):
     pass
 
 

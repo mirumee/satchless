@@ -10,7 +10,7 @@ class PromoteNode(template.Node):
 
     def render(self, context):
         obj = self.arg.resolve(context)
-        if isinstance(obj, models.Model):
+        if hasattr(obj, 'get_subtype_instance'):
             context[self.var_name] = obj.get_subtype_instance()
         else:
             context[self.var_name] = [o.get_subtype_instance() for o in obj]

@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import decimal
 import os
 
 from django.conf import settings
@@ -11,8 +12,8 @@ from ...util.tests import ViewsTestCase
 from ..app import MagicProductApp
 from ..forms import FormRegistry, variant_form_for_product
 
-from . import (Parrot, ParrotVariant, DeadParrot, DeadParrotVariant,
-               ZombieParrot, DeadParrotVariantForm)
+from . import (Parrot, ParrotVariant, DeadParrot, Cheese,
+               DeadParrotVariant, ZombieParrot, DeadParrotVariantForm)
 
 __all__ = ['Models', 'Registry', 'Views', 'product_app']
 
@@ -70,6 +71,16 @@ class Models(TestCase):
     def test_product_url(self):
         self.assertTrue('/products/+1-macaw/' in self.macaw.get_absolute_url())
 
+    def test_quantize_quantity(self):
+        cheddar = Cheese('Cheddar')
+        self.assertEqual(cheddar.quantize_quantity(decimal.Decimal('10.001')),
+                         decimal.Decimal(10))
+        self.assertEqual(cheddar.quantize_quantity(decimal.Decimal('10.01')),
+                         decimal.Decimal('10.01'))
+        self.assertEqual(self.macaw.quantize_quantity(decimal.Decimal('10.001')),
+                         decimal.Decimal(10))
+        self.assertEqual(self.macaw.quantize_quantity(decimal.Decimal('10.01')),
+                         decimal.Decimal(10))
 
 class Registry(TestCase):
     def test_form_registry(self):

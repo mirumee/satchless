@@ -5,16 +5,21 @@ from django.conf import settings
 from django.db import models
 from django.utils.translation import ugettext_lazy as _
 from mothertongue.models import MothertongueModelTranslate
+from satchless.category.models import CategorizedProductMixin
 from satchless.contrib.pricing.simpleqty.models import (ProductPriceMixin,
                                                         VariantPriceOffsetMixin)
 from satchless.contrib.tax.flatgroups.models import TaxedProductMixin
 from satchless.image.models import Image
 import satchless.product.models
 
+from categories.models import Category
 
-class Product(ProductPriceMixin, TaxedProductMixin,
+
+class Product(ProductPriceMixin, TaxedProductMixin, CategorizedProductMixin,
               satchless.product.models.Product):
-    pass
+    categories = models.ManyToManyField(Category,
+                                        related_name='products',
+                                        blank=True)
 
 
 class Variant(VariantPriceOffsetMixin, satchless.product.models.Variant):

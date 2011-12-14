@@ -217,7 +217,7 @@ class CustomCacheHandler(PricingCacheHandler):
 
 SATCHLESS_PRICING_HANDLERS = [
     CustomCacheHandler(
-        'pricing.DemoPricingHandler',
+        'satchless.contrib.pricing.simpleqty.DemoPricingHandler',
         'satchless.contrib.tax.flatgroups.FlatGroupPricingHandler',
         'sale.SalePricingHandler',
         lazy=True)

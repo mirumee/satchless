@@ -7,13 +7,9 @@ import satchless.category.models
 
 from localeurl.models import reverse
 from mothertongue.models import MothertongueModelTranslate
-from products.models import Product
 
 class Category(satchless.category.models.Category,
                MothertongueModelTranslate):
-    products = models.ManyToManyField(Product,
-                                      related_name='categories',
-                                      blank=True)
     translated_fields = ('name', 'description', 'meta_description')
     translation_set = 'translations'
 

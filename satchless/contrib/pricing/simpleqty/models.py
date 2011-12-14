@@ -24,9 +24,6 @@ class ProductPriceMixin(models.Model):
     def get_qty_price_overrides(self):
         return self.qty_overrides.all()
 
-    def __unicode__(self):
-        return unicode(self.product)
-
 
 class PriceQtyOverride(models.Model):
     """

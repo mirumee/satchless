@@ -21,7 +21,7 @@ class QuantityResult(object):
 
 
 class Cart(models.Model):
-    owner = models.ForeignKey(User, null=True, blank=True, related_name='carts')
+    owner = models.ForeignKey(User, null=True, blank=True, related_name='+')
     typ = models.CharField(_("type"), max_length=100)
     currency = models.CharField(_("currency"), max_length=3,
                                 default=get_default_currency)

@@ -60,10 +60,20 @@ class MockCart(object):
             self._items.append(MockCartItem(self, variant,
                                             quantity=quantity))
         else:
-            item.quantity += quantity
+            item.quantity = quantity
             if item.quantity <= 0:
                 self._items.remove(item)
 
+    def add_item(self, variant, quantity):
+        try:
+            item = dict((i.variant, i) for i in self._items)[variant]
+        except KeyError:
+            self._items.append(MockCartItem(self, variant,
+                                            quantity=quantity))
+        else:
+            item.quantity += quantity
+            if item.quantity <= 0:
+                self._items.remove(item)
 
     def get_item(self, pk, **kwargs):
         try:

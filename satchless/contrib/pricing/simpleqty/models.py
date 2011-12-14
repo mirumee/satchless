@@ -1,8 +1,9 @@
-from django.core.exceptions import ValidationError
+import decimal
+
 from django.db import models
 from django.utils.translation import ugettext_lazy as _
 
-class ProductPrice(models.Model):
+class ProductPriceMixin(models.Model):
     QTY_MODE_CHOICES = (
         ('product', _("per product")),
         ('variant', _("per variant"))
@@ -20,6 +21,9 @@ class ProductPrice(models.Model):
     class Meta:
         abstract = True
 
+    def get_qty_price_overrides(self):
+        return self.qty_overrides.all()
+
     def __unicode__(self):
         return unicode(self.product)
 
@@ -36,17 +40,13 @@ class PriceQtyOverride(models.Model):
         ordering = ('min_qty',)
 
 
-class VariantPriceOffset(models.Model):
+class VariantPriceOffsetMixin(models.Model):
     """
     Holds optional price offset for a variant. Does not depend on quantity.
     """
-    price_offset = models.DecimalField(_("unit price offset"), max_digits=12, decimal_places=4)
+    price_offset = models.DecimalField(_("unit price offset"), default=decimal.Decimal(0),
+                                       max_digits=12, decimal_places=4)
 
     class Meta:
         abstract = True
 
-    def clean(self):
-        if (self.variant.get_subtype_instance().product !=
-            self.base_price.product.get_subtype_instance()):
-            raise ValidationError("Price offsets must refer to a variant of "
-                                  "the same product as the base price does.")

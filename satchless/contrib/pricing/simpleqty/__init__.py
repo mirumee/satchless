@@ -1,58 +1,37 @@
-from django.db.models import Sum, Min, Max
+from django.db.models import Min, Max
 
 from ....pricing import Price, PriceRange, PricingHandler
 
 class SimpleQtyPricingHandler(PricingHandler):
-    ProductPrice = None
-    VariantPriceOffset = None
-
-    def __init__(self, **kwargs):
-        super(SimpleQtyPricingHandler, self).__init__(**kwargs)
-        assert self.ProductPrice, ('You need to subclass'
-                                   ' SimpleQtyPricingHandler and provide'
-                                   ' ProductPrice')
-
     def get_variant_price(self, variant, currency, quantity=1, **kwargs):
-        try:
-            base_price = self.ProductPrice.objects.get(product=variant.product)
-        except self.ProductPrice.DoesNotExist:
-            return kwargs.pop('price', None)
         cart = kwargs.get('cart', None)
-        if base_price.qty_mode == 'product' and cart:
+        if variant.product.qty_mode == 'product' and cart:
             all_variants = variant.product.variants.all()
-            cart_quantity = (cart.items.filter(variant__in=all_variants)
-                                       .aggregate(Sum('quantity'))['quantity__sum'] or 0)
+            cart_quantity = sum(ci.quantity for ci in cart.get_all_items() if ci.variant in all_variants)
             if 'cartitem' in kwargs:
                 quantity = cart_quantity
             else:
                 quantity += cart_quantity
-        price_overrides = (base_price.qty_overrides.filter(min_qty__lte=quantity)
-                                                   .order_by('-min_qty'))
+        price_overrides = (variant.product.get_qty_price_overrides().filter(min_qty__lte=quantity)
+                                                                    .order_by('-min_qty'))
         try:
             price = price_overrides[0].price
         except IndexError:
-            price = base_price.price
-        try:
-            offset = variant.price_offset.price_offset
-        except self.VariantPriceOffset.DoesNotExist:
-            offset = 0
-        price = price + offset
+            price = variant.product.price
+        if variant.price_offset:
+            price = price + variant.price_offset
         return Price(net=price, gross=price, currency=currency)
 
     def get_product_price_range(self, product, currency, **kwargs):
-        try:
-            base_price = self.ProductPrice.objects.get(product=product)
-        except self.ProductPrice.DoesNotExist:
-            return kwargs.pop('price', None)
-        price_overrides = (base_price.qty_overrides.filter(min_qty__lte=1)
-                                                   .order_by('-min_qty'))
+        price_overrides = (product.get_qty_price_overrides().filter(min_qty__lte=1)
+                                                            .order_by('-min_qty'))
         try:
             price = price_overrides[0].price
         except IndexError:
-            price = base_price.price
+            price = product.price
         max_price = min_price = price
-        min_offset = base_price.offsets.aggregate(Min('price_offset'))['price_offset__min']
-        max_offset = base_price.offsets.aggregate(Max('price_offset'))['price_offset__max']
+        min_offset = product.variants.all().aggregate(Min('price_offset'))['price_offset__min']
+        max_offset = product.variants.all().aggregate(Max('price_offset'))['price_offset__max']
         if max_offset is not None:
             max_price = max(price, price + max_offset)
         if min_offset is not None:

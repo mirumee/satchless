@@ -1,201 +1,171 @@
-from decimal import Decimal
-from django.conf import settings
 from django.db import models
 from django.test import TestCase
 
-from ....pricing import Price, PriceRange
+from ....cart.tests.app import MockCart
+from ....pricing import Price
 from ....pricing.handler import PricingQueue
-from ....product.tests import Parrot, ParrotVariant, DeadParrot
+from ....product.models import Product, Variant
 from . import SimpleQtyPricingHandler
-from .models import ProductPrice, VariantPriceOffset, PriceQtyOverride
+from .models import ProductPriceMixin, VariantPriceOffsetMixin, PriceQtyOverride
 
 
-class TestProductPrice(ProductPrice):
-    product = models.OneToOneField(Parrot)
+class DeadParrot(ProductPriceMixin, Product):
+
+    species = models.CharField(max_length=20)
 
 
-class TestVariantPriceOffset(VariantPriceOffset):
-    """
-    Holds optional price offset for a variant. Does not depend on quantity.
-    """
-    base_price = models.ForeignKey(TestProductPrice, related_name='offsets')
-    variant = models.OneToOneField(ParrotVariant, related_name='price_offset')
+class DeadParrotVariant(VariantPriceOffsetMixin, Variant):
+
+    product = models.ForeignKey(DeadParrot,
+                                related_name='variants')
+    looks_alive = models.BooleanField()
 
 
 class TestPriceQtyOverride(PriceQtyOverride):
-    base_price = models.ForeignKey(TestProductPrice,
-                                   related_name='qty_overrides')
+
+    product = models.ForeignKey(DeadParrot,
+                                related_name='qty_overrides')
 
 
-class TestPricingHandler(SimpleQtyPricingHandler):
-    ProductPrice = TestProductPrice
-    VariantPriceOffset = TestVariantPriceOffset
-    PriceQtyOverride = TestPriceQtyOverride
-
-
-class Pricing(TestCase):
-
-    TEST_PRICING_HANDLERS = [
-        TestPricingHandler,
-    ]
+class HandlerTestCase(TestCase):
 
     def setUp(self):
-        self.macaw = DeadParrot.objects.create(slug='macaw',
-                                               species="Hyacinth Macaw")
-        self.cockatoo = DeadParrot.objects.create(slug='cockatoo',
-                                                  species="White Cockatoo")
-        self.macaw_blue_a = self.macaw.variants.create(color='blue',
-                                                       looks_alive=True)
-        self.macaw_blue_d = self.macaw.variants.create(color='blue',
-                                                       looks_alive=False)
-        self.macaw_red_a = self.macaw.variants.create(color='red',
-                                                      looks_alive=True)
-        self.macaw_red_d = self.macaw.variants.create(color='red',
-                                                      looks_alive=False)
-        self.cockatoo_white_a = self.cockatoo.variants.create(color='white',
-                                                              looks_alive=True)
-        self.cockatoo_white_d = self.cockatoo.variants.create(color='white',
-                                                              looks_alive=False)
-        self.cockatoo_green_a = self.cockatoo.variants.create(color='green',
-                                                              looks_alive=True)
-        self.cockatoo_green_d = self.cockatoo.variants.create(color='green',
-                                                              looks_alive=False)
+        self.pricing_queue = PricingQueue(SimpleQtyPricingHandler)
 
-        self.original_pricing_handlers = settings.SATCHLESS_PRICING_HANDLERS
-        self.pricing_queue = PricingQueue(*self.TEST_PRICING_HANDLERS)
+    def test_product_price(self):
+        unit_price = 10
+        macaw = DeadParrot.objects.create(slug='macaw', price=unit_price,
+                                          species="Hyacinth Macaw")
+        price_range = self.pricing_queue.get_product_price_range(macaw)
+        self.assertEqual(price_range.min_price, Price(unit_price, unit_price))
+        self.assertEqual(price_range.max_price, Price(unit_price, unit_price))
 
-    def tearDown(self):
-        TestProductPrice.objects.all().delete()
-        self.pricing_queue = PricingQueue(*self.TEST_PRICING_HANDLERS)
+    def test_variant_price_qty_override_in_variant_mode(self):
+        unit_price = 10
+        macaw = DeadParrot.objects.create(slug='macaw', price=unit_price,
+                                          species="Hyacinth Macaw")
+        macaw_a = macaw.variants.create(looks_alive=True)
 
-    def test_price(self):
-        p1 = Price(10)
-        p2 = Price(10)
-        self.assertEqual(p1, p2)
-        p1 = Price(10,20)
-        p2 = Price(10,20)
-        self.assertEqual(p1, p2)
-        p1 = Price(10,20)
-        p2 = Price(20,10)
-        self.assertNotEqual(p1, p2)
-        self.assertEqual(p1 + p2, Price(30,30))
-        self.assertEqual(p1 * 3, Price(30,60))
+        # two price overrides points
+        qt_override_1 = macaw.qty_overrides.create(min_qty=3, price=8)
+        qt_override_2 = macaw.qty_overrides.create(min_qty=6, price=7)
 
-    def test_basicprices(self):
-        macaw_price = TestProductPrice.objects.create(product=self.macaw,
-                                                      price=Decimal('10.0'))
-        macaw_price.qty_overrides.create(min_qty=5, price=Decimal('9.0'))
-        macaw_price.qty_overrides.create(min_qty=10, price=Decimal('8.0'))
-        macaw_price.offsets.create(variant=self.macaw_blue_a,
-                                   price_offset=Decimal('2.0'))
-        self.assertEqual(self.pricing_queue.get_variant_price(self.macaw_blue_d,
-                                                              currency='BTC',
-                                                              quantity=1),
-                         Price(Decimal('10.0'), currency='BTC'))
-        self.assertEqual(self.pricing_queue.get_variant_price(self.macaw_blue_d,
-                                                              currency='BTC',
-                                                              quantity=Decimal('4.9999')),
-                         Price(Decimal('10.0'), currency='BTC'))
-        self.assertEqual(self.pricing_queue.get_variant_price(self.macaw_blue_d,
-                                                              currency='BTC',
-                                                              quantity=5),
-                         Price(Decimal('9.0'), currency='BTC'))
-        self.assertEqual(self.pricing_queue.get_variant_price(self.macaw_blue_d,
-                                                              currency='BTC',
-                                                              quantity=Decimal('9.9999')),
-                         Price(Decimal('9.0'), currency='BTC'))
-        self.assertEqual(self.pricing_queue.get_variant_price(self.macaw_blue_d,
-                                                              currency='BTC',
-                                                              quantity=10),
-                         Price(Decimal('8.0'), currency='BTC'))
-        self.assertEqual(self.pricing_queue.get_variant_price(self.macaw_blue_d,
-                                                              currency='BTC',
-                                                              quantity=100),
-                         Price(Decimal('8.0'), currency='BTC'))
-        self.assertEqual(self.pricing_queue.get_variant_price(self.macaw_blue_a,
-                                                              currency='BTC',
-                                                              quantity=1),
-                         Price(Decimal('12.0'), currency='BTC'))
-        self.assertEqual(self.pricing_queue.get_variant_price(self.macaw_blue_a,
-                                                              currency='BTC',
-                                                              quantity=Decimal('4.9999')),
-                         Price(Decimal('12.0'), currency='BTC'))
-        self.assertEqual(self.pricing_queue.get_variant_price(self.macaw_blue_a,
-                                                              currency='BTC',
-                                                              quantity=5),
-                         Price(Decimal('11.0'), currency='BTC'))
-        self.assertEqual(self.pricing_queue.get_variant_price(self.macaw_blue_a,
-                                                              currency='BTC',
-                                                              quantity=Decimal('9.9999')),
-                         Price(Decimal('11.0'), currency='BTC'))
-        self.assertEqual(self.pricing_queue.get_variant_price(self.macaw_blue_a,
-                                                              currency='BTC',
-                                                              quantity=10),
-                         Price(Decimal('10.0'), currency='BTC'))
-        self.assertEqual(self.pricing_queue.get_variant_price(self.macaw_blue_a,
-                                                              currency='BTC',
-                                                              quantity=100),
-                         Price(Decimal('10.0'), currency='BTC'))
+        price = self.pricing_queue.get_variant_price(macaw_a, quantity=1)
+        self.assertEqual(price, Price(unit_price, unit_price))
 
-    def test_basicranges(self):
-        macaw_price = TestProductPrice.objects.create(product=self.macaw,
-                                                      price=Decimal('10.0'))
-        macaw_price.offsets.create(variant=self.macaw_blue_a,
-                                   price_offset=Decimal('2.0'))
-        macaw_price.offsets.create(variant=self.macaw_red_d,
-                                   price_offset=Decimal('3.0'))
-        macaw_price.offsets.create(variant=self.macaw_red_a,
-                                   price_offset=Decimal('6.0'))
-        cockatoo_price = TestProductPrice.objects.create(product=self.cockatoo,
-                                                         price=Decimal('12.0'))
-        cockatoo_price.offsets.create(variant=self.cockatoo_white_d,
-                                      price_offset=Decimal('-5.0'))
-        cockatoo_price.offsets.create(variant=self.cockatoo_green_d,
-                                      price_offset=Decimal('-8.0'))
-        cockatoo_price.offsets.create(variant=self.cockatoo_green_a,
-                                      price_offset=Decimal('4.0'))
-        self.assertEqual(self.pricing_queue.get_product_price_range(self.macaw,
-                                                                    currency='BTC'),
-                        PriceRange(min_price=Price(Decimal('10.0'),
-                                                   currency='BTC'),
-                                   max_price=Price(Decimal('16.0'),
-                                                   currency='BTC')))
-        self.assertEqual(self.pricing_queue.get_product_price_range(self.cockatoo,
-                                                                    currency='BTC'),
-                        PriceRange(min_price=Price(Decimal('4.0'),
-                                                   currency='BTC'),
-                                   max_price=Price(Decimal('16.0'),
-                                                   currency='BTC')))
+        # first overrides override should be applied
+        price = self.pricing_queue.get_variant_price(macaw_a,
+                                                     quantity=qt_override_1.min_qty)
+        self.assertEqual(price, Price(qt_override_1.price,
+                                      qt_override_1.price))
 
-    def test_cartprices(self):
-        from ....cart.tests import cart_app
-        macaw_price = TestProductPrice.objects.create(product=self.macaw,
-                                                      price=Decimal('10.0'),
-                                                      qty_mode='product')
-        macaw_price.qty_overrides.create(min_qty=9, price=Decimal('9.0'))
-        macaw_price.offsets.create(variant=self.macaw_blue_a,
-                                   price_offset=Decimal('2.0'))
-        cart = cart_app.Cart.objects.create(typ='test')
-        cart.replace_item(self.macaw_blue_a, 4)
-        cart.replace_item(self.macaw_blue_d, 4)
-        item_macaw_blue_a = cart.items.get(variant=self.macaw_blue_a)
-        item_macaw_blue_d = cart.items.get(variant=self.macaw_blue_d)
+        # second overrides override should be applied
+        price = self.pricing_queue.get_variant_price(macaw_a,
+                                                     quantity=qt_override_2.min_qty)
+        self.assertEqual(price, Price(qt_override_2.price,
+                                      qt_override_2.price))
 
-        self.assertEqual(item_macaw_blue_d.get_unit_price(currency='BTC'),
-                         Price(Decimal('10.0'), currency='BTC'))
-        self.assertEqual(item_macaw_blue_a.get_unit_price(currency='BTC'),
-                         Price(Decimal('12.0'), currency='BTC'))
-        cart.add_item(self.macaw_blue_a, 1)
-        cart.add_item(self.macaw_blue_d, 1)
-        item_macaw_blue_a = cart.items.get(variant=self.macaw_blue_a)
-        item_macaw_blue_d = cart.items.get(variant=self.macaw_blue_d)
+    def test_variant_price_qty_override_in_product_mode(self):
+        unit_price = 10
+        macaw = DeadParrot.objects.create(slug='macaw', price=unit_price,
+                                          qty_mode='product',
+                                          species="Hyacinth Macaw")
+        macaw_a = macaw.variants.create(looks_alive=True)
+        macaw_d = macaw.variants.create(looks_alive=False)
 
-        macaw_variant = item_macaw_blue_a.variant.get_subtype_instance()
-        self.assertEqual(self.pricing_queue.get_variant_price(macaw_variant,
-                                                              currency='BTC',
-                                                              cart=cart),
-                         Price(Decimal('11.0'), currency='BTC'))
-        # contextless product
-        self.assertEqual(self.pricing_queue.get_variant_price(macaw_variant,
-                                                              currency='BTC'),
-                         Price(Decimal('12.0'), currency='BTC'))
+        cart = MockCart()
+        cart_item_a = cart.add_item(macaw_a, 1)
+        cart.add_item(macaw_d, 1)
+
+        qt_override_1 = macaw.qty_overrides.create(min_qty=3, price=8)
+        qt_override_2 = macaw.qty_overrides.create(min_qty=6, price=7)
+
+        price = self.pricing_queue.get_variant_price(macaw_a, quantity=1,
+                                                     cart=cart,
+                                                     cartitem=cart_item_a)
+        self.assertEqual(price, Price(unit_price, unit_price))
+
+        # because 1 macaw_d variant is in cart:
+        #   qt_override_1.min_qty - 1 + 1 = qt_override_1.min_qty
+        cart_item_a = cart.replace_item(macaw_a, qt_override_1.min_qty-1)
+        price = self.pricing_queue.get_variant_price(macaw_a,
+                                                     cart=cart,
+                                                     cartitem=cart_item_a)
+        self.assertEqual(price, Price(qt_override_1.price,
+                                      qt_override_1.price))
+
+        # because 1 macaw_d variant is in cart:
+        #   qt_override_2.min_qty - 1 + 1 = qt_override_2.min_qty
+        cart_item_a = cart.replace_item(macaw_a, qt_override_2.min_qty-1)
+        price = self.pricing_queue.get_variant_price(macaw_a,
+                                                     cart=cart,
+                                                     cartitem=cart_item_a)
+        self.assertEqual(price, Price(qt_override_2.price,
+                                      qt_override_2.price))
+
+    def test_variant_price_offset(self):
+        unit_price = 10
+        macaw = DeadParrot.objects.create(slug='macaw', price=unit_price,
+                                          species="Hyacinth Macaw")
+        macaw_a = macaw.variants.create(looks_alive=True, price_offset=2)
+
+        price = self.pricing_queue.get_variant_price(macaw_a,
+                                                     quantity=1)
+        self.assertEqual(price, Price(unit_price + macaw_a.price_offset,
+                                      unit_price + macaw_a.price_offset))
+
+    def test_variant_price_offset_with_qty_overrides_in_variant_mode(self):
+        unit_price = 10
+        macaw = DeadParrot.objects.create(slug='macaw', price=unit_price,
+                                          species="Hyacinth Macaw")
+        macaw_a = macaw.variants.create(looks_alive=True, price_offset=2)
+
+        # two price overrides points
+        qt_override_1 = macaw.qty_overrides.create(min_qty=3, price=8)
+        qt_override_2 = macaw.qty_overrides.create(min_qty=6, price=7)
+
+        price = self.pricing_queue.get_variant_price(macaw_a, quantity=1)
+        self.assertEqual(price, Price(unit_price + macaw_a.price_offset,
+                                      unit_price + macaw_a.price_offset))
+
+        # first overrides override should be applied
+        price = self.pricing_queue.get_variant_price(macaw_a,
+                                                     quantity=qt_override_1.min_qty)
+        self.assertEqual(price, Price(qt_override_1.price + macaw_a.price_offset,
+                                      qt_override_1.price + macaw_a.price_offset))
+
+        # second overrides override should be applied
+        price = self.pricing_queue.get_variant_price(macaw_a,
+                                                     quantity=qt_override_2.min_qty)
+        self.assertEqual(price, Price(qt_override_2.price + macaw_a.price_offset,
+                                      qt_override_2.price + macaw_a.price_offset))
+
+    def test_variant_price_offset_with_qty_override_in_product_mode(self):
+        unit_price = 10
+        macaw = DeadParrot.objects.create(slug='macaw', price=unit_price,
+                                          qty_mode='product',
+                                          species="Hyacinth Macaw")
+        macaw_a = macaw.variants.create(looks_alive=True, price_offset=2)
+        macaw_d = macaw.variants.create(looks_alive=False)
+
+        cart = MockCart()
+        cart_item_a = cart.add_item(macaw_a, 1)
+        cart.add_item(macaw_d, 1)
+
+        qt_override_1 = macaw.qty_overrides.create(min_qty=3, price=8)
+
+        # because 1 macaw_d variant is in cart:
+        #   qt_override_1.min_qty - 1 + 1 = qt_override_1.min_qty
+        cart_item_a = cart.replace_item(macaw_a, qt_override_1.min_qty-1)
+        price = self.pricing_queue.get_variant_price(macaw_a,
+                                                     cart=cart,
+                                                     cartitem=cart_item_a)
+        self.assertEqual(price, Price(qt_override_1.price + macaw_a.price_offset,
+                                      qt_override_1.price + macaw_a.price_offset))
+
+        # variant without price offset
+        price = self.pricing_queue.get_variant_price(macaw_d,
+                                                     cart=cart,
+                                                     cartitem=cart_item_a)
+        self.assertEqual(price, Price(qt_override_1.price,
+                                      qt_override_1.price))

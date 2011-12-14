@@ -5,16 +5,19 @@ from django.conf import settings
 from django.db import models
 from django.utils.translation import ugettext_lazy as _
 from mothertongue.models import MothertongueModelTranslate
+from satchless.contrib.pricing.simpleqty.models import (ProductPriceMixin,
+                                                        VariantPriceOffsetMixin)
 from satchless.contrib.tax.flatgroups.models import TaxedProductMixin
 from satchless.image.models import Image
 import satchless.product.models
 
 
-class Product(TaxedProductMixin, satchless.product.models.Product):
+class Product(ProductPriceMixin, TaxedProductMixin,
+              satchless.product.models.Product):
     pass
 
 
-class Variant(satchless.product.models.Variant):
+class Variant(VariantPriceOffsetMixin, satchless.product.models.Variant):
     pass
 
 

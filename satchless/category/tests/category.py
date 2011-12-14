@@ -5,7 +5,6 @@ from django.core.urlresolvers import reverse, NoReverseMatch
 from django.test import TestCase
 
 from ...util.tests import ViewsTestCase
-from ...product.tests import DeadParrot, Parrot, ParrotVariant
 from ..app import MagicCategorizedProductApp
 
 __all__ = ['Views', 'Models', 'CategorizedProductUrlTests',
@@ -13,9 +12,7 @@ __all__ = ['Views', 'Models', 'CategorizedProductUrlTests',
 
 
 class TestCategorizedProductApp(MagicCategorizedProductApp):
-    Product = Parrot
-    Variant = ParrotVariant
-
+    allow_uncategorized_product_urls = False
 
 category_app = TestCategorizedProductApp()
 
@@ -63,9 +60,10 @@ class Views(ViewsTestCase):
         self.assertEqual(response.context['category'], self.parrots)
 
     def test_category_product_view(self):
-        parrot_macaw = DeadParrot.objects.create(slug='macaw', species='Hyacinth Macaw')
+        parrot_macaw = category_app.Product.objects.create(slug='macaw')
         self.animals.products.add(parrot_macaw)
         self.parrots.products.add(parrot_macaw)
+
         response = self._test_GET_status(parrot_macaw.get_absolute_url(category=self.animals))
         self.assertTrue('product' in response.context)
         self.assertEqual(response.context['product'], parrot_macaw)
@@ -140,8 +138,7 @@ class CategorizedProductUrlTests(TestCase):
         self.parrots = category_app.Category.objects.create(slug='parrots',
                                                             name=u'Parrorts',
                                                             parent=self.birds)
-        self.parrot_macaw = DeadParrot.objects.create(slug='macaw',
-                                                      species='Hyacinth Macaw')
+        self.parrot_macaw = category_app.Product.objects.create(slug='macaw')
 
     def test_categorised_product_url(self):
         self.animals.products.add(self.parrot_macaw)
@@ -187,8 +184,7 @@ class NonCategorizedProductUrlTests(TestCase):
         self.parrots = category_app.Category.objects.create(slug='parrots',
                                                             name=u'Parrorts',
                                                             parent=self.birds)
-        self.parrot_macaw = DeadParrot.objects.create(slug='macaw',
-                                                      species='Hyacinth Macaw')
+        self.parrot_macaw = category_app.Product.objects.create(slug='macaw')
 
     def test_categorised_product_url(self):
         self.animals.products.add(self.parrot_macaw)

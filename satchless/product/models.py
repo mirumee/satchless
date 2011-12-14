@@ -30,11 +30,7 @@ class Product(Subtyped):
         return self.slug
 
     @models.permalink
-    def get_absolute_url(self, category=None):
-        categories = getattr(self, 'categories', None)
-        if categories and categories.count() > 0:
-            return categories.get_product_url(product=self, category=category)
-
+    def get_absolute_url(self):
         return 'product:details', (self.pk, self.slug)
 
     def quantize_quantity(self, quantity):

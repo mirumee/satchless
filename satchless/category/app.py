@@ -1,10 +1,11 @@
 from django.conf.urls.defaults import patterns, url
-import django.db
+import django.db.models
 from django.http import Http404
 from django.http import HttpResponseNotFound
 from django.template.response import TemplateResponse
 
 from ..product import app
+from ..product.models import Product as ProductBase
 from . import models
 
 class CategorizedProductApp(app.ProductApp):
@@ -117,15 +118,20 @@ class CategorizedProductApp(app.ProductApp):
 class MagicCategorizedProductApp(CategorizedProductApp, app.MagicProductApp):
 
     def __init__(self, **kwargs):
-        self.Product = (self.Product or
-                        self.construct_product_class())
         self.Category = (self.Category or
-                         self.construct_category_class(self.Product))
+                         self.construct_category_class())
+        self.Product = (self.Product or
+                        self.construct_product_class(self.Category))
         super(MagicCategorizedProductApp, self).__init__(**kwargs)
 
-    def construct_category_class(self, product_class):
+    def construct_product_class(self, category_class):
+        class Product(models.CategorizedProductMixin, ProductBase):
+            categories = django.db.models.ManyToManyField(category_class,
+                                                          related_name='products',
+                                                          null=True)
+        return Product
+
+    def construct_category_class(self):
         class Category(models.Category):
-            products = django.db.models.ManyToManyField(product_class,
-                                                        related_name='categories',
-                                                        blank=True)
+            pass
         return Category

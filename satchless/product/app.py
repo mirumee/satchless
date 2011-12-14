@@ -1,5 +1,6 @@
 from django.conf.urls.defaults import patterns, url
 from django.core.exceptions import ObjectDoesNotExist
+import django.db.models
 from django.http import HttpResponse, HttpResponseNotFound
 from django.shortcuts import get_object_or_404
 from django.template.response import TemplateResponse
@@ -84,5 +85,6 @@ class MagicProductApp(ProductApp):
 
     def construct_variant_class(self, product_class):
         class Variant(models.Variant):
-            pass
+            product = django.db.models.ForeignKey(product_class,
+                                                  related_name='variants')
         return Variant

@@ -1,22 +1,9 @@
+from django.core.urlresolvers import reverse
 from django.db import models
 from django.utils.translation import ugettext_lazy as _
-from mptt.models import MPTTModel, TreeManager
+from mptt.models import MPTTModel
 
-__all__ = ('Category', 'CategoryManager')
-
-class CategoryManager(TreeManager):
-
-    def get_product_url(self, product, category):
-        if not category:
-            if not product.categories.exists():
-                raise ValueError('Cannot generate url for product'
-                                 ' without categories')
-            category = product.categories.all()[0]
-        return ('product:details',
-                ('%s%s/' % (category.parents_slug_path(),
-                            category.slug),
-                 product.slug))
-
+__all__ = ('Category', 'CategorizedProduct')
 
 class Category(MPTTModel):
 
@@ -27,9 +14,6 @@ class Category(MPTTModel):
     slug = models.SlugField(max_length=50)
     parent = models.ForeignKey('self', null=True, blank=True,
                                related_name='children')
-
-    objects = CategoryManager()
-
     class Meta:
         abstract = True
         verbose_name = _("category")
@@ -46,3 +30,22 @@ class Category(MPTTModel):
     def parents_slug_path(self):
         parents = '/'.join(c.slug for c in self.get_ancestors())
         return '%s/' % parents if parents else ''
+
+
+class CategorizedProductMixin(models.Model):
+
+    def get_categories(self):
+        return self.categories.all()
+
+    def get_absolute_url(self, category=None):
+        if category or self.get_categories().exists():
+            if not category:
+                category = self.categories.all()[0]
+            args = ('%s%s/' % (category.parents_slug_path(),
+                               category.slug),
+                     self.slug)
+
+            return reverse('product:details', args=args)
+        return super(CategorizedProductMixin, self).get_absolute_url()
+
+

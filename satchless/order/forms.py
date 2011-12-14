@@ -13,7 +13,12 @@ class DeliveryMethodForm(forms.ModelForm):
 
 
 class DeliveryDetailsForm(forms.ModelForm):
-    pass
+    class Meta:
+        fields = ['shipping_first_name', 'shipping_last_name',
+                  'shipping_company_name', 'shipping_street_address_1',
+                  'shipping_street_address_2', 'shipping_city',
+                  'shipping_postal_code', 'shipping_country',
+                  'shipping_country_area', 'shipping_phone']
 
 
 def get_delivery_details_forms_for_groups(groups, data):
@@ -58,19 +63,19 @@ def get_payment_details_form(order, data):
 
 
 class BillingForm(forms.ModelForm):
-    REQUIRED_FIELDS = (
+    REQUIRED_FIELDS = [
         'billing_first_name', 'billing_last_name',
         'billing_street_address_1', 'billing_city', 'billing_country_area',
         'billing_country', 'billing_postal_code', 'billing_phone'
-    )
+    ]
 
     class Meta:
-        fields = ('billing_first_name', 'billing_last_name',
+        fields = ['billing_first_name', 'billing_last_name',
                   'billing_company_name', 'billing_street_address_1',
                   'billing_street_address_2', 'billing_city',
                   'billing_country_area', 'billing_postal_code',
                   'billing_country', 'billing_tax_id',
-                  'billing_phone')
+                  'billing_phone']
 
     def __init__(self, *args, **kwargs):
         super(BillingForm, self).__init__(*args, **kwargs)

@@ -22,8 +22,8 @@
 <div class="container">
     {% if order %}
     <form method="post" action="">{% csrf_token %}
-        {{ delivery_formset.management_form }}
-        {% for form in delivery_formset.forms %}{% with form.instance as group %}
+        {{ shipping_formset.management_form }}
+        {% for form in shipping_formset.forms %}{% with form.instance as group %}
             <h2>{% trans "Delivery group" %}{% if order.groups.count > 1 %} {{ forloop.counter }}{% endif %}:</h2>
             <ul>
             {% include 'satchless/checkout/snippets/delivery_group.html' %}
@@ -31,10 +31,14 @@
             <table>
             <tbody>
             {{ form.as_table }}
-            {{ billing_form.as_table }}
             </tbody>
             </table>
         {% endwith %}{% endfor %}
+        <table>
+        <tbody>
+            {{ billing_form.as_table }}
+        </tbody>
+        </table>
         <button class="button" type="submit">{% trans "Proceed" %}</button>
     </form>
     {% else %}

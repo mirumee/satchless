@@ -58,7 +58,7 @@
         <tfoot>
             <tr class="checkout">
                 <td class="product-price" colspan="5">
-                    <span class="fullprice">{{ cart.total|gross|floatformat:2 }}</span>
+                    <span class="fullprice">{{ cart.get_total|gross|floatformat:2 }}</span>
                     <span class="currency">{{ cart.currency }}</span><br />
                 </td>
             </tr>

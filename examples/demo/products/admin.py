@@ -71,6 +71,9 @@ class CardiganAdmin(ProductAdmin):
         (_('General'), {
             'fields': ('name', 'slug', 'description', 'main_image')
         }),
+        ('', {
+            'fields': ('categories',),
+        }),
         (_('Pricing'), {
             'fields': ('price', 'qty_mode', 'tax_group'),
         }),

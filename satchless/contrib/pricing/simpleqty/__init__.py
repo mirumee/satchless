@@ -3,15 +3,20 @@ from django.db.models import Min, Max
 from ....pricing import Price, PriceRange, PricingHandler
 
 class SimpleQtyPricingHandler(PricingHandler):
-    def get_variant_price(self, variant, currency, quantity=1, **kwargs):
+    def _get_variants_count(self, variant, currency, quantity, **kwargs):
         cart = kwargs.get('cart', None)
-        if variant.product.qty_mode == 'product' and cart:
+        if cart:
             all_variants = variant.product.variants.all()
             cart_quantity = sum(ci.quantity for ci in cart.get_all_items() if ci.variant in all_variants)
             if 'cartitem' in kwargs:
                 quantity = cart_quantity
             else:
                 quantity += cart_quantity
+        return quantity
+
+    def get_variant_price(self, variant, currency, quantity=1, **kwargs):
+        if variant.product.qty_mode == 'product':
+            quantity = self._get_variants_count(variant, currency, quantity, **kwargs)
         price_overrides = (variant.product.get_qty_price_overrides().filter(min_qty__lte=quantity)
                                                                     .order_by('-min_qty'))
         try:

@@ -14,7 +14,7 @@ from . import PaymentProvider, PaymentType
 
 class TestPaymentProvider(PaymentProvider):
     def enum_types(self, order=None, customer=None):
-        yield self, PaymentType('gold', 'gold')
+        yield PaymentType(provider=self, typ='gold', name='Gold')
 
     def get_configuration_form(self, order, data, typ=None):
         return None

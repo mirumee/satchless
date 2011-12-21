@@ -73,6 +73,7 @@ class MagicOrderApp(OrderApp):
                       self.construct_order_class(cart_app.Cart))
         self.DeliveryGroup = (self.DeliveryGroup or
                               self.construct_delivery_group_class(self.Order))
+
         self.OrderedItem = (
             self.OrderedItem or
             self.construct_ordered_item_class(self.DeliveryGroup,
@@ -83,7 +84,6 @@ class MagicOrderApp(OrderApp):
         class Order(models.Order):
             cart = django.db.models.ForeignKey(cart_class, blank=True,
                                                null=True, related_name='orders')
-            pass
         return Order
 
     def construct_delivery_group_class(self, order_class):

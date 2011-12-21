@@ -31,6 +31,7 @@ class MockProduct(object):
     def get_subtype_instance(self):
         return self
 
+
 class MockVariant(object):
 
     def __init__(self, product):

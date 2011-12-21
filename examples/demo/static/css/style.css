@@ -418,41 +418,45 @@ body.store.checkout.thank-you {
         border: 1px solid #cacab2;
         color: #285500;
     }
-body.store.checkout {
+body.store.checkout, body.store.order {
 }
-    body.store.checkout #content {
+    body.store.checkout #content,
+    body.store.order #content {
     }
-        body.checkout #content .container {
+        body.checkout #content .container,
+        body.order #content .container {
             background: #fff;
             border: 1px solid #dcdcdc;
             padding: 15px;
         }
-            body.store.checkout #content .container h1 {
-                font-size: 20px;
-                margin-top: 0;
+body.store.checkout {
+}
+        body.store.checkout #content .container h1 {
+            font-size: 20px;
+            margin-top: 0;
+        }
+        body.checkout #content .container form {
+        }
+            body.checkout #content .container form table tbody th {
+                font-size: 15px;
+                font-weight: normal;
+                text-align: right;
             }
-            body.checkout #content .container form {
-            }
-                body.checkout #content .container form table tbody th {
-                    font-size: 15px;
-                    font-weight: normal;
-                    text-align: right;
+                body.checkout #content .container form table tbody th .required {
+                    color: #c00005;
                 }
-                    body.checkout #content .container form table tbody th .required {
-                        color: #c00005;
-                    }
-                body.checkout #content .container form table tbody td {
+            body.checkout #content .container form table tbody td {
+                padding: 5px;
+            }
+                body.checkout #content .container form table tbody td input {
+                    border: 1px solid #bfbfbf;
+                    border-radius: 5px;
+                    -moz-border-radius: 5px;
                     padding: 5px;
                 }
-                    body.checkout #content .container form table tbody td input {
-                        border: 1px solid #bfbfbf;
-                        border-radius: 5px;
-                        -moz-border-radius: 5px;
-                        padding: 5px;
-                    }
-                body.checkout #content .container form table tfoot td {
-                    padding-top: 30px;
-                }
+            body.checkout #content .container form table tfoot td {
+                padding-top: 30px;
+            }
         body.store.checkout #content table.cart-contents {
             border-collapse: collapse;
             width: 100%;

@@ -88,7 +88,7 @@ class MultiStepCheckoutApp(app.CheckoutApp):
             delivery_method_formset.save()
             return self.redirect('payment-method', order_token=order.token)
         return TemplateResponse(request, self.delivery_method_templates, {
-            'delivery_formset': delivery_method_formset,
+            'delivery_method_formset': delivery_method_formset,
             'order': order,
         })
 

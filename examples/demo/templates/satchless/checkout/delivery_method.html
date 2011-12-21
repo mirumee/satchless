@@ -1,6 +1,24 @@
 {% extends 'satchless/checkout/base.html' %}
 {% load i18n %}
-{% block checkout %}
+
+{% block breadcrumbs %}
+<li>
+    <a href="{% url cart:details %}">1. {% trans "Cart" %}</a>
+</li>
+<li class="active">
+    2. {% trans "Delivery" %}
+</li>
+<li class="payment">
+    3. {% trans "Payment" %}
+</li>
+<li class="confirmation">
+    <span>3. {% trans "Great success!" %}</span>
+</li>
+{% endblock %}
+
+{% block content %}
+<div class="grid_16 alpha">
+<div class="container">
     <h2>{% trans "Choose delivery method" %}:</h3>
     <form method="post" action="">{% csrf_token %}
         {{ delivery_method_formset.management_form }}
@@ -13,6 +31,8 @@
           {% endif %}
             {{ form.as_p }}
         {% endwith %}{% endfor %}
-    <button type="submit">{% trans "Proceed" %}</button>
+        <button class="button" type="submit">{% trans "Proceed" %}</button>
     </form>
+</div>
+</div>
 {% endblock %}

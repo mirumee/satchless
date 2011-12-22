@@ -249,9 +249,9 @@ input.wishlist {
             #breadcrumbs ul li.confirmation.active span {
                 background: #fffe88;
             }
-.product-details {
+.sale, .product-details {
 }
-    .product-details .sidebar,
+    .sale .sidebar, .product-details .sidebar,
     .wishlist .products ul li .sidebar {
         padding: 15px;
         text-align: right;

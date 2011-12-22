@@ -13,10 +13,11 @@ from satchless.image.models import Image
 import satchless.product.models
 
 from categories.models import Category
+from sale.models import DiscountedProduct
 
 
 class Product(ProductPriceMixin, TaxedProductMixin, CategorizedProductMixin,
-              satchless.product.models.Product):
+              DiscountedProduct, satchless.product.models.Product):
     categories = models.ManyToManyField(Category,
                                         related_name='products',
                                         blank=True)

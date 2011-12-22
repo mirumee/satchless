@@ -1,16 +1,13 @@
 from satchless.pricing import Price, PriceRange, PricingHandler
 
-from . import models
-
 class SalePricingHandler(PricingHandler):
     def _discount_product(self, product, price):
-        try:
-            group = product.discount.get()
-        except models.DiscountGroup.DoesNotExist:
+        if not product.discount:
             return price
+
         if not isinstance(price, (Price, PriceRange)):
             raise TypeError("Price must be a Price or PriceRange instance")
-        return group.get_discount_amount(price)
+        return product.discount.get_discount_amount(price)
 
     def get_variant_price(self, variant, price, **context):
         if context.get('discount', True):

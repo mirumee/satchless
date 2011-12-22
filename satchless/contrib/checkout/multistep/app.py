@@ -24,36 +24,28 @@ class MultiStepCheckoutApp(app.CheckoutApp):
         'satchless/checkout/payment_details.html'
     ]
 
-    billing_details_form_class = None
-    billing_details_formset_class = None
-    delivery_details_form_class = None
-    delivery_details_formset_class = None
-    delivery_method_form_class = None
-    delivery_method_formset_class = None
-    shipping_details_class = None
+    BillingForm = None
+    DeliveryMethodForm = None
+    DeliveryMethodFormSet = None
+    ShippingForm = None
+    ShippingFormSet = None
 
     def __init__(self, *args, **kwargs):
         super(MultiStepCheckoutApp, self).__init__(self, *args, **kwargs)
-        assert (self.billing_details_form_class and
-                self.delivery_details_form_class and
-                self.delivery_method_form_class), ('You need to subclass MultiStepCheckoutApp '
-                                                   'and provide billing_details_form_class, '
-                                                   'delivery_method_form_class, '
-                                                   'delivery_details_form_class')
-        self.billing_details_formset_class = (
-            self.billing_details_formset_class or
-            modelformset_factory(self.billing_details_form_class._meta.model,
-                                 form=self.billing_details_form_class,
+        assert ((self.ShippingForm or self.ShippingFormSet) and
+                (self.DeliveryMethodFormSet or self.DeliveryMethodForm) and
+                self.BillingForm), ('You need to subclass MultiStepCheckoutApp '
+                                    'and provide BillingForm, DeliveryMethodForm, '
+                                    'ShippingForm')
+        self.ShippingFormSet = (
+            self.ShippingFormSet or
+            modelformset_factory(self.ShippingForm._meta.model,
+                                 form=self.ShippingForm,
                                  extra=0))
-        self.delivery_details_formset_class = (
-            self.delivery_details_formset_class or
-            modelformset_factory(self.delivery_details_form_class._meta.model,
-                                 form=self.delivery_details_form_class,
-                                 extra=0))
-        self.delivery_method_formset_class = (
-            self.delivery_method_formset_class or
-            modelformset_factory(self.delivery_method_form_class._meta.model,
-                                 form=self.delivery_method_form_class,
+        self.DeliveryMethodFormSet = (
+            self.DeliveryMethodFormSet or
+            modelformset_factory(self.DeliveryMethodForm._meta.model,
+                                 form=self.DeliveryMethodForm,
                                  extra=0))
 
     def checkout(self, request, order_token):
@@ -65,11 +57,11 @@ class MultiStepCheckoutApp(app.CheckoutApp):
         order = self.get_order(request, order_token)
         if not order or order.status != 'checkout':
             return self.redirect_order(order)
-        billing_form = self.billing_details_form_class(data=request.POST or None,
-                                                       instance=order)
-        groups = order.groups.filter(require_shipping_address=True)
-        shipping_formset = self.delivery_details_formset_class(data=request.POST or None,
-                                                               queryset=groups)
+        billing_form = self.BillingForm(data=request.POST or None,
+                                        instance=order)
+        groups = order.groups.all()
+        shipping_formset = self.ShippingFormSet(data=request.POST or None,
+                                                queryset=groups)
         if all([billing_form.is_valid(),
                 shipping_formset.is_valid()]):
             order = billing_form.save()
@@ -90,13 +82,13 @@ class MultiStepCheckoutApp(app.CheckoutApp):
         if not order or order.status != 'checkout':
             return self.redirect_order(order)
         delivery_groups = order.groups.all()
-        delivery_formset = self.delivery_method_formset_class(data=request.POST or None,
-                                                              queryset=delivery_groups)
-        if delivery_formset.is_valid():
-            delivery_formset.save()
+        delivery_method_formset = self.DeliveryMethodFormSet(data=request.POST or None,
+                                                             queryset=delivery_groups)
+        if delivery_method_formset.is_valid():
+            delivery_method_formset.save()
             return self.redirect('payment-method', order_token=order.token)
         return TemplateResponse(request, self.delivery_method_templates, {
-            'delivery_formset': delivery_formset,
+            'delivery_method_formset': delivery_method_formset,
             'order': order,
         })
 
@@ -109,16 +101,20 @@ class MultiStepCheckoutApp(app.CheckoutApp):
         groups = order.groups.all()
         if not all([group.delivery_type for group in groups]):
             return self.redirect('delivery-method', order_token=order.token)
-        delivery_group_data = forms.get_delivery_details_forms_for_groups(
-            groups, request.POST or None)
-        delivery_forms = [form for group, typ, form in delivery_group_data]
+        delivery_group_forms = []
+        for group in groups:
+            delivery_type = group.delivery_type
+            form = handler.delivery_queue.get_configuration_form(group,
+                                                                 request.POST or None)
+            delivery_group_forms.append((group, delivery_type, form))
+        delivery_forms = [form for group, typ, form in delivery_group_forms]
         if all(form.is_valid() if form else True
                for form in delivery_forms):
-            for group, typ, form in delivery_group_data:
+            for group, typ, form in delivery_group_forms:
                 handler.delivery_queue.save(group, form)
             return self.redirect('payment-method', order_token=order.token)
         return TemplateResponse(request, self.delivery_details_templates, {
-            'delivery_group_forms': delivery_group_data,
+            'delivery_group_forms': delivery_group_forms,
             'order': order,
         })
 

@@ -7,7 +7,7 @@ from django.forms.models import modelform_factory
 from django.test import Client
 
 from .....checkout.tests import BaseCheckoutAppTests
-from .....delivery.tests import TestDeliveryProvider
+from .....delivery.tests import TestDeliveryProvider, TestDeliveryType
 from .....order import handler as order_handler
 from .....order.forms import BillingForm
 from .....payment import ConfirmationFormNeeded
@@ -28,8 +28,8 @@ class TestPaymentProviderWithConfirmation(TestPaymentProvider):
 class TestSingleStepCheckoutApp(SingleStepCheckoutApp):
     Order = order_app.Order
     Cart = cart_app.Cart
-    billing_details_form_class = modelform_factory(order_app.Order,
-                                                   BillingForm)
+    BillingForm = modelform_factory(order_app.Order,
+                                    BillingForm)
 
 checkout_app = TestSingleStepCheckoutApp()
 
@@ -61,6 +61,9 @@ class App(BaseCheckoutAppTests):
             )
         }
         self.original_settings = self._setup_settings(self.custom_settings)
+
+        TestDeliveryType.objects.create(price=10, typ='courier', name='Courier',
+                                        with_customer_notes=True)
         order_handler.delivery_queue = order_handler.DeliveryQueue(TestDeliveryProvider)
         order_handler.payment_queue = order_handler.PaymentQueue(TestPaymentProviderWithConfirmation)
         self.anon_client = Client()
@@ -80,7 +83,8 @@ class App(BaseCheckoutAppTests):
                                              kwargs={'order_token':
                                                      order.token}),
                                      client_instance=self.anon_client,
-                                     data={'email': 'foo@example.com'})
+                                     data={'notes': 'Intercom is broken - '
+                                                    'call me on my mobile'})
         dg = response.context['delivery_group_forms']
         data = {'billing_first_name': 'First',
                 'billing_last_name': 'Last',
@@ -91,7 +95,8 @@ class App(BaseCheckoutAppTests):
                 'billing_phone': '555-555-5555',
                 'billing_postal_code': '90210'}
         for g, typ, form in dg:
-            data[form.add_prefix('email')] = 'foo@example.com'
+            data[form.add_prefix('notes')] = ('Intercom is broken - '
+                                              'call me on my mobile')
 
         response = self._test_status(self.checkout_app.reverse('checkout',
                                                                kwargs={'order_token':
@@ -122,7 +127,8 @@ class App(BaseCheckoutAppTests):
                                                                kwargs={'order_token':
                                                                        order.token}),
                                      client_instance=self.anon_client,
-                                     data={'email': 'foo@example.com'})
+                                     data={'notes': 'Intercom is broken'
+                                                    '- call me on my mobile'})
         dg = response.context['delivery_group_forms']
         data = {'billing_first_name': 'First',
                 'billing_last_name': 'Last',
@@ -133,7 +139,8 @@ class App(BaseCheckoutAppTests):
                 'billing_phone': '555-555-5555',
                 'billing_postal_code': '90210'}
         for g, typ, form in dg:
-            data[form.add_prefix('email')] = 'foo@example.com'
+            data[form.add_prefix('notes')] = ('Intercom is broken - '
+                                              'call me on my mobile')
 
         response = self._test_status(self.checkout_app.reverse('checkout',
                                                                kwargs={'order_token':

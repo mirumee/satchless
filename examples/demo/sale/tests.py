@@ -1,49 +1,46 @@
 from decimal import Decimal
-from django.conf import settings
+
+import django.db.models
 from django.test import TestCase
-from satchless.cart.models import Cart
-from satchless.contrib.pricing.simpleqty.models import ProductPrice
-from satchless.product.tests import DeadParrot, DeadParrotVariant
+from satchless.product.models import Product, Variant
+from satchless.product.tests.pricing import FiveZlotyPriceHandler
 from satchless.pricing import Price, handler
-import satchless.pricing.handler
 
 from . import models
+from . import SalePricingHandler
 
-class ParrotDiscountTest(TestCase):
+
+class TestProduct(Product):
+    discount = django.db.models.ForeignKey(models.DiscountGroup,
+                                           related_name='test_products',
+                                           null=True)
+
+class TestProductVariant(Variant):
+    product = django.db.models.ForeignKey(TestProduct, related_name='variants')
+
+
+class SaleTestCase(TestCase):
     def setUp(self):
-        self.original_currency = settings.SATCHLESS_DEFAULT_CURRENCY
-        settings.SATCHLESS_DEFAULT_CURRENCY = 'BTW'
-        # set the pricing pipeline
-        self.original_pricing_handlers = settings.SATCHLESS_PRICING_HANDLERS
-        settings.SATCHLESS_PRICING_HANDLERS = [
-            'satchless.contrib.pricing.simpleqty.handler',
-            'sale.handler',
-        ]
-
-        self.macaw = DeadParrot.objects.create(slug='macaw',
-                species="Hyacinth Macaw")
-        self.macaw_blue_a = self.macaw.variants.create(color='blue', looks_alive=True)
-
-        self.cockatoo = DeadParrot.objects.create(slug='cockatoo',
-                species="White Cockatoo")
-        self.cockatoo_white_a = self.cockatoo.variants.create(color='white', looks_alive=True)
-
-        macaw_price = ProductPrice.objects.create(product=self.macaw, price=Decimal('10.0'))
-        cockatoo_price = ProductPrice.objects.create(product=self.cockatoo, price=Decimal('20.0'))
-
-        # create discounts groups
-        self.discount30 = models.DiscountGroup.objects.create(name="Spring discount", rate=30, rate_name="30%")
-        self.discount30.products.add(self.macaw)
-
-    def tearDown(self):
-        settings.SATCHLESS_PRICING_HANDLERS = self.original_pricing_handlers
-        settings.SATCHLESS_DEFAULT_CURRENCY = self.original_currency
+        self.pricing_queue = handler.PricingQueue(FiveZlotyPriceHandler,
+                                                  SalePricingHandler)
 
     def test_product_discount(self):
-        # these have 30% discount
-        self.assertEqual(handler.get_variant_price(self.macaw_blue_a, currency='BTW'),
-                         Price(7, Decimal('7.0'), currency='BTW'))
-        # while these have no tax group, hence the discount is zero
-        self.assertEqual(handler.get_variant_price(self.cockatoo_white_a, currency='BTW'),
-                         Price(20, 20, currency='BTW'))
+        discount = models.DiscountGroup.objects.create(name="40% discount",
+                                                       rate=40,
+                                                       rate_name="40% discount")
+
+        product = TestProduct.objects.create(slug='product')
+        variant = product.variants.create()
+
+        discounted_product = TestProduct.objects.create(slug='discounted-product',
+                                         discount=discount)
+        discounted_variant = discounted_product.variants.create()
+
+        self.assertEqual(self.pricing_queue.get_variant_price(variant,
+                                                              currency='PLN'),
+                         Price(5, Decimal('5.0'), currency='PLN'))
+
+        self.assertEqual(self.pricing_queue.get_variant_price(discounted_variant,
+                                                              currency='PLN'),
+                         Price(3, 3, currency='PLN'))
 

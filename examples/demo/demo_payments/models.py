@@ -1,7 +1,9 @@
 from django.db import models
 
 from orders.app import order_app
+from satchless.contrib.payment.django_payments_provider.models import DjangoPaymentsPayment
 
-class Payment(models.Model):
+class Payment(DjangoPaymentsPayment):
 
-    order = models.ForeignKey(order_app.Order)
+    order = models.OneToOneField(order_app.Order,
+                                 related_name='paymentvariant')

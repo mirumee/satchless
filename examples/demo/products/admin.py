@@ -2,12 +2,12 @@
 from django import forms
 from django.contrib import admin
 from django.conf import settings
+from django.forms.models import modelform_factory
 from django.utils.translation import ugettext_lazy as _
 import django.db.models
 
 from categories.app import product_app
 import pricing.models
-import sale.models
 from . import widgets
 from . import models
 
@@ -30,6 +30,22 @@ class ProductForm(forms.ModelForm):
                                              queryset=product_app.Category.objects
                                                                           .order_by('tree_id',
                                                                                     'lft'))
+    def __init__(self, *args, **kwargs):
+        super(ProductForm, self).__init__(*args, **kwargs)
+        if self.instance.id:
+            self.fields['main_image'].queryset = self.instance.images.all()
+
+product_fieldsets = (
+    (_('General'), {
+        'fields': ('name', 'slug', 'description', 'main_image')
+    }),
+    (_('Pricing'), {
+        'fields': ('price', 'qty_mode', 'tax_group', 'discount'),
+    }),
+    (_('Categories'), {
+        'fields': ('categories',),
+    }),
+)
 class ProductAdmin(admin.ModelAdmin):
     form = ProductForm
     prepopulated_fields = {'slug': ('name',)}
@@ -46,11 +62,6 @@ class PriceQtyOverrideInline(admin.TabularInline):
     model = pricing.models.PriceQtyOverride
 
 
-class DiscountInline(admin.TabularInline):
-    model = sale.models.DiscountGroup.products.through
-    max_num = 1
-
-
 class CardiganVariantInline(admin.TabularInline):
     model = models.CardiganVariant
 
@@ -61,23 +72,10 @@ class CardiganTranslationInline(TranslationInline):
 
 class CardiganAdmin(ProductAdmin):
     model = models.Cardigan
-    class form(ProductForm):
-        class Meta:
-            model = models.Cardigan
+    form = modelform_factory(models.Cardigan, form=ProductForm)
     inlines = [CardiganTranslationInline, CardiganVariantInline,
-               PriceQtyOverrideInline, DiscountInline, ProductImageInline]
-
-    fieldsets = (
-        (_('General'), {
-            'fields': ('name', 'slug', 'description', 'main_image')
-        }),
-        ('', {
-            'fields': ('categories',),
-        }),
-        (_('Pricing'), {
-            'fields': ('price', 'qty_mode', 'tax_group'),
-        }),
-    )
+               PriceQtyOverrideInline, ProductImageInline]
+    fieldsets = product_fieldsets
 
 
 class DressVariantInline(admin.TabularInline):
@@ -90,7 +88,9 @@ class DressTranslationInline(TranslationInline):
 
 class DressAdmin(ProductAdmin):
     inlines = [DressTranslationInline, DressVariantInline,
-               PriceQtyOverrideInline, DiscountInline, ProductImageInline]
+               PriceQtyOverrideInline, ProductImageInline]
+    form = modelform_factory(models.Dress, form=ProductForm)
+    fieldsets = product_fieldsets
 
 
 class HatTranslationInline(TranslationInline):
@@ -98,8 +98,10 @@ class HatTranslationInline(TranslationInline):
 
 
 class HatAdmin(ProductAdmin):
-    inlines = [HatTranslationInline, DiscountInline,
-               PriceQtyOverrideInline, ProductImageInline]
+    inlines = [HatTranslationInline, PriceQtyOverrideInline,
+               ProductImageInline]
+    fieldsets = product_fieldsets
+    form = modelform_factory(models.Hat, form=ProductForm)
 
 
 class JacketVariantInline(admin.TabularInline):
@@ -111,8 +113,10 @@ class JacketTranslationInline(TranslationInline):
 
 
 class JacketAdmin(ProductAdmin):
-    inlines = [JacketTranslationInline, DiscountInline,
-               PriceQtyOverrideInline, JacketVariantInline, ProductImageInline]
+    inlines = [JacketTranslationInline, PriceQtyOverrideInline,
+               JacketVariantInline, ProductImageInline]
+    fieldsets = product_fieldsets
+    form = modelform_factory(models.Jacket, form=ProductForm)
 
 
 class ShirtVariantInline(admin.TabularInline):
@@ -125,7 +129,9 @@ class ShirtTranslationInline(TranslationInline):
 
 class ShirtAdmin(ProductAdmin):
     inlines = [ShirtTranslationInline, ShirtVariantInline,
-               DiscountInline, ProductImageInline, PriceQtyOverrideInline]
+               ProductImageInline, PriceQtyOverrideInline]
+    fieldsets = product_fieldsets
+    form = modelform_factory(models.Shirt, form=ProductForm)
 
 
 class TrousersVariantInline(admin.TabularInline):
@@ -138,7 +144,9 @@ class TrousersTranslationInline(TranslationInline):
 
 class TrousersAdmin(ProductAdmin):
     inlines = [TrousersTranslationInline, TrousersVariantInline,
-               DiscountInline, ProductImageInline, PriceQtyOverrideInline]
+               ProductImageInline, PriceQtyOverrideInline]
+    fieldsets = product_fieldsets
+    form = modelform_factory(models.Trousers, form=ProductForm)
 
 
 class TShirtVariantInline(admin.TabularInline):
@@ -151,7 +159,9 @@ class TShirtTranslationInline(TranslationInline):
 
 class TShirtAdmin(ProductAdmin):
     inlines = [TShirtTranslationInline, TShirtVariantInline,
-               DiscountInline, ProductImageInline, PriceQtyOverrideInline]
+               ProductImageInline, PriceQtyOverrideInline]
+    fieldsets = product_fieldsets
+    form = modelform_factory(models.TShirt, form=ProductForm)
 
 
 admin.site.register(models.Cardigan, CardiganAdmin)

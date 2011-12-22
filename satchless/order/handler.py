@@ -36,17 +36,17 @@ class PaymentQueue(PaymentProvider, QueueHandler):
     def enum_types(self, order=None, customer=None):
         for provider in self.queue:
             types = provider.enum_types(order=order, customer=customer)
-            for provider, typ in types:
+            for typ in types:
                 if not isinstance(typ, PaymentType):
                     raise ValueError('Payment types must be instances of'
                                      ' PaymentType type, not %s.' %
                                      (repr(typ, )))
-                yield provider, typ
+                yield typ
 
     def _get_provider(self, order, typ):
-        for provider, payment_type in self.enum_types(order):
+        for payment_type in self.enum_types(order):
             if payment_type.typ == typ:
-                return provider
+                return payment_type.provider
         raise ValueError('Unable to find a payment provider for type %s' %
                          (typ, ))
 
@@ -78,17 +78,17 @@ class DeliveryQueue(DeliveryProvider, QueueHandler):
         for provider in self.queue:
             types = provider.enum_types(delivery_group=delivery_group,
                                         customer=customer)
-            for provider, typ in types:
+            for typ in types:
                 if not isinstance(typ, DeliveryType):
                     raise ValueError('Delivery types must be instances of'
                                      ' DeliveryType type, not %s.' %
                                      (repr(typ, )))
-                yield provider, typ
+                yield typ
 
     def _get_provider(self, delivery_group, typ):
-        for provider, delivery_type in self.enum_types(delivery_group):
+        for delivery_type in self.enum_types(delivery_group):
             if delivery_type.typ == typ:
-                return provider
+                return delivery_type.provider
         raise ValueError('Unable to find a delivery provider for type %s' %
                          (typ, ))
 

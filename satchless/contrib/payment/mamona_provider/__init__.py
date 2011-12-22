@@ -14,14 +14,14 @@ class MamonaProvider(PaymentProvider):
 
     def enum_types(self, order=None, customer=None):
         for typ, name in get_backend_choices():
-            yield self, PaymentType(typ=typ, name=name)
+            yield PaymentType(provider=self, typ=typ, name=name)
 
     def save(self, order, typ, form):
-        payment_type = [t.name for s, t in self.enum_types if t.typ == typ][0]
+        payment_type = [t.name for t in self.enum_types() if t.typ == typ][0]
         order.payment_type_price = 0
         order.payment_type_name = payment_type.name
         self.payment_class.objects.create(order=order,
-                                          amount=order.total().gross,
+                                          amount=order.get_total().gross,
                                           currency=order.currency, backend=typ)
 
     def confirm(self, order, typ):

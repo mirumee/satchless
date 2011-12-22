@@ -9,7 +9,7 @@ class PostDeliveryProvider(DeliveryProvider):
 
     def enum_types(self, customer=None, delivery_group=None):
         for record in models.PostShippingType.objects.all():
-          yield self, DeliveryType(typ=record.typ, name=record.name)
+          yield DeliveryType(provider=self, typ=record.typ, name=record.name)
 
     def save(self, delivery_group, typ, form):
         typ = models.PostShippingType.objects.get(typ=typ)

@@ -14,7 +14,8 @@ class AuthorizeNetProvider(PaymentProvider):
         self.capture = capture
 
     def enum_types(self, order=None, customer=None):
-        yield self, PaymentType(typ='authorizenet', name='Authorize.net')
+        yield PaymentType(provider=self, typ='authorizenet',
+                          name='Authorize.net')
 
     def get_configuration_form(self, order, typ, data):
         instance = self.payment_class(order=order)
@@ -69,7 +70,7 @@ class AuthorizeNetProvider(PaymentProvider):
         data = {
             'card_num': v.cc_number,
             'exp_date': v.cc_expiration,
-            'amount': order.total().gross,
+            'amount': order.get_total().gross,
             'invoice_num': order.pk,
             'type': trans_type,
         }

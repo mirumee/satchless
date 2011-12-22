@@ -16,24 +16,25 @@ class DjangoPaymentsProvider(PaymentProvider):
 
     def enum_types(self, order=None, customer=None):
         for typ, name in settings.SATCHLESS_DJANGO_PAYMENT_TYPES:
-            yield self, PaymentType(typ=typ, name=name)
+            yield PaymentType(provider=self, typ=typ, name=name)
 
     def save(self, order, form, typ=None):
         typ = typ or order.payment_type
         factory = payments.factory(typ)
         payment = factory.create_payment(currency=order.currency,
-                                         total=order.total().gross)
+                                         total=order.get_total().gross)
         payment_variant = self.payment_class.objects.create(
-                payment=payment, order=order, price=0)
+                payment=payment, order=order)
         return payment_variant
 
     def confirm(self, order, typ=None):
-        form = order.paymentvariant.get_subtype_instance().payment.get_form()
+        form = order.paymentvariant.payment.get_form()
         raise ConfirmationFormNeeded(form, form.action, form.method)
 
     def on_payment_status_changed(self, sender, instance=None, **kwargs):
         try:
-            variant = self.payment_class.objects.get(order=instance.order)
+            variant = self.payment_class.objects.get(
+                order=instance.satchless_payment_variant.order)
         except ObjectDoesNotExist:
             return
         if instance.status == 'confirmed':

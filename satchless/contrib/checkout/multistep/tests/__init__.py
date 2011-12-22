@@ -10,9 +10,8 @@ from django.test import Client
 
 from .....checkout.tests import BaseCheckoutAppTests
 from .....contrib.delivery.simplepost.models import PostShippingType
-from .....delivery.tests import TestDeliveryProvider
 from .....order import handler as order_handler
-from .....order.forms import BillingForm
+from .....order import forms as order_forms
 from .....payment import ConfirmationFormNeeded
 from .....payment.tests import TestPaymentProvider
 from .....pricing import handler as pricing_handler
@@ -22,8 +21,9 @@ from .....product.tests.pricing import FiveZlotyPriceHandler
 
 from .. import app
 from .....cart.tests import cart_app
-from .....delivery.tests import TestDeliveryVariant, TestDeliveryMethodForm, TestDeliveryDetailsForm
+from .....delivery.tests import TestDeliveryProvider, TestDeliveryType
 from .....order.tests import order_app
+
 
 class TestPaymentProviderWithConfirmation(TestPaymentProvider):
     def confirm(self, order, typ=None):
@@ -40,13 +40,17 @@ class TestPaymentProviderWithForm(TestPaymentProvider):
 
 
 class TestCheckoutApp(app.MultiStepCheckoutApp):
-    billing_details_form_class = modelform_factory(order_app.Order,
-                                                   BillingForm)
-    delivery_details_form_class = TestDeliveryDetailsForm
-    delivery_method_form_class = TestDeliveryMethodForm
-    shipping_details_model = TestDeliveryVariant
     Cart = cart_app.Cart
     Order = order_app.Order
+
+    BillingForm = modelform_factory(order_app.Order,
+                                    order_forms.BillingForm)
+    ShippingForm= modelform_factory(order_app.DeliveryGroup,
+                                    form=order_forms.ShippingForm,
+                                    fields=order_forms.ShippingForm._meta.fields)
+    DeliveryMethodForm = modelform_factory(order_app.DeliveryGroup,
+                                           form=order_forms.DeliveryMethodForm,
+                                           fields=order_forms.DeliveryMethodForm._meta.fields)
 
 
 class CheckoutTest(BaseCheckoutAppTests):
@@ -87,9 +91,13 @@ class CheckoutTest(BaseCheckoutAppTests):
                 'django.template.loaders.filesystem.Loader',
             )
         }
+        delivery_provider = TestDeliveryProvider()
+        TestDeliveryType.objects.create(price=10, typ='pidgin', name='Pidgin')
+        TestDeliveryType.objects.create(price=15, typ='courier', name='Courier',
+                                        with_customer_notes=True)
+
         self.original_settings = self._setup_settings(self.custom_settings)
-        order_handler.delivery_queue = order_handler.DeliveryQueue(
-            TestDeliveryProvider())
+        order_handler.delivery_queue = order_handler.DeliveryQueue(delivery_provider)
         order_handler.payment_queue = order_handler.PaymentQueue(
             TestPaymentProviderWithConfirmation)
         order_handler.partitioner_queue = order_handler.PartitionerQueue(
@@ -216,7 +224,7 @@ class CheckoutTest(BaseCheckoutAppTests):
         group = order.groups.get()
         self.assertTrue(group.require_shipping_address)
         dtypes = list(order_handler.delivery_queue.enum_types(group))
-        dtype = dtypes[0][1].typ
+        dtype = dtypes[0].typ
         response = self._test_status(
             self.checkout_app.reverse('delivery-method',
                                       kwargs={'order_token': order.token}),
@@ -244,7 +252,7 @@ class CheckoutTest(BaseCheckoutAppTests):
         order = self._create_order(self.anon_client)
         group = order.groups.get()
         dtypes = list(order_handler.delivery_queue.enum_types(group))
-        group.delivery_type = dtypes[0][1].typ
+        group.delivery_type = dtypes[0].typ
         group.save()
         response = self._test_status(
             self.checkout_app.reverse('checkout',
@@ -291,10 +299,10 @@ class CheckoutTest(BaseCheckoutAppTests):
         order = self._create_order(self.anon_client)
         group = order.groups.get()
         dtypes = list(order_handler.delivery_queue.enum_types(group))
-        group.delivery_type = dtypes[0][1].typ
+        group.delivery_type = dtypes[0].typ
         group.save()
 
-        pprovider, ptype = list(order_handler.payment_queue.enum_types(group))[0]
+        ptype = list(order_handler.payment_queue.enum_types(group))[0]
         self._test_GET_status(self.checkout_app.reverse('payment-method',
                                                         kwargs={'order_token':
                                                                 order.token}),
@@ -318,10 +326,10 @@ class CheckoutTest(BaseCheckoutAppTests):
         order = self._create_order(self.anon_client)
         group = order.groups.get()
         dtypes = list(order_handler.delivery_queue.enum_types(group))
-        group.delivery_type = dtypes[0][1].typ
+        group.delivery_type = dtypes[0].typ
         group.save()
 
-        pprovider, ptype = list(order_handler.payment_queue.enum_types(group))[0]
+        ptype = list(order_handler.payment_queue.enum_types(group))[0]
         order.payment_type = ptype.typ
         order.save()
 
@@ -348,8 +356,9 @@ class CheckoutTest(BaseCheckoutAppTests):
     def test_delivery_details_view(self):
         order = self._create_order(self.anon_client)
         group = order.groups.get()
-        dtypes = list(order_handler.delivery_queue.enum_types(group))
-        group.delivery_type = dtypes[0][1].typ
+        # delivery type which requires customer info
+        delivery_type = TestDeliveryType.objects.filter(with_customer_notes=True)[0]
+        group.delivery_type = delivery_type.typ
         group.save()
         response = self._test_status(
             self.checkout_app.reverse('delivery-details',
@@ -357,13 +366,29 @@ class CheckoutTest(BaseCheckoutAppTests):
             status_code=200, client_instance=self.anon_client, method='get')
         df = response.context['delivery_group_forms']
         data = {}
-        for a, b, form in df:
-            data[form.add_prefix('id')] = group.id
-            data[form.add_prefix('email')] = 'test@example.com'
+        for group, typ, form in df:
+            data[form.add_prefix('notes')] = ('Intercom is broken - '
+                                              'pleas call me on my mobile phone')
         response = self._test_POST_status(
             self.checkout_app.reverse('delivery-details',
                                       kwargs={'order_token': order.token}),
             data=data, client_instance=self.anon_client)
+        self.assertRedirects(response,
+                             self.checkout_app.reverse('payment-method',
+                                                       kwargs={'order_token':
+                                                               order.token}))
+
+    def test_delivery_details_view_without_form(self):
+        order = self._create_order(self.anon_client)
+        group = order.groups.get()
+        # delivery type which should be constructed without additional details
+        delivery_type = TestDeliveryType.objects.filter(with_customer_notes=False)[0]
+        group.delivery_type = delivery_type.typ
+        group.save()
+        response = self._test_status(
+            self.checkout_app.reverse('delivery-details',
+                                      kwargs={'order_token': order.token}),
+            status_code=302, client_instance=self.anon_client, method='get')
         self.assertRedirects(response,
                              self.checkout_app.reverse('payment-method',
                                                        kwargs={'order_token':

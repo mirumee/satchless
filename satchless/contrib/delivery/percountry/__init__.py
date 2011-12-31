@@ -12,7 +12,7 @@ class PostDeliveryProvider(DeliveryProvider):
         if delivery_group:
             filter_kwargs['region__deliverycountry__code'] = delivery_group.shipping.shipping_country
         for record in models.PostShippingType.objects.filter(**filter_kwargs):
-            yield self, DeliveryType(typ=record.typ, name=record.name)
+            yield DeliveryType(provider=self, typ=record.typ, name=record.name)
 
     def create_variant(self, delivery_group, typ, form):
         typ = models.PostShippingType.objects.get(typ=typ)

@@ -13,16 +13,19 @@ class ConfirmationFormNeeded(Exception):
 
 
 class PaymentType(object):
-    typ = None
     name = None
+    provider = None
+    typ = None
 
-    def __init__(self, typ, name):
+    def __init__(self, provider, typ, name):
+        self.provider = provider
         self.typ = typ
         self.name = name
 
     def __repr__(self):
-        return '<PaymentType(typ=%s, name=%s)>' % (repr(self.typ),
-                                                   repr(self.name))
+        return '<PaymentType(provider=%s, typ=%s, name=%s)>' % (repr(self.provider),
+                                                                repr(self.typ),
+                                                                repr(self.name))
 
 
 class PaymentProvider(object):
@@ -36,8 +39,8 @@ class PaymentProvider(object):
 
     def as_choices(self, order=None, customer=None):
         return [(t.typ, t.name)
-                for p, t in self.enum_types(order=order,
-                                            customer=customer)]
+                for t in self.enum_types(order=order,
+                                         customer=customer)]
 
     def get_configuration_form(self, order, data, typ=None):
         '''

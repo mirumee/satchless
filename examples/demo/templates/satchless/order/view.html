@@ -1,0 +1,18 @@
+{% extends 'satchless/order/base.html' %}
+{% load url from future %}
+{% load i18n %}
+{% block title %}{{ block.super }} | {% trans "Order (business)" %} #{{ order.pk }}{% endblock %}
+{% block breadcrumbs %}
+{{ block.super }}
+    <li><a href="{% url 'order:index' %}">{% trans "My orders" %}</a></li>
+    <li><a href="{% url 'order:details' order.pk %}">{% trans "Order (business)" %} #{{ order.pk }}</a></li>
+{% endblock %}
+{% block content %}
+<div class="grid_16 alpha">
+<div class="container">
+    <h1>{% trans "Order (business)" %} #{{ order.pk }}</h1>
+    <p>Status: <strong>{{ order.get_status_display }}</strong></p>
+    {% include 'satchless/order/snippets/order_view.html' %}
+</div>
+</div>
+{% endblock %}

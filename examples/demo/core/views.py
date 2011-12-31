@@ -13,7 +13,7 @@ def home_page(request):
 def thank_you_page(request, order_token):
     order = order_app.get_order(request, order_token)
     if not order.status in ('payment-failed', 'payment-complete', 'delivery'):
-        return redirect(order_app.reverse('satchless-order-view',
+        return redirect(order_app.reverse('details',
                                           args=(order.token,)))
     if order.status == 'payment-failed':
         return redirect('payment-failed', order_token=order.token)

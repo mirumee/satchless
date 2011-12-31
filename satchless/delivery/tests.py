@@ -1,56 +1,65 @@
 # -*- coding:utf-8 -*-
-from django.utils.translation import ugettext
 import django.db
 import django.forms
 
 from . import DeliveryProvider, DeliveryType
-from ..order.forms import DeliveryMethodForm, DeliveryDetailsForm
 from ..order.tests import order_app
 
 
+class TestDeliveryType(django.db.models.Model):
+    name = django.db.models.CharField(max_length=256)
+    typ = django.db.models.CharField(max_length=256)
+    price = django.db.models.DecimalField(default=0, max_digits=12,
+                                          decimal_places=4)
+    with_customer_notes = django.db.models.BooleanField(
+        default=False, help_text=u'Allow user to add additional '
+                                  'delivery information')
+
+
 class TestDeliveryVariant(django.db.models.Model):
-    email = django.db.models.EmailField()
     delivery_group = django.db.models.OneToOneField(order_app.DeliveryGroup)
+    price = django.db.models.DecimalField(default=0, max_digits=12, decimal_places=4)
+    notes = django.db.models.TextField(max_length=120, blank=True)
 
 
-class DeliveryForm(django.forms.ModelForm):
+class TestDeliveryDetailsForm(django.forms.ModelForm):
     class Meta:
         model = TestDeliveryVariant
-        fields = ('email',)
-
-
-class TestDeliveryMethodForm(DeliveryMethodForm):
-    class Meta:
-        fields = ('delivery_type',)
-        model = order_app.DeliveryGroup
-
-
-class TestDeliveryDetailsForm(DeliveryDetailsForm):
-    class Meta:
-        exclude = ('delivery_type',)
-        model = order_app.DeliveryGroup
+        fields = ('notes',)
 
 
 class TestDeliveryProvider(DeliveryProvider):
-    def __init__(self, delivery_types=None):
-        # by default this is one type delivery provider
-        self.types = delivery_types or (DeliveryType('pidgin', 'pidgin'), )
-
     def __unicode__(self):
-        return ugettext("Test delivery")
+        return "Test delivery"
 
     def enum_types(self, delivery_group=None, customer=None):
-        for typ in self.types:
-            yield self, typ
+        for delivery_type in TestDeliveryType.objects.all():
+            yield DeliveryType(self, typ=delivery_type.typ,
+                                    name=delivery_type.name)
 
     def get_configuration_form(self, delivery_group, data, typ=None):
         typ = typ or delivery_group.delivery_type
-        instance = TestDeliveryVariant(delivery_group=delivery_group)
-        return DeliveryForm(data or None, instance=instance)
+        try:
+            delivery_type = TestDeliveryType.objects.get(typ=typ)
+        except TestDeliveryType.DoesNotExists:
+            raise ValueError('Unable to find a delivery type: %s' %
+                             (typ, ))
+
+        instance = TestDeliveryVariant(delivery_group=delivery_group,
+                                       price=delivery_type.price)
+        if delivery_type.with_customer_notes:
+            return TestDeliveryDetailsForm(data or None, instance=instance)
 
     def save(self, delivery_group, form=None, typ=None):
-        typ = typ or delivery_group.delivery_type
-        delivery_group.delivery_price = 20
-        delivery_group.delivery_type_name = typ
-        delivery_group.save()
-        form.save()
+        if form:
+            form.save()
+        else:
+            try:
+                delivery_type = TestDeliveryType.objects.get(typ=typ)
+            except TestDeliveryType.DoesNotExists:
+                raise ValueError('Unable to find a delivery type: %s' %
+                                 (typ, ))
+            TestDeliveryVariant.objects.create(
+                delivery_group=delivery_group, price=delivery_type.price)
+
+

@@ -1,5 +1,3 @@
-from django.utils.datastructures import SortedDict
-from django.conf import settings
 from django.core.urlresolvers import reverse
 from django import template
 
@@ -33,9 +31,9 @@ def subcategories_in_sale(category):
 @register.filter
 def product_in_category_tree_url(product, category=None):
     if not category:
-        return product.get_url()
+        return product.get_absolute_url()
 
     category = Category.objects.filter(products=product, lft__gte=category.lft,
                                        rght__lte=category.rght)[0]
-    return product.get_url(category=category)
+    return product.get_absolute_url(category=category)
 

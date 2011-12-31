@@ -61,6 +61,14 @@ class CheckoutApp(SatchlessApp):
                 order = self.Order.objects.get_from_cart(cart)
             except EmptyCart:
                 return redirect('cart:details')
+        if request.user.is_authenticated():
+            if cart.owner != request.user:
+                cart.owner = request.user
+                cart.save()
+            if order.user != request.user:
+                order.user = request.user
+                order.save()
+
         request.session['satchless_order'] = order.pk
         return self.redirect('checkout', order_token=order.token)
 

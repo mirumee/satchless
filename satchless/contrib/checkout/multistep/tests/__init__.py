@@ -53,8 +53,10 @@ class TestCheckoutApp(app.MultiStepCheckoutApp):
                                            fields=order_forms.DeliveryMethodForm._meta.fields)
 
 
+
 class CheckoutTest(BaseCheckoutAppTests):
-    checkout_app = TestCheckoutApp()
+    checkout_app = TestCheckoutApp(delivery_providers=[TestDeliveryProvider],
+                                   payment_providers=[TestPaymentProviderWithConfirmation])
     urls = BaseCheckoutAppTests.MockUrls(checkout_app=checkout_app)
 
     def setUp(self):
@@ -91,19 +93,15 @@ class CheckoutTest(BaseCheckoutAppTests):
                 'django.template.loaders.filesystem.Loader',
             )
         }
-        delivery_provider = TestDeliveryProvider()
         TestDeliveryType.objects.create(price=10, typ='pidgin', name='Pidgin')
         TestDeliveryType.objects.create(price=15, typ='courier', name='Courier',
                                         with_customer_notes=True)
 
         self.original_settings = self._setup_settings(self.custom_settings)
-        order_handler.delivery_queue = order_handler.DeliveryQueue(delivery_provider)
-        order_handler.payment_queue = order_handler.PaymentQueue(
-            TestPaymentProviderWithConfirmation)
+        self.anon_client = Client()
+
         order_handler.partitioner_queue = order_handler.PartitionerQueue(
             'satchless.contrib.order.partitioner.simple.SimplePhysicalPartitioner')
-
-        self.anon_client = Client()
 
         PostShippingType.objects.create(price=12, typ='polecony',
                                         name='list polecony')
@@ -223,14 +221,14 @@ class CheckoutTest(BaseCheckoutAppTests):
         order = self._create_order(self.anon_client)
         group = order.groups.get()
         self.assertTrue(group.require_shipping_address)
-        dtypes = list(order_handler.delivery_queue.enum_types(group))
+        dtypes = list(self.checkout_app.delivery_queue.enum_types(group))
         dtype = dtypes[0].typ
         response = self._test_status(
             self.checkout_app.reverse('delivery-method',
                                       kwargs={'order_token': order.token}),
             client_instance=self.anon_client, status_code=200)
         data = {}
-        df = response.context['delivery_formset']
+        df = response.context['delivery_method_formset']
         data[df.add_prefix('INITIAL_FORMS')] = len(df.forms)
         data[df.add_prefix('MAX_NUM_FORMS')] = ''
         data[df.add_prefix('TOTAL_FORMS')] = len(df.forms)
@@ -251,7 +249,7 @@ class CheckoutTest(BaseCheckoutAppTests):
     def test_checkout_view(self):
         order = self._create_order(self.anon_client)
         group = order.groups.get()
-        dtypes = list(order_handler.delivery_queue.enum_types(group))
+        dtypes = list(self.checkout_app.delivery_queue.enum_types(group))
         group.delivery_type = dtypes[0].typ
         group.save()
         response = self._test_status(
@@ -298,11 +296,11 @@ class CheckoutTest(BaseCheckoutAppTests):
     def test_payment_choice_view(self):
         order = self._create_order(self.anon_client)
         group = order.groups.get()
-        dtypes = list(order_handler.delivery_queue.enum_types(group))
+        dtypes = list(self.checkout_app.delivery_queue.enum_types(group))
         group.delivery_type = dtypes[0].typ
         group.save()
 
-        ptype = list(order_handler.payment_queue.enum_types(group))[0]
+        ptype = list(self.checkout_app.payment_queue.enum_types(group))[0]
         self._test_GET_status(self.checkout_app.reverse('payment-method',
                                                         kwargs={'order_token':
                                                                 order.token}),
@@ -325,15 +323,15 @@ class CheckoutTest(BaseCheckoutAppTests):
     def test_payment_details_view(self):
         order = self._create_order(self.anon_client)
         group = order.groups.get()
-        dtypes = list(order_handler.delivery_queue.enum_types(group))
+        dtypes = list(self.checkout_app.delivery_queue.enum_types(group))
         group.delivery_type = dtypes[0].typ
         group.save()
 
-        ptype = list(order_handler.payment_queue.enum_types(group))[0]
+        ptype = list(self.checkout_app.payment_queue.enum_types(group))[0]
         order.payment_type = ptype.typ
         order.save()
 
-        order_handler.payment_queue = order_handler.PaymentQueue(
+        self.checkout_app.payment_queue = order_handler.PaymentQueue(
             TestPaymentProviderWithForm)
 
         self._test_status(self.checkout_app.reverse('payment-details',

@@ -5,7 +5,6 @@ from django.template.response import TemplateResponse
 
 from ....checkout import app
 from ....order import forms
-from ....order import handler
 
 class MultiStepCheckoutApp(app.CheckoutApp):
     checkout_templates = [
@@ -45,6 +44,7 @@ class MultiStepCheckoutApp(app.CheckoutApp):
         self.DeliveryMethodFormSet = (
             self.DeliveryMethodFormSet or
             modelformset_factory(self.DeliveryMethodForm._meta.model,
+                                 formset=forms.DeliveryMethodFormSet,
                                  form=self.DeliveryMethodForm,
                                  extra=0))
 
@@ -59,19 +59,18 @@ class MultiStepCheckoutApp(app.CheckoutApp):
             return self.redirect_order(order)
         billing_form = self.BillingForm(data=request.POST or None,
                                         instance=order)
-        groups = order.groups.all()
+        delivery_groups = order.groups.all()
         shipping_formset = self.ShippingFormSet(data=request.POST or None,
-                                                queryset=groups)
+                                                queryset=delivery_groups)
         if all([billing_form.is_valid(),
                 shipping_formset.is_valid()]):
             order = billing_form.save()
             shipping_formset.save()
             return self.redirect('delivery-method', order_token=order.token)
-        return TemplateResponse(request, self.checkout_templates, {
-            'billing_form': billing_form,
-            'shipping_formset': shipping_formset,
-            'order': order,
-        })
+        context = self.get_context_data(request, billing_form=billing_form,
+                                        shipping_formset=shipping_formset,
+                                        order=order)
+        return TemplateResponse(request, self.checkout_templates, context)
 
     def delivery_method(self, request, order_token):
         """
@@ -83,14 +82,14 @@ class MultiStepCheckoutApp(app.CheckoutApp):
             return self.redirect_order(order)
         delivery_groups = order.groups.all()
         delivery_method_formset = self.DeliveryMethodFormSet(data=request.POST or None,
-                                                             queryset=delivery_groups)
+                                                             queryset=delivery_groups,
+                                                             delivery_queue=self.delivery_queue)
         if delivery_method_formset.is_valid():
             delivery_method_formset.save()
             return self.redirect('payment-method', order_token=order.token)
-        return TemplateResponse(request, self.delivery_method_templates, {
-            'delivery_method_formset': delivery_method_formset,
-            'order': order,
-        })
+        context = self.get_context_data(request, order=order,
+                                        delivery_method_formset=delivery_method_formset)
+        return TemplateResponse(request, self.delivery_method_templates, context)
 
     def delivery_details(self, request, order_token):
         """
@@ -98,25 +97,20 @@ class MultiStepCheckoutApp(app.CheckoutApp):
         User supplies further delivery details if needed.
         """
         order = self.get_order(request, order_token)
-        groups = order.groups.all()
-        if not all([group.delivery_type for group in groups]):
+        delivery_groups = order.groups.all()
+        if not all([group.delivery_type for group in delivery_groups]):
             return self.redirect('delivery-method', order_token=order.token)
-        delivery_group_forms = []
-        for group in groups:
-            delivery_type = group.delivery_type
-            form = handler.delivery_queue.get_configuration_form(group,
-                                                                 request.POST or None)
-            delivery_group_forms.append((group, delivery_type, form))
-        delivery_forms = [form for group, typ, form in delivery_group_forms]
+        delivery_group_forms = self.delivery_queue.get_configuration_forms_for_groups(
+            delivery_groups, request.POST or None)
+        delivery_forms = [form for group, delivery_type, form in delivery_group_forms]
         if all(form.is_valid() if form else True
                for form in delivery_forms):
-            for group, typ, form in delivery_group_forms:
-                handler.delivery_queue.save(group, form)
+            for group, delivery_type, form in delivery_group_forms:
+                self.delivery_queue.save(group, form)
             return self.redirect('payment-method', order_token=order.token)
-        return TemplateResponse(request, self.delivery_details_templates, {
-            'delivery_group_forms': delivery_group_forms,
-            'order': order,
-        })
+        context = self.get_context_data(request, order=order,
+                                        delivery_group_forms=delivery_group_forms)
+        return TemplateResponse(request, self.delivery_details_templates, context)
 
     def payment_method(self, request, order_token):
         """
@@ -127,15 +121,15 @@ class MultiStepCheckoutApp(app.CheckoutApp):
         if not order or order.status != 'checkout':
             return self.redirect_order(order)
         payment_form = forms.PaymentMethodForm(data=request.POST or None,
-                                               instance=order)
+                                               instance=order,
+                                               payment_queue=self.payment_queue)
         if request.method == 'POST':
             if payment_form.is_valid():
                 payment_form.save()
                 return self.redirect('payment-details', order_token=order.token)
-        return TemplateResponse(request, self.payment_method_templates, {
-            'order': order,
-            'payment_form': payment_form,
-        })
+        context = self.get_context_data(request, order=order,
+                                        payment_form=payment_form)
+        return TemplateResponse(request, self.payment_method_templates, context)
 
     def payment_details(self, request, order_token):
         """
@@ -148,19 +142,17 @@ class MultiStepCheckoutApp(app.CheckoutApp):
             return self.redirect_order(order)
         if not order.payment_type:
             return self.redirect('payment-method', order_token=order.token)
-        form = forms.get_payment_details_form(order, request.POST)
+        form = self.payment_queue.get_configuration_form(order, request.POST)
         def proceed(order, form):
-            handler.payment_queue.save(order, form=form)
+            self.payment_queue.save(order, form=form)
             order.set_status('payment-pending')
             return self.redirect('confirmation', order_token=order.token)
         if form:
             if request.method == 'POST':
                 if form.is_valid():
                     return proceed(order, form)
-            return TemplateResponse(request, self.payment_details_templates, {
-                'form': form,
-                'order': order,
-            })
+            context = self.get_context_data(request, form=form, order=order)
+            return TemplateResponse(request, self.payment_details_templates, context)
         return proceed(order, form)
 
     def get_urls(self):

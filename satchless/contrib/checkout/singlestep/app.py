@@ -2,7 +2,6 @@ from django.core.exceptions import ImproperlyConfigured
 from django.template.response import TemplateResponse
 
 from ....checkout import app
-from ....order import forms, handler
 
 class SingleStepCheckoutApp(app.CheckoutApp):
     BillingForm = None
@@ -26,21 +25,22 @@ class SingleStepCheckoutApp(app.CheckoutApp):
             return self.redirect_order(order)
         delivery_groups = order.groups.all()
         for group in delivery_groups:
-            delivery_types = list(handler.delivery_queue.enum_types(group))
+            delivery_types = list(self.delivery_queue.enum_types(group))
             if len(delivery_types) != 1:
                 raise ImproperlyConfigured("The singlestep checkout requires "
                                            "exactly one delivery type per group.")
             group.delivery_type = delivery_types[0].typ
             group.save()
-        delivery_group_forms = forms.get_delivery_details_forms_for_groups(delivery_groups,
-                                                                           request.POST)
+
+        delivery_group_forms = self.delivery_queue.get_configuration_forms_for_groups(
+            delivery_groups, request.POST or None)
         delivery_valid = True
         if request.method == 'POST':
             delivery_valid = True
-            for group, typ, form in delivery_group_forms:
+            for group, delivery_type, form in delivery_group_forms:
                 if form:
                     delivery_valid = delivery_valid and form.is_valid()
-        payment_types = list(handler.payment_queue.enum_types(order))
+        payment_types = list(self.payment_queue.enum_types(order))
         if len(payment_types) != 1:
             raise ImproperlyConfigured("The singlestep checkout requires "
                                        "exactly one payment methods.")
@@ -48,22 +48,19 @@ class SingleStepCheckoutApp(app.CheckoutApp):
         order.save()
         billing_form = self.BillingForm(request.POST or None,
                                         instance=order)
-        payment_form = forms.get_payment_details_form(order, request.POST)
+        payment_form = self.payment_queue.get_configuration_form(order, request.POST)
         if request.method == 'POST':
             billing_valid = billing_form.is_valid()
             payment_valid = payment_form.is_valid() if payment_form else True
             if billing_valid and delivery_valid and payment_valid:
                 order = billing_form.save()
                 for group, typ, form in delivery_group_forms:
-                    handler.delivery_queue.save(group, form)
-                handler.payment_queue.save(order, payment_form)
+                    self.delivery_queue.save(group, form)
+                self.payment_queue.save(order, payment_form)
                 order.set_status('payment-pending')
                 return self.redirect('confirmation',
                                      order_token=order.token)
-        return TemplateResponse(request, self.checkout_templates, {
-            'billing_form': billing_form,
-            'delivery_group_forms': delivery_group_forms,
-            'order': order,
-            'payment_form': payment_form,
-        })
-
+        context = self.get_context_data(request, billing_form=billing_form,
+                                        delivery_group_forms=delivery_group_forms,
+                                        order=order, payment_form=payment_form)
+        return TemplateResponse(request, self.checkout_templates, context)

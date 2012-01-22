@@ -2,6 +2,7 @@ from django.db import models
 from payments.models import Payment
 
 class DjangoPaymentsPayment(models.Model):
+
     payment = models.OneToOneField(Payment,
                                    related_name='satchless_payment_variant')
 

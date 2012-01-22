@@ -66,10 +66,6 @@ class PaymentQueue(PaymentProvider, QueueHandler):
         return provider.confirm(order=order, typ=typ)
 
 
-payment_providers = getattr(settings, 'SATCHLESS_PAYMENT_PROVIDERS', [])
-payment_queue = PaymentQueue(*payment_providers)
-
-
 ### DELIVERY PROVIDERS
 class DeliveryQueue(DeliveryProvider, QueueHandler):
     element_class = DeliveryProvider
@@ -98,11 +94,15 @@ class DeliveryQueue(DeliveryProvider, QueueHandler):
         return provider.get_configuration_form(delivery_group=delivery_group,
                                                data=data, typ=typ)
 
+    def get_configuration_forms_for_groups(self, delivery_groups, data):
+        delivery_group_forms = []
+        delivery_types = dict((dt.typ, dt) for dt in self.enum_types())
+        for group in delivery_groups:
+            form = self.get_configuration_form(group, data)
+            delivery_group_forms.append((group, delivery_types[group.delivery_type], form))
+        return delivery_group_forms
+
     def save(self, delivery_group, form, typ=None):
         typ = typ or delivery_group.delivery_type
         provider = self._get_provider(delivery_group, typ)
         return provider.save(delivery_group=delivery_group, form=form, typ=typ)
-
-
-delivery_providers = getattr(settings, 'SATCHLESS_DELIVERY_PROVIDERS', [])
-delivery_queue = DeliveryQueue(*delivery_providers)

@@ -42,7 +42,7 @@ class OrderManager(models.Manager):
 
 class Order(models.Model):
     """
-    add this to your concrete model:
+    Add this to your concrete model:
     cart = models.ForeignKey(Cart, related_name='orders')
     """
     STATUS_CHOICES = (

@@ -17,3 +17,5 @@ class TaxedProductMixin(models.Model):
 
     tax_group = models.ForeignKey(TaxGroup, related_name='products',
                                   null=True)
+    class Meta:
+        abstract = True

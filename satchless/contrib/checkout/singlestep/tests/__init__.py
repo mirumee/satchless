@@ -31,7 +31,8 @@ class TestSingleStepCheckoutApp(SingleStepCheckoutApp):
     BillingForm = modelform_factory(order_app.Order,
                                     BillingForm)
 
-checkout_app = TestSingleStepCheckoutApp()
+checkout_app = TestSingleStepCheckoutApp(delivery_providers=[TestDeliveryProvider],
+                                         payment_providers=[TestPaymentProviderWithConfirmation])
 
 
 class App(BaseCheckoutAppTests):
@@ -64,8 +65,6 @@ class App(BaseCheckoutAppTests):
 
         TestDeliveryType.objects.create(price=10, typ='courier', name='Courier',
                                         with_customer_notes=True)
-        order_handler.delivery_queue = order_handler.DeliveryQueue(TestDeliveryProvider)
-        order_handler.payment_queue = order_handler.PaymentQueue(TestPaymentProviderWithConfirmation)
         self.anon_client = Client()
         self.original_pricing_handlers = settings.SATCHLESS_PRICING_HANDLERS
         pricing_handler.pricing_queue = pricing_handler.PricingQueue(FiveZlotyPriceHandler)

@@ -14,8 +14,7 @@ class PricingCacheHandler(PricingHandler, QueueHandler):
 
     def _get_key(self, **kwargs):
         key = self.get_cache_key(**kwargs)
-        value = sorted(key.items())
-        return urllib.urlencode(value, doseq=True)
+        return urllib.urlencode(sorted(key.items()), doseq=True)
 
     def get_variant_price(self, variant, currency, price, quantity=1, **context):
         # Visit cache for a matching entry first

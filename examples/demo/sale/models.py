@@ -26,7 +26,7 @@ class DiscountGroup(models.Model):
 
 
 class DiscountedProduct(models.Model):
-    discount = models.ForeignKey(DiscountGroup, null=True,
+    discount = models.ForeignKey(DiscountGroup, null=True, blank=True,
                                  related_name='products')
 
     class Meta:

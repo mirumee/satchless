@@ -1,7 +1,6 @@
 {% extends 'satchless/checkout/base.html' %}
 {% load i18n %}
 {% load form_display %}
-{% load order_tags %}
 {% block title %}{{ block.super }} | {% trans "Delivery details" %}{% endblock %}
 
 {% block body-class %}{{ block.super }} delivery-details{% endblock %}
@@ -26,8 +25,8 @@
     <div class="container">
         <h1>{% trans "Delivery details" %}</h1>
         <form method="post" action="">{% csrf_token %}
-            {% for group, typ, form in delivery_group_forms %}
-            <h2>{% trans "Delivery method" %}: {{ typ|delivery_type }}</h2>
+            {% for group, delivery_type, form in delivery_group_forms %}
+            <h2>{% trans "Delivery method" %}: {{ delivery_type.name }}</h2>
             <h3>{% trans "Items deliverd using this method" %}:</h3>
             <ul>
             {% include 'satchless/checkout/snippets/delivery_group.html' %}

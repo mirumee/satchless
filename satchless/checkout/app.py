@@ -1,4 +1,5 @@
 from django.conf.urls.defaults import patterns, url
+from django.conf import settings
 from django.shortcuts import get_object_or_404, redirect
 from django.template.response import TemplateResponse
 from django.utils.decorators import method_decorator
@@ -21,6 +22,13 @@ class CheckoutApp(SatchlessApp):
     ]
 
     def __init__(self, *args, **kwargs):
+        delivery_providers = kwargs.pop('delivery_providers',
+                                        getattr(settings, 'SATCHLESS_DELIVERY_PROVIDERS', []))
+        self.delivery_queue = handler.DeliveryQueue(*delivery_providers)
+
+        payment_providers = kwargs.pop('payment_providers',
+                                        getattr(settings, 'SATCHLESS_PAYMENT_PROVIDERS', []))
+        self.payment_queue = handler.PaymentQueue(*payment_providers)
         super(CheckoutApp, self).__init__(*args, **kwargs)
         assert self.Order, ('You need to subclass CheckoutApp and provide Order')
         assert self.Cart, ('You need to subclass CheckoutApp and provide Cart')
@@ -96,7 +104,7 @@ class CheckoutApp(SatchlessApp):
         order_pre_confirm.send(sender=self.Order, instance=order,
                                request=request)
         try:
-            handler.payment_queue.confirm(order=order)
+            self.payment_queue.confirm(order=order)
         except ConfirmationFormNeeded, e:
             return TemplateResponse(request, self.confirmation_templates, {
                 'formdata': e,

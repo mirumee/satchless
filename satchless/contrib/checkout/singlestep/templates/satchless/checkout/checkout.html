@@ -1,6 +1,5 @@
 {% extends 'satchless/order/base.html' %}
 {% load i18n %}
-{% load order_tags %}
 {% block breadcrumbs %}
     {{ block.super }}
     <li><a href="">{% trans "Order (business)" %}</a></li>
@@ -11,8 +10,8 @@
     <form method="post" action="">{% csrf_token %}
         <h2>{% trans "Billing details" %}</h2>
         {{ billing_form.as_p }}
-        {% for group, typ, form in delivery_group_forms %}
-        <h2>{% trans "Delivery method" %}: {{ typ|delivery_type }}</h2>
+        {% for group, delivery_type, form in delivery_group_forms %}
+        <h2>{% trans "Delivery method" %}: {{ delivery_type.name }}</h2>
         <h3>{% trans "Items delivered using this method" %}:</h3>
         <ul>
         {% include 'satchless/checkout/snippets/delivery_group.html' %}

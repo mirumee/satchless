@@ -10,7 +10,7 @@ def carts_sizes(request):
         cart_size = 0
     try:
         wishlist_size = (wishlist_app.get_cart_for_request(request)
-                                     .items.aggregate(cart_size=models.Sum('quantity')))['cart_size'] or 0
+                                     .items.count()) or 0
     except wishlist_app.Cart.DoesNotExist:
         wishlist_size = 0
     return {'cart_size': cart_size,

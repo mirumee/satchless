@@ -90,7 +90,7 @@ class CartApp(SatchlessApp):
 
 class MagicCartApp(CartApp):
     CartItem = None
-    product_app = None
+    AddToCartHandler = handler.AddToCartHandler
 
     def __init__(self, product_app, **kwargs):
         self.product_app = product_app
@@ -101,8 +101,7 @@ class MagicCartApp(CartApp):
         self.CartItemForm = (
             self.CartItemForm or
             self.construct_cart_item_form_class(self.CartItem))
-        add_to_cart_handler = handler.AddToCartHandler(cart_app=self,
-                                                       addtocart_formclass=forms.AddToCartForm)
+        add_to_cart_handler = self.AddToCartHandler(cart_app=self)
         product_app.register_product_view_handler(add_to_cart_handler)
         super(MagicCartApp, self).__init__(**kwargs)
 

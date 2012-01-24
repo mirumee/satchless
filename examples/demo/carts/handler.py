@@ -1,18 +1,26 @@
-from models import DemoCart
-from satchless.cart.handler import AddToCartHandler
+import satchless.cart.handler
 
 from . import forms
 
-add_to_cart_handler = AddToCartHandler('cart',
-                                       addtocart_formclass=forms.AddToCartForm,
-                                       cart_class=DemoCart)
+class AddToCartHandler(satchless.cart.handler.AddToCartHandler):
+    def __init__(self, **kwargs):
+        kwargs['addtocart_formclass'] = kwargs.get('addtocart_formclass',
+                                                   forms.AddToCartForm)
+        super(AddToCartHandler, self).__init__(**kwargs)
 
-add_to_wishlist_handler = AddToCartHandler('wishlist',
-                                           details_view='wishlist:details',
-                                           addtocart_formclass=forms.AddToWishlistForm,
-                                           cart_class=DemoCart)
+    def __call__(self, instances=None, request=None, extra_context=None, **kwargs):
+        if request and (request.method == 'GET' or (request.method == 'POST' and
+                                                    self.cart_app.app_name in request.POST)):
+            return super(AddToCartHandler, self).__call__(instances=instances, request=request,
+                                                          extra_context=extra_context, **kwargs)
+        return extra_context
 
-def carts_handler(instances=None, request=None, extra_context=None, **kwargs):
-    if request.method == 'POST' and 'wishlist' in request.POST:
-        return add_to_wishlist_handler(instances, request, extra_context, **kwargs)
-    return add_to_cart_handler(instances, request, extra_context, **kwargs)
+
+class AddToWishlistHandler(AddToCartHandler):
+    def __init__(self, **kwargs):
+        kwargs['addtocart_formclass'] = kwargs.get('addtocart_formclass',
+                                                   forms.AddToWishlistForm)
+        kwargs['form_attribute'] = kwargs.get('form_attribute',
+                                              'wishlist_form')
+        super(AddToWishlistHandler, self).__init__(**kwargs)
+

@@ -1,30 +1,40 @@
 from django.conf.urls.defaults import patterns, url
-from django.shortcuts import get_object_or_404, redirect
+from django.core.exceptions import ObjectDoesNotExist
+from django.http import Http404
 import satchless.cart.app
-import satchless.cart.signals
 
 from categories.app import product_app
 
-cart_app = satchless.cart.app.MagicCartApp(product_app)
+from . import handler
+from . import models
+
+class CartApp(satchless.cart.app.MagicCartApp):
+    AddToCartHandler = handler.AddToCartHandler
+
+cart_app = CartApp(product_app)
+
 
 class WishlistApp(satchless.cart.app.MagicCartApp):
     app_name = 'wishlist'
     namespace = 'wishlist'
     cart_type = 'wishlist'
-    Cart = cart_app.Cart
-    CartItem = cart_app.CartItem
+    Cart = models.Wishlist
+    CartItem = models.WishlistItem
+    AddToCartHandler = handler.AddToWishlistHandler
+
+    def __init__(self, cart_app, *args, **kwargs):
+        self.cart_app = cart_app
+        super(WishlistApp, self).__init__(*args, **kwargs)
 
     def add_to_cart(self, request, wishlist_item_id):
-        wishlist = self.Cart.objects.get_or_create_from_request(request,
-                                                           self.cart_type)
-        item = get_object_or_404(wishlist.items.all(), id=wishlist_item_id)
-        cart = self.Cart.objects.get_or_create_from_request(request, 'cart')
-        form_result = cart.add_item(variant=item.variant, quantity=1)
-        satchless.cart.signals.cart_item_added.send(sender=type(form_result.cart_item),
-                                                    instance=form_result.cart_item,
-                                                    result=form_result,
-                                                    request=request)
-        return redirect('cart:details')
+        wishlist = self.get_cart_for_request(request)
+        try:
+            item = wishlist.get_item(id=wishlist_item_id)
+        except ObjectDoesNotExist:
+            raise Http404()
+        cart = self.cart_app.get_cart_for_request(request)
+        cart.add_item(variant=item.variant, quantity=1)
+        return self.cart_app.redirect('details')
 
     def get_urls(self):
         parent_urls = super(WishlistApp, self).get_urls()
@@ -33,5 +43,4 @@ class WishlistApp(satchless.cart.app.MagicCartApp):
                 name='add-to-cart'),
         )
 
-
-wishlist_app = WishlistApp(product_app)
+wishlist_app = WishlistApp(cart_app=cart_app, product_app=product_app)

@@ -196,7 +196,7 @@ SATCHLESS_IMAGE_SIZES = {
     },
     'cart-product': {
         'size': ('156', '156'),
-        'crop': False,
+        'crop': True,
     },
     'order-preview': {
         'size': ('56', '56'),

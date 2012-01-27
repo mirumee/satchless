@@ -8,20 +8,18 @@ from . import models
 has_side_effects = True
 
 def _get_existing_variants_choices(queryset, field_names):
-    existing_choices = {}
-    existing_variants = queryset.values_list(*field_names)
+    field2choices = {}
+    variants = queryset.values_list(*field_names)
 
-    if existing_variants:
-        for index, existing_field_choices in enumerate(zip(*existing_variants)):
+    if variants:
+        for index, existing_choices in enumerate(zip(*variants)):
             field_name = field_names[index]
-            original_choices = queryset.model._meta.get_field(field_name).choices
-            flt = lambda choice: choice[0] in existing_field_choices
-            existing_choices[field_names[index]] = filter(flt,
-                                                          original_choices)
+            all_choices = queryset.model._meta.get_field(field_name).choices
+            field2choices[field_name] = [c for c in all_choices if c[0] in existing_choices]
     else:
         for field_name in field_names:
-            existing_choices[field_name] = []
-    return existing_choices
+            field2choices[field_name] = []
+    return field2choices
 
 class VariantWithSizeAndColorForm(BaseVariantForm):
     color = forms.CharField(max_length=10,

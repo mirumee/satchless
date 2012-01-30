@@ -59,7 +59,7 @@ class MultiStepCheckoutApp(app.CheckoutApp):
             return self.redirect_order(order)
         billing_form = self.BillingForm(data=request.POST or None,
                                         instance=order)
-        delivery_groups = order.groups.all()
+        delivery_groups = order.groups.filter(require_shipping_address=True)
         shipping_formset = self.ShippingFormSet(data=request.POST or None,
                                                 queryset=delivery_groups)
         if all([billing_form.is_valid(),
@@ -80,13 +80,13 @@ class MultiStepCheckoutApp(app.CheckoutApp):
         order = self.get_order(request, order_token)
         if not order or order.status != 'checkout':
             return self.redirect_order(order)
-        delivery_groups = order.groups.all()
+        delivery_groups = order.groups.filter(require_shipping_address=True)
         delivery_method_formset = self.DeliveryMethodFormSet(data=request.POST or None,
                                                              queryset=delivery_groups,
                                                              delivery_queue=self.delivery_queue)
         if delivery_method_formset.is_valid():
             delivery_method_formset.save()
-            return self.redirect('payment-method', order_token=order.token)
+            return self.redirect('delivery-details', order_token=order.token)
         context = self.get_context_data(request, order=order,
                                         delivery_method_formset=delivery_method_formset)
         return TemplateResponse(request, self.delivery_method_templates, context)
@@ -97,7 +97,7 @@ class MultiStepCheckoutApp(app.CheckoutApp):
         User supplies further delivery details if needed.
         """
         order = self.get_order(request, order_token)
-        delivery_groups = order.groups.all()
+        delivery_groups = order.groups.filter(require_shipping_address=True)
         if not all([group.delivery_type for group in delivery_groups]):
             return self.redirect('delivery-method', order_token=order.token)
         delivery_group_forms = self.delivery_queue.get_configuration_forms_for_groups(

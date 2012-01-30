@@ -27,7 +27,7 @@
         {% endwith %}{% endif %}
         <tr>
             <th class="numerical" colspan="3">{% trans "Total" %}:</th>
-            <td class="numerical">{{ group.total|gross|floatformat:2 }} <span class="currency">{{ order.currency }}</span></td>
+            <td class="numerical">{{ group.get_total|gross|floatformat:2 }} <span class="currency">{{ order.currency }}</span></td>
         </tr>
     </tfoot>
     <tbody>
@@ -51,7 +51,7 @@
     </tbody>
 </table>
 {% endfor %}
-<p>Total amount to pay: {{ order.total|gross|floatformat:2 }} <span class="currency">{{ order.currency }}</span></p>
+<p>Total amount to pay: {{ order.get_total|gross|floatformat:2 }} <span class="currency">{{ order.currency }}</span></p>
 {% if order.paymentvariant %}
 <p>{% trans "Payment method" %}: {{ order.paymentvariant.get_subtype_instance }}
 {% endif %}

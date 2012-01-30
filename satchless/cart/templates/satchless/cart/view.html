@@ -79,12 +79,12 @@
             <tr class="total">
                 <th colspan="4" rowspan="2">{% trans "Total" %}:</th>
                 <td class="numerical">
-                    {{ cart.total|gross|floatformat:2 }} <span class="currency">{{ cart.currency }}</span><br />
+                    {{ cart.get_total|gross|floatformat:2 }} <span class="currency">{{ cart.currency }}</span><br />
                 </td>
                 <td colspan="2" rowspan="2"></td>
             </tr>
             <tr>
-                <td class="numerical netPrice">{{ cart.total|net|floatformat:2 }} <span class="currency">{{ cart.currency }}</span></td>
+                <td class="numerical netPrice">{{ cart.get_total|net|floatformat:2 }} <span class="currency">{{ cart.currency }}</span></td>
             </tr>
         </tfoot>
     </table>

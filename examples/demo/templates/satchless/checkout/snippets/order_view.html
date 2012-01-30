@@ -53,14 +53,14 @@
         {% endif %}
         <tr>
             <td class="product-price" colspan="5">
-                <span class="fullprice">{{ group.total|gross|floatformat:2 }}</span>
+                <span class="fullprice">{{ group.get_total|gross|floatformat:2 }}</span>
                 <span class="currency">{{ order.currency }}</span><br />
             </td>
         </tr>
     </tfoot>
 </table>
 {% endfor %}
-<p>Total amount to pay: {{ order.total|gross|floatformat:2 }} <span class="currency">{{ order.currency }}</span></p>
+<p>Total amount to pay: {{ order.get_total|gross|floatformat:2 }} <span class="currency">{{ order.currency }}</span></p>
 {% if order.paymentvariant %}
 <p>{% trans "Payment method" %}: {{ order.paymentvariant.get_subtype_instance }}
 {% endif %}

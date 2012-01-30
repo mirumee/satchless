@@ -18,7 +18,7 @@
             <td><a href="{{ order_url }}">{{ order.pk }}</a></td>
             <td>{{ order.created|date }} {{ order.created|time }}</td>
             <td>{{ order.get_status_display }}</td>
-            <td>{{ order.total|floatformat:2 }} <span class="currency">{{ order.currency }}</span></td>
+            <td>{{ order.get_total|floatformat:2 }} <span class="currency">{{ order.currency }}</span></td>
         </tr>
         {% endfor %}
     </tbody>

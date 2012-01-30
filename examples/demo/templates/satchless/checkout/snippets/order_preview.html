@@ -69,7 +69,7 @@
             {% endif %}
             <tr>
                 <td class="product-price" colspan="5">
-                    <span class="fullprice">{{ group.total|gross|floatformat:2 }}</span>
+                    <span class="fullprice">{{ group.get_total|gross|floatformat:2 }}</span>
                     <span class="currency">{{ order.currency }}</span><br />
                 </td>
             </tr>

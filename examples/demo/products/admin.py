@@ -11,8 +11,6 @@ import pricing.models
 from . import widgets
 from . import models
 
-from categories.admin.fields import CategoryMultipleChoiceField
-
 
 class TranslationInline(admin.StackedInline):
     extra = 1
@@ -25,6 +23,7 @@ class ImageInline(admin.TabularInline):
     }
 
 
+from categories.admin.fields import CategoryMultipleChoiceField # To prevent circular imports
 class ProductForm(forms.ModelForm):
     categories = CategoryMultipleChoiceField(required=False,
                                              queryset=product_app.Category.objects

@@ -242,9 +242,10 @@ class CheckoutTest(BaseCheckoutAppTests):
             method='post')
         self.assertEqual(order.groups.get().delivery_type, dtype)
         self.assertRedirects(response,
-                             self.checkout_app.reverse('payment-method',
+                             self.checkout_app.reverse('delivery-details',
                                                        kwargs={'order_token':
-                                                               order.token}))
+                                                               order.token}),
+                             target_status_code=302)
 
     def test_checkout_view(self):
         order = self._create_order(self.anon_client)

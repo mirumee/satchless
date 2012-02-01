@@ -80,7 +80,7 @@ class MultiStepCheckoutApp(app.CheckoutApp):
         order = self.get_order(request, order_token)
         if not order or order.status != 'checkout':
             return self.redirect_order(order)
-        delivery_groups = order.groups.filter(require_shipping_address=True)
+        delivery_groups = order.groups.all()
         delivery_method_formset = self.DeliveryMethodFormSet(data=request.POST or None,
                                                              queryset=delivery_groups,
                                                              delivery_queue=self.delivery_queue)
@@ -97,7 +97,7 @@ class MultiStepCheckoutApp(app.CheckoutApp):
         User supplies further delivery details if needed.
         """
         order = self.get_order(request, order_token)
-        delivery_groups = order.groups.filter(require_shipping_address=True)
+        delivery_groups = order.groups.all()
         if not all([group.delivery_type for group in delivery_groups]):
             return self.redirect('delivery-method', order_token=order.token)
         delivery_group_forms = self.delivery_queue.get_configuration_forms_for_groups(

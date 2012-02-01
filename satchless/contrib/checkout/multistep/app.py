@@ -59,7 +59,7 @@ class MultiStepCheckoutApp(app.CheckoutApp):
             return self.redirect_order(order)
         billing_form = self.BillingForm(data=request.POST or None,
                                         instance=order)
-        delivery_groups = order.groups.all()
+        delivery_groups = order.groups.filter(require_shipping_address=True)
         shipping_formset = self.ShippingFormSet(data=request.POST or None,
                                                 queryset=delivery_groups)
         if all([billing_form.is_valid(),
@@ -86,7 +86,7 @@ class MultiStepCheckoutApp(app.CheckoutApp):
                                                              delivery_queue=self.delivery_queue)
         if delivery_method_formset.is_valid():
             delivery_method_formset.save()
-            return self.redirect('payment-method', order_token=order.token)
+            return self.redirect('delivery-details', order_token=order.token)
         context = self.get_context_data(request, order=order,
                                         delivery_method_formset=delivery_method_formset)
         return TemplateResponse(request, self.delivery_method_templates, context)

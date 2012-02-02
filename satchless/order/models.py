@@ -10,6 +10,7 @@ from ..util import countries
 from . import signals
 from .exceptions import EmptyCart
 
+
 class OrderManager(models.Manager):
 
     def get_from_cart(self, cart, instance=None):
@@ -27,7 +28,7 @@ class OrderManager(models.Manager):
         else:
             order = instance
             order.groups.all().delete()
-        groups = partitioner_queue.partition(cart)
+        groups = filter(None, partitioner_queue.partition(cart))
         for group in groups:
             delivery_group = order.create_delivery_group(group)
             for item in group:

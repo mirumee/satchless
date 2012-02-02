@@ -9,24 +9,21 @@ class Wishlist(satchless.cart.models.Cart):
         return self.replace_item(variant, 1)
 
     def replace_item(self, variant, quantity, **kwargs):
-        if quantity > 0:
-            wishlist_item, created = self.items.get_or_create(variant=variant)
-            quantity = 1
-            if created:
-                quantity_delta = 1
-            else:
-                quantity_delta = 0
+        try:
+            wishlist_item = self.items.get(variant=variant)
+        except WishlistItem.DoesNotExist:
+            old_quantity = 0
+            wishlist_item = None
         else:
-            try:
-                wishlist_item = self.items.get(variant=variant)
-                wishlist_item.delete()
-                quantity = 0
-                quantity_delta = -1
-            except WishlistItem.DoesNotExist:
-                wishlist_item = None
-                quantity = 0
-                quantity_delta = 0
-        return satchless.cart.models.QuantityResult(wishlist_item, quantity, quantity_delta)
+            old_quantity = 1
+
+        if quantity > 0 and not wishlist_item:
+            wishlist_item = self.items.create(variant=variant)
+        elif quantity == 0 and wishlist_item:
+            wishlist_item.delete()
+        quantity = 1 if quantity else 0
+        return satchless.cart.models.QuantityResult(wishlist_item, quantity,
+                                                    quantity-old_quantity)
 
     def is_empty(self):
         return not self.items.exists()

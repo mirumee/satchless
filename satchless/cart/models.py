@@ -48,7 +48,6 @@ class Cart(models.Model):
         return super(Cart, self).save(*args, **kwargs)
 
     def add_item(self, variant, quantity, dry_run=False, **kwargs):
-        #self.variant_availability_checker=variant_availability_checker
         variant = variant.get_subtype_instance()
         quantity = variant.product.quantize_quantity(quantity)
         try:

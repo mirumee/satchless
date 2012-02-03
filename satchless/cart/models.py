@@ -13,6 +13,7 @@ def get_default_currency():
     return settings.SATCHLESS_DEFAULT_CURRENCY
 
 class QuantityResult(object):
+
     def __init__(self, cart_item, new_quantity, quantity_delta, reason=None):
         self.cart_item = cart_item
         self.new_quantity = new_quantity
@@ -39,14 +40,15 @@ class Cart(models.Model):
     def save(self, *args, **kwargs):
         if not self.token:
             for i in xrange(100):
-                token = ''.join(random.sample(
-                                '0123456789abcdefghijklmnopqrstuvwxyz', 32))
-                if not self.__class__.objects.filter(token=token).count():
+                token = ''.join(
+                    random.sample('0123456789abcdefghijklmnopqrstuvwxyz', 32))
+                if not type(self).objects.filter(token=token).exists():
                     self.token = token
                     break
         return super(Cart, self).save(*args, **kwargs)
 
     def add_item(self, variant, quantity, dry_run=False, **kwargs):
+        #self.variant_availability_checker=variant_availability_checker
         variant = variant.get_subtype_instance()
         quantity = variant.product.quantize_quantity(quantity)
         try:

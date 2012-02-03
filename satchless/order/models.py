@@ -108,9 +108,9 @@ class Order(models.Model):
     def save(self, *args, **kwargs):
         if not self.token:
             for i in xrange(100):
-                token = ''.join(random.sample(
-                                '0123456789abcdefghijklmnopqrstuvwxyz', 32))
-                if not self.__class__.objects.filter(token=token).count():
+                token = ''.join(
+                    random.sample('0123456789abcdefghijklmnopqrstuvwxyz', 32))
+                if not type(self).objects.filter(token=token).exists():
                     self.token = token
                     break
         return super(Order, self).save(*args, **kwargs)

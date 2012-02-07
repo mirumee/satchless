@@ -7,6 +7,7 @@ from django.utils.translation import ugettext_lazy as _
 from django.core.exceptions import ObjectDoesNotExist
 import random
 
+from ..util.models import DeferredMixin, DeferredForeignKey
 from . import signals
 
 def get_default_currency():
@@ -22,6 +23,7 @@ class QuantityResult(object):
 
 
 class Cart(models.Model):
+
     owner = models.ForeignKey(User, null=True, blank=True, related_name='+')
     typ = models.CharField(_("type"), max_length=100)
     currency = models.CharField(_("currency"), max_length=3,
@@ -138,8 +140,10 @@ class Cart(models.Model):
                    Price(0, currency=self.currency))
 
 
-class CartItem(models.Model):
+class CartItem(DeferredMixin, models.Model):
 
+    cart = DeferredForeignKey('cart', related_name='items', editable=False)
+    variant = DeferredForeignKey('variant', related_name='+', editable=False)
     quantity = models.DecimalField(_("quantity"), max_digits=10,
                                    decimal_places=4)
 

@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 from django.conf.urls.defaults import patterns, url
-import django.db
 from django.core.exceptions import ObjectDoesNotExist
 from django.http import HttpResponse, HttpResponseNotFound
 from django.shortcuts import redirect
@@ -89,6 +88,7 @@ class CartApp(SatchlessApp):
 
 
 class MagicCartApp(CartApp):
+
     CartItem = None
     AddToCartHandler = handler.AddToCartHandler
 
@@ -99,8 +99,8 @@ class MagicCartApp(CartApp):
                          self.construct_cart_item_class(self.Cart,
                                                         product_app.Variant))
         self.CartItemForm = (
-            self.CartItemForm or
-            self.construct_cart_item_form_class(self.CartItem))
+                self.CartItemForm or
+                self.construct_cart_item_form_class(self.CartItem))
         add_to_cart_handler = self.AddToCartHandler(cart_app=self)
         product_app.register_product_view_handler(add_to_cart_handler)
         super(MagicCartApp, self).__init__(**kwargs)
@@ -108,22 +108,21 @@ class MagicCartApp(CartApp):
     def construct_cart_class(self):
         class Cart(models.Cart):
             pass
+
         return Cart
 
     def construct_cart_item_class(self, cart_class, variant_class):
-        class CartItem(models.CartItem):
-            cart = django.db.models.ForeignKey(cart_class,
-                                               related_name='items',
-                                               editable=False)
-            variant = django.db.models.ForeignKey(variant_class,
-                                                  related_name='+',
-                                                  editable=False)
+        class CartItem(models.CartItem.construct(cart=cart_class,
+                                                 variant=variant_class)):
+            pass
+
         return CartItem
 
     def construct_cart_item_form_class(self, cart_item_class):
         class EditCartItemForm(forms.EditCartItemForm):
             class Meta:
                 model = cart_item_class
+
         return EditCartItemForm
 
     @property
@@ -143,4 +142,3 @@ class MagicCartApp(CartApp):
             cart.owner = request.user
             cart.save()
         return cart
-

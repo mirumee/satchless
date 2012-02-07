@@ -1,6 +1,5 @@
 from django.conf.urls.defaults import patterns, url
 from django.contrib.auth.decorators import login_required
-import django.db
 from django.shortcuts import get_object_or_404
 from django.template.response import TemplateResponse
 from django.utils.decorators import method_decorator
@@ -75,30 +74,27 @@ class MagicOrderApp(OrderApp):
                               self.construct_delivery_group_class(self.Order))
 
         self.OrderedItem = (
-            self.OrderedItem or
-            self.construct_ordered_item_class(self.DeliveryGroup,
-                                              cart_app.product_app.Variant))
+                self.OrderedItem or
+                self.construct_ordered_item_class(self.DeliveryGroup,
+                                                  cart_app.product_app.Variant))
         super(MagicOrderApp, self).__init__(**kwargs)
 
     def construct_order_class(self, cart_class):
-        class Order(models.Order):
-            cart = django.db.models.ForeignKey(cart_class, blank=True,
-                                               null=True, related_name='orders')
+        class Order(models.Order.construct(cart=cart_class)):
+            pass
+
         return Order
 
     def construct_delivery_group_class(self, order_class):
-        class DeliveryGroup(models.DeliveryGroup):
-            order = django.db.models.ForeignKey(order_class,
-                                                related_name='groups',
-                                                editable=False)
+        class DeliveryGroup(models.DeliveryGroup.construct(order=order_class)):
+            pass
+
         return DeliveryGroup
 
     def construct_ordered_item_class(self, delivery_group_class, variant_class):
-        class OrderedItem(models.OrderedItem):
-            delivery_group = django.db.models.ForeignKey(delivery_group_class,
-                                                         related_name='items',
-                                                         editable=False)
-            product_variant = django.db.models.ForeignKey(
-                variant_class, blank=True, null=True, related_name='+',
-                on_delete=django.db.models.SET_NULL)
+        class OrderedItem(models.OrderedItem.construct(
+                              delivery_group=delivery_group_class,
+                              variant=variant_class)):
+            pass
+
         return OrderedItem

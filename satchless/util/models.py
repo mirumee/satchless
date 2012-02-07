@@ -1,3 +1,4 @@
+from collections import defaultdict
 from django.db import models
 from django.db.models.fields.related import SingleRelatedObjectDescriptor
 from django.dispatch import receiver
@@ -74,3 +75,66 @@ class Subtyped(models.Model):
 def _store_content_type(sender, instance, **kwargs):
     if isinstance(instance, Subtyped):
         instance.store_subtype(instance)
+
+
+class DeferredField(object):
+
+    klass = models.Field
+
+    def __init__(self, model_alias, **kwargs):
+        self.model_alias = model_alias
+        self.kwargs = kwargs
+
+    def bind(self, model):
+        return self.klass(model, **self.kwargs)
+
+
+class DeferredForeignKey(DeferredField):
+
+    klass = models.ForeignKey
+
+
+class DeferredManyToManyField(DeferredField):
+
+    klass = models.ManyToManyField
+
+
+class DeferredMixin(object):
+    _classcache = {}
+
+    @classmethod
+    def contribute(cls, **kwargs):
+        needed_models = defaultdict(list)
+        # find deferred fields
+        for k, v in cls.__dict__.iteritems():
+            if isinstance(v, DeferredField):
+                needed_models[v.model_alias].append((k, v))
+        # construct correct fields for them
+        new_fields = {}
+        for model_alias, model in kwargs.iteritems():
+            fields = needed_models.pop(model_alias, None)
+            if not fields:
+                raise TypeError('%s.construct() got an unexpected keyword'
+                                ' argument \'%s\'' % (cls.__name__,
+                                                      model_alias))
+            for field_name, field in fields:
+                new_fields[field_name] = field.bind(model)
+        # make sure no fields are missing
+        if needed_models:
+            raise TypeError('%s.construct() did not get models for fields: %s' %
+                            (cls.__name__, ', '.join(needed_models.keys())))
+        return new_fields
+
+    @classmethod
+    def construct(cls, *args, **kwargs):
+        attrs = cls.contribute(*args, **kwargs)
+        attrs.update({
+            '__module__': cls.__module__,
+            'Meta': type('Meta', (), {'abstract': True}),
+        })
+        key = (args, tuple(kwargs.items()))
+        if not key in cls._classcache:
+            clsname = '%s%x' % (cls.__name__, hash(key))
+            clsname = clsname.replace('-', '_')
+            cls._classcache[key] = type(clsname, (cls, ), attrs)
+        return cls._classcache[key]

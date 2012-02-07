@@ -40,7 +40,6 @@ INSTALLED_APPS = [
     'satchless.contrib.stock.singlestore',
     'satchless.contrib.tax.flatgroups',
     'satchless.delivery',
-    'satchless.image',
     'satchless.order',
     'satchless.payment',
     'satchless.pricing',

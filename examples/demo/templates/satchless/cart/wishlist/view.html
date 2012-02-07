@@ -1,11 +1,11 @@
 {% extends 'satchless/cart/base.html' %}
 {% load cart_prices %}
 {% load i18n %}
+{% load images %}
 {% load prices %}
 {% load product_prices %}
 {% load products_tags %}
 {% load promote %}
-{% load satchless_image %}
 
 {% block title %}{% trans "Shopping Bag" %} || {{ block.super }}{% endblock %}
 {% block body-class %}{{ block.super }} wishlist{% endblock %}

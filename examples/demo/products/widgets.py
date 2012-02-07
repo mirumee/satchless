@@ -9,7 +9,7 @@ from django.conf import settings
 from django.core.urlresolvers import reverse
 import django.forms
 
-from satchless.image import IMAGE_SIZES
+from django_images.settings import IMAGE_SIZES
 
 from . import models
 

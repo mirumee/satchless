@@ -4,12 +4,12 @@ import os
 from django.conf import settings
 from django.db import models
 from django.utils.translation import ugettext_lazy as _
+from django_images.models import Image
 from mothertongue.models import MothertongueModelTranslate
 from satchless.category.models import CategorizedProductMixin
 from satchless.contrib.pricing.simpleqty.models import (ProductPriceMixin,
                                                         VariantPriceOffsetMixin)
 from satchless.contrib.tax.flatgroups.models import TaxedProductMixin
-from satchless.image.models import Image
 import satchless.product.models
 
 from categories.models import Category

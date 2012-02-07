@@ -31,7 +31,6 @@ Include neccessary applications in your ``INSTALLED_APPS`` tuple in Django
         'django.contrib.admin',
         'mptt',
         'satchless.product',
-        'satchless.image',
 
         # You may skip the following ones when running just a product catalog:
         'satchless.contact',
@@ -54,21 +53,11 @@ just examples and you may change them freely.::
     urlpatterns = patterns('',
         url(r'^products/', include(product_app.urls)),
         url(r'^contact/', include('satchless.contact.urls')),
-        url(r'^image/', include('satchless.image.urls')),
         url(r'^cart/', include(cart_app.urls)),
         url(r'^checkout/', include(order_app.urls)),
     )
 
 Run ``./manage.py syncdb`` to create the database tables.
-
-Put initial settings for the product image files in ``settings.py``::
-
-    SATCHLESS_IMAGE_SIZES = {
-        'product-detail': {
-            'size': (200, 150),
-            'crop': False,
-        }
-    }
 
 Shop, or just a product catalog?
 ................................

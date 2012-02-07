@@ -136,10 +136,10 @@ INSTALLED_APPS = (
     'categories',
     'grappelli',
     'django.contrib.admin',
+    'django_images',
     'mptt',
     'satchless.product',
     'satchless.category',
-    'satchless.image',
     #'satchless.contrib.productset',
     #'satchless.contact',
     'satchless.cart',
@@ -168,7 +168,7 @@ INSTALLED_APPS = (
     'demo_payments',
 )
 
-SATCHLESS_IMAGE_SIZES = {
+IMAGE_SIZES = {
     'admin': {
         'size': (100, 100),
         'crop': True,

@@ -12,5 +12,4 @@ urlpatterns = patterns('',
     url(r'^cart/', include(cart_app.urls)),
     url(r'^contact/', include('satchless.contact.urls')),
     url(r'^order/', include(order_app.urls)),
-    url(r'^image/', include('satchless.image.urls')),
 )

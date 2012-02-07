@@ -66,28 +66,6 @@ shop. Example::
 
     SATCHLESS_DJANGO_PAYMENT_TYPES = ('dummy', 'dotpay')
 
-SATCHLESS_IMAGE_SIZES
----------------------
-
-A dictionary of allowed image sizes. The ``at_size`` template tag from
-``satchless.image`` application accepts one of it's keys as an argument.
-Example::
-
-    SATCHLESS_IMAGE_SIZES = {
-        'admin': {
-            'size': (100, 100),
-            'crop': True,
-        },
-        'product-detail': {
-            'size': (460, 900),
-            'crop': False,
-        },
-        'product-thumb': {
-            'size': (55, 74),
-            'crop': True,
-        }
-    }
-
 SATCHLESS_ORDER_PARTITIONERS
 ----------------------------
 

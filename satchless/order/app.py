@@ -74,9 +74,9 @@ class MagicOrderApp(OrderApp):
                               self.construct_delivery_group_class(self.Order))
 
         self.OrderedItem = (
-                self.OrderedItem or
-                self.construct_ordered_item_class(self.DeliveryGroup,
-                                                  cart_app.product_app.Variant))
+            self.OrderedItem or
+            self.construct_ordered_item_class(self.DeliveryGroup,
+                                              cart_app.product_app.Variant))
         super(MagicOrderApp, self).__init__(**kwargs)
 
     def construct_order_class(self, cart_class):
@@ -92,9 +92,10 @@ class MagicOrderApp(OrderApp):
         return DeliveryGroup
 
     def construct_ordered_item_class(self, delivery_group_class, variant_class):
-        class OrderedItem(models.OrderedItem.construct(
-                              delivery_group=delivery_group_class,
-                              variant=variant_class)):
+        class OrderedItem(
+                models.OrderedItem.construct(
+                    delivery_group=delivery_group_class,
+                    variant=variant_class)):
             pass
 
         return OrderedItem

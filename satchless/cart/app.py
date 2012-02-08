@@ -99,8 +99,8 @@ class MagicCartApp(CartApp):
                          self.construct_cart_item_class(self.Cart,
                                                         product_app.Variant))
         self.CartItemForm = (
-                self.CartItemForm or
-                self.construct_cart_item_form_class(self.CartItem))
+            self.CartItemForm or
+            self.construct_cart_item_form_class(self.CartItem))
         add_to_cart_handler = self.AddToCartHandler(cart_app=self)
         product_app.register_product_view_handler(add_to_cart_handler)
         super(MagicCartApp, self).__init__(**kwargs)

@@ -125,9 +125,10 @@ class MagicCategorizedProductApp(CategorizedProductApp, app.MagicProductApp):
         super(MagicCategorizedProductApp, self).__init__(**kwargs)
 
     def construct_product_class(self, category_class):
-        class Product(models.CategorizedProductMixin.construct(
-                          category=category_class),
-                      product_models.Product):
+        class Product(
+                models.CategorizedProductMixin.construct(
+                    category=category_class),
+                product_models.Product):
             pass
 
         return Product

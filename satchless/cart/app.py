@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 from django.conf.urls.defaults import patterns, url
-import django.db
 from django.core.exceptions import ObjectDoesNotExist
 from django.http import HttpResponse, HttpResponseNotFound
 from django.shortcuts import redirect
@@ -13,6 +12,7 @@ from . import handler
 from . import models
 from ..core.app import SatchlessApp
 from ..util import JSONResponse
+from ..util.models import construct
 
 
 class CartApp(SatchlessApp):
@@ -89,6 +89,7 @@ class CartApp(SatchlessApp):
 
 
 class MagicCartApp(CartApp):
+
     CartItem = None
     AddToCartHandler = handler.AddToCartHandler
 
@@ -108,22 +109,20 @@ class MagicCartApp(CartApp):
     def construct_cart_class(self):
         class Cart(models.Cart):
             pass
+
         return Cart
 
     def construct_cart_item_class(self, cart_class, variant_class):
-        class CartItem(models.CartItem):
-            cart = django.db.models.ForeignKey(cart_class,
-                                               related_name='items',
-                                               editable=False)
-            variant = django.db.models.ForeignKey(variant_class,
-                                                  related_name='+',
-                                                  editable=False)
+        class CartItem(construct(models.CartItem, cart=cart_class,
+                                 variant=variant_class)):
+            pass
         return CartItem
 
     def construct_cart_item_form_class(self, cart_item_class):
         class EditCartItemForm(forms.EditCartItemForm):
             class Meta:
                 model = cart_item_class
+
         return EditCartItemForm
 
     @property
@@ -143,4 +142,3 @@ class MagicCartApp(CartApp):
             cart.owner = request.user
             cart.save()
         return cart
-

@@ -5,6 +5,7 @@ django-localeurl
 django-mothertongue
 git+git://github.com/django-mptt/django-mptt.git#egg=django-mptt
 django-pagination
+django-images
 south
 whoosh
 # these need setup.py

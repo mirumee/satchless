@@ -3,7 +3,7 @@ from django.db import models
 from django.utils.translation import ugettext_lazy as _
 from mptt.models import MPTTModel
 
-from ..util.models import DeferredMixin, DeferredManyToManyField
+from ..util.models import DeferredManyToManyField
 
 __all__ = ('Category', 'CategorizedProduct')
 
@@ -35,7 +35,7 @@ class Category(MPTTModel):
         return '%s/' % parents if parents else ''
 
 
-class CategorizedProductMixin(DeferredMixin, models.Model):
+class CategorizedProductMixin(models.Model):
 
     categories = DeferredManyToManyField('category',
                                          related_name='products',

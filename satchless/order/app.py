@@ -5,6 +5,7 @@ from django.template.response import TemplateResponse
 from django.utils.decorators import method_decorator
 
 from ..core.app import SatchlessApp
+from ..util.models import construct
 from . import models
 
 class OrderApp(SatchlessApp):
@@ -80,22 +81,22 @@ class MagicOrderApp(OrderApp):
         super(MagicOrderApp, self).__init__(**kwargs)
 
     def construct_order_class(self, cart_class):
-        class Order(models.Order.construct(cart=cart_class)):
+        class Order(construct(models.Order, cart=cart_class)):
             pass
 
         return Order
 
     def construct_delivery_group_class(self, order_class):
-        class DeliveryGroup(models.DeliveryGroup.construct(order=order_class)):
+        class DeliveryGroup(construct(models.DeliveryGroup,
+                                      order=order_class)):
             pass
 
         return DeliveryGroup
 
     def construct_ordered_item_class(self, delivery_group_class, variant_class):
-        class OrderedItem(
-                models.OrderedItem.construct(
-                    delivery_group=delivery_group_class,
-                    variant=variant_class)):
+        class OrderedItem(construct(models.OrderedItem,
+                                    delivery_group=delivery_group_class,
+                                    variant=variant_class)):
             pass
 
         return OrderedItem

@@ -7,7 +7,7 @@ import random
 
 from ..pricing import Price
 from ..util import countries
-from ..util.models import DeferredMixin, DeferredForeignKey
+from ..util.models import DeferredForeignKey
 from . import signals
 from .exceptions import EmptyCart
 
@@ -42,7 +42,7 @@ class OrderManager(models.Manager):
         return order
 
 
-class Order(DeferredMixin, models.Model):
+class Order(models.Model):
     """
     Add this to your concrete model:
     cart = models.ForeignKey(Cart, related_name='orders')
@@ -164,7 +164,7 @@ class Order(DeferredMixin, models.Model):
         return ordered_item
 
 
-class DeliveryGroup(DeferredMixin, models.Model):
+class DeliveryGroup(models.Model):
     """
     add this to your concrete model:
     order = models.ForeignKey(Order, related_name='groups')
@@ -214,7 +214,7 @@ class DeliveryGroup(DeferredMixin, models.Model):
                                     Price(0, currency=self.order.currency))
 
 
-class OrderedItem(DeferredMixin, models.Model):
+class OrderedItem(models.Model):
     """
     add this to your concrete model:
     delivery_group = models.ForeignKey(DeliveryGroup, related_name='items')

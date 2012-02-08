@@ -5,6 +5,7 @@ from django.template.response import TemplateResponse
 
 from ..product import app
 from ..product import models as product_models
+from ..util.models import construct
 from . import models
 
 class CategorizedProductApp(app.ProductApp):
@@ -125,10 +126,9 @@ class MagicCategorizedProductApp(CategorizedProductApp, app.MagicProductApp):
         super(MagicCategorizedProductApp, self).__init__(**kwargs)
 
     def construct_product_class(self, category_class):
-        class Product(
-                models.CategorizedProductMixin.construct(
-                    category=category_class),
-                product_models.Product):
+        class Product(construct(models.CategorizedProductMixin,
+                                category=category_class),
+                      product_models.Product):
             pass
 
         return Product

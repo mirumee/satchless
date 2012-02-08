@@ -12,6 +12,7 @@ from . import handler
 from . import models
 from ..core.app import SatchlessApp
 from ..util import JSONResponse
+from ..util.models import construct
 
 
 class CartApp(SatchlessApp):
@@ -112,10 +113,9 @@ class MagicCartApp(CartApp):
         return Cart
 
     def construct_cart_item_class(self, cart_class, variant_class):
-        class CartItem(models.CartItem.construct(cart=cart_class,
-                                                 variant=variant_class)):
+        class CartItem(construct(models.CartItem, cart=cart_class,
+                                 variant=variant_class)):
             pass
-
         return CartItem
 
     def construct_cart_item_form_class(self, cart_item_class):

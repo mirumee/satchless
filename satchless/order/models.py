@@ -7,6 +7,7 @@ import random
 
 from ..pricing import Price
 from ..util import countries
+from ..util.models import DeferredForeignKey
 from . import signals
 from .exceptions import EmptyCart
 
@@ -46,6 +47,7 @@ class Order(models.Model):
     Add this to your concrete model:
     cart = models.ForeignKey(Cart, related_name='orders')
     """
+
     STATUS_CHOICES = (
         ('checkout', _('undergoing checkout')),
         ('payment-pending', _('waiting for payment')),
@@ -54,6 +56,8 @@ class Order(models.Model):
         ('delivery', _('shipped')),
         ('cancelled', _('cancelled')),
     )
+    cart = DeferredForeignKey('cart', blank=True, null=True,
+                              related_name='orders')
     # Do not set the status manually, use .set_status() instead.
     status = models.CharField(_('order status'), max_length=32,
                               choices=STATUS_CHOICES, default='checkout')
@@ -165,6 +169,8 @@ class DeliveryGroup(models.Model):
     add this to your concrete model:
     order = models.ForeignKey(Order, related_name='groups')
     """
+
+    order = DeferredForeignKey('order', related_name='groups', editable=False)
     delivery_price = models.DecimalField(_('unit price'),
                                          max_digits=12, decimal_places=4,
                                          default=0, editable=False)
@@ -213,6 +219,12 @@ class OrderedItem(models.Model):
     add this to your concrete model:
     delivery_group = models.ForeignKey(DeliveryGroup, related_name='items')
     """
+
+    delivery_group = DeferredForeignKey('delivery_group', related_name='items',
+                                        editable=False)
+    product_variant = DeferredForeignKey('variant', blank=True, null=True,
+                                         related_name='+',
+                                         on_delete=models.SET_NULL)
     product_name = models.CharField(max_length=128)
     quantity = models.DecimalField(_('quantity'),
                                    max_digits=10, decimal_places=4)

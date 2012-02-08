@@ -214,5 +214,3 @@ class AppTestCase(ViewsTestCase):
                           client_instance=self.client)
         self.assertEqual(len(cart.get_all_items()), 1)
         self.assertEqual(cart.get_all_items()[0].quantity, 2)
-
-

@@ -3,6 +3,8 @@ from django.db import models
 from django.utils.translation import ugettext_lazy as _
 from mptt.models import MPTTModel
 
+from ..util.models import DeferredManyToManyField
+
 __all__ = ('Category', 'CategorizedProduct')
 
 class Category(MPTTModel):
@@ -14,6 +16,7 @@ class Category(MPTTModel):
     slug = models.SlugField(max_length=50)
     parent = models.ForeignKey('self', null=True, blank=True,
                                related_name='children')
+
     class Meta:
         abstract = True
         verbose_name = _("category")
@@ -33,6 +36,11 @@ class Category(MPTTModel):
 
 
 class CategorizedProductMixin(models.Model):
+
+    categories = DeferredManyToManyField('category',
+                                         related_name='products',
+                                         null=True)
+
     class Meta:
         abstract = True
 

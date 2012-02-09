@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-from unidecode import unidecode
 from django.conf import settings
 from django.test import TestCase, Client
 
@@ -31,9 +30,8 @@ class ViewsTestCase(BaseTestCase):
 
         response = getattr(client, method)(url, data=data, follow=False)
         self.assertEqual(response.status_code, status_code,
-            u'Incorrect status code for: %s, (%s, %s)! Expected: %s, received: %s. HTML:\n\n%s' % (
-                url.decode('utf-8'), args, kwargs, status_code, response.status_code,
-                unidecode(response.content).decode('utf-8')))
+            u'Incorrect status code for: %s, (%s, %s)! Expected: %s, received: %s.' % (
+                url.decode('utf-8'), args, kwargs, status_code, response.status_code,))
         return response
 
     def _test_GET_status(self, url, *args, **kwargs):

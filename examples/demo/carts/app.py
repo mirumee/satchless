@@ -1,15 +1,16 @@
-from django.conf.urls.defaults import patterns, url
-from django.core.exceptions import ObjectDoesNotExist
-from django.http import Http404
+import django.forms
+import django.forms.models
 import satchless.cart.app
+from satchless.product.forms import registry
 
 from categories.app import product_app
 
+from . import forms
 from . import handler
 from . import models
 
 class CartApp(satchless.cart.app.MagicCartApp):
-    AddToCartHandler = handler.AddToCartHandler
+    AddToCartHandler = None
 
 cart_app = CartApp(product_app)
 
@@ -20,27 +21,28 @@ class WishlistApp(satchless.cart.app.MagicCartApp):
     cart_type = 'wishlist'
     Cart = models.Wishlist
     CartItem = models.WishlistItem
-    AddToCartHandler = handler.AddToWishlistHandler
+    CartItemForm = forms.WishlistAddToCartItemForm
+    AddToCartHandler = handler.AddToCartOrWishlistHandler
 
     def __init__(self, cart_app, *args, **kwargs):
         self.cart_app = cart_app
         super(WishlistApp, self).__init__(*args, **kwargs)
 
-    def add_to_cart(self, request, wishlist_item_id):
-        wishlist = self.get_cart_for_request(request)
-        try:
-            item = wishlist.get_item(id=wishlist_item_id)
-        except ObjectDoesNotExist:
-            raise Http404()
-        cart = self.cart_app.get_cart_for_request(request)
-        cart.add_item(variant=item.variant, quantity=1)
-        return self.cart_app.redirect('details')
+    def _get_cart_item_form(self, request, item):
+        prefix = '%s-%i' % (self.cart_type, item.id)
 
-    def get_urls(self):
-        parent_urls = super(WishlistApp, self).get_urls()
-        return parent_urls + patterns('',
-            url(r'^add-to-cart/(?P<wishlist_item_id>\d+)/$', self.add_to_cart,
-                name='add-to-cart'),
-        )
+        cart = self.cart_app.get_cart_for_request(request)
+        variant = item.variant.get_subtype_instance()
+        variant_formclass = registry.get_handler(
+            type(variant.product))
+        class AddVariantToCartForm(self.CartItemForm, variant_formclass):
+            form_id = django.forms.IntegerField(widget=django.forms.HiddenInput)
+        initial = django.forms.models.model_to_dict(
+            item.variant, variant_formclass.base_fields.keys())
+        initial['form_id'] = item.id
+        form = AddVariantToCartForm(cart=cart, data=request.POST or None,
+                                    product=variant.product, initial=initial,
+                                    prefix=prefix)
+        return form
 
 wishlist_app = WishlistApp(cart_app=cart_app, product_app=product_app)

@@ -1,22 +1,23 @@
 # -*- coding:utf-8 -*-
 from django import forms
 
-class AddToCartBaseForm(forms.Form):
-    def __init__(self, data=None, *args, **kwargs):
-        typ = kwargs.pop('typ')
-        # validate only when correct button was pressed
-        if data and not typ in data:
-            data = None
-        self.cart = kwargs.pop('cart', None)
-        super(AddToCartBaseForm, self).__init__(data=data, *args, **kwargs)
-
-
-class AddToCartForm(AddToCartBaseForm):
+class AddToCartForm(forms.Form):
     quantity = forms.DecimalField(initial=1)
+
+    def __init__(self, cart, wishlist, data=None, *args, **kwargs):
+        self.wishlist = wishlist
+        self.cart = cart
+        super(AddToCartForm, self).__init__(data=data, *args, **kwargs)
+        if self._wishlist_request():
+            del self.fields['quantity']
+
+    def _wishlist_request(self):
+        return 'wishlist' in self.data if self.data else False
 
     def clean(self):
         data = super(AddToCartForm, self).clean()
-        if 'quantity' in data:
+        # skip quantity validation when adding into wishlist
+        if not self._wishlist_request():
             qty = data['quantity']
             add_result = self.cart.add_item(self.get_variant(), qty, dry_run=True)
             if add_result.quantity_delta < qty:
@@ -24,10 +25,23 @@ class AddToCartForm(AddToCartBaseForm):
         return data
 
     def save(self):
-        return self.cart.add_item(self.get_variant(), self.cleaned_data['quantity'])
+        if self._wishlist_request():
+            return self.wishlist.add_item(self.get_variant(), 1)
+        else:
+            return self.cart.add_item(self.get_variant(), self.cleaned_data['quantity'])
 
 
-class AddToWishlistForm(AddToCartBaseForm):
+class WishlistAddToCartItemForm(forms.Form):
+    def __init__(self, cart, *args, **kwargs):
+        self.cart = cart
+        super(WishlistAddToCartItemForm, self).__init__(*args, **kwargs)
+
+    def clean(self):
+        data = super(WishlistAddToCartItemForm, self).clean()
+        add_result = self.cart.add_item(self.get_variant(), 1, dry_run=True)
+        if add_result.quantity_delta < 1:
+            raise forms.ValidationError(add_result.reason)
+        return data
+
     def save(self):
         return self.cart.add_item(self.get_variant(), 1)
-

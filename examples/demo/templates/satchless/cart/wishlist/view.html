@@ -20,33 +20,28 @@
 {% if cart_item_forms %}
     <div class="products">
         <ul>
-    {% for form in cart_item_forms %}
-        {% with form.instance as cart_item %}
-        {% promote cart_item.variant as variant %}
-        {% with variant.product as product %}
+    {% for add_to_cart_form in cart_item_forms %}
+        {% with add_to_cart_form.product as product %}
+        {% promote product as product %}
             <li class="product{% if forloop.last %} last{% endif %}">
                 <div class="grid_4 alpha">
                     <div class="image">
-            {% if variant.product.main_image %}
-                        <img src="{{ variant.product.main_image|at_size:'cart-product' }}" alt="{{ image.caption }}"{% if forloop.first %} class="active"{% endif %} />
+            {% if product.main_image %}
+                        <img src="{{ product.main_image|at_size:'cart-product' }}" alt="{{ image.caption }}"{% if forloop.first %} class="active"{% endif %} />
             {% endif %}
                     </div>
                 </div>
                 <div class="grid_11">
                     <div class="product-description">
-                    {% if variant.product.make %}
-                        <span class="manufacture">{{ variant.product.make }}</span>
+                    {% if product.make %}
+                        <span class="manufacture">{{ product.make }}</span>
                     {% endif %}
-                        <h2><a href="{{ product.get_absolute_url }}">{{ variant.product.name }}</a></h2>
-                    {% with variant|variant_attrs as va %}
-                    {% if va %}
-                        <ul class="variant-attrs">
-                        {% for attr in va %}
-                            <li>{{ attr.name }}: <strong>{{ attr.value }}</strong></li>
-                        {% endfor %}
-                        </ul>
-                    {% endif %}
-                    {% endwith %}
+                        <h2><a href="{{ product.get_absolute_url }}">{{ product.name }}</a></h2>
+                        <form action="" method="post">
+                            {% csrf_token %}
+                            {{ add_to_cart_form.as_p }}
+                            <input class="cart" name="satchless_cart" type="submit" value="{% trans "Add to cart" %}" />
+                        </form>
                     </div>
                 </div>
                 <div class="grid_5 omega">
@@ -56,29 +51,24 @@
                 {% product_price_range product discount=0 as undiscounted_price_range %}
                 {% if price_range.min != price_range.max %}
                     {% if price_range.min != undiscounted_price_range.min or price_range.max != undiscounted_price_range.max %}
-                            <span class="strike">{{ undiscounted_price_range.min|gross|floatformat:2 }} - {{ undiscounted_price_range.max|gross|floatformat:2 }}</span>
+                            <span class="strike">{{ undiscounted_price_range.min_price|gross|floatformat:2 }} - {{ undiscounted_price_range.max_price|gross|floatformat:2 }}</span>
                     {% endif %}
-                            <span class="fullprice">{{ price_range.min|gross|floatformat:2 }}</span><span class="currency">{{ price_range.min|currency }}</span> - <span class="fullprice">{{ price_range.max|gross|floatformat:2 }}</span><span class="currency">{{ price_range.max|currency }}</span>
+                            <span class="fullprice">{{ price_range.min_price|gross|floatformat:2 }}</span><span class="currency">{{ price_range.min_price|currency }}</span> - <span class="fullprice">{{ price_range.max_price|gross|floatformat:2 }}</span><span class="currency">{{ price_range.max_price|currency }}</span>
                 {% else %}
                     {% if price_range.max != undiscounted_price_range.max %}
-                            <span class="strike">{{ undiscounted_price_range.max|gross|floatformat:2 }}</span>
+                            <span class="strike">{{ undiscounted_price_range.max_price|gross|floatformat:2 }}</span>
                     {% endif %}
-                            <span class="fullprice">{{ price_range.min|gross|floatformat:2 }}</span><span class="currency">{{ price_range.min|currency }}</span>
+                            <span class="fullprice">{{ price_range.min_price|gross|floatformat:2 }}</span><span class="currency">{{ price_range.min_price|currency }}</span>
                 {% endif %}
                             <p class="info">
                                 Inclusive VAT <br />
                                 Exclusive shipping costs<br />
                             </p>
-                            <form action="{% url wishlist:add-to-cart cart_item.id %}" method="post">
-                                {% csrf_token %}
-                                <input class="cart" name="satchless_cart" type="submit" value="{% trans "Add to cart" %}" />
-                            </form>
                         </div>
                     </div>
                 </div>
                 <div class="clear"></div>
             </li>
-        {% endwith %}
         {% endwith %}
     {% endfor %}
         </ul>

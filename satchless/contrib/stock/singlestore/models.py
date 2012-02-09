@@ -10,7 +10,7 @@ class VariantStockLevelMixin(models.Model):
                            help_text=_('ID of the product variant used'
                                        ' internally in the shop.'))
     stock_level = models.DecimalField(_("stock level"), max_digits=10,
-                                      decimal_places=4)
+                                      decimal_places=4, default=0)
 
     class Meta:
         abstract = True

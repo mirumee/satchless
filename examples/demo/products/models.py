@@ -10,6 +10,7 @@ from satchless.category.models import CategorizedProductMixin
 from satchless.contrib.pricing.simpleqty.models import (ProductPriceMixin,
                                                         VariantPriceOffsetMixin)
 from satchless.contrib.tax.flatgroups.models import TaxedProductMixin
+from satchless.contrib.stock.singlestore.models import VariantStockLevelMixin
 import satchless.product.models
 
 from categories.models import Category
@@ -23,7 +24,7 @@ class Product(ProductPriceMixin, TaxedProductMixin, CategorizedProductMixin,
                                         blank=True)
 
 
-class Variant(VariantPriceOffsetMixin, satchless.product.models.Variant):
+class Variant(VariantPriceOffsetMixin, VariantStockLevelMixin, satchless.product.models.Variant):
     pass
 
 
@@ -241,7 +242,3 @@ def assign_new_main_image(sender, instance, **kwargs):
         pass
 models.signals.post_delete.connect(assign_new_main_image, sender=ProductImage)
 
-def _create_empty_hat_variant(sender, instance, created, **kwargs):
-    if not kwargs.get('raw', False) and created:
-        instance.variants.create()
-models.signals.post_save.connect(_create_empty_hat_variant, sender=Hat)

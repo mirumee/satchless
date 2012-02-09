@@ -12,6 +12,7 @@ class QuantityForm(object):
             raise forms.ValidationError(ugettext("Quantity cannot be negative"))
         return val
 
+
 class AddToCartForm(forms.Form, QuantityForm):
     """
     Form that adds a Variant quantity to a Cart.
@@ -70,6 +71,7 @@ class EditCartItemForm(forms.ModelForm, QuantityForm):
         """
         self.instance.cart.replace_item(self.instance.variant,
                                         self.cleaned_data['quantity'])
+
 
 def add_to_cart_variant_form_for_product(product,
                                          addtocart_formclass=AddToCartForm,

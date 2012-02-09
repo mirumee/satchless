@@ -1,7 +1,7 @@
 import satchless.util.tests
 
 from categories.app import product_app
-from .app import wishlist_app
+from .app import wishlist_app, cart_app
 import products.models
 
 
@@ -9,10 +9,11 @@ class ViewsTestCase(satchless.util.tests.ViewsTestCase):
     def setUp(self):
         self.category = product_app.Category.objects.create(name='posh',
                                                             slug='posh')
-        self.product = products.models.Hat.objects.create(name='top hat',
+        self.hat = products.models.Hat.objects.create(name='top hat',
                                                           slug='top-hat',
                                                           price=10)
-        self.product.categories.add(self.category)
+        self.hat.categories.add(self.category)
+        self.variant = self.hat.variants.create(sku='sku', stock_level=10)
 
     def _get_or_create_cart_for_client(self, cart_app, client=None):
         client = client or self.client
@@ -28,20 +29,57 @@ class ViewsTestCase(satchless.util.tests.ViewsTestCase):
         data = {
             'wishlist': 'wishlist',
         }
-        self._test_POST_status(self.product.get_absolute_url(),
+        self._test_POST_status(self.hat.get_absolute_url(),
                                data=data, status_code=302,
                                client_instance=self.client)
         self.assertEqual([i.variant.get_subtype_instance().product for i in wishlist.get_all_items()],
-                         [self.product])
+                         [self.hat])
+
+    def test_add_to_cart(self):
+        cart = self._get_or_create_cart_for_client(cart_app,
+                                                       client=self.client)
+        # cart var indicates which handler should serve this request
+        data = {
+            'cart': 'cart',
+            'quantity': 1,
+        }
+        self._test_POST_status(self.hat.get_absolute_url(),
+                               data=data, status_code=302,
+                               client_instance=self.client)
+        self.assertEqual([i.variant.get_subtype_instance().product for i in cart.get_all_items()],
+                         [self.hat])
+
+    def test_add_to_cart_fails_when_variant_is_out_of_stock(self):
+        cart = self._get_or_create_cart_for_client(cart_app,
+                                                       client=self.client)
+        # cart var indicates which handler should serve this request
+        data = {
+            'cart': 'cart',
+            'quantity': 1,
+        }
+        variant = self.hat.variants.get()
+        variant.stock_level = 0
+        variant.save()
+        response = self._test_POST_status(self.hat.get_absolute_url(),
+                                          data=data, status_code=200,
+                                          client_instance=self.client)
+        self.assertEqual(len(cart.get_all_items()), 0)
+        cart_form = response.context['product'].cart_form
+        self.assertTrue('__all__' in cart_form.errors)
 
     def test_add_to_cart_from_wishlist(self):
         wishlist = self._get_or_create_cart_for_client(wishlist_app)
         # add item to wishlist
-        wishlist_item = wishlist.add_item(self.product.variants.get(), 1).cart_item
+        wishlist_item = wishlist.add_item(self.hat.variants.get(), 1).cart_item
         # move item from wishlist into cart
-        add_to_cart_url = wishlist_app.reverse('add-to-cart', args=(wishlist_item.pk,))
-        self._test_POST_status(add_to_cart_url, status_code=302,
-                               client_instance=self.client)
+        response = self._test_GET_status(wishlist_app.reverse('details'),
+                                         client_instance=self.client)
+        form = response.context['cart_item_forms'][0]
+        self._test_POST_status(
+            wishlist_app.reverse('details'), status_code=302,
+            client_instance=self.client,
+            data={form.add_prefix('form_id'): form.initial['form_id']}
+        )
 
         # check cart content
         cart = self._get_or_create_cart_for_client(wishlist_app.cart_app)
@@ -49,3 +87,26 @@ class ViewsTestCase(satchless.util.tests.ViewsTestCase):
         self.assertEqual(len(cart_items), 1)
         self.assertEqual(cart_items[0].variant.get_subtype_instance(),
                          wishlist_item.variant.get_subtype_instance())
+
+    def test_add_to_cart_from_wishlist_fails_when_variant_is_out_of_stock(self):
+        self.variant.stock_level = 0
+        self.variant.save()
+        wishlist = self._get_or_create_cart_for_client(wishlist_app)
+        # add item to wishlist
+        wishlist.add_item(self.variant, 1)
+        # add item to wishlist
+        wishlist_url = wishlist_app.reverse('details')
+        # move item from wishlist into cart
+        response = self._test_GET_status(wishlist_url,
+                                         client_instance=self.client)
+        form = response.context['cart_item_forms'][0]
+        self._test_POST_status(
+            wishlist_url, status_code=200,
+            client_instance=self.client,
+            data={form.add_prefix('form_id'): form.initial['form_id']}
+        )
+
+        # check cart content
+        cart = self._get_or_create_cart_for_client(wishlist_app.cart_app)
+        cart_items = cart.get_all_items()
+        self.assertEqual(len(cart_items), 0)

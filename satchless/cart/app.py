@@ -37,13 +37,17 @@ class CartApp(SatchlessApp):
     def get_cart_for_request(self, request):
         raise NotImplementedError()
 
+    def _get_cart_item_form(self, request, item):
+        prefix = '%s-%i' % (self.cart_type, item.id)
+        form = self.CartItemForm(data=request.POST or None,
+                                 instance=item,
+                                 prefix=prefix)
+        return form
+
     def _handle_cart(self, cart, request):
         cart_item_forms = []
         for item in cart.get_all_items():
-            prefix = '%s-%i' % (self.cart_type, item.id)
-            form = self.CartItemForm(data=request.POST or None,
-                                     instance=item,
-                                     prefix=prefix)
+            form = self._get_cart_item_form(request, item)
             if request.method == 'POST' and form.is_valid():
                 item = form.save()
                 # redirect to ourselves
@@ -102,8 +106,9 @@ class MagicCartApp(CartApp):
         self.CartItemForm = (
             self.CartItemForm or
             self.construct_cart_item_form_class(self.CartItem))
-        add_to_cart_handler = self.AddToCartHandler(cart_app=self)
-        product_app.register_product_view_handler(add_to_cart_handler)
+        if self.AddToCartHandler:
+            add_to_cart_handler = self.AddToCartHandler(cart_app=self)
+            product_app.register_product_view_handler(add_to_cart_handler)
         super(MagicCartApp, self).__init__(**kwargs)
 
     def construct_cart_class(self):

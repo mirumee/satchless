@@ -44,14 +44,17 @@ class CartApp(SatchlessApp):
                                  prefix=prefix)
         return form
 
+    def cart_item_form_valid(self, request, form, item):
+        form.save()
+        return redirect(request.get_full_path())
+
     def _handle_cart(self, cart, request):
         cart_item_forms = []
         for item in cart.get_all_items():
             form = self._get_cart_item_form(request, item)
             if request.method == 'POST' and form.is_valid():
-                item = form.save()
-                # redirect to ourselves
-                return redirect(request.get_full_path())
+                self.cart_item_form_valid(request, form, item)
+                return self.cart_item_form_valid(request, form, item)
             cart_item_forms.append(form)
         return {
             'cart': cart,

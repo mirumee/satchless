@@ -89,27 +89,27 @@ your requirements:
 
 Domain driven models
 --------------------
-Our main idea:
+Main concepts behind Satchless models:
     * No *one-fits-all* approach
     * Single python class describes single class of products
 
-From the first glance it may not feel natural, especially if you already have
-some experience with other e-commerce platforms. Let us draw some background
-behind it then. Most of the frameworks that we came across in a past
-took indeed quite the opposite direction. Platforms like Satchmo, LFS or Oscar
+If you already have some experience with other e-commerce platforms the above
+statements might not sound and feel that natural from the first glance
+so let us draw some background behind them first. Most of the frameworks that we
+came across in a past took quite the opposite direction. Platforms like Satchmo, LFS or Oscar
 built their tightly coupled architectures around a single Product model
 representing any of the products. Unfortunately even if this seems like an
 obvious and handy choice it’s not likely to be the best one in our opinion.
 What we found is that product’s model designed this way gets quickly extremely
 inefficient and makes life harder in almost any aspect of further development.
-It is especially true in case of custom e-commerce solutions required to work
-with millions of products and requests per day.
+It is especially true in case of custom, domain-driven e-commerce solutions
+required to deal with millions of products and requests per day.
 
 EAV vs Static classes
 ^^^^^^^^^^^^^^^^^^^^^
 Let's talk about EAV approach first. It's evil.
 
-When designing Product’s model  around “classic” concept you typically
+When designing Product’s model around the "classic" concept you typically
 use a single Product model, with a ProductClass and an Entity-Attribute-Value
 approach to allow different kinds of products. Theoretically it allows to
 create new kinds of products on the fly ie. via admin panel. Concern the

@@ -37,9 +37,10 @@ an extensive test suite and the example applications.
 
 .. _`GitHub`: http://github.com/mirumee/satchless
 
-**Warning:** Currently *Satchless* is shortly entering a beta stage of development.
-It is already possible to build a shop on top of it, but still you should be prepared
-some, sometimes evenbackward-incompatible changes to the code.
+**Warning:** *Satchless* is shortly entering a beta stage of development and
+it's perfectly possible to build a shop on top of it already. However, you should
+be still prepared for some - sometimes also backward-incompatible - changes
+to the code.
 
 Main concepts
 =============

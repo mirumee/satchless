@@ -94,9 +94,9 @@ Main concepts behind Satchless models:
     * Single python class describes single class of products
 
 If you already have some experience with other e-commerce platforms the above
-statements might not sound and feel that natural from the first glance
+statements might not sound and feel that natural at first glance
 so let us draw some background behind them first. Most of the frameworks that we
-came across in a past took quite the opposite direction. Platforms like Satchmo, LFS
+came across in the past took quite the opposite direction. Platforms like Satchmo, LFS
 or Oscar built their tightly coupled architectures around a single Product model
 representing any of the products. Unfortunately, even if this seems an obvious
 and handy choice it’s not likely to be the best one in our opinion.
@@ -113,25 +113,25 @@ When designing Product’s model around the "classic" concept you typically
 use a single Product model, with a ProductClass and an Entity-Attribute-Value
 approach to allow different kinds of products. Theoretically it allows to
 create new kinds of products on the fly ie. via admin panel. Concern the
-fallowing issues introduced by this approach:
-    * Even creating new types of product through the admin it’s very likely
+following issues introduced by this approach:
+    * Despite creating new types of product through the admin, it’s very likely
       you will still want to provide product class-specific templates and
-      logic like ie. variant forms
+      logic like ie. variant forms.
     * The database structure for products gets complicated, which slows
-      down even queries that might look (and should be) very simple from
-      the first glance. It might make data-intensive operations like
+      down even queries that might look (and should be) very simple
+      at first glance. It might make data-intensive operations like
       import or migration tasks very time-consuming and complicated.
     * It's ugly. EAV sucks and we know it.
 Basically, the main argument in favour of this approach is that it allows new
 fields to be added quickly. But in practice it doesn't work out this way at all.
 
-**In Satchless we’re using model inheritance and having different
+**In Satchless we use model inheritance and have different
 product classes treated as real python classes instead.**
-    * Static classes are good, and everyone knows how to work with them.
+    * Static classes are good and everyone knows how to work with them.
     * One additional database table per product class, unless they need
       some new foreign key relationships.
     * Easier to do special logic on a per-class basis. Using the EAV
-      approach this will involve a whole new level of models, making the
+      approach, this will involve a whole new level of models, making the
       situation even worse.
-    * Easier to work with for data migration tasks
-    * No longer depend on fixtures to make the site work
+    * Easier to work with data migration tasks.
+    * No longer depend on fixtures to make the site work.

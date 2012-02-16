@@ -85,6 +85,5 @@ class MagicProductApp(ProductApp):
 
     def construct_variant_class(self, product_class):
         class Variant(models.Variant):
-            product = django.db.models.ForeignKey(product_class,
-                                                  related_name='variants')
+            pass
         return Variant

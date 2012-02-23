@@ -36,16 +36,11 @@ class WishlistApp(satchless.cart.app.MagicCartApp):
         cart = self.cart_app.get_cart_for_request(request)
         variant = item.variant.get_subtype_instance()
         variant_formclass = registry.get_handler(type(variant.product))
-        class FormIdForm(django.forms.Form):
-            form_id = django.forms.IntegerField(widget=django.forms.HiddenInput)
-        class AddVariantToCartForm(FormIdForm, self.CartItemForm, variant_formclass):
+        class AddVariantToCartForm(self.CartItemForm, variant_formclass):
             pass
         initial = django.forms.models.model_to_dict(
             item.variant, variant_formclass.base_fields.keys())
-        initial['form_id'] = item.id
-        id_form = FormIdForm(data=request.POST or None, prefix=prefix)
-        data = (id_form.is_valid() and request.POST) or None
-        form = AddVariantToCartForm(cart=cart, data=data,
+        form = AddVariantToCartForm(cart=cart, data=request.POST or None,
                                     product=variant.product, initial=initial,
                                     prefix=prefix)
         return form

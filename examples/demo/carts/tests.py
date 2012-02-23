@@ -75,10 +75,13 @@ class ViewsTestCase(satchless.util.tests.ViewsTestCase):
         response = self._test_GET_status(wishlist_app.reverse('details'),
                                          client_instance=self.client)
         form = response.context['cart_item_forms'][0]
+        data={
+            form.add_prefix('request_marker'): '',
+        }
         self._test_POST_status(
             wishlist_app.reverse('details'), status_code=302,
             client_instance=self.client,
-            data={form.add_prefix('form_id'): form.initial['form_id']}
+            data=data,
         )
 
         # check cart content
@@ -87,6 +90,7 @@ class ViewsTestCase(satchless.util.tests.ViewsTestCase):
         self.assertEqual(len(cart_items), 1)
         self.assertEqual(cart_items[0].variant.get_subtype_instance(),
                          wishlist_item.variant.get_subtype_instance())
+        self.assertEqual(cart_items[0].quantity, 1)
 
     def test_add_to_cart_from_wishlist_fails_when_variant_is_out_of_stock(self):
         self.variant.stock_level = 0
@@ -103,7 +107,7 @@ class ViewsTestCase(satchless.util.tests.ViewsTestCase):
         self._test_POST_status(
             wishlist_url, status_code=200,
             client_instance=self.client,
-            data={form.add_prefix('form_id'): form.initial['form_id']}
+            data={form.add_prefix('request_marker'): ''}
         )
 
         # check cart content

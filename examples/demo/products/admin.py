@@ -37,6 +37,7 @@ class ProductForm(forms.ModelForm):
         if self.instance.id:
             self.fields['main_image'].queryset = self.instance.images.all()
 
+
 product_fieldsets = (
     (_('General'), {
         'fields': ('name', 'slug', 'description', 'main_image')

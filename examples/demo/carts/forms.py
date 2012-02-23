@@ -32,9 +32,16 @@ class AddToCartForm(forms.Form):
 
 
 class WishlistAddToCartItemForm(forms.Form):
+    request_marker = forms.CharField(widget=forms.HiddenInput(),
+                                     required=False)
+
     def __init__(self, cart, *args, **kwargs):
         self.cart = cart
         super(WishlistAddToCartItemForm, self).__init__(*args, **kwargs)
+        self.is_bound = (self.is_bound and
+                         self.add_prefix('request_marker') in self.data)
+        if not self.is_bound:
+            self.data = None
 
     def clean(self):
         data = super(WishlistAddToCartItemForm, self).clean()

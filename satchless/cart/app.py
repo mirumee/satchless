@@ -53,7 +53,6 @@ class CartApp(SatchlessApp):
         for item in cart.get_all_items():
             form = self._get_cart_item_form(request, item)
             if request.method == 'POST' and form.is_valid():
-                self.cart_item_form_valid(request, form, item)
                 return self.cart_item_form_valid(request, form, item)
             cart_item_forms.append(form)
         return {

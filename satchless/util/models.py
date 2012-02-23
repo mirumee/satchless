@@ -2,7 +2,6 @@ from collections import defaultdict
 from django.db import models
 from django.db.models.fields.related import SingleRelatedObjectDescriptor
 from django.dispatch import receiver
-from functools import partial
 
 class SubtypedManager(models.Manager):
     def find_subclasses(self, root):

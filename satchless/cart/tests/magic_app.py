@@ -139,7 +139,8 @@ class MagicAppTestCase(ViewsTestCase):
                                      status_code=200)
         cart_item_form = response.context['cart_item_forms'][0]
         data = {
-            'quantity': 2
+            'quantity': 2,
+            'request_marker': '',
         }
         data = dict((cart_item_form.add_prefix(key), value)
                     for (key, value) in data.items())

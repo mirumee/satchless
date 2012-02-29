@@ -63,9 +63,6 @@ class BasicHandlerTest(TestCase):
                                           NinetyPerecentTaxPriceHandler,
                                           TenPercentDiscountPriceHandler)
 
-    def tearDown(self):
-        self.pricing_queue = PricingQueue(*settings.SATCHLESS_PRICING_HANDLERS)
-
     def test_discounted_price(self):
         price = self.pricing_queue.get_variant_price(None, u'PLN', quantity=1,
                                           discount=True)

@@ -27,8 +27,9 @@ class ViewsTestCase(BaseTestCase):
         status_code = kwargs.pop('status_code', 200)
         client = kwargs.pop('client_instance', Client())
         data = kwargs.pop('data', {})
+        follow = kwargs.pop('follow', False)
 
-        response = getattr(client, method)(url, data=data, follow=False)
+        response = getattr(client, method)(url, data=data, follow=follow, **kwargs)
         self.assertEqual(response.status_code, status_code,
             u'Incorrect status code for: %s, (%s, %s)! Expected: %s, received: %s.' % (
                 url.decode('utf-8'), args, kwargs, status_code, response.status_code,))

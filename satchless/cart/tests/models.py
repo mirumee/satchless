@@ -1,9 +1,32 @@
 from decimal import Decimal
+from django.conf import settings
+from django.contrib.auth.models import User
 from django.test import TestCase
 
+from satchless.pricing import Price, PriceRange, PricingHandler
+
 from ...product.tests import DeadParrot
+from ...pricing import handler as pricing_handler
 from .. import signals
 from . import cart_app
+
+
+class SuperuserDiscountPriceHandler(PricingHandler):
+    """Everything has $5 price, but if you are superuser you get everything for free"""
+
+    def get_variant_price(self, *args, **kwargs):
+        user = kwargs.get('user', None)
+        if user and user.is_superuser:
+            return Price(net=0, gross=0, currency=u'USD')
+        return Price(net=5, gross=5, currency=u'USD')
+
+    def get_product_price_range(self, *args, **kwargs):
+        user = kwargs.get('user', None)
+        if user and user.is_superuser:
+            return PriceRange(min_price=Price(net=0, gross=0, currency=u'USD'),
+                              max_price=Price(net=0, gross=0, currency=u'USD'))
+        return PriceRange(min_price=Price(net=5, gross=5, currency=u'USD'),
+                          max_price=Price(net=5, gross=5, currency=u'USD'))
 
 
 class ModelsTestCase(TestCase):
@@ -18,6 +41,13 @@ class ModelsTestCase(TestCase):
 
         self.cockatoo_a = self.cockatoo.variants.create(looks_alive=True)
         self.cockatoo_d = self.cockatoo.variants.create(looks_alive=False)
+
+        self.original_pricing_queue = pricing_handler.pricing_queue
+        pricing_handler.pricing_queue = pricing_handler.PricingQueue(
+            SuperuserDiscountPriceHandler)
+
+    def tearDown(self):
+        pricing_handler.pricing_queue = self.original_pricing_queue
 
     def test_replace_quantity_for_non_existing_item(self):
         cart = cart_app.Cart.objects.create(typ='satchless.test_cart')
@@ -143,3 +173,18 @@ class ModelsTestCase(TestCase):
                          (1, 0, u"Parrots don't rest in groups"))
         self.assertEqual(1, cart.get_quantity(self.cockatoo_d))
 
+    def test_cart_uses_whole_context_when_calculates_total_price(self):
+        cart = cart_app.Cart.objects.create(typ='satchless', currency='USD')
+        cart.replace_item(self.macaw_a, 1)
+
+        superuser = User.objects.create_superuser(
+            username='superman', password='pass', email='superman@example.com')
+        regular_user = User.objects.create_user(
+            username='user', password='pass', email='user@example.com')
+
+        self.assertEqual(cart.get_total(user=superuser),
+                         Price(net=0, gross=0, currency=u'USD'))
+        self.assertEqual(cart.get_total(user=regular_user),
+                         Price(net=5, gross=5, currency=u'USD'))
+        self.assertEqual(cart.get_total(),
+                         Price(net=5, gross=5, currency=u'USD'))

@@ -134,9 +134,9 @@ class Cart(models.Model):
     def is_empty(self):
         return not self.items.exists()
 
-    def get_total(self):
+    def get_total(self, **kwargs):
         from ..pricing import Price
-        return sum([i.get_price() for i in self.get_all_items()],
+        return sum([i.get_price(currency=self.currency, **kwargs) for i in self.get_all_items()],
                    Price(0, currency=self.currency))
 
 

@@ -68,7 +68,10 @@ class CheckoutApp(SatchlessApp):
         return order
 
     def get_order_from_cart(self, request, cart, order=None):
-        if not order.is_empty():
+        if not order:
+            order = self.Order.objects.create(cart=cart, user=cart.owner,
+                                              currency=cart.currency)
+        elif order.is_empty():
             order.groups.all().delete()
         self.partition_cart(cart, order)
         previous_orders = self.Order.objects.filter(
@@ -88,10 +91,10 @@ class CheckoutApp(SatchlessApp):
             order = self.Order.objects.get(pk=order_pk, cart=cart,
                                            status='checkout')
         except self.Order.DoesNotExist:
-            order = self.Order.objects.create(cart=cart, user=cart.owner,
-                                              currency=cart.currency)
-        if order.is_empty():
-            order = self.get_order_from_cart(request, cart, order)
+            order = self.get_order_from_cart(request, cart)
+        else:
+            if order.is_empty():
+                order = self.get_order_from_cart(request, cart, order)
         if request.user.is_authenticated():
             if cart.owner != request.user:
                 cart.owner = request.user

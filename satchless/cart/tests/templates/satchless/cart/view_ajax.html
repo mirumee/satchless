@@ -1,11 +1,4 @@
-{% extends 'satchless/cart/base.html' %}
 {% load i18n promote prices product_prices cart_prices %}
-{% block title %}{% trans "My cart" %}{% endblock %}
-{% block breadcrumbs %}
-    {{ block.super }}
-    <li><a href="">{% trans "My cart" %}</a></li>
-{% endblock %}
-{% block content %}
     <h1>{% trans "My cart" %}</h1>
     {% csrf_token %}
     <table class="cart">
@@ -36,7 +29,7 @@
             <tr class="item">
                 <td rowspan="2">{{ forloop.counter }}</td>
                 <td rowspan="2">{% promote form.instance.variant as variant %}
-                    <a href="{{ variant.product.get_absolute_url }}">{{ variant }}</a>
+                    <a href="{% url product:details variant.product.slug variant.product.pk %}">{{ variant }}</a>
                 </td>
                 <td class="numerical unitPrice">
                     {{ unit_price|gross|floatformat:2 }} <span class="currency">{{ cart.currency }}</span><br />
@@ -55,7 +48,7 @@
                     {{ item_price|tax|floatformat:2 }} <span class="currency">{{ cart.currency }}</span>
                 </td>
                 <td rowspan="2">
-                    <form method="POST" action="{% url cart:remove-item form.instance.id %}">
+                    <form method="POST" action="{% url cart:remove-item cart.typ form.instance.id %}">
                         {% csrf_token %}
                         <button type="submit">{% trans "Delete" %}</button>
                     </form>
@@ -88,8 +81,3 @@
             </tr>
         </tfoot>
     </table>
-    <form action="{% url checkout:prepare-order cart_token=cart.token %}" method="post">
-        {% csrf_token %}
-        <button type="submit">{% trans "Check out" %}</button>
-    </form>
-{% endblock %}

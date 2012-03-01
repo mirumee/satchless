@@ -59,7 +59,8 @@ class MagicAppTestCase(ViewsTestCase):
         test_dir = os.path.dirname(__file__)
         self.custom_settings = {
             'SATCHLESS_DEFAULT_CURRENCY': "PLN",
-            'TEMPLATE_DIRS': [os.path.join(test_dir, '..', '..',
+            'TEMPLATE_DIRS': [os.path.join(test_dir, 'templates'),
+                              os.path.join(test_dir, '..', '..',
                                            'category', 'templates'),
                               os.path.join(test_dir, '..', 'templates'),
                               os.path.join(test_dir, 'templates')]

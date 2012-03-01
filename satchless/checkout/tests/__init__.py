@@ -129,4 +129,4 @@ class App(BaseCheckoutAppTests):
                             reverse('order:details', args=(order.token,)))
 
         assertRedirects(self.checkout_app.redirect_order(None),
-                        self.checkout_app.get_no_order_redirect_url())
+                        reverse('cart:details'))

@@ -2,11 +2,9 @@
 from decimal import Decimal
 from django.conf.urls.defaults import patterns, include, url
 from django.contrib.auth.models import User
-from django.http import HttpResponse
 from django.test import Client
 import os
 
-from ...checkout.app import CheckoutApp
 from ...pricing import handler as pricing_handler
 from ...product.tests.pricing import FiveZlotyPriceHandler
 from ...product.tests import (DeadParrot, ZombieParrot, DeadParrotVariantForm,
@@ -14,21 +12,15 @@ from ...product.tests import (DeadParrot, ZombieParrot, DeadParrotVariantForm,
 from ...util.tests import ViewsTestCase
 
 from .. import app
+from . import TestCart, TestCartItem
+
 
 class TestCartApp(app.MagicCartApp):
-    pass
+
+    Cart = TestCart
+    CartItem = TestCartItem
 
 cart_app = TestCartApp(product_app)
-
-class TestCheckoutApp(CheckoutApp):
-
-    Cart = cart_app.Cart
-    Order = object
-    def prepare_order(self, *args, **kwargs):
-        return HttpResponse("OK")
-
-
-checkout_app = TestCheckoutApp()
 
 
 class MagicAppTestCase(ViewsTestCase):
@@ -37,7 +29,6 @@ class MagicAppTestCase(ViewsTestCase):
         urlpatterns = patterns('',
             url(r'^cart/', include(cart_app.urls)),
             url(r'^products/', include(product_app.urls)),
-            url(r'^checkout/', include(checkout_app.urls))
         )
 
     def setUp(self):

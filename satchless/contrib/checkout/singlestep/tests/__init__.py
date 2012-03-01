@@ -8,7 +8,6 @@ from django.test import Client
 
 from .....checkout.tests import BaseCheckoutAppTests
 from .....delivery.tests import TestDeliveryProvider, TestDeliveryType
-from .....order import handler as order_handler
 from .....order.forms import BillingForm
 from .....payment import ConfirmationFormNeeded
 from .....payment.tests import TestPaymentProvider
@@ -102,7 +101,7 @@ class App(BaseCheckoutAppTests):
                                                                        order.token}),
                                      client_instance=self.anon_client,
                                      status_code=302, method='post', data=data,
-                                     follow=True)
+                                     follow=False)
 
         order = self.checkout_app.order_model.objects.get(pk=order.pk)
 
@@ -146,7 +145,7 @@ class App(BaseCheckoutAppTests):
                                                                        order.token}),
                                      client_instance=self.anon_client,
                                      status_code=302, method='post', data=data,
-                                     follow=True)
+                                     follow=False)
 
         self._test_status(self.checkout_app.reverse('confirmation',
                                                     kwargs={'order_token':

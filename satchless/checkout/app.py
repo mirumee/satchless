@@ -1,12 +1,12 @@
 from django.conf.urls.defaults import patterns, url
 from django.conf import settings
+from django.db.models import Q
 from django.shortcuts import get_object_or_404, redirect
 from django.template.response import TemplateResponse
 from django.utils.decorators import method_decorator
 from django.views.decorators.http import require_POST
 
 from ..order import handler
-from ..order.exceptions import EmptyCart
 from ..order.signals import order_pre_confirm
 from ..payment import PaymentFailure, ConfirmationFormNeeded
 from ..core.app import SatchlessApp
@@ -29,6 +29,12 @@ class CheckoutApp(SatchlessApp):
         payment_providers = kwargs.pop('payment_providers',
                                         getattr(settings, 'SATCHLESS_PAYMENT_PROVIDERS', []))
         self.payment_queue = handler.PaymentQueue(*payment_providers)
+
+        partitioners = kwargs.pop(
+            'partitioners', getattr(settings, 'SATCHLESS_ORDER_PARTITIONERS',
+                ['satchless.contrib.order.partitioner.simple.SimplePartitioner']))
+        self.partitioner_queue = handler.PartitionerQueue(*partitioners)
+
         super(CheckoutApp, self).__init__(*args, **kwargs)
         assert self.Order, ('You need to subclass CheckoutApp and provide Order')
         assert self.Cart, ('You need to subclass CheckoutApp and provide Cart')
@@ -40,12 +46,9 @@ class CheckoutApp(SatchlessApp):
         except self.Order.DoesNotExist:
             return
 
-    def get_no_order_redirect_url(self):
-        return '/'
-
     def redirect_order(self, order):
-        if not order:
-            return redirect(self.get_no_order_redirect_url())
+        if not order or order.is_empty():
+            return redirect('cart:details')
         elif order.status == 'checkout':
             return self.redirect('checkout',
                                  order_token=order.token)
@@ -54,21 +57,41 @@ class CheckoutApp(SatchlessApp):
                                  order_token=order.token)
         return redirect('order:details', order_token=order.token)
 
+
+    def partition_cart(self, cart, order, **pricing_context):
+        groups = filter(None, self.partitioner_queue.partition(cart))
+        for group in groups:
+            delivery_group = order.create_delivery_group(group)
+            for item in group:
+                delivery_group.add_item(item.variant, item.quantity,
+                                        price=item.get_price(**pricing_context))
+        return order
+
+    def get_order_from_cart(self, request, cart, order=None):
+        if not order.is_empty():
+            order.groups.all().delete()
+        self.partition_cart(cart, order)
+        previous_orders = self.Order.objects.filter(
+            Q(cart=cart) & Q(status='checkout') & ~Q(pk=order.pk))
+        previous_orders.delete()
+        return order
+
     @method_decorator(require_POST)
     def prepare_order(self, request, cart_token):
         cart = get_object_or_404(self.Cart, token=cart_token,
                                  typ=self.cart_type)
+        if cart.is_empty():
+            return redirect('cart:details')
+
         order_pk = request.session.get('satchless_order')
-        previous_orders = self.Order.objects.filter(pk=order_pk,
-                                                    cart=cart,
-                                                    status='checkout')
         try:
-            order = previous_orders.get()
+            order = self.Order.objects.get(pk=order_pk, cart=cart,
+                                           status='checkout')
         except self.Order.DoesNotExist:
-            try:
-                order = self.Order.objects.get_from_cart(cart)
-            except EmptyCart:
-                return redirect('cart:details')
+            order = self.Order.objects.create(cart=cart, user=cart.owner,
+                                              currency=cart.currency)
+        if order.is_empty():
+            order = self.get_order_from_cart(request, cart, order)
         if request.user.is_authenticated():
             if cart.owner != request.user:
                 cart.owner = request.user

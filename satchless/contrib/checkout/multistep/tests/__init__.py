@@ -42,6 +42,7 @@ class TestPaymentProviderWithForm(TestPaymentProvider):
 
 class TestCheckoutApp(app.MultiStepCheckoutApp):
     Cart = cart_app.Cart
+    cart_type = cart_app.cart_type
     Order = order_app.Order
 
     BillingForm = modelform_factory(order_app.Order,

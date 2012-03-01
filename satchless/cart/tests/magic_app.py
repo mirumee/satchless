@@ -16,6 +16,8 @@ from . import TestCart, TestCartItem
 
 
 class TestCartApp(app.MagicCartApp):
+    app_name = 'test_cart_app'
+    cart_type = 'test_cart_app'
 
     Cart = TestCart
     CartItem = TestCartItem
@@ -69,11 +71,11 @@ class MagicAppTestCase(ViewsTestCase):
         self._teardown_settings(self.original_settings,
                                 self.custom_settings)
 
-    def _get_or_create_cart_for_client(self, client=None, typ='cart'):
+    def _get_or_create_cart_for_client(self, client=None):
         client = client or self.client
         self._test_status(cart_app.reverse('details'), client_instance=client)
         cart_token = client.session[cart_app.cart_session_key]
-        return cart_app.Cart.objects.get(token=cart_token, typ=typ)
+        return cart_app.Cart.objects.get(token=cart_token, typ=cart_app.cart_type)
 
     def test_add_to_cart_form_on_product_view(self):
         response = self._test_status(self.macaw.get_absolute_url(),
@@ -94,7 +96,7 @@ class MagicAppTestCase(ViewsTestCase):
                           client_instance=client, status_code=200)
         self._test_status(self.macaw.get_absolute_url(),
                           method='post',
-                          data={'typ': 'cart',
+                          data={'typ': cart_app.cart_type,
                                 'color': self.macaw_blue_fake.color,
                                 'looks_alive': self.macaw_blue_fake.looks_alive,
                                 'quantity': 2},
@@ -154,7 +156,7 @@ class MagicAppTestCase(ViewsTestCase):
         cli_anon = Client()
         response = self._test_status(self.macaw.get_absolute_url(),
                                      method='post',
-                                     data={'typ': 'cart',
+                                     data={'typ': cart_app.cart_type,
                                            'color': 'blue',
                                            'looks_alive': 1,
                                            'quantity': 'alkjl'},

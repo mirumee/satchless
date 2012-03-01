@@ -27,6 +27,7 @@ class TestPaymentProviderWithConfirmation(TestPaymentProvider):
 class TestSingleStepCheckoutApp(SingleStepCheckoutApp):
     Order = order_app.Order
     Cart = cart_app.Cart
+    cart_type = cart_app.cart_type
     BillingForm = modelform_factory(order_app.Order,
                                     BillingForm)
 

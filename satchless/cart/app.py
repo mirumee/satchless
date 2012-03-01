@@ -135,14 +135,12 @@ class MagicCartApp(CartApp):
     def cart_session_key(self):
         return '_satchless_cart-%s' % self.cart_type
 
-    def get_cart_for_request(self, request, dry_run=False):
+    def get_cart_for_request(self, request):
         try:
             token = request.session[self.cart_session_key]
             cart = self.Cart.objects.get(typ=self.cart_type,
                                          token=token)
         except (self.Cart.DoesNotExist, KeyError):
-            if dry_run:
-                return None
             owner = request.user if request.user.is_authenticated() else None
             cart = self.Cart.objects.create(typ=self.cart_type, owner=owner)
             request.session[self.cart_session_key] = cart.token

@@ -1,10 +1,9 @@
-from django.conf.urls.defaults import patterns, url
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import get_object_or_404
 from django.template.response import TemplateResponse
 from django.utils.decorators import method_decorator
 
-from ..core.app import SatchlessApp
+from ..core.app import SatchlessApp, view
 from ..util.models import construct
 from . import models
 
@@ -27,6 +26,7 @@ class OrderApp(SatchlessApp):
         assert self.Order, ('You need to subclass OrderApp and provide'
                             ' Order')
 
+    @view(r'^$', name='index')
     @method_decorator(login_required)
     def index(self, request):
         orders = self.Order.objects.filter(user=request.user)
@@ -37,6 +37,7 @@ class OrderApp(SatchlessApp):
         templates = [p % format_data for p in self.order_list_templates]
         return TemplateResponse(request, templates, context)
 
+    @view(r'^(?P<order_token>[0-9a-zA-Z]+)/$', name='details')
     def details(self, request, order_token):
         order = self.get_order(request, order_token=order_token)
         context = self.get_context_data(request, order=order)
@@ -53,14 +54,6 @@ class OrderApp(SatchlessApp):
             orders = self.Order.objects.filter(user=None)
         order = get_object_or_404(orders, token=order_token)
         return order
-
-    def get_urls(self, prefix=None):
-        prefix = prefix or self.app_name
-        return patterns('',
-            url(r'^$', self.index, name='index'),
-            url(r'^(?P<order_token>[0-9a-zA-Z]+)/$', self.details,
-                name='details'),
-        )
 
 
 class MagicOrderApp(OrderApp):

@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
-from django.conf.urls.defaults import patterns, url
 from django.forms.models import modelformset_factory
 from django.template.response import TemplateResponse
 
 from ....checkout import app
+from ....core.app import view
 from ....order import forms
 
 class MultiStepCheckoutApp(app.CheckoutApp):
@@ -33,9 +33,9 @@ class MultiStepCheckoutApp(app.CheckoutApp):
         super(MultiStepCheckoutApp, self).__init__(self, *args, **kwargs)
         assert ((self.ShippingForm or self.ShippingFormSet) and
                 (self.DeliveryMethodFormSet or self.DeliveryMethodForm) and
-                self.BillingForm), ('You need to subclass MultiStepCheckoutApp '
-                                    'and provide BillingForm, DeliveryMethodForm, '
-                                    'ShippingForm')
+                self.BillingForm), (
+            'You need to subclass MultiStepCheckoutApp and provide BillingForm,'
+            ' DeliveryMethodForm, ShippingForm')
         self.ShippingFormSet = (
             self.ShippingFormSet or
             modelformset_factory(self.ShippingForm._meta.model,
@@ -48,6 +48,7 @@ class MultiStepCheckoutApp(app.CheckoutApp):
                                  form=self.DeliveryMethodForm,
                                  extra=0))
 
+    @view(r'^(?P<order_token>\w+)/$', name='checkout')
     def checkout(self, request, order_token):
         """
         Checkout step 1
@@ -72,6 +73,7 @@ class MultiStepCheckoutApp(app.CheckoutApp):
                                         order=order)
         return TemplateResponse(request, self.checkout_templates, context)
 
+    @view(r'^(?P<order_token>\w+)/delivery-method/$', name='delivery-method')
     def delivery_method(self, request, order_token):
         """
         Checkout step 2
@@ -81,16 +83,20 @@ class MultiStepCheckoutApp(app.CheckoutApp):
         if not order or order.status != 'checkout':
             return self.redirect_order(order)
         delivery_groups = order.groups.all()
-        delivery_method_formset = self.DeliveryMethodFormSet(data=request.POST or None,
-                                                             queryset=delivery_groups,
-                                                             delivery_queue=self.delivery_queue)
+        delivery_method_formset = self.DeliveryMethodFormSet(
+            data=request.POST or None,
+            queryset=delivery_groups,
+            delivery_queue=self.delivery_queue)
         if delivery_method_formset.is_valid():
             delivery_method_formset.save()
             return self.redirect('delivery-details', order_token=order.token)
-        context = self.get_context_data(request, order=order,
-                                        delivery_method_formset=delivery_method_formset)
-        return TemplateResponse(request, self.delivery_method_templates, context)
+        context = self.get_context_data(
+            request, order=order,
+            delivery_method_formset=delivery_method_formset)
+        return TemplateResponse(request, self.delivery_method_templates,
+                                context)
 
+    @view(r'^(?P<order_token>\w+)/delivery-details/$', name='delivery-details')
     def delivery_details(self, request, order_token):
         """
         Checkout step 2½
@@ -102,16 +108,20 @@ class MultiStepCheckoutApp(app.CheckoutApp):
             return self.redirect('delivery-method', order_token=order.token)
         delivery_group_forms = self.delivery_queue.get_configuration_forms_for_groups(
             delivery_groups, request.POST or None)
-        delivery_forms = [form for group, delivery_type, form in delivery_group_forms]
+        delivery_forms = [form
+                          for group, delivery_type, form
+                          in delivery_group_forms]
         if all(form.is_valid() if form else True
                for form in delivery_forms):
             for group, delivery_type, form in delivery_group_forms:
                 self.delivery_queue.save(group, form)
             return self.redirect('payment-method', order_token=order.token)
-        context = self.get_context_data(request, order=order,
-                                        delivery_group_forms=delivery_group_forms)
-        return TemplateResponse(request, self.delivery_details_templates, context)
+        context = self.get_context_data(
+            request, order=order, delivery_group_forms=delivery_group_forms)
+        return TemplateResponse(request, self.delivery_details_templates,
+                                context)
 
+    @view(r'^(?P<order_token>\w+)/payment-method/$', name='payment-method')
     def payment_method(self, request, order_token):
         """
         Checkout step 3
@@ -131,11 +141,12 @@ class MultiStepCheckoutApp(app.CheckoutApp):
                                         payment_form=payment_form)
         return TemplateResponse(request, self.payment_method_templates, context)
 
+    @view(r'^(?P<order_token>\w+)/payment-details/$', name='payment-details')
     def payment_details(self, request, order_token):
         """
         Checkout step 3½
-        If any payment details are needed, user will be asked for them. Otherwise
-        we redirect to  final confirmation.
+        If any payment details are needed, user will be asked for them.
+        Otherwise we redirect to  final confirmation.
         """
         order = self.get_order(request, order_token)
         if not order or order.status != 'checkout':
@@ -152,19 +163,6 @@ class MultiStepCheckoutApp(app.CheckoutApp):
                 if form.is_valid():
                     return proceed(order, form)
             context = self.get_context_data(request, form=form, order=order)
-            return TemplateResponse(request, self.payment_details_templates, context)
+            return TemplateResponse(request, self.payment_details_templates,
+                                    context)
         return proceed(order, form)
-
-    def get_urls(self):
-        return super(MultiStepCheckoutApp, self).get_urls() + patterns('',
-            url(r'^(?P<order_token>\w+)/delivery-method/$',
-                self.delivery_method, name='delivery-method'),
-            url(r'^(?P<order_token>\w+)/delivery-details/$',
-                self.delivery_details, name='delivery-details'),
-            url(r'^(?P<order_token>\w+)/payment-method/$',
-                self.payment_method, name='payment-method'),
-            url(r'^(?P<order_token>\w+)/payment-details/$',
-                self.payment_details, name='payment-details'),
-        )
-
-

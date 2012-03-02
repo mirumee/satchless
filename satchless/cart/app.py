@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-from django.conf.urls.defaults import patterns, url
 from django.core.exceptions import ObjectDoesNotExist
 from django.http import HttpResponse, HttpResponseNotFound
 from django.shortcuts import redirect
@@ -10,7 +9,7 @@ from django.views.decorators.http import require_POST
 from . import forms
 from . import handler
 from . import models
-from ..core.app import SatchlessApp
+from ..core.app import SatchlessApp, view
 from ..util import JSONResponse
 from ..util.models import construct
 
@@ -60,6 +59,7 @@ class CartApp(SatchlessApp):
             'cart_item_forms': cart_item_forms,
         }
 
+    @view(r'^view/$', name='details')
     def cart(self, request):
         cart = self.get_cart_for_request(request)
         context = self._handle_cart(cart, request)
@@ -75,6 +75,7 @@ class CartApp(SatchlessApp):
                                  'html': response.rendered_content})
         return response
 
+    @view(r'^remove/(?P<item_pk>[0-9]+)/$', name='remove-item')
     @method_decorator(require_POST)
     def remove_item(self, request, item_pk):
         cart = self.get_cart_for_request(request)
@@ -84,14 +85,6 @@ class CartApp(SatchlessApp):
             return HttpResponseNotFound()
         cart.replace_item(item.variant, 0)
         return self.redirect('details')
-
-
-    def get_urls(self):
-        return patterns('',
-            url(r'^view/$', self.cart, name='details'),
-            url(r'^remove/(?P<item_pk>[0-9]+)/$', self.remove_item,
-                name='remove-item'),
-        )
 
 
 class MagicCartApp(CartApp):

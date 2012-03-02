@@ -76,6 +76,7 @@ class CategorizedProductApp(app.ProductApp):
     def product_details(self, request, **kwargs):
         return super(CategorizedProductApp, self).product_details(request,
                                                                   **kwargs)
+
     def get_context_data(self, request, product=None, **kwargs):
         categories = self.Category.objects.filter(parent__isnull=True)
         context = dict(kwargs, categories=categories)

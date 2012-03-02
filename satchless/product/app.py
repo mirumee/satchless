@@ -1,4 +1,3 @@
-from django.conf.urls.defaults import patterns, url
 from django.core.exceptions import ObjectDoesNotExist
 from django.http import HttpResponse, HttpResponseNotFound
 from django.shortcuts import get_object_or_404

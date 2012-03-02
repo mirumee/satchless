@@ -26,12 +26,11 @@ class TestPaymentProviderWithConfirmation(TestPaymentProvider):
 
 class TestSingleStepCheckoutApp(SingleStepCheckoutApp):
     Order = order_app.Order
-    Cart = cart_app.Cart
-    cart_type = cart_app.cart_type
     BillingForm = modelform_factory(order_app.Order,
                                     BillingForm)
 
-checkout_app = TestSingleStepCheckoutApp(delivery_providers=[TestDeliveryProvider],
+checkout_app = TestSingleStepCheckoutApp(cart_app=cart_app,
+                                         delivery_providers=[TestDeliveryProvider],
                                          payment_providers=[TestPaymentProviderWithConfirmation])
 
 
@@ -40,7 +39,6 @@ class App(BaseCheckoutAppTests):
     urls = BaseCheckoutAppTests.MockUrls(checkout_app=checkout_app)
 
     def setUp(self):
-        checkout_app.cart_model = cart_app.Cart
         checkout_app.order_model = order_app.Order
         self.parrot = DeadParrot.objects.create(slug='parrot',
                                                 species='Hyacinth Macaw')

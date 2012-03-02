@@ -1,5 +1,3 @@
-from django.conf import settings
-from django.core.exceptions import ImproperlyConfigured
 from satchless.core.handler import QueueHandler
 
 from . import PricingHandler
@@ -24,7 +22,3 @@ class PricingQueue(PricingHandler, QueueHandler):
         return price_range
 
 
-if not getattr(settings, 'SATCHLESS_PRICING_HANDLERS', None):
-    raise ImproperlyConfigured('You need to configure '
-                               'SATCHLESS_PRICING_HANDLERS')
-pricing_queue = PricingQueue(*settings.SATCHLESS_PRICING_HANDLERS)

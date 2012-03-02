@@ -12,10 +12,6 @@ from . import signals
 
 
 class Order(models.Model):
-    """
-    Add this to your concrete model:
-    cart = models.ForeignKey(Cart, related_name='orders')
-    """
 
     STATUS_CHOICES = (
         ('checkout', _('undergoing checkout')),
@@ -123,10 +119,6 @@ class Order(models.Model):
 
 
 class DeliveryGroup(models.Model):
-    """
-    add this to your concrete model:
-    order = models.ForeignKey(Order, related_name='groups')
-    """
 
     order = DeferredForeignKey('order', related_name='groups', editable=False)
     delivery_price = models.DecimalField(_('unit price'),
@@ -179,6 +171,7 @@ class DeliveryGroup(models.Model):
 
 
 class OrderedItem(models.Model):
+
     delivery_group = DeferredForeignKey('delivery_group', related_name='items',
                                         editable=False)
     product_variant = DeferredForeignKey('variant', blank=True, null=True,

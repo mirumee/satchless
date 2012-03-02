@@ -138,18 +138,8 @@ class TestCartApp(app.CartApp):
         return cart
 
 
-class TestCheckoutApp(CheckoutApp):
-
-    Cart = MockCart
-    Order = MockOrder
-    def prepare_order(self, *args, **kwargs):
-        return HttpResponse("OK")
-
-
-
 product_app = TestProductApp()
-checkout_app = TestCheckoutApp()
-cart_app = TestCartApp()
+cart_app = TestCartApp(pricing_handler=FiveZlotyPriceHandler)
 
 class AppTestCase(ViewsTestCase):
 
@@ -157,20 +147,18 @@ class AppTestCase(ViewsTestCase):
         urlpatterns = patterns('',
             url(r'^cart/', include(cart_app.urls)),
             url(r'^products/', include(product_app.urls)),
-            url(r'^checkout/', include(checkout_app.urls))
         )
 
     def setUp(self):
         test_dir = os.path.dirname(__file__)
         self.custom_settings = {
             'SATCHLESS_DEFAULT_CURRENCY': "PLN",
-            'TEMPLATE_DIRS': [os.path.join(test_dir, '..', '..',
+            'TEMPLATE_DIRS': [os.path.join(test_dir, 'templates'),
+                              os.path.join(test_dir, '..', '..',
                                            'category', 'templates'),
-                              os.path.join(test_dir, '..', 'templates'),
-                              os.path.join(test_dir, 'templates')]
+                              os.path.join(test_dir, '..', 'templates')]
         }
         self.original_settings = self._setup_settings(self.custom_settings)
-        pricing_handler.pricing_queue = pricing_handler.PricingQueue(FiveZlotyPriceHandler)
 
         self.cart = cart_app.Cart()
         self.variant_1 = MockProduct('macaw_blue')

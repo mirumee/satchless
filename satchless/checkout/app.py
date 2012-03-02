@@ -1,7 +1,7 @@
 from django.conf.urls.defaults import patterns, url
 from django.conf import settings
 from django.db.models import Q
-from django.shortcuts import get_object_or_404, redirect
+from django.shortcuts import redirect
 from django.template.response import TemplateResponse
 from django.utils.decorators import method_decorator
 from django.views.decorators.http import require_POST
@@ -14,14 +14,13 @@ from ..core.app import SatchlessApp
 class CheckoutApp(SatchlessApp):
     app_name = 'checkout'
     namespace = 'checkout'
-    Cart = None
-    cart_type = 'cart'
     Order = None
     confirmation_templates = [
         'satchless/checkout/confirmation.html',
     ]
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, cart_app, *args, **kwargs):
+        self.cart_app = cart_app
         delivery_providers = kwargs.pop('delivery_providers',
                                         getattr(settings, 'SATCHLESS_DELIVERY_PROVIDERS', []))
         self.delivery_queue = handler.DeliveryQueue(*delivery_providers)
@@ -33,11 +32,10 @@ class CheckoutApp(SatchlessApp):
         partitioners = kwargs.pop(
             'partitioners', getattr(settings, 'SATCHLESS_ORDER_PARTITIONERS',
                 ['satchless.contrib.order.partitioner.simple.SimplePartitioner']))
-        self.partitioner_queue = handler.PartitionerQueue(*partitioners)
+        self.delivery_partitioner = handler.PartitionerQueue(*partitioners)
 
         super(CheckoutApp, self).__init__(*args, **kwargs)
         assert self.Order, ('You need to subclass CheckoutApp and provide Order')
-        assert self.Cart, ('You need to subclass CheckoutApp and provide Cart')
 
     def get_order(self, request, order_token):
         user = request.user if request.user.is_authenticated() else None
@@ -48,7 +46,7 @@ class CheckoutApp(SatchlessApp):
 
     def redirect_order(self, order):
         if not order or order.is_empty():
-            return redirect('cart:details')
+            return self.cart_app.redirect('details')
         elif order.status == 'checkout':
             return self.redirect('checkout',
                                  order_token=order.token)
@@ -57,15 +55,16 @@ class CheckoutApp(SatchlessApp):
                                  order_token=order.token)
         return redirect('order:details', order_token=order.token)
 
-
     def partition_cart(self, cart, order, **pricing_context):
-        groups = filter(None, self.partitioner_queue.partition(cart))
+        groups = filter(None, self.delivery_partitioner.partition(cart))
         for group in groups:
             delivery_group = order.create_delivery_group(group)
-            for item in group:
-                delivery_group.add_item(item.variant, item.quantity,
-                                        price=item.get_price(**pricing_context))
-        return order
+            for cartitem in group:
+                price = self.cart_app.pricing_handler.get_variant_price(
+                    cartitem.variant.get_subtype_instance(), currency=cart.currency,
+                    quantity=cartitem.quantity, cart=cartitem.cart,
+                    cartitem=cartitem, **pricing_context)
+                delivery_group.add_item(cartitem.variant, cartitem.quantity, price)
 
     def get_order_from_cart(self, request, cart, order=None):
         if not order:
@@ -80,11 +79,10 @@ class CheckoutApp(SatchlessApp):
         return order
 
     @method_decorator(require_POST)
-    def prepare_order(self, request, cart_token):
-        cart = get_object_or_404(self.Cart, token=cart_token,
-                                 typ=self.cart_type)
+    def prepare_order(self, request):
+        cart = self.cart_app.get_cart_for_request(request)
         if cart.is_empty():
-            return redirect('cart:details')
+            return self.cart_app.redirect('details')
 
         order_pk = request.session.get('satchless_order')
         try:
@@ -96,9 +94,6 @@ class CheckoutApp(SatchlessApp):
             if order.is_empty():
                 order = self.get_order_from_cart(request, cart, order)
         if request.user.is_authenticated():
-            if cart.owner != request.user:
-                cart.owner = request.user
-                cart.save()
             if order.user != request.user:
                 order.user = request.user
                 order.save()
@@ -144,7 +139,7 @@ class CheckoutApp(SatchlessApp):
 
     def get_urls(self):
         return patterns('',
-            url(r'^prepare/(?P<cart_token>\w+)/$', self.prepare_order,
+            url(r'^prepare/$', self.prepare_order,
                 name='prepare-order'),
             url(r'^(?P<order_token>\w+)/$', self.checkout,
                 name='checkout'),

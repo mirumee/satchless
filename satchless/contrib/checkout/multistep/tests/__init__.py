@@ -2,7 +2,6 @@
 import os
 
 from decimal import Decimal
-from django.conf import settings
 from django.core.urlresolvers import reverse
 from django.forms.models import modelform_factory
 from django import forms
@@ -15,10 +14,7 @@ from .....order import handler as order_handler
 from .....order import forms as order_forms
 from .....payment import ConfirmationFormNeeded
 from .....payment.tests import TestPaymentProvider
-from .....pricing import handler as pricing_handler
 from .....product.tests import DeadParrot
-from .....product.tests.pricing import FiveZlotyPriceHandler
-
 
 from .. import app
 from .....cart.tests import cart_app
@@ -41,8 +37,6 @@ class TestPaymentProviderWithForm(TestPaymentProvider):
 
 
 class TestCheckoutApp(app.MultiStepCheckoutApp):
-    Cart = cart_app.Cart
-    cart_type = cart_app.cart_type
     Order = order_app.Order
 
     BillingForm = modelform_factory(order_app.Order,
@@ -56,8 +50,9 @@ class TestCheckoutApp(app.MultiStepCheckoutApp):
 
 
 
-class CheckoutTest(BaseCheckoutAppTests):
+class CheckoutTestCase(BaseCheckoutAppTests):
     checkout_app = TestCheckoutApp(
+        cart_app=cart_app,
         delivery_providers=[TestDeliveryProvider],
         payment_providers=[TestPaymentProviderWithConfirmation],
         partitioners=[SimplePhysicalPartitioner])
@@ -87,7 +82,8 @@ class CheckoutTest(BaseCheckoutAppTests):
             'SATCHLESS_DJANGO_PAYMENT_TYPES': ['dummy'],
             'PAYMENT_VARIANTS': {'dummy': ('payments.dummy.DummyProvider',
                                            {'url': '/', })},
-            'TEMPLATE_DIRS': (os.path.join(satchless_dir, 'category', 'templates'),
+            'TEMPLATE_DIRS': (os.path.join(satchless_dir, 'cart', 'templates'),
+                              os.path.join(satchless_dir, 'category', 'templates'),
                               os.path.join(satchless_dir, 'order', 'templates'),
                               os.path.join(test_dir, '..', 'templates'),
                               os.path.join(test_dir, 'templates')),
@@ -107,14 +103,8 @@ class CheckoutTest(BaseCheckoutAppTests):
         PostShippingType.objects.create(price=20, typ='list',
                                         name='List zwykly')
 
-        self.original_handlers = settings.SATCHLESS_PRICING_HANDLERS
-        pricing_handler.pricing_queue = pricing_handler.PricingQueue(
-            FiveZlotyPriceHandler)
-
     def tearDown(self):
         self._teardown_settings(self.original_settings, self.custom_settings)
-        pricing_handler.pricing_queue = pricing_handler.PricingQueue(
-            *self.original_handlers)
 
     def test_order_from_cart_view_creates_proper_order(self):
         cart = self._get_or_create_cart_for_client(self.anon_client)
@@ -122,9 +112,7 @@ class CheckoutTest(BaseCheckoutAppTests):
         cart.replace_item(self.macaw_blue_fake, Decimal('2.45'))
         cart.replace_item(self.cockatoo_white_a, Decimal('2.45'))
 
-        self._test_status(self.checkout_app.reverse('prepare-order',
-                                                    kwargs={'cart_token':
-                                                            cart.token}),
+        self._test_status(self.checkout_app.reverse('prepare-order'),
                           method='post', client_instance=self.anon_client,
                           status_code=302)
 
@@ -141,9 +129,7 @@ class CheckoutTest(BaseCheckoutAppTests):
         cart.replace_item(self.macaw_blue_fake, Decimal('2.45'))
         cart.replace_item(self.cockatoo_white_a, Decimal('2.45'))
 
-        self._test_status(self.checkout_app.reverse('prepare-order',
-                                                    kwargs={'cart_token':
-                                                            cart.token}),
+        self._test_status(self.checkout_app.reverse('prepare-order'),
                           method='post', client_instance=self.anon_client,
                           status_code=302)
 
@@ -158,9 +144,7 @@ class CheckoutTest(BaseCheckoutAppTests):
         cart.add_item(self.macaw_blue_fake, 100)
 
         # repartition
-        self._test_status(self.checkout_app.reverse('prepare-order',
-                                                    kwargs={'cart_token':
-                                                            cart.token}),
+        self._test_status(self.checkout_app.reverse('prepare-order'),
                           method='post', client_instance=self.anon_client,
                           status_code=302)
         order = self._get_order_from_session(self.anon_client.session)
@@ -173,8 +157,7 @@ class CheckoutTest(BaseCheckoutAppTests):
         cart = self._get_or_create_cart_for_client(self.anon_client)
         cart.replace_item(self.macaw_blue, 1)
         response = self._test_status(
-            self.checkout_app.reverse('prepare-order',
-                                      kwargs={'cart_token': cart.token}),
+            self.checkout_app.reverse('prepare-order'),
             method='post', client_instance=self.anon_client, status_code=302)
         order_pk = self.anon_client.session.get('satchless_order', None)
         order = self.checkout_app.Order.objects.get(pk=order_pk)
@@ -184,19 +167,17 @@ class CheckoutTest(BaseCheckoutAppTests):
                                                                order.token}))
 
     def test_prepare_order_redirects_to_cart_when_cart_is_empty(self):
-        cart = self._get_or_create_cart_for_client(self.anon_client)
+        self._get_or_create_cart_for_client(self.anon_client)
         response = self._test_status(
-            self.checkout_app.reverse('prepare-order',
-                                      kwargs={'cart_token': cart.token}),
+            self.checkout_app.reverse('prepare-order'),
             method='post', client_instance=self.anon_client, status_code=302)
         self.assertRedirects(response, reverse('cart:details'))
 
     def test_prepare_order_redirects_to_checkout_when_order_exists_and_is_not_empty(self):
-        cart = self._get_or_create_cart_for_client(self.anon_client)
+        self._get_or_create_cart_for_client(self.anon_client)
         order = self._create_order(self.anon_client)
         response = self._test_status(
-            self.checkout_app.reverse('prepare-order',
-                                      kwargs={'cart_token': cart.token}),
+            self.checkout_app.reverse('prepare-order'),
             method='post', client_instance=self.anon_client, status_code=302)
         self.assertRedirects(response,
                              self.checkout_app.reverse('checkout',

@@ -31,8 +31,8 @@
                 <td></td>
             </tr>
         {% endif %}
-            {% cartitem_unit_price form.instance as unit_price %}
-            {% cartitem_price form.instance as item_price %}
+            {% cartitem_unit_price form.instance pricing_handler as unit_price %}
+            {% cartitem_price form.instance pricing_handler as item_price %}
             <tr class="item">
                 <td rowspan="2">{{ forloop.counter }}</td>
                 <td rowspan="2">{% promote form.instance.variant as variant %}
@@ -75,20 +75,21 @@
             </tr>
     {% endfor %}
         </tbody>
+        {% cart_total_price cart pricing_handler as cart_total %}
         <tfoot>
             <tr class="total">
                 <th colspan="4" rowspan="2">{% trans "Total" %}:</th>
                 <td class="numerical">
-                    {{ cart.get_total|gross|floatformat:2 }} <span class="currency">{{ cart.currency }}</span><br />
+                    {{ cart_total|gross|floatformat:2 }} <span class="currency">{{ cart.currency }}</span><br />
                 </td>
                 <td colspan="2" rowspan="2"></td>
             </tr>
             <tr>
-                <td class="numerical netPrice">{{ cart.get_total|net|floatformat:2 }} <span class="currency">{{ cart.currency }}</span></td>
+                <td class="numerical netPrice">{{ cart_total|net|floatformat:2 }} <span class="currency">{{ cart.currency }}</span></td>
             </tr>
         </tfoot>
     </table>
-    <form action="{% url checkout:prepare-order cart_token=cart.token %}" method="post">
+    <form action="{% url checkout:prepare-order %}" method="post">
         {% csrf_token %}
         <button type="submit">{% trans "Check out" %}</button>
     </form>

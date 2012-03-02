@@ -108,3 +108,5 @@ class PriceRangeTest(TestCase):
         self.assertEqual(pr.max_price.gross, self.p2.gross*2)
         self.assertEqual(pr.max_price.currency, self.p2.currency)
         self.assertEqual(pr.max_price.tax_name, tax_name)
+
+

@@ -164,10 +164,10 @@ class AppTestCase(ViewsTestCase):
         test_dir = os.path.dirname(__file__)
         self.custom_settings = {
             'SATCHLESS_DEFAULT_CURRENCY': "PLN",
-            'TEMPLATE_DIRS': [os.path.join(test_dir, '..', '..',
+            'TEMPLATE_DIRS': [os.path.join(test_dir, 'templates'),
+                              os.path.join(test_dir, '..', '..',
                                            'category', 'templates'),
-                              os.path.join(test_dir, '..', 'templates'),
-                              os.path.join(test_dir, 'templates')]
+                              os.path.join(test_dir, '..', 'templates')]
         }
         self.original_settings = self._setup_settings(self.custom_settings)
         pricing_handler.pricing_queue = pricing_handler.PricingQueue(FiveZlotyPriceHandler)

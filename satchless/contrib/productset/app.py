@@ -1,17 +1,18 @@
-from django.conf.urls.defaults import patterns, url
 from django.http import HttpResponse
 from django.template.response import TemplateResponse
 from django.shortcuts import get_object_or_404
 
-from ...core.app import SatchlessApp
+from ...core.app import SatchlessApp, view
 from ...product import handler
 from . import models
 
 class ProductSetApp(SatchlessApp):
-    app_name = 'satchless-product-set'
+    app_name = 'product-set'
+    namespace = 'product-set'
     product_set_model = models.ProductSet
 
-    def index_view(self, request, *args, **kwargs):
+    @view(r'^$', name='index')
+    def index(self, request, *args, **kwargs):
         """
         Show all product sets
         """
@@ -20,7 +21,7 @@ class ProductSetApp(SatchlessApp):
             'sets': sets,
         })
 
-
+    @view(r'^(?P<slug>[a-z0-9_-]+)/$', name='details')
     def details_view(self, request, slug):
         """
         Show a list of products with coresponding add-to-cart forms
@@ -34,16 +35,3 @@ class ProductSetApp(SatchlessApp):
         context['productset'] = productset
         return TemplateResponse(request, 'satchless/productset/details.html',
                                 context)
-
-    def get_urls(self, prefix=None):
-        prefix = prefix or 'satchless-productset'
-        return patterns('',
-            url(r'^$',
-                self.index_view,
-                name=prefix),
-            url(r'^(?P<slug>[a-z0-9_-]+)/$',
-                self.details_view,
-                name='%s-details' % (prefix,)),
-        )
-
-productset_app = ProductSetApp()

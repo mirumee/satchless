@@ -8,7 +8,6 @@ from django.test import Client
 
 from .....checkout.tests import BaseCheckoutAppTests
 from .....delivery.tests import TestDeliveryProvider, TestDeliveryType
-from .....order import handler as order_handler
 from .....order.forms import BillingForm
 from .....payment import ConfirmationFormNeeded
 from .....payment.tests import TestPaymentProvider
@@ -28,6 +27,7 @@ class TestPaymentProviderWithConfirmation(TestPaymentProvider):
 class TestSingleStepCheckoutApp(SingleStepCheckoutApp):
     Order = order_app.Order
     Cart = cart_app.Cart
+    cart_type = cart_app.cart_type
     BillingForm = modelform_factory(order_app.Order,
                                     BillingForm)
 
@@ -102,7 +102,7 @@ class App(BaseCheckoutAppTests):
                                                                        order.token}),
                                      client_instance=self.anon_client,
                                      status_code=302, method='post', data=data,
-                                     follow=True)
+                                     follow=False)
 
         order = self.checkout_app.order_model.objects.get(pk=order.pk)
 
@@ -146,7 +146,7 @@ class App(BaseCheckoutAppTests):
                                                                        order.token}),
                                      client_instance=self.anon_client,
                                      status_code=302, method='post', data=data,
-                                     follow=True)
+                                     follow=False)
 
         self._test_status(self.checkout_app.reverse('confirmation',
                                                     kwargs={'order_token':

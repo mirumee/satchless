@@ -116,7 +116,6 @@ class MagicCartApp(CartApp):
     def construct_cart_class(self):
         class Cart(models.Cart):
             pass
-
         return Cart
 
     def construct_cart_item_class(self, cart_class, variant_class):

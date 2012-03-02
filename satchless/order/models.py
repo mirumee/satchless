@@ -9,37 +9,6 @@ from ..pricing import Price
 from ..util import countries
 from ..util.models import DeferredForeignKey
 from . import signals
-from .exceptions import EmptyCart
-
-
-class OrderManager(models.Manager):
-
-    def get_from_cart(self, cart, instance=None):
-        '''
-        Create an order from the user's cart, possibly discarding any previous
-        orders created for this cart.
-        '''
-        from .handler import partitioner_queue
-        if cart.is_empty():
-            raise EmptyCart("Cannot create empty order.")
-        previous_orders = self.filter(cart=cart)
-        if not instance:
-            order = self.model.objects.create(cart=cart, user=cart.owner,
-                                              currency=cart.currency)
-        else:
-            order = instance
-            order.groups.all().delete()
-        groups = filter(None, partitioner_queue.partition(cart))
-        for group in groups:
-            delivery_group = order.create_delivery_group(group)
-            for item in group:
-                ordered_item = order.create_ordered_item(delivery_group, item)
-                ordered_item.save()
-
-        previous_orders = (previous_orders.exclude(pk=order.pk)
-                                          .filter(status='checkout'))
-        previous_orders.delete()
-        return order
 
 
 class Order(models.Model):
@@ -65,7 +34,7 @@ class Order(models.Model):
                                    editable=False, blank=True)
     last_status_change = models.DateTimeField(default=datetime.datetime.now,
                                    editable=False, blank=True)
-    user = models.ForeignKey(User, blank=True, null=True, related_name='orders')
+    user = models.ForeignKey(User, blank=True, null=True, related_name='+')
     currency = models.CharField(max_length=3)
     billing_first_name = models.CharField(_("first name"),
                                           max_length=256, blank=True)
@@ -96,8 +65,6 @@ class Order(models.Model):
                                         decimal_places=4, default=0,
                                         editable=False)
     token = models.CharField(max_length=32, blank=True, default='')
-
-    objects = OrderManager()
 
     class Meta:
         # Use described string to resolve ambiguity of the word 'order' in English.
@@ -151,17 +118,8 @@ class Order(models.Model):
         return self.groups.create(order=self,
                                   require_shipping_address=group.is_shipping)
 
-    def create_ordered_item(self, delivery_group, item):
-        price = item.get_unit_price()
-        variant = item.variant.get_subtype_instance()
-        name = unicode(variant)
-        ordered_item = delivery_group.items.create(delivery_group=delivery_group,
-                                                   product_variant=item.variant,
-                                                   product_name=name,
-                                                   quantity=item.quantity,
-                                                   unit_price_net=price.net,
-                                                   unit_price_gross=price.gross)
-        return ordered_item
+    def is_empty(self):
+        return not self.groups.exists()
 
 
 class DeliveryGroup(models.Model):
@@ -213,13 +171,14 @@ class DeliveryGroup(models.Model):
         return delivery_price + sum([i.price() for i in self.items.all()],
                                     Price(0, currency=self.order.currency))
 
+    def add_item(self, variant, quantity, price, product_name=None):
+        product_name = product_name or unicode(variant)
+        self.items.create(product_variant=variant, quantity=quantity,
+                          unit_price_net=price.net,
+                          unit_price_gross=price.gross)
+
 
 class OrderedItem(models.Model):
-    """
-    add this to your concrete model:
-    delivery_group = models.ForeignKey(DeliveryGroup, related_name='items')
-    """
-
     delivery_group = DeferredForeignKey('delivery_group', related_name='items',
                                         editable=False)
     product_variant = DeferredForeignKey('variant', blank=True, null=True,

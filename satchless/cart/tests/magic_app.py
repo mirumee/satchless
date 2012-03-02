@@ -2,11 +2,9 @@
 from decimal import Decimal
 from django.conf.urls.defaults import patterns, include, url
 from django.contrib.auth.models import User
-from django.http import HttpResponse
 from django.test import Client
 import os
 
-from ...checkout.app import CheckoutApp
 from ...pricing import handler as pricing_handler
 from ...product.tests.pricing import FiveZlotyPriceHandler
 from ...product.tests import (DeadParrot, ZombieParrot, DeadParrotVariantForm,
@@ -14,21 +12,17 @@ from ...product.tests import (DeadParrot, ZombieParrot, DeadParrotVariantForm,
 from ...util.tests import ViewsTestCase
 
 from .. import app
+from . import TestCart, TestCartItem
+
 
 class TestCartApp(app.MagicCartApp):
-    pass
+    app_name = 'test_cart_app'
+    cart_type = 'test_cart_app'
+
+    Cart = TestCart
+    CartItem = TestCartItem
 
 cart_app = TestCartApp(product_app)
-
-class TestCheckoutApp(CheckoutApp):
-
-    Cart = cart_app.Cart
-    Order = object
-    def prepare_order(self, *args, **kwargs):
-        return HttpResponse("OK")
-
-
-checkout_app = TestCheckoutApp()
 
 
 class MagicAppTestCase(ViewsTestCase):
@@ -37,7 +31,6 @@ class MagicAppTestCase(ViewsTestCase):
         urlpatterns = patterns('',
             url(r'^cart/', include(cart_app.urls)),
             url(r'^products/', include(product_app.urls)),
-            url(r'^checkout/', include(checkout_app.urls))
         )
 
     def setUp(self):
@@ -66,7 +59,8 @@ class MagicAppTestCase(ViewsTestCase):
         test_dir = os.path.dirname(__file__)
         self.custom_settings = {
             'SATCHLESS_DEFAULT_CURRENCY': "PLN",
-            'TEMPLATE_DIRS': [os.path.join(test_dir, '..', '..',
+            'TEMPLATE_DIRS': [os.path.join(test_dir, 'templates'),
+                              os.path.join(test_dir, '..', '..',
                                            'category', 'templates'),
                               os.path.join(test_dir, '..', 'templates'),
                               os.path.join(test_dir, 'templates')]
@@ -78,11 +72,11 @@ class MagicAppTestCase(ViewsTestCase):
         self._teardown_settings(self.original_settings,
                                 self.custom_settings)
 
-    def _get_or_create_cart_for_client(self, client=None, typ='cart'):
+    def _get_or_create_cart_for_client(self, client=None):
         client = client or self.client
         self._test_status(cart_app.reverse('details'), client_instance=client)
         cart_token = client.session[cart_app.cart_session_key]
-        return cart_app.Cart.objects.get(token=cart_token, typ=typ)
+        return cart_app.Cart.objects.get(token=cart_token, typ=cart_app.cart_type)
 
     def test_add_to_cart_form_on_product_view(self):
         response = self._test_status(self.macaw.get_absolute_url(),
@@ -103,7 +97,7 @@ class MagicAppTestCase(ViewsTestCase):
                           client_instance=client, status_code=200)
         self._test_status(self.macaw.get_absolute_url(),
                           method='post',
-                          data={'typ': 'cart',
+                          data={'typ': cart_app.cart_type,
                                 'color': self.macaw_blue_fake.color,
                                 'looks_alive': self.macaw_blue_fake.looks_alive,
                                 'quantity': 2},
@@ -163,7 +157,7 @@ class MagicAppTestCase(ViewsTestCase):
         cli_anon = Client()
         response = self._test_status(self.macaw.get_absolute_url(),
                                      method='post',
-                                     data={'typ': 'cart',
+                                     data={'typ': cart_app.cart_type,
                                            'color': 'blue',
                                            'looks_alive': 1,
                                            'quantity': 'alkjl'},

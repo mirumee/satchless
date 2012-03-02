@@ -4,7 +4,7 @@ from django.http import HttpResponse, HttpResponseNotFound
 from django.shortcuts import get_object_or_404
 from django.template.response import TemplateResponse
 
-from ..core.app import SatchlessApp
+from ..core.app import SatchlessApp, view
 
 from . import models
 
@@ -30,6 +30,8 @@ class ProductApp(SatchlessApp):
     def get_product_details_templates(self, product):
         return ['satchless/product/view.html']
 
+    @view(r'^\+(?P<product_pk>[0-9]+)-(?P<product_slug>[a-z0-9_-]+)/$',
+          name='details')
     def product_details(self, request, **kwargs):
         try:
             product = self.get_product(request, **kwargs)
@@ -53,14 +55,6 @@ class ProductApp(SatchlessApp):
             if isinstance(context, HttpResponse):
                 return context
         return context
-
-    def get_urls(self):
-        return patterns('',
-            # '+' predeces product slug to prevent conflicts with categories
-            # paths
-            url(r'^\+(?P<product_pk>[0-9]+)-(?P<product_slug>[a-z0-9_-]+)/$',
-                self.product_details, name='details'),
-        )
 
 
 class MagicProductApp(ProductApp):

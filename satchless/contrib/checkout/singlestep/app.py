@@ -2,6 +2,7 @@ from django.core.exceptions import ImproperlyConfigured
 from django.template.response import TemplateResponse
 
 from ....checkout import app
+from ....core.app import view
 
 class SingleStepCheckoutApp(app.CheckoutApp):
     BillingForm = None
@@ -14,6 +15,7 @@ class SingleStepCheckoutApp(app.CheckoutApp):
         assert self.BillingForm, ('You need to subclass SingleStepCheckoutApp '
                                   'and provide BillingForm')
 
+    @view(r'^(?P<order_token>\w+)/$', name='checkout')
     def checkout(self, request, order_token):
         """
         Checkout step 1 of 1

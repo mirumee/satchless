@@ -1,5 +1,3 @@
-from .category import (Views, Models, CategorizedProductUrlTests,
-                       NonCategorizedProductUrlTests, category_app)
+from .category import (Views, Models, CategorizedProductUrlTests, category_app)
 
-__all__ = ['Views', 'Models', 'CategorizedProductUrlTests',
-           'NonCategorizedProductUrlTests', 'category_app']
+__all__ = ['Views', 'Models', 'CategorizedProductUrlTests', 'category_app']

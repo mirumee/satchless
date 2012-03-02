@@ -6,6 +6,7 @@ Satchless: less is mo'
 
 A shop for perfectionists with deadlines and coding standards.
 
+
 Overview
 ========
 
@@ -42,12 +43,14 @@ it's currently perfectly possible to build a shop on top of it. However, you
 should be prepared for some—sometimes also backward-incompatible—changes to
 the code.
 
+
 Main concepts
 =============
 
 Satchless is not a turn-key solution for online shops and is not meant to be
 one. It should be considered to be a set of advanced, loosely coupled bricks
 which can be turned into a working shop by a *programmer*.
+
 
 The App
 -------
@@ -75,6 +78,7 @@ Summarizing:
 Satchless comes with a number of most important *Apps*. You can use them
 out-of-the-box and/or easily extend or customise their behavior according to
 your requirements:
+
     * **Product app** 
       :ref:`Details` |
       :ref:`Customisation example`
@@ -91,10 +95,83 @@ your requirements:
       :ref:`Details` |
       :ref:`Customisation example`
 
+
+Deferred keys
+-------------
+
+Unfortunately, Django does not provide a pluggable way to say “here we want to
+refer to an external model, unfortunately we don't know *which model* yet”.
+
+There are possible workarounds like declaring a foreign key using the
+`"module.Model"` syntax but we want Satchless to be a library. Thus we will
+never tell you that you absolutely have to call your product model “Eels” and
+keep it in a module named “hovercraft” lest everything falls apart.
+
+Our solution is to introduce a pseudo-field type named `DeferredField`. It comes
+in various flavors like `DeferredForeignKey` and `DeferredManyToManyField` and
+provides an insertion point for a future relation. The relation itself can be
+created by calling `satchless.utils.models.construct()`:
+
+.. code-block:: python
+
+    from django.db import models
+    from satchless.utils.models import construct, DeferredForeignKey
+
+    class AbstractTag(models.Model):
+
+        parent = DeferredForeignKey('parent_model', related_name='tags')
+
+        class Meta:
+            abstract = True
+
+
+    # Later on
+
+
+    class MyModel(models.Model):
+
+        title = models.CharField(max_length=100)
+
+
+    class MyTag(construct(AbstractTag, parent_model=MyModel)):
+
+        pass
+
+Due to how Django works the implementation involves a touch of witchery so
+should you absolutely hate it, you can still reconstruct the field as usual as
+Django remains completely unaware of the deferred fields:
+
+.. code-block:: python
+
+    class MyTag(AbstractTag):
+
+        parent = models.ForeignKey(MyModel, related_name='tags')
+
+
+Magic Apps
+----------
+
+As much as we despise magic we also understand that it's important to provide
+easy means to scaffold a working application. Satchless does not provide any
+concrete models so getting started involved a fair share of work on your part.
+
+To lower the barrier of entry we provide *MagicApps* that will take care of all
+the model creation and let you get your feet wet without the risk of tripping.
+*MagicApps* are flexible enough to allow you to override particular models while
+having the rest of them constructed automatically. Please note however that we
+do not encourage you to use *MagicApps* in a ready product as they are a hack
+at best and subject to various limitations.
+
+One important limitation you should be aware of is that *you can never have
+more than one instance of the same MagicApp in the project*. This is because of
+how Django register models and it's not something we plan to work around.
+
+
 Domain driven models
 --------------------
 
 Main concepts behind Satchless models:
+
     * No *one-fits-all* approach
     * Single python class describes single class of products
 
@@ -113,12 +190,13 @@ extremely inefficient and makes life harder in almost every aspect of further
 development. It is especially true in case of custom, domain-driven e-commerce
 solutions required to deal with millions of products and requests per day.
 
+
 EAV vs Static classes
 ^^^^^^^^^^^^^^^^^^^^^
 
 Let's talk about EAV approach first. It's evil.
 
-When designing Product’s model around the "classic" concept you typically
+When designing Product’s model around the “classic” concept you typically
 use a single Product model, with a ProductClass and an Entity-Attribute-Value
 approach to allow different kinds of products. Theoretically it allows to
 create new kinds of products on the fly ie. via admin panel. Concern the

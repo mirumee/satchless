@@ -30,7 +30,7 @@ category, product and variant.
 
     * **Variant**: When it comes to complex products, which are being sold
       in different sizes, colors, flavors, etc., the variant is what you
-      are looking for. Varians are products with full list of parameters
+      are looking for. Variants are products with full list of parameters
       that describe it. For example, if you sell a *T-shirt with Satchless
       logo*, a variant may describe *Pink men's XL t-shirt with Satchless
       logo*.
@@ -56,6 +56,9 @@ Every product in Satchless has a variant. Simple products may have only one.
     models for managing any real products. It contains only the base classes
     to define your own models of products and their variants. Examples of code
     may be found in ``examples/`` directory.
+
+    For more information on defining your own models of product and their
+    variants refer to the `product tutorial documentation <intro-products>`.
 
 The inside class hierarchy looks like this::
 

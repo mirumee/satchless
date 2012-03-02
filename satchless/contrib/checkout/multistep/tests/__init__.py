@@ -10,6 +10,7 @@ from django.test import Client
 
 from .....checkout.tests import BaseCheckoutAppTests
 from .....contrib.delivery.simplepost.models import PostShippingType
+from .....contrib.order.partitioner.simple import SimplePhysicalPartitioner
 from .....order import handler as order_handler
 from .....order import forms as order_forms
 from .....payment import ConfirmationFormNeeded
@@ -41,6 +42,7 @@ class TestPaymentProviderWithForm(TestPaymentProvider):
 
 class TestCheckoutApp(app.MultiStepCheckoutApp):
     Cart = cart_app.Cart
+    cart_type = cart_app.cart_type
     Order = order_app.Order
 
     BillingForm = modelform_factory(order_app.Order,
@@ -55,13 +57,13 @@ class TestCheckoutApp(app.MultiStepCheckoutApp):
 
 
 class CheckoutTest(BaseCheckoutAppTests):
-    checkout_app = TestCheckoutApp(delivery_providers=[TestDeliveryProvider],
-                                   payment_providers=[TestPaymentProviderWithConfirmation])
+    checkout_app = TestCheckoutApp(
+        delivery_providers=[TestDeliveryProvider],
+        payment_providers=[TestPaymentProviderWithConfirmation],
+        partitioners=[SimplePhysicalPartitioner])
     urls = BaseCheckoutAppTests.MockUrls(checkout_app=checkout_app)
 
     def setUp(self):
-        self.checkout_app.cart_model = cart_app.Cart
-        self.checkout_app.order_model = order_app.Order
         self.macaw = DeadParrot.objects.create(slug='macaw',
                 species="Hyacinth Macaw")
         self.cockatoo = DeadParrot.objects.create(slug='cockatoo',
@@ -100,9 +102,6 @@ class CheckoutTest(BaseCheckoutAppTests):
         self.original_settings = self._setup_settings(self.custom_settings)
         self.anon_client = Client()
 
-        order_handler.partitioner_queue = order_handler.PartitionerQueue(
-            'satchless.contrib.order.partitioner.simple.SimplePhysicalPartitioner')
-
         PostShippingType.objects.create(price=12, typ='polecony',
                                         name='list polecony')
         PostShippingType.objects.create(price=20, typ='list',
@@ -135,7 +134,7 @@ class CheckoutTest(BaseCheckoutAppTests):
         self.assertEqual(set(cart.items.values_list('variant', 'quantity')),
                          order_items)
 
-    def test_order_is_updated_after_cart_changes(self):
+    def test_partitioned_correctly_after_cart_changes(self):
         cart = self._get_or_create_cart_for_client(self.anon_client)
 
         cart.replace_item(self.macaw_blue, 1)
@@ -157,17 +156,14 @@ class CheckoutTest(BaseCheckoutAppTests):
         # update cart
         cart.add_item(self.macaw_blue, 100)
         cart.add_item(self.macaw_blue_fake, 100)
+
+        # repartition
         self._test_status(self.checkout_app.reverse('prepare-order',
                                                     kwargs={'cart_token':
                                                             cart.token}),
                           method='post', client_instance=self.anon_client,
                           status_code=302)
-
-        old_order = order
         order = self._get_order_from_session(self.anon_client.session)
-        # order should be reused
-        self.assertEqual(old_order.pk, order.pk)
-        self.assertNotEqual(order, None)
         order_items = self._get_order_items(order)
         # compare cart and order
         self.assertEqual(set(cart.items.values_list('variant', 'quantity')),
@@ -181,7 +177,7 @@ class CheckoutTest(BaseCheckoutAppTests):
                                       kwargs={'cart_token': cart.token}),
             method='post', client_instance=self.anon_client, status_code=302)
         order_pk = self.anon_client.session.get('satchless_order', None)
-        order = self.checkout_app.order_model.objects.get(pk=order_pk)
+        order = self.checkout_app.Order.objects.get(pk=order_pk)
         self.assertRedirects(response,
                              self.checkout_app.reverse('checkout',
                                                        kwargs={'order_token':
@@ -195,7 +191,7 @@ class CheckoutTest(BaseCheckoutAppTests):
             method='post', client_instance=self.anon_client, status_code=302)
         self.assertRedirects(response, reverse('cart:details'))
 
-    def test_prepare_order_redirects_to_checkout_when_order_exists(self):
+    def test_prepare_order_redirects_to_checkout_when_order_exists_and_is_not_empty(self):
         cart = self._get_or_create_cart_for_client(self.anon_client)
         order = self._create_order(self.anon_client)
         response = self._test_status(
@@ -206,16 +202,6 @@ class CheckoutTest(BaseCheckoutAppTests):
                              self.checkout_app.reverse('checkout',
                                                        kwargs={'order_token':
                                                                order.token}))
-
-    def test_order_is_deleted_when_all_cart_items_are_deleted(self):
-        order = self._create_order(self.anon_client)
-        for cart_item in order.cart.get_all_items():
-            self.assertTrue(
-                self.checkout_app.order_model.objects.filter(pk=order.pk)
-                                                     .exists())
-            order.cart.replace_item(cart_item.variant, 0)
-        self.assertFalse(
-            self.checkout_app.order_model.objects.filter(pk=order.pk).exists())
 
     def test_delivery_method_view(self):
         order = self._create_order(self.anon_client)
@@ -426,5 +412,5 @@ class CheckoutTest(BaseCheckoutAppTests):
                                   client_instance=self.anon_client,
                                   method='post')
         self.assertEqual(
-            self.checkout_app.order_model.objects.get(pk=order.pk).status,
+            self.checkout_app.Order.objects.get(pk=order.pk).status,
             'checkout')

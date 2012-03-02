@@ -7,18 +7,47 @@ from django.conf.urls.defaults import patterns, include, url
 from django.conf import settings
 from django.test import Client
 
+from . import models
 from .app import MagicOrderApp
+from ..checkout.app import CheckoutApp
 from ..cart.tests import cart_app
 from ..pricing import handler
 from ..product.tests import DeadParrot
 from ..product.tests.pricing import FiveZlotyPriceHandler
+from ..util.models import construct
 from ..util.tests import ViewsTestCase
 
-class TestOrderApp(MagicOrderApp):
+
+class TestOrder(construct(models.Order, cart=cart_app.Cart)):
     pass
 
 
+class TestDeliveryGroup(construct(models.DeliveryGroup,
+                                  order=TestOrder)):
+    pass
+
+
+class TestOrderedItem(construct(models.OrderedItem,
+                                delivery_group=TestDeliveryGroup,
+                                variant=cart_app.product_app.Variant)):
+    pass
+
+
+class TestOrderApp(MagicOrderApp):
+
+    Order = TestOrder
+    DeliveryGroup = TestDeliveryGroup
+    OrderedItem = TestOrderedItem
+
 order_app = TestOrderApp(cart_app=cart_app)
+
+
+class TestCheckoutApp(CheckoutApp):
+
+    Order = order_app.Order
+    Cart = cart_app.Cart
+
+checkout_app = TestCheckoutApp()
 
 
 class OrderTest(ViewsTestCase):
@@ -60,21 +89,18 @@ class OrderTest(ViewsTestCase):
         self._teardown_settings(self.original_settings,
                                 self.custom_settings)
 
-    def test_order_is_updated_when_cart_content_changes(self):
+    def test_order_content_is_deleted_when_cart_content_changes(self):
         cart = cart_app.Cart.objects.create(typ='satchless.test_cart')
         cart.replace_item(self.macaw_blue, 1)
 
-        order = order_app.Order.objects.get_from_cart(cart)
+        order = checkout_app.Order.objects.create(cart=cart, user=cart.owner,
+                                                  currency=cart.currency)
+        order = checkout_app.partition_cart(cart, order)
 
         cart.replace_item(self.macaw_blue_fake, Decimal('2.45'))
         cart.replace_item(self.cockatoo_white_a, Decimal('2.45'))
 
-        order_items = set()
-        for group in order.groups.all():
-            order_items.update(group.items.values_list('product_variant',
-                                                       'quantity'))
-        self.assertEqual(set(cart.items.values_list('variant', 'quantity')),
-                         order_items)
+        self.assertTrue(order.is_empty())
 
     def test_order_view(self):
         cart = cart_app.Cart.objects.create(typ='satchless.test_cart')
@@ -82,7 +108,9 @@ class OrderTest(ViewsTestCase):
         cart.replace_item(self.macaw_blue_fake, Decimal('2.45'))
         cart.replace_item(self.cockatoo_white_a, Decimal('2.45'))
 
-        order = order_app.Order.objects.get_from_cart(cart)
+        order = checkout_app.Order.objects.create(cart=cart, user=cart.owner,
+                                                  currency=cart.currency)
+        order = checkout_app.partition_cart(cart, order)
         self._test_GET_status(order_app.reverse('details',
                                                 args=(order.token,)))
 

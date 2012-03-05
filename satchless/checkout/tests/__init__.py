@@ -52,7 +52,7 @@ class BaseCheckoutAppTests(ViewsTestCase):
         self._test_status(
             self.checkout_app.reverse('prepare-order'),
             method='post', client_instance=client, status_code=302)
-        order_pk = client.session.get('satchless_order', None)
+        order_pk = client.session.get(self.checkout_app.order_session_key, None)
         return self.checkout_app.Order.objects.get(pk=order_pk)
 
     def _create_order(self, client):
@@ -63,7 +63,7 @@ class BaseCheckoutAppTests(ViewsTestCase):
         return self._get_order_from_session(client.session)
 
     def _get_order_from_session(self, session):
-        order_pk = session.get('satchless_order', None)
+        order_pk = session.get(self.checkout_app.order_session_key, None)
         if order_pk:
             return self.checkout_app.Order.objects.get(pk=order_pk)
         return None

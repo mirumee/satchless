@@ -159,7 +159,7 @@ class CheckoutTestCase(BaseCheckoutAppTests):
         response = self._test_status(
             self.checkout_app.reverse('prepare-order'),
             method='post', client_instance=self.anon_client, status_code=302)
-        order_pk = self.anon_client.session.get('satchless_order', None)
+        order_pk = self.anon_client.session.get(self.checkout_app.order_session_key, None)
         order = self.checkout_app.Order.objects.get(pk=order_pk)
         self.assertRedirects(response,
                              self.checkout_app.reverse('checkout',

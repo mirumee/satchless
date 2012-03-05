@@ -14,6 +14,7 @@ class CheckoutApp(SatchlessApp):
 
     app_name = 'checkout'
     namespace = 'checkout'
+    order_session_key = 'checkout-order'
     Order = None
     confirmation_templates = [
         'satchless/checkout/confirmation.html',
@@ -38,9 +39,8 @@ class CheckoutApp(SatchlessApp):
         assert self.Order, ('You need to subclass CheckoutApp and provide Order')
 
     def get_order(self, request, order_token):
-        user = request.user if request.user.is_authenticated() else None
         try:
-            return self.Order.objects.get(token=order_token, user=user)
+            return self.Order.objects.get(token=order_token)
         except self.Order.DoesNotExist:
             return
 
@@ -78,28 +78,27 @@ class CheckoutApp(SatchlessApp):
         previous_orders.delete()
         return order
 
-    @view(r'^prepare/$', name='prepare-order')
+    @view(r'^prepare-order/$', name='prepare-order')
     @method_decorator(require_POST)
     def prepare_order(self, request):
         cart = self.cart_app.get_cart_for_request(request)
         if cart.is_empty():
             return self.cart_app.redirect('details')
 
-        order_pk = request.session.get('satchless_order')
-        try:
-            order = self.Order.objects.get(pk=order_pk, cart=cart,
-                                           status='checkout')
-        except self.Order.DoesNotExist:
+        order_pk = request.session.get(self.order_session_key)
+        order = None
+        if order_pk:
+            try:
+                order = self.Order.objects.get(pk=order_pk, cart=cart,
+                                               status='checkout')
+            except self.Order.DoesNotExist:
+                pass
+        if not order or order.is_empty():
             order = self.get_order_from_cart(request, cart)
-        else:
-            if order.is_empty():
-                order = self.get_order_from_cart(request, cart, order)
-        if request.user.is_authenticated():
-            if order.user != request.user:
-                order.user = request.user
-                order.save()
-
-        request.session['satchless_order'] = order.pk
+        if request.user.is_authenticated() and order.user != request.user:
+            order.user = request.user
+            order.save()
+        request.session[self.order_session_key] = order.pk
         return self.redirect('checkout', order_token=order.token)
 
     @view(r'^(?P<order_token>\w+)/reactivate/$', name='reactivate-order')

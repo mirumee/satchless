@@ -6,12 +6,13 @@ from django.core.urlresolvers import reverse
 from django.http import HttpResponse
 from django.test import Client
 
+from ..app import CheckoutApp
 from ...cart.tests import cart_app
+from ...core.app import view
 from ...order.tests import order_app
 from ...product.tests import DeadParrot
 from ...util.tests import ViewsTestCase
 
-from ..app import CheckoutApp
 
 class BaseCheckoutAppTests(ViewsTestCase):
     class MockUrls:
@@ -79,6 +80,7 @@ class MockCheckoutApp(CheckoutApp):
 
     Order = order_app.Order
 
+    @view(r'^(?P<order_token>\w+)/$', name='checkout')
     def checkout(self, *args, **kwargs):
         return HttpResponse()
 

@@ -10,11 +10,7 @@ from ..app import MagicCategorizedProductApp
 __all__ = ['Views', 'Models', 'CategorizedProductUrlTests',
            'NonCategorizedProductUrlTests']
 
-
-class TestCategorizedProductApp(MagicCategorizedProductApp):
-    allow_uncategorized_product_urls = False
-
-category_app = TestCategorizedProductApp()
+category_app = MagicCategorizedProductApp()
 
 
 class urls:
@@ -158,50 +154,3 @@ class CategorizedProductUrlTests(TestCase):
     def test_product_url(self):
         """Products not in a Category should raise an exception."""
         self.assertRaises(NoReverseMatch, self.parrot_macaw.get_absolute_url)
-
-
-class CategorizedProductAppWithOrphans(MagicCategorizedProductApp):
-    """A CategorizedProductApp that allows Products not in Categories"""
-
-    allow_uncategorized_product_urls = True
-
-
-class NonCategorizedProductUrlTests(TestCase):
-    """Urls include satchless-product-details"""
-
-    class urls:
-        urlpatterns = patterns('',
-            url(r'^products/',
-                include(CategorizedProductAppWithOrphans().urls)),
-        )
-
-    def setUp(self):
-        self.animals = category_app.Category.objects.create(slug='animals',
-                                                            name=u'Animals')
-        self.birds = category_app.Category.objects.create(slug='birds',
-                                                          name=u'Birds',
-                                                          parent=self.animals)
-        self.parrots = category_app.Category.objects.create(slug='parrots',
-                                                            name=u'Parrorts',
-                                                            parent=self.birds)
-        self.parrot_macaw = category_app.Product.objects.create(slug='macaw')
-
-    def test_categorised_product_url(self):
-        self.animals.products.add(self.parrot_macaw)
-        self.assertTrue('/products/animals/+macaw/' in
-                        self.parrot_macaw.get_absolute_url())
-
-    def test_second_tier_categorised_product_url(self):
-        self.birds.products.add(self.parrot_macaw)
-        self.assertTrue('/products/animals/birds/+macaw/' in
-                        self.parrot_macaw.get_absolute_url())
-
-    def test_third_tier_categorised_product_url(self):
-        self.parrots.products.add(self.parrot_macaw)
-        self.assertTrue('/products/animals/birds/parrots/+macaw/' in
-                        self.parrot_macaw.get_absolute_url())
-
-    def test_product_url(self):
-        """Products not in a Category should have a url."""
-        self.assertTrue('/products/+1-macaw/' in
-                        self.parrot_macaw.get_absolute_url())

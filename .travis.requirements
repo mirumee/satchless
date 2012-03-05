@@ -1,0 +1,6 @@
+django-authorizenet>=1.0
+django-nose==0.1.3
+-e git+git://github.com/mirumee/django-payments.git#egg=django-payments
+-e git+git://github.com/emesik/mamona.git#egg=mamona
+stripe
+unidecode

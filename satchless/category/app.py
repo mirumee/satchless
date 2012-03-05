@@ -1,8 +1,8 @@
-from django.conf.urls.defaults import patterns, url
 from django.http import Http404
 from django.http import HttpResponseNotFound
 from django.template.response import TemplateResponse
 
+from ..core.app import view
 from ..product import app
 from ..product import models as product_models
 from ..util.models import construct
@@ -20,7 +20,6 @@ class CategorizedProductApp(app.ProductApp):
         'satchless/category/%(category_model)s/list.html',
         'satchless/category/list.html',
     ]
-    allow_uncategorized_product_urls = False
 
     def __init__(self, *args, **kwargs):
         super(CategorizedProductApp, self).__init__(*args, **kwargs)
@@ -45,6 +44,7 @@ class CategorizedProductApp(app.ProductApp):
             return list(path) + [leaf]
         raise self.Category.DoesNotExist
 
+    @view(r'^$', name='category-index')
     def category_list(self, request):
         context = self.get_context_data(request)
         format_data = {
@@ -53,6 +53,10 @@ class CategorizedProductApp(app.ProductApp):
         templates = [p % format_data for p in self.category_list_templates]
         return TemplateResponse(request, templates, context)
 
+    @view(r'^(?P<category_slug>[a-z0-9_-]+)/$', name='category-details',
+          kwargs={'parent_slugs': ''})
+    @view(r'^(?P<parent_slugs>([a-z0-9_-]+/)*)(?P<category_slug>[a-z0-9_-]+)/$',
+          name='category-details')
     def category_details(self, request, parent_slugs, category_slug):
         slugs = filter(None, parent_slugs.split('/') + [category_slug])
         try:
@@ -66,6 +70,12 @@ class CategorizedProductApp(app.ProductApp):
         }
         templates = [p % format_data for p in self.category_details_templates]
         return TemplateResponse(request, templates, context)
+
+    @view(r'^(?P<category_slugs>([a-z0-9_-]+/)+)\+(?P<product_slug>[a-z0-9_-]+)/$',
+          name='details')
+    def product_details(self, request, **kwargs):
+        return super(CategorizedProductApp, self).product_details(request,
+                                                                  **kwargs)
 
     def get_context_data(self, request, product=None, **kwargs):
         categories = self.Category.objects.filter(parent__isnull=True)
@@ -95,25 +105,6 @@ class CategorizedProductApp(app.ProductApp):
         product = products[0].get_subtype_instance()
         product.category_path = path
         return product
-
-    def get_urls(self):
-        url_patterns = patterns('',
-            # '+' predeces product slug to prevent conflicts with categories
-            # paths
-            url(r'^$', self.category_list,
-                name='category-index'),
-            # this url simplifies url templatetag usage ({% url slug %} instead of {% url '' slug %})
-            url(r'^(?P<category_slug>[a-z0-9_-]+)/$',
-                self.category_details, name='category-details',
-                kwargs={'parent_slugs': ''}),
-            url(r'^(?P<parent_slugs>([a-z0-9_-]+/)*)(?P<category_slug>[a-z0-9_-]+)/$',
-                self.category_details, name='category-details'),
-            url(r'^(?P<category_slugs>([a-z0-9_-]+/)+)\+(?P<product_slug>[a-z0-9_-]+)/$',
-                self.product_details, name='details'),
-        )
-        if self.allow_uncategorized_product_urls:
-            url_patterns += super(CategorizedProductApp, self).get_urls()
-        return url_patterns
 
 
 class MagicCategorizedProductApp(CategorizedProductApp, app.MagicProductApp):

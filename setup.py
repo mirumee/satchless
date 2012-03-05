@@ -29,7 +29,8 @@ REQUIREMENTS = [
 
 EXTRAS = {
     'authorize.net payment provider': [
-        'django-authorizenet >= 1.0'
+        'django-authorizenet >= 1.0',
+        'unidecode'
     ],
     'django-payments payment provider': [
         'django-payments'

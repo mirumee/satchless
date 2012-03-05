@@ -1,4 +1,3 @@
-from django.conf.urls.defaults import patterns, url
 from django.conf import settings
 from django.db.models import Q
 from django.shortcuts import redirect
@@ -6,10 +5,10 @@ from django.template.response import TemplateResponse
 from django.utils.decorators import method_decorator
 from django.views.decorators.http import require_POST
 
+from ..core.app import SatchlessApp, view
 from ..order import handler
 from ..order.signals import order_pre_confirm
 from ..payment import PaymentFailure, ConfirmationFormNeeded
-from ..core.app import SatchlessApp
 
 class CheckoutApp(SatchlessApp):
 
@@ -79,6 +78,7 @@ class CheckoutApp(SatchlessApp):
         previous_orders.delete()
         return order
 
+    @view(r'^prepare/$', name='prepare-order')
     @method_decorator(require_POST)
     def prepare_order(self, request):
         cart = self.cart_app.get_cart_for_request(request)
@@ -102,6 +102,7 @@ class CheckoutApp(SatchlessApp):
         request.session['satchless_order'] = order.pk
         return self.redirect('checkout', order_token=order.token)
 
+    @view(r'^(?P<order_token>\w+)/reactivate/$', name='reactivate-order')
     @method_decorator(require_POST)
     def reactivate_order(self, request, order_token):
         order = self.get_order(request, order_token)
@@ -110,9 +111,7 @@ class CheckoutApp(SatchlessApp):
         order.set_status('checkout')
         return self.redirect('checkout', order_token=order.token)
 
-    def checkout(self, request, order_token):
-        raise NotImplementedError()
-
+    @view(r'^(?P<order_token>\w+)/confirmation/$', name='confirmation')
     def confirmation(self, request, order_token):
         """
         Checkout confirmation
@@ -137,17 +136,3 @@ class CheckoutApp(SatchlessApp):
         else:
             order.set_status('payment-complete')
         return redirect('order:details', order_token=order.token)
-
-    def get_urls(self):
-        return patterns('',
-            url(r'^prepare/$', self.prepare_order,
-                name='prepare-order'),
-            url(r'^(?P<order_token>\w+)/$', self.checkout,
-                name='checkout'),
-            url(r'^(?P<order_token>\w+)/confirmation/$', self.confirmation,
-                name='confirmation'),
-            url(r'^(?P<order_token>\w+)/reactivate/$', self.reactivate_order,
-                name='reactivate-order'),
-        )
-
-

@@ -43,8 +43,8 @@ $(function() {
             </span>
             <h3>{{ product.name }}</h3>
             <div class="price">
-                {% product_price_range product as price_range %}
-                {% product_price_range product discount=0 as undiscounted_price_range %}
+                {% product_price_range product pricing_handler as price_range %}
+                {% product_price_range product pricing_handler discount=0 as undiscounted_price_range %}
                 {% if price_range.min != undiscounted_price_range.min %}
                         <span class="strike">{{ undiscounted_price_range.min|gross|floatformat:2 }}</span>
                 {% endif %}

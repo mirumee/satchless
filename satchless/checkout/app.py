@@ -12,6 +12,7 @@ from ..payment import PaymentFailure, ConfirmationFormNeeded
 from ..core.app import SatchlessApp
 
 class CheckoutApp(SatchlessApp):
+
     app_name = 'checkout'
     namespace = 'checkout'
     Order = None

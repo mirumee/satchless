@@ -35,6 +35,14 @@ class DeliveryProvider(object):
         '''
         return None
 
+    def get_configuration_forms_for_groups(self, delivery_groups, data):
+        delivery_group_forms = []
+        delivery_types = dict((dt.typ, dt) for dt in self.enum_types())
+        for group in delivery_groups:
+            form = self.get_configuration_form(group, data)
+            delivery_group_forms.append((group, delivery_types[group.delivery_type], form))
+        return delivery_group_forms
+
     def save(self, delivery_group, form):
         '''
         Take a valid form instance if any and creates a DeliveryVariant instance.

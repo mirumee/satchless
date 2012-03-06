@@ -1,4 +1,5 @@
 from django.conf import settings
+from django.core.exceptions import ImproperlyConfigured
 from django.db.models import Q
 from django.shortcuts import redirect
 from django.template.response import TemplateResponse
@@ -9,6 +10,7 @@ from ..core.app import SatchlessApp, view
 from ..order import handler
 from ..order.signals import order_pre_confirm
 from ..payment import PaymentFailure, ConfirmationFormNeeded
+from ..contrib.order.partitioner.simple import SimplePartitioner
 
 class CheckoutApp(SatchlessApp):
 
@@ -22,18 +24,15 @@ class CheckoutApp(SatchlessApp):
 
     def __init__(self, cart_app, *args, **kwargs):
         self.cart_app = cart_app
-        delivery_providers = kwargs.pop('delivery_providers',
-                                        getattr(settings, 'SATCHLESS_DELIVERY_PROVIDERS', []))
-        self.delivery_queue = handler.DeliveryQueue(*delivery_providers)
+        self.delivery_queue = kwargs.pop('delivery_provider',
+            handler.DeliveryQueue(*getattr(settings, 'SATCHLESS_DELIVERY_PROVIDERS', [])))
 
-        payment_providers = kwargs.pop('payment_providers',
-                                        getattr(settings, 'SATCHLESS_PAYMENT_PROVIDERS', []))
-        self.payment_queue = handler.PaymentQueue(*payment_providers)
+        self.payment_queue = kwargs.pop('payment_provider',
+            handler.PaymentQueue(*getattr(settings, 'SATCHLESS_PAYMENT_PROVIDERS', [])))
 
-        partitioners = kwargs.pop(
-            'partitioners', getattr(settings, 'SATCHLESS_ORDER_PARTITIONERS',
-                ['satchless.contrib.order.partitioner.simple.SimplePartitioner']))
-        self.delivery_partitioner = handler.PartitionerQueue(*partitioners)
+        self.delivery_partitioner = kwargs.pop('delivery_partitioner',
+            handler.PartitionerQueue(*getattr(settings, 'SATCHLESS_ORDER_PARTITIONERS',
+                                              [SimplePartitioner])))
 
         super(CheckoutApp, self).__init__(*args, **kwargs)
         assert self.Order, ('You need to subclass CheckoutApp and provide Order')
@@ -56,15 +55,18 @@ class CheckoutApp(SatchlessApp):
         return redirect('order:details', order_token=order.token)
 
     def partition_cart(self, cart, order, **pricing_context):
-        groups = filter(None, self.delivery_partitioner.partition(cart))
-        for group in groups:
-            delivery_group = order.create_delivery_group(group)
-            for cartitem in group:
+        delivery_groups, remaining_items = self.delivery_partitioner.partition(
+            cart, cart.get_all_items())
+        if remaining_items:
+            raise ImproperlyConfigured('Unhandled items remaining in cart.')
+        for delivery_group in filter(None, delivery_groups):
+            order_delivery_group = order.create_delivery_group(delivery_group)
+            for cartitem in delivery_group:
                 price = self.cart_app.pricing_handler.get_variant_price(
                     cartitem.variant.get_subtype_instance(), currency=cart.currency,
                     quantity=cartitem.quantity, cart=cartitem.cart,
                     cartitem=cartitem, **pricing_context)
-                delivery_group.add_item(cartitem.variant, cartitem.quantity, price)
+                order_delivery_group.add_item(cartitem.variant, cartitem.quantity, price)
 
     def get_order_from_cart(self, request, cart, order=None):
         if not order:

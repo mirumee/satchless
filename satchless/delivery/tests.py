@@ -41,7 +41,7 @@ class TestDeliveryProvider(DeliveryProvider):
         typ = typ or delivery_group.delivery_type
         try:
             delivery_type = TestDeliveryType.objects.get(typ=typ)
-        except TestDeliveryType.DoesNotExists:
+        except TestDeliveryType.DoesNotExist:
             raise ValueError('Unable to find a delivery type: %s' %
                              (typ, ))
 
@@ -51,12 +51,13 @@ class TestDeliveryProvider(DeliveryProvider):
             return TestDeliveryDetailsForm(data or None, instance=instance)
 
     def save(self, delivery_group, form=None, typ=None):
+        typ = typ or delivery_group.delivery_type
         if form:
             form.save()
         else:
             try:
                 delivery_type = TestDeliveryType.objects.get(typ=typ)
-            except TestDeliveryType.DoesNotExists:
+            except TestDeliveryType.DoesNotExist:
                 raise ValueError('Unable to find a delivery type: %s' %
                                  (typ, ))
             TestDeliveryVariant.objects.create(

@@ -53,9 +53,9 @@ class TestCheckoutApp(app.MultiStepCheckoutApp):
 class CheckoutTestCase(BaseCheckoutAppTests):
     checkout_app = TestCheckoutApp(
         cart_app=cart_app,
-        delivery_providers=[TestDeliveryProvider],
-        payment_providers=[TestPaymentProviderWithConfirmation],
-        partitioners=[SimplePhysicalPartitioner])
+        delivery_provider=TestDeliveryProvider(),
+        payment_provider=TestPaymentProviderWithConfirmation(),
+        delivery_partitioner=SimplePhysicalPartitioner())
     urls = BaseCheckoutAppTests.MockUrls(checkout_app=checkout_app)
 
     def setUp(self):

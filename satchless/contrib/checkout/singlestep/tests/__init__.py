@@ -30,8 +30,8 @@ class TestSingleStepCheckoutApp(SingleStepCheckoutApp):
                                     BillingForm)
 
 checkout_app = TestSingleStepCheckoutApp(cart_app=cart_app,
-                                         delivery_providers=[TestDeliveryProvider],
-                                         payment_providers=[TestPaymentProviderWithConfirmation])
+                                         delivery_provider=TestDeliveryProvider(),
+                                         payment_provider=TestPaymentProviderWithConfirmation())
 
 
 class App(BaseCheckoutAppTests):

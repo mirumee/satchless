@@ -7,6 +7,7 @@ from ....core.app import view
 from ....order import forms
 
 class MultiStepCheckoutApp(app.CheckoutApp):
+
     checkout_templates = [
         'satchless/checkout/checkout.html'
     ]

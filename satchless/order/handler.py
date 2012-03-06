@@ -1,6 +1,3 @@
-from django.conf import settings
-from django.core.exceptions import ImproperlyConfigured
-
 from satchless.core.handler import QueueHandler
 
 from ..delivery import DeliveryProvider, DeliveryType
@@ -11,22 +8,14 @@ from . import Partitioner
 class PartitionerQueue(Partitioner, QueueHandler):
     element_class = Partitioner
 
-    def partition(self, cart, items=None):
+    def partition(self, cart, items):
         groups = []
         remaining_items = items or list(cart.get_all_items())
         for handler in self.queue:
             handled_groups, remaining_items = handler.partition(cart,
                                                                 remaining_items)
             groups += handled_groups
-        if remaining_items:
-            raise ImproperlyConfigured('Unhandled items remaining in cart.')
-        return groups
-
-
-partitioners = getattr(settings, 'SATCHLESS_ORDER_PARTITIONERS', [
-    'satchless.contrib.order.partitioner.simple.SimplePartitioner',
-])
-partitioner_queue = PartitionerQueue(*partitioners)
+        return groups, remaining_items
 
 
 ### PAYMENT PROVIDERS
@@ -93,14 +82,6 @@ class DeliveryQueue(DeliveryProvider, QueueHandler):
         provider = self._get_provider(delivery_group, typ)
         return provider.get_configuration_form(delivery_group=delivery_group,
                                                data=data, typ=typ)
-
-    def get_configuration_forms_for_groups(self, delivery_groups, data):
-        delivery_group_forms = []
-        delivery_types = dict((dt.typ, dt) for dt in self.enum_types())
-        for group in delivery_groups:
-            form = self.get_configuration_form(group, data)
-            delivery_group_forms.append((group, delivery_types[group.delivery_type], form))
-        return delivery_group_forms
 
     def save(self, delivery_group, form, typ=None):
         typ = typ or delivery_group.delivery_type

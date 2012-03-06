@@ -12,8 +12,7 @@ class SimplePartitioner(Partitioner):
 
     def partition(self, cart, items):
         handled_groups = [Partition(list(items), shipping=self.shipping)]
-        remaining_items = ()
-        return handled_groups, remaining_items
+        return handled_groups, ()
 
 
 class SimplePhysicalPartitioner(SimplePartitioner):

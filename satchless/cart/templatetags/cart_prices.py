@@ -31,7 +31,7 @@ class CartTotalPriceNode(BasePriceNode):
         get_variant_price = lambda cart_item: pricing_handler.get_variant_price(
             quantity=cart_item.quantity, currency=currency,
             variant=cart_item.variant.get_subtype_instance(), **kwargs)
-        return sum([get_variant_price(i) for i in cart.get_all_items()],
+        return sum([get_variant_price(ci)*ci.quantity for ci in cart.get_all_items()],
                     Price(0, currency=currency))
 
 @register.tag

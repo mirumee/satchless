@@ -5,12 +5,10 @@ from decimal import Decimal
 from django.conf.urls.defaults import patterns, include, url
 from django.core.exceptions import ObjectDoesNotExist
 import django.forms
-from django.http import HttpResponse
 
 from .. import app
 from .. import forms
-from ...checkout.app import CheckoutApp
-from ...pricing import handler as pricing_handler, Price
+from ...pricing import handler as Price
 from ...product.app import ProductApp
 from ...product.tests.pricing import FiveZlotyPriceHandler
 from ...util.tests import ViewsTestCase
@@ -139,7 +137,7 @@ class TestCartApp(app.CartApp):
 
 
 product_app = TestProductApp()
-cart_app = TestCartApp(pricing_handler=FiveZlotyPriceHandler)
+cart_app = TestCartApp(pricing_handler=FiveZlotyPriceHandler())
 
 class AppTestCase(ViewsTestCase):
 

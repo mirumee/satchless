@@ -12,19 +12,21 @@ from satchless.contrib.pricing.simpleqty.models import (ProductPriceMixin,
 from satchless.contrib.tax.flatgroups.models import TaxedProductMixin
 from satchless.contrib.stock.singlestore.models import VariantStockLevelMixin
 import satchless.product.models
+from satchless.utils.models import construct
 
 from categories.models import Category
 from sale.models import DiscountedProduct
 
 
-class Product(ProductPriceMixin, TaxedProductMixin, CategorizedProductMixin,
+class Product(ProductPriceMixin, TaxedProductMixin,
+              construct(CategorizedProductMixin, category=Category),
               DiscountedProduct, satchless.product.models.Product):
-    categories = models.ManyToManyField(Category,
-                                        related_name='products',
-                                        blank=True)
+
+    pass
 
 
 class Variant(VariantPriceOffsetMixin, VariantStockLevelMixin, satchless.product.models.Variant):
+
     pass
 
 

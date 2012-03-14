@@ -37,7 +37,7 @@ class PaymentQueue(PaymentProvider, QueueHandler):
             if payment_type.typ == typ:
                 return payment_type.provider
         raise ValueError('Unable to find a payment provider for type %s' %
-                         (typ, ))
+                         (typ,))
 
     def get_configuration_form(self, order, data, typ=None):
         typ = typ or order.payment_type

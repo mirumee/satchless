@@ -23,7 +23,8 @@ class AuthorizeNetProvider(PaymentProvider):
 
     def save(self, order, typ, form):
         order.payment_price = 0
-        order.payment_type_name = typ.name
+        payment_type = next(t for t in self.enum_types() if t.typ == typ)
+        order.payment_type_name = payment_type.name
         order.save()
         form.save()
 

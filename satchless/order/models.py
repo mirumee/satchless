@@ -165,9 +165,9 @@ class DeliveryGroup(models.Model):
 
     def add_item(self, variant, quantity, price, product_name=None):
         product_name = product_name or unicode(variant)
-        self.items.create(product_variant=variant, quantity=quantity,
-                          unit_price_net=price.net, product_name=product_name,
-                          unit_price_gross=price.gross)
+        return self.items.create(product_variant=variant, quantity=quantity,
+                                 unit_price_net=price.net, product_name=product_name,
+                                 unit_price_gross=price.gross)
 
 
 class OrderedItem(models.Model):

@@ -8,7 +8,6 @@ from django.forms.models import modelform_factory
 
 class CheckoutApp(app.MultiStepCheckoutApp):
 
-    Cart = cart_app.Cart
     Order = order_app.Order
 
     BillingForm = modelform_factory(order_app.Order,
@@ -20,4 +19,4 @@ class CheckoutApp(app.MultiStepCheckoutApp):
                                            form=forms.DeliveryMethodForm,
                                            fields=forms.DeliveryMethodForm._meta.fields)
 
-checkout_app = CheckoutApp()
+checkout_app = CheckoutApp(cart_app)

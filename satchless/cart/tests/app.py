@@ -5,12 +5,10 @@ from decimal import Decimal
 from django.conf.urls.defaults import patterns, include, url
 from django.core.exceptions import ObjectDoesNotExist
 import django.forms
-from django.http import HttpResponse
 
 from .. import app
 from .. import forms
-from ...checkout.app import CheckoutApp
-from ...pricing import handler as pricing_handler, Price
+from ...pricing import handler as Price
 from ...product.app import ProductApp
 from ...product.tests.pricing import FiveZlotyPriceHandler
 from ...util.tests import ViewsTestCase
@@ -138,18 +136,8 @@ class TestCartApp(app.CartApp):
         return cart
 
 
-class TestCheckoutApp(CheckoutApp):
-
-    Cart = MockCart
-    Order = MockOrder
-    def prepare_order(self, *args, **kwargs):
-        return HttpResponse("OK")
-
-
-
 product_app = TestProductApp()
-checkout_app = TestCheckoutApp()
-cart_app = TestCartApp()
+cart_app = TestCartApp(pricing_handler=FiveZlotyPriceHandler())
 
 class AppTestCase(ViewsTestCase):
 
@@ -157,7 +145,6 @@ class AppTestCase(ViewsTestCase):
         urlpatterns = patterns('',
             url(r'^cart/', include(cart_app.urls)),
             url(r'^products/', include(product_app.urls)),
-            url(r'^checkout/', include(checkout_app.urls))
         )
 
     def setUp(self):
@@ -170,7 +157,6 @@ class AppTestCase(ViewsTestCase):
                               os.path.join(test_dir, '..', 'templates')]
         }
         self.original_settings = self._setup_settings(self.custom_settings)
-        pricing_handler.pricing_queue = pricing_handler.PricingQueue(FiveZlotyPriceHandler)
 
         self.cart = cart_app.Cart()
         self.variant_1 = MockProduct('macaw_blue')

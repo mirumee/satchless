@@ -58,13 +58,13 @@ class TenPercentDiscountPriceHandler(PricingHandler):
 
 class BasicHandlerTest(TestCase):
     def setUp(self):
-        self.pricing_queue = PricingQueue(FiveZlotyPriceHandler,
+        self.pricing_handler = PricingQueue(FiveZlotyPriceHandler,
                                           NinetyPerecentTaxPriceHandler,
                                           TenPercentDiscountPriceHandler)
 
     def test_discounted_price(self):
-        price = self.pricing_queue.get_variant_price(None, u'PLN', quantity=1,
-                                          discount=True)
+        price = self.pricing_handler.get_variant_price(None, u'PLN', quantity=1,
+                                                     discount=True)
         self.assertEqual(price,
                          Price(net=5*decimal.Decimal('0.9'),
                                gross=(5 * decimal.Decimal('1.9') *
@@ -72,8 +72,8 @@ class BasicHandlerTest(TestCase):
                                currency=u'PLN'))
 
     def test_undiscounted_price(self):
-        price = self.pricing_queue.get_variant_price(None, u'PLN', quantity=1,
-                                          discount=False)
+        price = self.pricing_handler.get_variant_price(None, u'PLN', quantity=1,
+                                                     discount=False)
         self.assertEqual(price,
                          Price(net=5,
                                gross=5*decimal.Decimal('1.9'),
@@ -81,15 +81,15 @@ class BasicHandlerTest(TestCase):
 
 class PricingTagsTest(TestCase):
     def setUp(self):
-        self.pricing_queue = PricingQueue(FiveZlotyPriceHandler,
+        self.pricing_handler = PricingQueue(FiveZlotyPriceHandler,
                                           NinetyPerecentTaxPriceHandler,
                                           TenPercentDiscountPriceHandler)
 
     def test_undiscounted_variant_price_tag_without_asvar(self):
         token = mock.Mock()
         token.split_contents.return_value = ('variant_price', 'product',
-                                             'currency=PLN', 'discount=0',
-                                             'handler=handler')
+                                             'pricing_handler', 'currency=PLN',
+                                             'discount=0')
         parser = mock.Mock()
         def side_effect(arg):
             return template.Variable(arg)
@@ -99,10 +99,12 @@ class PricingTagsTest(TestCase):
 
         #testing simple expresion
         self.assertEqual(node.item.var, 'product')
+        self.assertEqual(node.pricing_handler.var, 'pricing_handler')
         self.assertEqual(node.kwargs['currency'].var, 'PLN')
         self.assertEqual(node.kwargs['discount'].var, '0')
 
-        context = {'product': 'product', 'PLN': 'PLN', '0': 0, 'handler': self.pricing_queue}
+        context = {'product': 'product', 'PLN': 'PLN', '0': 0,
+                   'pricing_handler': self.pricing_handler}
         result = node.render(context)
         self.assertEqual(result,
                          Price(net=5,
@@ -112,8 +114,8 @@ class PricingTagsTest(TestCase):
     def test_discounted_variant_price_tag_without_asvar(self):
         token = mock.Mock()
         token.split_contents.return_value = ('variant_price', 'product',
-                                             'currency=PLN',
-                                             'handler=handler')
+                                             'pricing_handler',
+                                             'currency=PLN')
         parser = mock.Mock()
         def side_effect(arg):
             return template.Variable(arg)
@@ -123,9 +125,11 @@ class PricingTagsTest(TestCase):
 
         #testing simple expresion
         self.assertEqual(node.item.var, 'product')
+        self.assertEqual(node.pricing_handler.var, 'pricing_handler')
         self.assertEqual(node.kwargs['currency'].var, 'PLN')
 
-        context = {'product': 'product', 'PLN': 'PLN', '0': 0, 'handler': self.pricing_queue}
+        context = {'product': 'product', 'PLN': 'PLN', '0': 0,
+                   'pricing_handler': self.pricing_handler}
         result = node.render(context)
         self.assertEqual(result,
                          Price(net=5*decimal.Decimal('0.9'),
@@ -136,7 +140,7 @@ class PricingTagsTest(TestCase):
     def test_variant_price_tag_with_asvar(self):
         token = mock.Mock()
         token.split_contents.return_value = ('variant_price', 'product',
-                                             'currency=PLN', 'handler=handler',
+                                             'pricing_handler', 'currency=PLN',
                                              'as', 'price')
         parser = mock.Mock()
         def side_effect(arg):
@@ -148,7 +152,8 @@ class PricingTagsTest(TestCase):
         self.assertEqual(node.kwargs['currency'].var, 'PLN')
         self.assertEqual(node.asvar, 'price')
 
-        context = {'product': 'product', 'PLN': 'PLN', '0': 0, 'handler': self.pricing_queue}
+        context = {'product': 'product', 'PLN': 'PLN', '0': 0,
+                   'pricing_handler': self.pricing_handler}
         node.render(context)
         self.assertEqual(context['price'],
                          Price(net=5*decimal.Decimal('0.9'),
@@ -159,8 +164,9 @@ class PricingTagsTest(TestCase):
     def test_undiscounted_product_price_range(self):
         token = mock.Mock()
         token.split_contents.return_value = ('product_price_range', 'product',
+                                             'pricing_handler',
                                              'currency=PLN', 'discount=0',
-                                             'handler=handler', 'as','price')
+                                             'as','price')
         parser = mock.Mock()
         def side_effect(arg):
             return template.Variable(arg)
@@ -168,7 +174,8 @@ class PricingTagsTest(TestCase):
 
         node = product_prices.product_price_range(parser, token)
 
-        context = {'product': 'product', 'PLN': 'PLN', '0': 0, 'handler': self.pricing_queue}
+        context = {'product': 'product', 'PLN': 'PLN', '0': 0,
+                   'pricing_handler': self.pricing_handler}
         node.render(context)
         self.assertEqual(context['price'].min_price,
                          Price(net=5, gross=5*decimal.Decimal('1.9'),

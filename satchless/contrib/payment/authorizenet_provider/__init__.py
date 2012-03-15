@@ -23,7 +23,8 @@ class AuthorizeNetProvider(PaymentProvider):
 
     def save(self, order, typ, form):
         order.payment_price = 0
-        order.payment_type_name = typ.name
+        payment_type = next(t for t in self.enum_types() if t.typ == typ)
+        order.payment_type_name = payment_type.name
         order.save()
         form.save()
 
@@ -65,17 +66,16 @@ class AuthorizeNetProvider(PaymentProvider):
         return result
 
     def confirm(self, order, typ=None):
-        v = order.paymentvariant.get_subtype_instance()
         trans_type = self.capture and 'AUTH_CAPTURE' or 'AUTH_ONLY'
         data = {
-            'card_num': v.cc_number,
-            'exp_date': v.cc_expiration,
+            'card_num': order.payment.cc_number,
+            'exp_date': order.payment.cc_expiration,
             'amount': order.get_total().gross,
             'invoice_num': order.pk,
             'type': trans_type,
         }
-        if v.cc_cvv2:
-            data['card_code'] = v.cc_cvv2
+        if order.payment.cc_cvv2:
+            data['card_code'] = order.payment.cc_cvv2
         data.update(self.get_billing_data(order))
         data.update(self.get_shipping_data(order))
         data = dict((k, unidecode(v) if isinstance(v, unicode) else v)
@@ -84,9 +84,9 @@ class AuthorizeNetProvider(PaymentProvider):
             response = process_payment(data, {})
         except urllib2.URLError:
             raise PaymentFailure(ugettext("Could not connect to the gateway."))
-        v.cc_cvv2 = ''  # Forget the CVV2 number immediately after the transaction
-        v.response = response
-        v.save()
+        order.payment.cc_cvv2 = ''  # Forget the CVV2 number immediately after the transaction
+        order.payment.response = response
+        order.payment.save()
         if not response.is_approved:
             raise PaymentFailure(response.response_reason_text)
 

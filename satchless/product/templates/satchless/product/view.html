@@ -22,7 +22,7 @@
         {% for variant in product.variants.all %}
             <li>
                 <strong>{{ variant }}</strong>
-                {% variant_price variant currency='BTC' as price %}{% if price %}
+                {% variant_price variant pricing_handler currency='BTC' as price %}{% if price %}
                 price: {{ price.gross|floatformat:2 }} <span class="currency">BTC</span>
                 ({{ price.net|floatformat:2 }} <span class="currency">BTC</span> net)
                 {% endif %}

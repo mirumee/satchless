@@ -9,7 +9,6 @@ CVV_VALIDATOR = validators.RegexValidator('^[0-9]{1,4}$',
                                           _('Enter a valid security number.'))
 
 class PaymentForm(forms.ModelForm):
-    billing_email = forms.EmailField(label=_('Email Address'))
     cc_name = forms.CharField(label=_('Name on Credit Card'), max_length=128)
     cc_number = CreditCardNumberField(label=_('Card Number'), max_length=32,
                                       required=True)
@@ -18,5 +17,4 @@ class PaymentForm(forms.ModelForm):
                               label=_('CVV2 Security Number'), max_length=4)
 
     class Meta:
-        fields = ('cc_name', 'cc_number', 'cc_expiration', 'cc_cvv2',
-                  'billing_email')
+        fields = ('cc_name', 'cc_number', 'cc_expiration', 'cc_cvv2')

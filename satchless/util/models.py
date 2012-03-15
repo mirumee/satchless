@@ -94,6 +94,11 @@ class DeferredForeignKey(DeferredField):
     klass = models.ForeignKey
 
 
+class DeferredOneToOneField(DeferredField):
+
+    klass = models.OneToOneField
+
+
 class DeferredManyToManyField(DeferredField):
 
     klass = models.ManyToManyField

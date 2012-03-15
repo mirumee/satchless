@@ -2,7 +2,7 @@ import authorizenet
 from django.db import models
 from django.utils.translation import ugettext_lazy as _
 
-from ...util.models import DeferredOneToOneField
+from ....util.models import DeferredOneToOneField
 
 class AuthorizeNetPaymentBase(models.Model):
     cc_name = models.CharField(_('Name on Credit Card'), max_length=128)

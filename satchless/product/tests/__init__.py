@@ -27,7 +27,7 @@ class Cheese(Product):
     quantity_quantizer = decimal.Decimal('0.01')
 
 
-class CheeseVariant(Product):
+class CheeseVariant(Variant):
     pass
 
 

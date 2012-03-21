@@ -4,6 +4,13 @@ from ...product.templatetags.product_prices import BasePriceNode, parse_price_ta
 
 register = template.Library()
 
+class CartTotalNode(BasePriceNode):
+    def get_currency_for_item(self, cart):
+        return cart.currency
+
+    def get_price(self, cart, currency, **kwargs):
+        return cart.get_total(**kwargs)
+
 class CartItemPriceNode(BasePriceNode):
     def get_currency_for_item(self, item):
         return item.cart.currency
@@ -30,6 +37,14 @@ def cartitem_price(parser, token):
 def cartitem_unit_price(parser, token):
     try:
         return CartItemUnitPriceNode(*parse_price_tag(parser, token))
+    except (ImportError, NotImplementedError):
+        pass
+    return ''
+
+@register.tag
+def cart_total(parser, token):
+    try:
+        return CartTotalNode(*parse_price_tag(parser, token))
     except (ImportError, NotImplementedError):
         pass
     return ''

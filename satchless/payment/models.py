@@ -14,6 +14,8 @@ class PaymentVariant(Subtyped):
     description = models.TextField(_('description'), blank=True)
     price = models.DecimalField(_('unit price'),
                                 max_digits=12, decimal_places=4)
+    amount = models.DecimalField(_('payment applied'),
+                                 max_digits=12, decimal_places=2)
 
     def __unicode__(self):
         return self.name

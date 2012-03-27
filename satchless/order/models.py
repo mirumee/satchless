@@ -159,7 +159,10 @@ class Order(models.Model):
 
     @property
     def paymentvariant(self):
-        return self.paymentvariant_set.all()[0]
+        paymentvariants = self.paymentvariant_set.all()
+        if paymentvariants.count() > 0:
+            return self.paymentvariant_set.all()[0]
+        return None
 
 class DeliveryGroup(models.Model):
     order = models.ForeignKey(Order, related_name='groups')

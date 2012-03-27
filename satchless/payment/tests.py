@@ -28,6 +28,7 @@ class TestPaymentProvider(PaymentProvider):
         typ = typ or order.payment_type
         payment_variant = TestPaymentVariant.objects.create(order=order,
                                                             price=0,
+                                                            amount=0,
                                                             name='test')
         return payment_variant
 
@@ -82,6 +83,6 @@ class CreditCardExpirationFieldTest(TestCase):
         self.assertTrue(self.field.clean(expires))
 
     def test_past_date(self):
-        expires = datetime.date.today() + datetime.timedelta(days=-60)
+        expires = datetime.date.today() + datetime.timedelta(days= -60)
         self.assertRaises(forms.ValidationError, self.field.clean,
                           expires)

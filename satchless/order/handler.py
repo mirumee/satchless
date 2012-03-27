@@ -57,6 +57,14 @@ class PaymentQueue(PaymentProvider, QueueHandler):
         provider = self._get_provider(order, typ)
         return provider.get_configuration_form(order=order, data=data, typ=typ)
 
+    def get_configuration_forms(self, order, data, typs=[]):
+        typs = typs or [order.payment_type]
+        config_forms = dict([
+             (typ, self.get_configuration_form(order, typ)) for typ in typs
+        ])
+
+        return config_forms
+
     def create_variant(self, order, form, typ=None, clear=False):
         typ = typ or order.payment_type
         provider = self._get_provider(order, typ)
@@ -66,6 +74,10 @@ class PaymentQueue(PaymentProvider, QueueHandler):
         except PaymentVariant.DoesNotExist:
             pass
         return provider.create_variant(order=order, form=form, typ=typ)
+
+    def create_variants(self, order, forms, clear=False):
+        return dict([(self.create_variant(order, form, typ, clear))
+            for typ, form in forms.iteritems()])
 
     def confirm(self, order, typ=None):
         typ = typ or order.payment_type

@@ -27,7 +27,7 @@ class StripeProvider(PaymentProvider):
     def confirm(self, order, typ=None):
         v = order.paymentvariant.get_subtype_instance()
         stripe.api_key = settings.STRIPE_SECRET_KEY
-        amount = int(order.total().net * 100) # in cents, Stripe only does USD
+        amount = int(v.amount * 100) # in cents, Stripe only does USD
         try:
             if v.stripe_card_id and not v.stripe_customer_id:
                 customer = stripe.Customer.create(

@@ -57,10 +57,10 @@ class PaymentQueue(PaymentProvider, QueueHandler):
         provider = self._get_provider(order, typ)
         return provider.get_configuration_form(order=order, data=data, typ=typ)
 
-    def get_configuration_forms(self, order, data, typs=[]):
-        typs = typs or [order.payment_type]
+    def get_configuration_forms(self, order, data):
         config_forms = dict([
-             (typ, self.get_configuration_form(order, typ)) for typ in typs
+             (k, self.get_configuration_form(order, v, typ=k))
+                for k, v in data.iteritems()
         ])
 
         return config_forms

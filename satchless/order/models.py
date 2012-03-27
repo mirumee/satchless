@@ -30,7 +30,7 @@ class OrderManager(models.Manager):
             order = instance
             order.groups.all().delete()
             try:
-                order.paymentvariant.delete()
+                order.paymentvariant_set.all().delete()
             except ObjectDoesNotExist:
                 pass
         groups = partitioner_queue.partition(cart)
@@ -128,8 +128,8 @@ class Order(models.Model):
 
     def payment_price(self):
         try:
-            return Price(self.paymentvariant.price,
-                         currency=self.currency)
+            return sum([p.price for p in self.paymentvariant_set.all()],
+                Price(0, currency=self.currency))
         except ObjectDoesNotExist:
             return Price(0, currency=self.currency)
 

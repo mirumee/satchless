@@ -57,11 +57,12 @@ class PaymentQueue(PaymentProvider, QueueHandler):
         provider = self._get_provider(order, typ)
         return provider.get_configuration_form(order=order, data=data, typ=typ)
 
-    def create_variant(self, order, form, typ=None):
+    def create_variant(self, order, form, typ=None, clear=False):
         typ = typ or order.payment_type
         provider = self._get_provider(order, typ)
         try:
-            order.paymentvariant.delete()
+            if clear:
+                order.paymentvariant_set.all().delete()
         except PaymentVariant.DoesNotExist:
             pass
         return provider.create_variant(order=order, form=form, typ=typ)

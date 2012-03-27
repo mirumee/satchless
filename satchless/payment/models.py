@@ -9,7 +9,7 @@ class PaymentVariant(Subtyped):
     Base class for all payment variants. This is what gets assigned to an
     order at the checkout step.
     '''
-    order = models.OneToOneField(Order)
+    order = models.ForeignKey(Order)
     name = models.CharField(_('name'), max_length=128)
     description = models.TextField(_('description'), blank=True)
     price = models.DecimalField(_('unit price'),

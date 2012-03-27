@@ -13,7 +13,7 @@ from . import signals
 from .exceptions import EmptyCart
 
 class OrderManager(models.Manager):
-    
+
     def get_from_cart(self, cart, instance=None):
         '''
         Create an order from the user's cart, possibly discarding any previous
@@ -39,7 +39,7 @@ class OrderManager(models.Manager):
             for item in group:
                 ordered_item = order.create_ordered_item(delivery_group, item)
                 ordered_item.save()
-                
+
         previous_orders = (previous_orders.exclude(pk=order.pk)
                                           .filter(status='checkout'))
         previous_orders.delete()
@@ -156,6 +156,10 @@ class Order(models.Model):
 
     def get_ordered_item_class(self):
         return OrderedItem
+
+    @property
+    def paymentvariant(self):
+        return self.paymentvariant_set.all()[0]
 
 class DeliveryGroup(models.Model):
     order = models.ForeignKey(Order, related_name='groups')

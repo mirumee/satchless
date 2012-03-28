@@ -58,10 +58,8 @@ class PaymentQueue(PaymentProvider, QueueHandler):
         return provider.get_configuration_form(order=order, data=data, typ=typ)
 
     def get_configuration_forms(self, order, data):
-        config_forms = dict([
-             (k, self.get_configuration_form(order, v, typ=k))
-                for k, v in data.iteritems()
-        ])
+        config_forms = [(k, self.get_configuration_form(order, v, typ=k))
+                for k, v in data]
 
         return config_forms
 
@@ -76,8 +74,8 @@ class PaymentQueue(PaymentProvider, QueueHandler):
         return provider.create_variant(order=order, form=form, typ=typ)
 
     def create_variants(self, order, forms, clear=False):
-        return dict([(self.create_variant(order, form, typ, clear))
-            for typ, form in forms.iteritems()])
+        return [(typ, self.create_variant(order, form, typ, clear))
+            for typ, form in forms]
 
     def confirm(self, order, typ=None, variant=None):
         typ = typ or order.payment_type

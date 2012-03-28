@@ -32,7 +32,7 @@ class TestPaymentProvider(PaymentProvider):
                                                             name='test')
         return payment_variant
 
-    def confirm(self, order, typ=None):
+    def confirm(self, order, typ=None, variant=None):
         pass
 
 class CreditCardNumberFieldTest(TestCase):

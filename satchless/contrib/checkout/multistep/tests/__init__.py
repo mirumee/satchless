@@ -21,7 +21,7 @@ from .....cart.tests import TestCart
 from .....order.tests import TestOrder
 
 class TestPaymentProviderWithConfirmation(TestPaymentProvider):
-    def confirm(self, order, typ=None):
+    def confirm(self, order, typ=None, variant=None):
         raise ConfirmationFormNeeded(action='http://test.payment.gateway.example.com')
 
 

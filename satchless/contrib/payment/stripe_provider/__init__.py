@@ -24,8 +24,10 @@ class StripeProvider(PaymentProvider):
             return form.save()
         raise PaymentFailure(_("Could not create Stripe Variant"))
 
-    def confirm(self, order, typ=None):
-        v = order.paymentvariant.get_subtype_instance()
+    def confirm(self, order, typ=None, variant=None):
+        if not variant:
+            variant = order.paymentvariant
+        v = variant.get_subtype_instance()
         stripe.api_key = settings.STRIPE_SECRET_KEY
         amount = int(v.amount * 100) # in cents, Stripe only does USD
         try:

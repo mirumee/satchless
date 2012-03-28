@@ -27,7 +27,7 @@ urlpatterns = patterns('',
 )
 
 class TestPaymentProviderWithConfirmation(TestPaymentProvider):
-    def confirm(self, order):
+    def confirm(self, order, variant=None):
         raise ConfirmationFormNeeded(action='http://test.payment.gateway.example.com')
 
 

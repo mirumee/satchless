@@ -79,11 +79,15 @@ class PaymentQueue(PaymentProvider, QueueHandler):
         return dict([(self.create_variant(order, form, typ, clear))
             for typ, form in forms.iteritems()])
 
-    def confirm(self, order, typ=None):
+    def confirm(self, order, typ=None, variant=None):
         typ = typ or order.payment_type
         provider = self._get_provider(order, typ)
-        return provider.confirm(order=order, typ=typ)
 
+        return provider.confirm(order=order, typ=typ, variant=variant)
+
+    def confirms(self, order, variants):
+        for typ, variant in variants:
+            self.confirm(order, typ=typ, variant=variant)
 
 payment_providers = getattr(settings, 'SATCHLESS_PAYMENT_PROVIDERS', [])
 payment_queue = PaymentQueue(*payment_providers)

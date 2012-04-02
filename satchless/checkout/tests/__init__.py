@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
+import os
+
 from django.conf.urls.defaults import patterns, include, url
-from django.conf import settings
 from django.core.urlresolvers import reverse
 from django.http import HttpResponse
 from django.test import Client
@@ -9,9 +10,7 @@ from ..app import CheckoutApp
 from ...cart.tests import cart_app
 from ...core.app import view
 from ...order.tests import order_app
-from ...pricing import handler as pricing_handler
 from ...product.tests import DeadParrot
-from ...product.tests.pricing import FiveZlotyPriceHandler
 from ...util.tests import ViewsTestCase
 
 
@@ -24,6 +23,19 @@ class BaseCheckoutAppTests(ViewsTestCase):
                 url(r'^order/', include(order_app.urls)),
             )
 
+    def setUp(self):
+        test_dir = os.path.dirname(__file__)
+        self.custom_settings = {
+            'TEMPLATE_DIRS': [os.path.join(test_dir, 'templates'),
+                              os.path.join(test_dir, '..', '..', 'cart', 'tests', 'templates')]
+        }
+        self.original_settings = self._setup_settings(self.custom_settings)
+
+    def tearDown(self):
+        self._teardown_settings(self.original_settings,
+                                self.custom_settings)
+
+
     def _create_cart(self, client):
         cart = self._get_or_create_cart_for_client(client)
         cart.replace_item(self.macaw_blue, 1)
@@ -33,27 +45,25 @@ class BaseCheckoutAppTests(ViewsTestCase):
         self._test_status(cart_app.reverse('details'),
                           client_instance=client)
         token = client.session[cart_app.cart_session_key]
-        return self.checkout_app.Cart.objects.get(token=token, typ=cart_app.cart_type)
+        return self.checkout_app.cart_app.Cart.objects.get(token=token, typ=cart_app.cart_type)
 
     def _get_or_create_order_for_client(self, client):
-        cart = self._get_or_create_cart_for_client(client)
+        self._get_or_create_cart_for_client(client)
         self._test_status(
-            self.checkout_app.reverse('prepare-order',
-                                      kwargs={'cart_token': cart.token}),
+            self.checkout_app.reverse('prepare-order'),
             method='post', client_instance=client, status_code=302)
-        order_pk = client.session.get('satchless_order', None)
+        order_pk = client.session.get(self.checkout_app.order_session_key, None)
         return self.checkout_app.Order.objects.get(pk=order_pk)
 
     def _create_order(self, client):
-        cart = self._create_cart(client)
+        self._create_cart(client)
         self._test_status(
-            self.checkout_app.reverse('prepare-order',
-                                      kwargs={'cart_token': cart.token}),
+            self.checkout_app.reverse('prepare-order'),
             method='post', client_instance=client, status_code=302)
         return self._get_order_from_session(client.session)
 
     def _get_order_from_session(self, session):
-        order_pk = session.get('satchless_order', None)
+        order_pk = session.get(self.checkout_app.order_session_key, None)
         if order_pk:
             return self.checkout_app.Order.objects.get(pk=order_pk)
         return None
@@ -68,8 +78,6 @@ class BaseCheckoutAppTests(ViewsTestCase):
 
 class MockCheckoutApp(CheckoutApp):
 
-    cart_type = cart_app.cart_type
-    Cart = cart_app.Cart
     Order = order_app.Order
 
     @view(r'^(?P<order_token>\w+)/$', name='checkout')
@@ -77,24 +85,17 @@ class MockCheckoutApp(CheckoutApp):
         return HttpResponse()
 
 
-class App(BaseCheckoutAppTests):
-    checkout_app = MockCheckoutApp()
+class AppTestCase(BaseCheckoutAppTests):
+    checkout_app = MockCheckoutApp(cart_app=cart_app)
     urls = BaseCheckoutAppTests.MockUrls(checkout_app)
 
     def setUp(self):
+        super(AppTestCase, self).setUp()
         self.anon_client = Client()
         self.macaw = DeadParrot.objects.create(slug='macaw',
                                                species="Hyacinth Macaw")
         self.macaw_blue = self.macaw.variants.create(color='blue',
                                                      looks_alive=False)
-        self.original_handlers = settings.SATCHLESS_PRICING_HANDLERS
-        pricing_handler.pricing_queue = pricing_handler.PricingQueue(
-            FiveZlotyPriceHandler)
-
-    def tearDown(self):
-        #self._teardown_settings(self.original_settings, self.custom_settings)
-        pricing_handler.pricing_queue = pricing_handler.PricingQueue(
-            *self.original_handlers)
 
     def test_reactive_order_view_redirects_to_checkout_for_correct_order(self):
         order = self._create_order(self.anon_client)

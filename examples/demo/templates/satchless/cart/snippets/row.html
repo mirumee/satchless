@@ -42,6 +42,13 @@
             <input type="submit" value="{% trans "update" %}" name="update" />
             {% csrf_token %}
         </form>
+            {% if form.errors %}
+        <ul class="errorlist">
+                {% for error in form.errors.values %}
+                <li>{{ error }}</li>
+                {% endfor %}
+        </ul>
+            {% endif %}
         {% else %}
             &times; {{ item.quantity }}
         {% endif %}

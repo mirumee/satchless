@@ -24,8 +24,8 @@
                 <td></td>
             </tr>
         {% endif %}
-            {% cartitem_unit_price form.instance as unit_price %}
-            {% cartitem_price form.instance as item_price %}
+            {% cartitem_unit_price form.instance pricing_handler as unit_price %}
+            {% cartitem_price form.instance pricing_handler as item_price %}
             <tr class="item">
                 <td rowspan="2">{{ forloop.counter }}</td>
                 <td rowspan="2">{% promote form.instance.variant as variant %}
@@ -81,7 +81,7 @@
             </tr>
         </tfoot>
     </table>
-    <form action="{% url checkout:prepare-order cart_token=cart.token %}" method="post">
+    <form action="{% url checkout:prepare-order %}" method="post">
         {% csrf_token %}
         <button type="submit">{% trans "Check out" %}</button>
     </form>

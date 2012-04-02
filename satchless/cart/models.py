@@ -134,11 +134,6 @@ class Cart(models.Model):
     def is_empty(self):
         return not self.items.exists()
 
-    def get_total(self, **kwargs):
-        from ..pricing import Price
-        return sum([i.get_price(currency=self.currency, **kwargs) for i in self.get_all_items()],
-                   Price(0, currency=self.currency))
-
 
 class CartItem(models.Model):
 
@@ -156,14 +151,4 @@ class CartItem(models.Model):
 
     def save(self, *args, **kwargs):
         assert self.quantity > 0
-        super(CartItem, self).save(*args, **kwargs)
-
-    def get_unit_price(self, currency=None, **kwargs):
-        from ..pricing.handler import pricing_queue
-        variant = self.variant.get_subtype_instance()
-        currency = currency or self.cart.currency
-        return pricing_queue.get_variant_price(variant, currency,
-                quantity=self.quantity, cart=self.cart, cartitem=self, **kwargs)
-
-    def get_price(self, currency=None, **kwargs):
-        return self.get_unit_price(currency=currency, **kwargs) * self.quantity
+        return super(CartItem, self).save(*args, **kwargs)

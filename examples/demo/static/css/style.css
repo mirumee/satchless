@@ -505,8 +505,13 @@ body.store.checkout {
                         margin: 0;
                     }
             body.store.checkout #content table.cart-contents td.qty {
-                padding-top: 20px
+                padding-top: 20px;
             }
+                body.store.checkout #content table.cart-contents td.qty .errorlist {
+                    margin: 0;
+                    padding: 0;
+                    font-size: 12px;
+                }
                 body.store.checkout #content table.cart-contents td.qty input {
                     text-align: right;
                     width: 3em;

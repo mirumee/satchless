@@ -107,20 +107,19 @@ The class to use as a category model.
 Views
 -----
 
-``product:details``
-^^^^^^^^^^^^^^^^^^^
 
-Method: ``CategorizedProductApp.product_details``
+``product:category-index``
+^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Method: ``CategorizedProductApp.category_list``
 
 URLs:
- * ``/{category_slugs}/+{product_pk}-{product_slug}/``
+ * ``/``
 
 Context variables:
  * ``categories``: all root-level categories
- * ``product``: the matched product
- * ``path``: a list of categories forming the breadcrumbs leading to the current product
 
-Takes a product PK, its slug and category slugs, retrieves the matching product from the database, runs all product view handlers (see below) and returns a ``TemplateResponse``.
+Just returns a ``TemplateResponse``.
 
 
 ``product:category-details``
@@ -140,18 +139,20 @@ Context variables:
 Takes a category slug and its parent slugs, retrieves the matching category from the database and returns a ``TemplateResponse``.
 
 
-``product:category-index``
-^^^^^^^^^^^^^^^^^^^^^^^^^^
+``product:details``
+^^^^^^^^^^^^^^^^^^^
 
-Method: ``CategorizedProductApp.category_list``
+Method: ``CategorizedProductApp.product_details``
 
 URLs:
- * ``/``
+ * ``/{category_slugs}/+{product_pk}-{product_slug}/``
 
 Context variables:
  * ``categories``: all root-level categories
+ * ``product``: the matched product
+ * ``path``: a list of categories forming the breadcrumbs leading to the current product
 
-Just returns a ``TemplateResponse``.
+Takes a product PK, its slug and category slugs, retrieves the matching product from the database, runs all product view handlers (see below) and returns a ``TemplateResponse``.
 
 
 ``MagicCategorizedProductApp``

@@ -7,8 +7,7 @@ from django.test import TestCase
 from ...util.tests import ViewsTestCase
 from ..app import MagicCategorizedProductApp
 
-__all__ = ['Views', 'Models', 'CategorizedProductUrlTests',
-           'NonCategorizedProductUrlTests']
+__all__ = ['Views', 'Models', 'CategorizedProductUrlTests']
 
 category_app = MagicCategorizedProductApp()
 

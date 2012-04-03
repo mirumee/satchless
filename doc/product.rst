@@ -40,7 +40,7 @@ Views
 Method: ``ProductApp.product_details``
 
 URLs:
- * ``/+{product_pk}-{product_slug}/$'``
+ * ``/+{product_pk}-{product_slug}/``
 
 Context variables:
  * ``product``: the matched product

@@ -73,7 +73,7 @@ It's a "magic" subclass of ``ProductApp`` that takes care of the creation of the
 
 You can use it out of the box by simply creating an instance and binding it to an URL route::
 
-    from django.conf.urls.defaults import patterns, include, url
+    from django.conf.urls.defaults import include, patterns, url
     from satchless.product.app import MagicProductApp
 
     product_app = MagicProductApp()
@@ -161,10 +161,10 @@ It's a "magic" subclass of ``CategorizedProductApp`` that takes care of the crea
 
 You can use it out of the box by simply creating an instance and binding it to an URL route::
 
-    from django.conf.urls.defaults import patterns, include, url
+    from django.conf.urls.defaults import include, patterns, url
     from satchless.product.app import MagicCategorizedProductApp
 
-    product_app = MagicCategorizesProductApp()
+    product_app = MagicCategorizedProductApp()
 
     urlpatterns = patterns('',
         url(r'^products/', include(product_app.urls)),

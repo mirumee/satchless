@@ -71,7 +71,7 @@ class CategorizedProductApp(app.ProductApp):
         templates = [p % format_data for p in self.category_details_templates]
         return TemplateResponse(request, templates, context)
 
-    @view(r'^(?P<category_slugs>([a-z0-9_-]+/)+)\+(?P<product_slug>[a-z0-9_-]+)/$',
+    @view(r'^(?P<category_slugs>([a-z0-9_-]+/)+)\+(?P<product_pk>[0-9]+)-(?P<product_slug>[a-z0-9_-]+)/$',
           name='details')
     def product_details(self, request, **kwargs):
         return super(CategorizedProductApp, self).product_details(request,

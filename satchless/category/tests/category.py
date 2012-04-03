@@ -138,18 +138,19 @@ class CategorizedProductUrlTests(TestCase):
 
     def test_categorised_product_url(self):
         self.animals.products.add(self.parrot_macaw)
-        self.assertTrue('/products/animals/+macaw/' in
-                        self.parrot_macaw.get_absolute_url())
+        uri = '/products/animals/+{0}-macaw/'.format(self.parrot_macaw.pk)
+        self.assertTrue(uri in self.parrot_macaw.get_absolute_url())
 
     def test_second_tier_categorised_product_url(self):
         self.birds.products.add(self.parrot_macaw)
-        self.assertTrue('/products/animals/birds/+macaw/' in
-                        self.parrot_macaw.get_absolute_url())
+        uri = '/products/animals/birds/+{0}-macaw/'.format(self.parrot_macaw.pk)
+        self.assertTrue(uri in self.parrot_macaw.get_absolute_url())
 
     def test_third_tier_categorised_product_url(self):
         self.parrots.products.add(self.parrot_macaw)
-        self.assertTrue('/products/animals/birds/parrots/+macaw/' in
-                        self.parrot_macaw.get_absolute_url())
+        uri = '/products/animals/birds/parrots/+{0}-macaw/'.format(
+            self.parrot_macaw.pk)
+        self.assertTrue(uri in self.parrot_macaw.get_absolute_url())
 
     def test_product_url(self):
         """Products not in a Category should raise an exception."""

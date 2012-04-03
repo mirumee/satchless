@@ -53,7 +53,7 @@ class CategorizedProductMixin(models.Model):
                 category = self.categories.all()[0]
             args = ('%s%s/' % (category.parents_slug_path(),
                                category.slug),
-                     self.slug)
+                    self.pk, self.slug)
 
             return reverse('product:details', args=args)
         return super(CategorizedProductMixin, self).get_absolute_url()

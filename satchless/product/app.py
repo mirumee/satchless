@@ -23,8 +23,10 @@ class ProductApp(SatchlessApp):
         assert self.Variant, ('You need to subclass ProductApp and provide'
                               ' Variant')
 
-    def get_product(self, request, **kwargs):
-        raise NotImplementedError()
+    def get_product(self, request, product_pk, product_slug):
+        product = get_object_or_404(self.Product, pk=product_pk,
+                                    slug=product_slug)
+        return product.get_subtype_instance()
 
     def get_product_details_templates(self, product):
         return ['satchless/product/view.html']
@@ -64,11 +66,6 @@ class MagicProductApp(ProductApp):
         self.Variant = (self.Variant or
                         self.construct_variant_class(self.Product))
         super(MagicProductApp, self).__init__(**kwargs)
-
-    def get_product(self, request, product_pk, product_slug):
-        product = get_object_or_404(self.Product, pk=product_pk,
-                                    slug=product_slug)
-        return product.get_subtype_instance()
 
     def construct_product_class(self):
         class Product(models.Product):

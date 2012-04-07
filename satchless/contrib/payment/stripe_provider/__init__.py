@@ -67,5 +67,7 @@ class StripeProvider(PaymentProvider):
             receipt_form = forms.StripeReceiptForm(data)
             if receipt_form.is_valid():
                 v.receipt = receipt_form.save()
+                v.name = "Credit"
+                v.description = "**** **** **** " + v.receipt.last4
                 v.save()
 

@@ -16,7 +16,8 @@ class PaymentForm(forms.ModelForm):
 
     class Meta:
         model = models.StripeVariant
-        fields = ('amount', 'stripe_customer_id', 'stripe_card_id', 'memo')
+        fields = ('amount', 'stripe_customer_id', 'stripe_card_id',
+                  'description')
 
     def clean(self):
         if not self.cleaned_data.get('stripe_customer_id') \

@@ -2,12 +2,15 @@ from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
 
 from satchless.core.handler import QueueHandler
+from satchless.payment import PaymentFailure
 
 from ..delivery import DeliveryProvider, DeliveryType
 from ..delivery.models import DeliveryVariant
 from ..payment import PaymentProvider, PaymentType
 from ..payment.models import PaymentVariant
 from . import Partitioner
+
+from decimal import Decimal
 
 ### PARTITIONERS
 class PartitionerQueue(Partitioner, QueueHandler):
@@ -42,7 +45,7 @@ class PaymentQueue(PaymentProvider, QueueHandler):
                 if not isinstance(typ, PaymentType):
                     raise ValueError('Payment types must be instances of'
                                      ' PaymentType type, not %s.' %
-                                     (repr(typ, )))
+                                     (repr(typ,)))
                 yield provider, typ
 
     def _get_provider(self, order, typ):
@@ -50,7 +53,7 @@ class PaymentQueue(PaymentProvider, QueueHandler):
             if payment_type.typ == typ:
                 return provider
         raise ValueError('Unable to find a payment provider for type %s' %
-                         (typ, ))
+                         (typ,))
 
     def get_configuration_form(self, order, data, typ=None):
         typ = typ or order.payment_type
@@ -84,8 +87,12 @@ class PaymentQueue(PaymentProvider, QueueHandler):
         return provider.confirm(order=order, typ=typ, variant=variant)
 
     def confirms(self, order, variants):
+        total_collected = Decimal("0.00")
         for typ, variant in variants:
             self.confirm(order, typ=typ, variant=variant)
+            total_collected += variant.amount
+        if total_collected != order.total().gross:
+            raise PaymentFailure("Amount collected does not match order total.")
 
 payment_providers = getattr(settings, 'SATCHLESS_PAYMENT_PROVIDERS', [])
 payment_queue = PaymentQueue(*payment_providers)
@@ -103,7 +110,7 @@ class DeliveryQueue(DeliveryProvider, QueueHandler):
                 if not isinstance(typ, DeliveryType):
                     raise ValueError('Delivery types must be instances of'
                                      ' DeliveryType type, not %s.' %
-                                     (repr(typ, )))
+                                     (repr(typ,)))
                 yield provider, typ
 
     def _get_provider(self, delivery_group, typ):
@@ -111,7 +118,7 @@ class DeliveryQueue(DeliveryProvider, QueueHandler):
             if delivery_type.typ == typ:
                 return provider
         raise ValueError('Unable to find a delivery provider for type %s' %
-                         (typ, ))
+                         (typ,))
 
     def get_configuration_form(self, delivery_group, data, typ=None):
         typ = typ or delivery_group.delivery_type

@@ -12,7 +12,7 @@ from satchless.contrib.pricing.simpleqty.models import (ProductPriceMixin,
 from satchless.contrib.tax.flatgroups.models import TaxedProductMixin
 from satchless.contrib.stock.singlestore.models import VariantStockLevelMixin
 import satchless.product.models
-from satchless.utils.models import construct
+from satchless.util.models import construct
 
 from categories.models import Category
 from sale.models import DiscountedProduct

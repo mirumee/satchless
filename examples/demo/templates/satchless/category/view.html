@@ -6,21 +6,6 @@
 {% load product_prices %}
 
 {% block body-class %}category{% if path %} cat-{{ path.0.slug }}{% endif %}{% endblock %}
-{% block extra-body %}
-{{ block.super }}
-{% comment %}
-<script>
-$(function() {
-    $('.product h3').hide();
-    $('.product').hover(function(){
-        $(this).find('h3').fadeIn('fast');
-    }, function(){
-        $(this).find('h3').fadeOut('fast');
-    });
-});
-</script>
-{% endcomment %}
-{% endblock %}
 
 {% block content %}
 <div class="grid_4 alpha"><div class="sidebar">&nbsp;</div></div>
@@ -33,26 +18,27 @@ $(function() {
             {% for product in products %}
                 {% with product.get_subtype_instance as product %}
                 {% with product|product_in_category_url:category as product_url %}
-    <div class="product grid_5 {% cycle 'alpha' '' 'omega' %}">
-        <a href="{{ product_url }}" class="product-photo">{% if product.main_image %}<img src="{{ product.main_image|at_size:'product-detail' }}" alt="{{ product.name }} image"/>{% endif %} </a>
-        <div class="description">
-            <span class="manufacture">
-                {% if product.make %}
-                {{ product.make }}
-                {% endif %}
-            </span>
-            <h3>{{ product.name }}</h3>
-            <div class="price">
-                {% product_price_range product pricing_handler as price_range %}
-                {% product_price_range product pricing_handler discount=0 as undiscounted_price_range %}
-                {% if price_range.min != undiscounted_price_range.min %}
-                        <span class="strike">{{ undiscounted_price_range.min|gross|floatformat:2 }}</span>
-                {% endif %}
-                <span class="fullprice">{{ price_range.min|gross|floatformat:2 }}</span> <span class="currency">{{ price_range.min|currency }}</span>
+    <div class="grid_5 {% cycle 'alpha' '' '' 'omega' %}">
+        <div class="product">
+            <a href="{{ product_url }}" class="product-photo">{% if product.main_image %}<img src="{{ product.main_image|at_size:'product-detail' }}" alt="{{ product.name }} image"/>{% endif %} </a>
+            <div class="description">
+                <span class="manufacture">
+                    {% if product.make %}
+                    {{ product.make }}
+                    {% endif %}
+                </span>
+                <h3>{{ product.name }}</h3>
+                <div class="price">
+                    {% product_price_range product pricing_handler as price_range %}
+                    {% product_price_range product pricing_handler discount=0 as undiscounted_price_range %}
+                    {% if price_range.min != undiscounted_price_range.min %}
+                            <span class="strike">{{ undiscounted_price_range.min|gross|floatformat:2 }}</span>
+                    {% endif %}
+                    <span class="fullprice">{{ price_range.min|gross|floatformat:2 }}</span> <span class="currency">{{ price_range.min|currency }}</span>
+                </div>
             </div>
         </div>
     </div>
-    {% cycle '' '' '<div class="clear"></div>' %}
                 {% endwith %}
                 {% endwith %}
             {% endfor %}

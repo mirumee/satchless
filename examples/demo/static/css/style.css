@@ -260,6 +260,17 @@ input.wishlist {
         border-left: 1px dashed #dcdcdc;
         background: #f0f0f0;
     }
+        .sale .sidebar .categories {
+            padding: 0;
+            margin: 0;
+        }
+            .sale .sidebar .categories li {
+            }
+                .sale .sidebar .categories li a {
+                    color: #a9a9a9;
+                    font-weight: bold;
+                    text-decoration: none;
+                }
 /* product price view: wishlist + product view */
 .product-price {
 }
@@ -602,9 +613,10 @@ body .products .product {
     border: 1px solid #dcdcdc;
     height: 297px;
     padding: 5px 5px 0;
+    margin-bottom: 10px;
 }
     body .products .product .product-photo img {
-        width: 180px;
+        width: 178px;
         border: 0;
     }
     body .products .product .description {

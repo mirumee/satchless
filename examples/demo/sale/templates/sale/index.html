@@ -9,52 +9,55 @@
 {% block body-class %}{{ block.super }}{% endblock %}
 
 {% block content %}
-<div class="sidebar grid_4 alpha">
-    <ul class="categories">
-{% for cat in categories %}
-        <li>
-            <a class="{% if cat == category %}active{% endif %}" href="{{ cat|category_in_sale_url }}">{{ cat.name }}</a>
-    {% if cat == path.0 %}
-        {% with cat|subcategories_in_sale as subcategories %}
-            <ul>
-            {% for c in cat|subcategories_in_sale %}
-                <li><a class="{% if c == category %}active{% endif %}" href="{{ c|category_in_sale_url }}">{{ c.name }}</a></li>
-            {% endfor %}
-            </ul>
-        {% endwith %}
-    {% endif %}
-        </li>
-{% endfor %}
-    </ul>
+<div class="grid_4 alpha">
+    <div class="sidebar">
+        <ul class="categories">
+    {% for cat in categories %}
+            <li>
+                <a class="{% if cat == category %}active{% endif %}" href="{{ cat|category_in_sale_url }}">{{ cat.name }}</a>
+        {% if cat == path.0 %}
+            {% with cat|subcategories_in_sale as subcategories %}
+                <ul>
+                {% for c in cat|subcategories_in_sale %}
+                    <li><a class="{% if c == category %}active{% endif %}" href="{{ c|category_in_sale_url }}">{{ c.name }}</a></li>
+                {% endfor %}
+                </ul>
+            {% endwith %}
+        {% endif %}
+            </li>
+    {% endfor %}
+        </ul>
+    </div>
 </div>
 
-<div class="products" class="grid_20 omega">
+<div class="products grid_20 omega">
         {% autopaginate products 21 %}
         {% if products %}
     {% paginate %}
             {% for product in products %}
                 {% with product.get_subtype_instance as product %}
                 {% with product|product_in_category_url:category as product_url %}
-    <div class="product grid_5 {% cycle 'alpha' '' 'omega' %}">
-        <a href="{{ product_url }}" class="product-photo">{% if product.main_image %}<img src="{{ product.main_image|at_size:'product-detail' }}" alt="{{ product.name }} image"/>{% endif %} </a>
-        <div class="description">
-            <span class="manufacture">
-                {% if product.make %}
-                {{ product.make }}
-                {% endif %}
-            </span>
-            <h3>{{ product.name }}</h3>
-            <div class="price">
-                {% product_price_range product pricing_handler as price_range %}
-                {% product_price_range product pricing_handler discount=0 as undiscounted_price_range %}
-                {% if price_range.min_price != undiscounted_price_range.max_price %}
-                        <span class="strike">{{ undiscounted_price_range.min_price.gross|floatformat:2 }}</span>
-                {% endif %}
-                <span class="fullprice">{{ price_range.min_price.gross|floatformat:2 }}</span> <span class="currency">{{ price_range.min_price|currency }}</span>
+    <div class="grid_5 {% cycle 'alpha' '' '' 'omega' %}">
+        <div class="product">
+            <a href="{{ product_url }}" class="product-photo">{% if product.main_image %}<img src="{{ product.main_image|at_size:'product-detail' }}" alt="{{ product.name }} image"/>{% endif %} </a>
+            <div class="description">
+                <span class="manufacture">
+                    {% if product.make %}
+                    {{ product.make }}
+                    {% endif %}
+                </span>
+                <h3>{{ product.name }}</h3>
+                <div class="price">
+                    {% product_price_range product pricing_handler as price_range %}
+                    {% product_price_range product pricing_handler discount=0 as undiscounted_price_range %}
+                    {% if price_range.min_price != undiscounted_price_range.max_price %}
+                            <span class="strike">{{ undiscounted_price_range.min_price.gross|floatformat:2 }}</span>
+                    {% endif %}
+                    <span class="fullprice">{{ price_range.min_price.gross|floatformat:2 }}</span> <span class="currency">{{ price_range.min_price|currency }}</span>
+                </div>
             </div>
         </div>
     </div>
-    {% cycle '' '' '<div class="clear"></div>' %}
                 {% endwith %}
                 {% endwith %}
             {% endfor %}

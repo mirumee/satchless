@@ -7,19 +7,6 @@
 {% load sale_tags %}
 
 {% block body-class %}{{ block.super }}{% endblock %}
-{% block extra-body %}
-{{ block.super }}
-<script>
-$(function() {
-    $('.product h3').hide();
-    $('.product').hover(function(){
-        $(this).find('h3').fadeIn('fast');
-    }, function(){
-        $(this).find('h3').fadeOut('fast');
-    });
-});
-</script>
-{% endblock %}
 
 {% block content %}
 <div class="sidebar grid_4 alpha">
@@ -58,12 +45,12 @@ $(function() {
             </span>
             <h3>{{ product.name }}</h3>
             <div class="price">
-                {% product_price_range product as price_range %}
-                {% product_price_range product discount=0 as undiscounted_price_range %}
-                {% if price_range.min != undiscounted_price_range.min %}
-                        <span class="strike">{{ undiscounted_price_range.min|gross|floatformat:2 }}</span>
+                {% product_price_range product pricing_handler as price_range %}
+                {% product_price_range product pricing_handler discount=0 as undiscounted_price_range %}
+                {% if price_range.min_price != undiscounted_price_range.max_price %}
+                        <span class="strike">{{ undiscounted_price_range.min_price.gross|floatformat:2 }}</span>
                 {% endif %}
-                <span class="fullprice">{{ price_range.min|gross|floatformat:2 }}</span> <span class="currency">{{ price_range.min|currency }}</span>
+                <span class="fullprice">{{ price_range.min_price.gross|floatformat:2 }}</span> <span class="currency">{{ price_range.min_price|currency }}</span>
             </div>
         </div>
     </div>

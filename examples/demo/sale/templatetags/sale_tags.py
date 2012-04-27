@@ -1,9 +1,7 @@
 from django.core.urlresolvers import reverse
 from django import template
 
-from satchless.product.models import Product
-from satchless.category.models import Category
-
+from categories.app import product_app
 from .. import query
 
 register = template.Library()
@@ -17,14 +15,14 @@ def category_in_sale_url(category):
 
 @register.filter
 def subcategories_in_sale(category):
-    ProductCategory = Product.categories.through
-    discounted_products = ProductCategory.objects.filter(product__discount__isnull=False) \
-                                                        .values_list('category_id', flat=True)
-    all_subcategories = Category.objects.filter(lft__gt=category.lft, rght__lt=category.rght,
-                                                tree_id=category.tree_id)
-    subcategories = query.add_filtered_related_count(Category.tree, all_subcategories,
-                                                  discounted_products, 'category', 'products_count',
-                                                  cumulative=True)
+    ProductCategory = product_app.Product.categories.through
+    discounted_products = (ProductCategory.objects.filter(product__discount__isnull=False)
+                                                  .values_list('category_id', flat=True))
+    all_subcategories = (product_app.Category.objects.filter(lft__gt=category.lft, rght__lt=category.rght,
+                                                             tree_id=category.tree_id))
+    subcategories = (query.add_filtered_related_count(product_app.Category.tree, all_subcategories,
+                                                      discounted_products, 'category', 'products_count',
+                                                      cumulative=True))
     subcategories = filter(lambda cat: cat.products_count, subcategories)
     return subcategories
 

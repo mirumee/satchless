@@ -1,25 +1,20 @@
 from decimal import Decimal
 
-import django.db.models
 from django.test import TestCase
-from satchless.product.models import Product, Variant
+from localeurl.models import reverse
 from satchless.product.tests.pricing import FiveZlotyPriceHandler
 from satchless.pricing import Price, handler
+from satchless.util.tests import ViewsTestCase
 
+from products.models import Hat
+from categories.app import product_app
+from .templatetags.sale_tags import category_in_sale_url
 from . import models
 from . import SalePricingHandler
 
 
-class TestProduct(Product):
-    discount = django.db.models.ForeignKey(models.DiscountGroup,
-                                           related_name='test_products',
-                                           null=True)
-
-class TestProductVariant(Variant):
-    product = django.db.models.ForeignKey(TestProduct, related_name='variants')
-
-
 class SaleTestCase(TestCase):
+
     def setUp(self):
         self.pricing_queue = handler.PricingQueue(FiveZlotyPriceHandler,
                                                   SalePricingHandler)
@@ -28,13 +23,14 @@ class SaleTestCase(TestCase):
         discount = models.DiscountGroup.objects.create(name="40% discount",
                                                        rate=40,
                                                        rate_name="40% discount")
+        hat = Hat.objects.create(name='top hat', slug='top-hat',
+                                 price=5)
 
-        product = TestProduct.objects.create(slug='product')
-        variant = product.variants.create()
+        variant = hat.variants.create(sku='1')
 
-        discounted_product = TestProduct.objects.create(slug='discounted-product',
-                                         discount=discount)
-        discounted_variant = discounted_product.variants.create()
+        discounted_product = Hat.objects.create(name='beret', slug='beret',
+                                                price=5, discount=discount)
+        discounted_variant = discounted_product.variants.create(sku='2')
 
         self.assertEqual(self.pricing_queue.get_variant_price(variant,
                                                               currency='PLN'),
@@ -44,3 +40,37 @@ class SaleTestCase(TestCase):
                                                               currency='PLN'),
                          Price(3, 3, currency='PLN'))
 
+
+class ViewsTestCase(ViewsTestCase):
+
+    def setUp(self):
+        self.discount = models.DiscountGroup.objects.create(name="40% discount",
+                                                            rate=40,
+                                                            rate_name="40% discount")
+        self.category_summer = product_app.Category.objects.create(name='summer', slug='summer')
+        self.category_winter = product_app.Category.objects.create(name='winter', slug='winter')
+        self.discounted_summer_product = Hat.objects.create(name='sombrero', slug='sombrero',
+                                                            price=5, discount=self.discount)
+        self.discounted_summer_product.categories.add(self.category_summer)
+        self.discounted_summer_product.variants.create(sku='2')
+
+        discounted_winter_product = Hat.objects.create(name='ushanka', slug='ushanka',
+                                     price=5, discount=self.discount)
+        discounted_winter_product.categories.add(self.category_winter)
+        discounted_winter_product.variants.create(sku='3')
+
+        undiscounted_summer_product = Hat.objects.create(name='baseball cap',
+                                                         slug='baseball-cap',
+                                                         price=5)
+        undiscounted_summer_product.categories.add(self.category_summer)
+        undiscounted_summer_product.variants.create(sku='4')
+
+    def test_sale_index_view(self):
+        response = self._test_GET_status(reverse('sale'))
+        self.assertEqual(set(self.discount.products.all()),
+                         set(response.context['products']))
+
+    def test_discounted_category_view(self):
+        response = self._test_GET_status(category_in_sale_url(self.category_summer))
+        self.assertEqual(set([p.get_subtype_instance() for p in response.context['products']]),
+                         set([self.discounted_summer_product]))

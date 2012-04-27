@@ -10,7 +10,7 @@ def index(request, category_slugs=None):
     if category_slugs:
         category_slugs = filter(None, category_slugs.split('/'))
         try:
-            path = product_app.Category.path_from_slugs(category_slugs)
+            path = product_app.path_from_slugs(category_slugs)
         except product_app.Category.DoesNotExist:
             return HttpResponseNotFound()
         category = path[-1]
@@ -37,5 +37,6 @@ def index(request, category_slugs=None):
         'categories': categories,
         'category': category,
         'path': path,
+        'pricing_handler': product_app.pricing_handler,
         'products': products,
     })

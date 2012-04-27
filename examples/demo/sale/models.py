@@ -5,6 +5,7 @@ from django.utils.translation import ugettext_lazy as _
 from satchless.pricing import PriceRange
 
 class DiscountGroup(models.Model):
+
     name = models.CharField(_('group name'), max_length=100)
     rate = models.DecimalField(_('rate'), max_digits=4, decimal_places=2,
                                help_text=_('Percentile rate of the discount.'))
@@ -25,7 +26,8 @@ class DiscountGroup(models.Model):
         return self.name
 
 
-class DiscountedProduct(models.Model):
+class DiscountedProductMixin(models.Model):
+
     discount = models.ForeignKey(DiscountGroup, null=True, blank=True,
                                  related_name='products')
 

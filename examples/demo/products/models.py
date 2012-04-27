@@ -15,12 +15,12 @@ import satchless.product.models
 from satchless.util.models import construct
 
 from categories.models import Category
-from sale.models import DiscountedProduct
+from sale.models import DiscountedProductMixin
 
 
 class Product(ProductPriceMixin, TaxedProductMixin,
               construct(CategorizedProductMixin, category=Category),
-              DiscountedProduct, satchless.product.models.Product):
+              DiscountedProductMixin, satchless.product.models.Product):
 
     pass
 

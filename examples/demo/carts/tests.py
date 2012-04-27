@@ -10,8 +10,8 @@ class ViewsTestCase(satchless.util.tests.ViewsTestCase):
         self.category = product_app.Category.objects.create(name='posh',
                                                             slug='posh')
         self.hat = products.models.Hat.objects.create(name='top hat',
-                                                          slug='top-hat',
-                                                          price=10)
+                                                      slug='top-hat',
+                                                      price=10)
         self.hat.categories.add(self.category)
         self.variant = self.hat.variants.create(sku='sku', stock_level=10)
 

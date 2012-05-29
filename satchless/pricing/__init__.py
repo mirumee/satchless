@@ -16,16 +16,9 @@ class Price(object):
         self.currency = currency
         self.tax_name = tax_name
 
-    def __unicode__(self):
-        if self.tax_name:
-            return (u"net=%s,gross=%s (%s)" %
-                    (self.net, self.gross, self.tax_name))
-        else:
-            return u"net=%s,gross=%s" % (self.net, self.gross)
-
     def __repr__(self):
-        return ("Price(net=%.10g, gross=%.10g, currency='%s')" %
-                (self.net, self.gross, self.currency))
+        return ("Price(net=%s, gross=%s, currency=%s)" %
+                (repr(self.net), repr(self.gross), repr(self.currency)))
 
     def __cmp__(self, other):
         if not isinstance(other, Price):
@@ -96,7 +89,7 @@ class PriceRange(object):
 
     def __repr__(self):
         return ("PriceRange(%s, %s)" %
-                (self.min_price, self.max_price))
+                (repr(self.min_price), repr(self.max_price)))
 
     def __add__(self, other):
         if isinstance(other, Tax):
@@ -108,16 +101,16 @@ class PriceRange(object):
             if other.currency != self.min_price.currency:
                 raise ValueError("Cannot add PriceRange in %s to Price in %s" %
                                  (self.min_price.currency, other.currency))
-            min_price = min(self.min_price, other)
-            max_price = max(self.max_price, other)
+            min_price = self.min_price + other
+            max_price = self.max_price + other
             return PriceRange(min_price=min_price, max_price=max_price)
         else:
             if other.min_price.currency != self.min_price.currency:
                 raise ValueError("Cannot add PriceRanges in %s and %s" %
                                  (self.min_price.currency,
                                   other.min_price.currency))
-            min_price = min(self.min_price, other.min_price)
-            max_price = max(self.max_price, other.max_price)
+            min_price = self.min_price + other.min_price
+            max_price = self.max_price + other.max_price
             return PriceRange(min_price=min_price, max_price=max_price)
 
     def __eq__(self, other):

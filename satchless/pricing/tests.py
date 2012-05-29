@@ -68,14 +68,11 @@ class PriceRangeTest(TestCase):
 
     def test_valid_addition(self):
         pr1 = self.pr1 + self.pr2
-        self.assertEqual(pr1.min_price, self.p1)
-        self.assertEqual(pr1.max_price, self.p4)
-        pr2 = self.pr1 + self.p3
-        self.assertEqual(pr2.min_price, self.p1)
-        self.assertEqual(pr2.max_price, self.p3)
-        pr3 = self.pr2 + self.p2
-        self.assertEqual(pr3.min_price, self.p2)
-        self.assertEqual(pr3.max_price, self.p4)
+        self.assertEqual(pr1.min_price, self.p1 + self.p3)
+        self.assertEqual(pr1.max_price, self.p2 + self.p4)
+        pr2 = self.pr1 + self.p1
+        self.assertEqual(pr2.min_price, self.p1 + self.p1)
+        self.assertEqual(pr2.max_price, self.p2 + self.p1)
 
     def test_invalid_addition(self):
         self.assertRaises(TypeError, lambda: self.pr1 + 10)

@@ -1,22 +1,23 @@
+from ConfigParser import ConfigParser
+from decimal import Decimal
 from django.conf import settings
 from django.utils.translation import ugettext_lazy as _
+from io import StringIO
 from suds.client import Client as SudsClient
 import calendar
+import datetime
+import os
 
 from ....payment import PaymentProvider, PaymentFailure, PaymentType
 from . import forms
 from . import models
 
-import datetime
-from io import StringIO
-import os
-from ConfigParser import ConfigParser
-
 class PaymentsGatewayProvider(PaymentProvider):
     form_class = forms.PaymentForm
 
     def enum_types(self, order=None, customer=None):
-        yield self, PaymentType(typ='paymentsgateway', name='paymentsgateway.com')
+        yield self, PaymentType(typ='paymentsgateway',
+                                name='paymentsgateway.com')
 
     def get_configuration_form(self, order, typ, data):
         instance = models.PaymentsGatewayVariant(order=order, price=0)
@@ -31,37 +32,42 @@ class PaymentsGatewayProvider(PaymentProvider):
         if not variant:
             variant = order.paymentvariant
         v = variant.get_subtype_instance()
-        amount = str(v.amount)
+        amount = str(v.amount.quantize(Decimal('.01')))
 
-        pay_client = SudsClient(settings.PG_PAYMENT_WSDL)
-        service = pay_client.service
+        svc = SudsClient(settings.PG_PAYMENT_WSDL).service
+        kwargs = {
+            'pg_merchant_id': settings.PG_MERCHANT_ID,
+            'pg_password': settings.PG_TRANSACTION_PASSWORD,
+            'pg_transaction_type': "10", # CC sale
+            'pg_total_amount': amount,
+        }
+
         if v.pg_payment_token:
-            result = service.ExecuteSocketQuery(pg_merchant_id=settings.PG_MERCHANT_ID,
-                                                pg_password=settings.PG_TRANSACTION_PASSWORD,
-                                                pg_transaction_type="10", # CC sale
-                                                pg_total_amount=amount,
-                                                pg_payment_method_id=v.pg_payment_token)
+            result = \
+                svc.ExecuteSocketQuery(pg_payment_method_id=v.pg_payment_token,
+                                       **kwargs)
         elif v.pg_client_token:
-            result = service.ExecuteSocketQuery(pg_merchant_id=settings.PG_MERCHANT_ID,
-                                                pg_password=settings.PG_TRANSACTION_PASSWORD,
-                                                pg_transaction_type="10", # CC sale
-                                                pg_total_amount=amount,
-                                                pg_client_id=v.pg_client_token)
+            result = \
+                svc.ExecuteSocketQuery(pg_client_id=v.pg_client_token,
+                                       **kwargs)
         else:
-            raise PaymentFailure(_("Requires either a payment method or client."))
+            raise PaymentFailure(_("Requires a payment method or client."))
 
         data = {}
         try:
-            config = StringIO()
-            config.write('[rootsection]')
-            data_string = str(result).replace('endofdata', '')
-            config.write(data_string)
-            config.seek(0, os.SEEK_SET)
+            # make a fake ini file so we can parse with ConfigParser
+            data_string = str(result)
+            data_string = data_string[0:data_string.find('endofdata')]
+            properties = StringIO()
+            properties.write('[rootsection]')
+            properties.write(data_string)
+            properties.seek(0, os.SEEK_SET)
             cp = ConfigParser()
-            cp.readfp(config)
+            cp.readfp(properties)
             data = vars(cp).get('_sections').get('rootsection')
-        except Exception:
-            pass
+        except Exception as e:
+            # whatever happened, keep going, for logging purposes.
+            data['other_error'] = str(e)
         finally:
             receipt_form = forms.PaymentsGatewayReceiptForm(data)
             if receipt_form.is_valid():
@@ -69,3 +75,8 @@ class PaymentsGatewayProvider(PaymentProvider):
                 v.name = ""
                 v.description = ""
                 v.save()
+            if not data.get('pg_response_type') or \
+                data.get('pg_response_type') != 'A':
+                raise PaymentFailure("%s %s" %
+                     (data.get('pg_response_code'),
+                      data.get('pg_response_description')))

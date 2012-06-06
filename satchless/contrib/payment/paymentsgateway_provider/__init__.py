@@ -59,8 +59,8 @@ class PaymentsGatewayProvider(PaymentProvider):
             data_string = str(result)
             data_string = data_string[0:data_string.find('endofdata')]
             properties = StringIO()
-            properties.write('[rootsection]')
-            properties.write(data_string)
+            properties.write(u'[rootsection]')
+            properties.write(unicode(data_string))
             properties.seek(0, os.SEEK_SET)
             cp = ConfigParser()
             cp.readfp(properties)

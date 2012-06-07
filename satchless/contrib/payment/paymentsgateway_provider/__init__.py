@@ -77,8 +77,7 @@ class PaymentsGatewayProvider(PaymentProvider):
                 v.name = ""
                 v.description = ""
                 v.save()
-            if not data.get('pg_response_type') or \
-                data.get('pg_response_type') != 'A':
+            if data.get('pg_response_type') != 'A':
                 raise PaymentFailure("%s %s" %
                      (data.get('pg_response_code'),
                       data.get('pg_response_description')))

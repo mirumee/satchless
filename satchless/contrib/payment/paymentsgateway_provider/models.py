@@ -54,4 +54,6 @@ class PaymentsGatewayReceipt(models.Model):
 class PaymentsGatewayVariant(PaymentVariant):
     pg_client_token = models.CharField(max_length=50, blank=True, null=True)
     pg_payment_token = models.CharField(max_length=50, blank=True, null=True)
+    token_first_name = models.CharField(max_length=50, blank=True, null=True)
+    token_last_name = models.CharField(max_length=50, blank=True, null=True)
     receipt = models.ForeignKey(PaymentsGatewayReceipt, blank=True, null=True)

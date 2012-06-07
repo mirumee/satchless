@@ -45,6 +45,8 @@ class PaymentsGatewayProvider(PaymentProvider):
         if v.pg_payment_token:
             result = \
                 svc.ExecuteSocketQuery(pg_payment_method_id=v.pg_payment_token,
+                                       ecom_billto_postal_name_first=v.token_first_name,
+                                       ecom_billto_postal_name_last=v.token_last_name,
                                        **kwargs)
         elif v.pg_client_token:
             result = \

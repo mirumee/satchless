@@ -1,5 +1,6 @@
 from decimal import Decimal
 
+
 class Price(object):
     gross = Decimal('NaN')
     net = Decimal('NaN')
@@ -145,6 +146,7 @@ class Tax(object):
     def apply(self, price):
         raise NotImplementedError()
 
+
 class LinearTax(Tax):
     def __init__(self, multiplier, name=None):
         self.multiplier = multiplier
@@ -152,9 +154,10 @@ class LinearTax(Tax):
 
     def apply(self, price):
         return Price(net=price.net,
-                     gross=price.gross*self.multiplier,
+                     gross=price.gross * self.multiplier,
                      currency=price.currency,
                      tax_name=self.name)
+
 
 class PricingHandler(object):
     def get_variant_price(self, variant, currency, quantity=1, **kwargs):
@@ -162,6 +165,39 @@ class PricingHandler(object):
 
     def get_product_price_range(self, product, currency, **kwargs):
         raise NotImplementedError()
+
+    def get_items_prices(self, items):
+        '''
+        DO NOT OVERRIDE THIS METHOD unless you know exactly what you are doing!
+
+        This is to ensure correct types for iterative computing prices by
+        many handlers.
+
+        If you are adding method for updating prices, e.g. some kind of discount
+        override compute_new_prices.
+        '''
+        try:
+            updated_prices = self.compute_new_prices(items)
+            assert len(updated_prices) == len(items), \
+                "Price list must be of the same length as item list"
+            return [(variant, cnt, price)
+                    for ((variant, cnt, _), price)
+                    in zip(items, updated_prices)]
+        except NotImplemented:
+            return items
+
+    def compute_new_prices(self, items):
+        '''
+        This is method for updating prices in item collection.
+
+        items needs to be list of tuples: (variant, quantity, price)
+
+        Resulting value needs to be list of updated prices.
+
+        Basic implementation could look like:
+        return [price * quantity for (variant, quantity, price) in items]
+        '''
+        raise NotImplemented
 
 
 class StopPropagation(Exception):

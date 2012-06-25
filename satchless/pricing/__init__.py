@@ -178,19 +178,19 @@ class PricingHandler(object):
         '''
         try:
             updated_prices = self.compute_new_prices(items)
-            assert len(updated_prices) == len(items), \
-                "Price list must be of the same length as item list"
-            return [(variant, cnt, price)
-                    for ((variant, cnt, _), price)
-                    in zip(items, updated_prices)]
         except NotImplemented:
             return items
+        assert len(updated_prices) == len(items), \
+            "Price list must be of the same length as item list"
+        return [(variant, cnt, price)
+                for ((variant, cnt, _), price)
+                in zip(items, updated_prices)]
 
     def compute_new_prices(self, items):
         '''
         This is method for updating prices in item collection.
 
-        items needs to be list of tuples: (variant, quantity, price)
+        items is list of tuples: (variant, quantity, price)
 
         Resulting value needs to be list of updated prices.
 

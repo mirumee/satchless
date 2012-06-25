@@ -170,11 +170,15 @@ class PricingHandler(object):
         '''
         DO NOT OVERRIDE THIS METHOD unless you know exactly what you are doing!
 
-        This is to ensure correct types for iterative computing prices by
-        many handlers.
+        This is an API method which gets list of tuples (variant, count, price)
+        and returns the same list with possibly updated prices.
+
+        This method is basically not meant for overriding. It is meant to ensure
+        correct types for iterative computing prices by concrete handlers.
 
         If you are adding method for updating prices, e.g. some kind of discount
-        override compute_new_prices.
+        override compute_new_prices. In this way you won't accidentally change
+        products or their quantity.
         '''
         try:
             updated_prices = self.compute_new_prices(items)

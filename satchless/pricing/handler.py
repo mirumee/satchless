@@ -22,3 +22,12 @@ class PricingQueue(PricingHandler, QueueHandler):
         return price_range
 
 
+
+    def get_items_prices(self, items, currency=None, **context):
+        for handler in self.queue:
+            items = handler.get_items_prices(items=items,
+                currency=currency)
+        return items
+
+
+

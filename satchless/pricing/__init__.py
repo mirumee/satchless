@@ -166,7 +166,7 @@ class PricingHandler(object):
     def get_product_price_range(self, product, currency, **kwargs):
         raise NotImplementedError()
 
-    def get_items_prices(self, items):
+    def get_items_prices(self, items, **kwargs):
         '''
         DO NOT OVERRIDE THIS METHOD unless you know exactly what you are doing!
 
@@ -181,7 +181,7 @@ class PricingHandler(object):
         products or their quantity.
         '''
         try:
-            updated_prices = self.compute_new_prices(items)
+            updated_prices = self._compute_prices(items, **kwargs)
         except NotImplemented:
             return items
         assert len(updated_prices) == len(items), \
@@ -190,7 +190,7 @@ class PricingHandler(object):
                 for ((variant, cnt, _), price)
                 in zip(items, updated_prices)]
 
-    def compute_new_prices(self, items):
+    def _compute_prices(self, items, **kwargs):
         '''
         This is method for updating prices in item collection.
 

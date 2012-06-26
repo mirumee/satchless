@@ -1,0 +1,135 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2012-06-27 00:55+0200\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1)\n"
+
+#: forms.py:11
+msgid "Set as default billing"
+msgstr "Stel in als standaard factuuradres"
+
+#: forms.py:13
+msgid "Set as default shipping"
+msgstr "Stel in als standaard verzendadres"
+
+#: models.py:9
+msgid "short alias"
+msgstr "kort alias"
+
+#: models.py:10
+msgid "User-defined alias which identifies this address"
+msgstr "Door gebruiker gekozen alias dat dit adres omschrijft"
+
+#: models.py:11
+msgid "first name"
+msgstr "voornaam"
+
+#: models.py:13
+msgid "last name"
+msgstr "achternaam"
+
+#: models.py:15
+msgid "company name"
+msgstr "bedrijfsnaam"
+
+#: models.py:16
+msgid "street address 1"
+msgstr "adresregel 1"
+
+#: models.py:17
+msgid "street address 2"
+msgstr "adresregel 2"
+
+#: models.py:18
+msgid "city"
+msgstr "stad"
+
+#: models.py:19
+msgid "postal code"
+msgstr "postcode"
+
+#: models.py:20
+msgid "country"
+msgstr "land"
+
+#: models.py:21
+msgid "country administrative area"
+msgstr "provincie/staat"
+
+#: models.py:22
+msgid "tax ID"
+msgstr "BTW nummer"
+
+#: models.py:23
+msgid "phone number"
+msgstr "telefoonnummer"
+
+#: models.py:41
+msgid "email"
+msgstr "e-mailadres"
+
+#: templates/satchless/contact/address_edit.html:5
+#: templates/satchless/contact/address_edit.html:8
+msgid "Edit address"
+msgstr "Adres bewerken"
+
+#: templates/satchless/contact/address_edit.html:5
+#: templates/satchless/contact/address_edit.html:8
+msgid "New address"
+msgstr "Nieuw adres"
+
+#: templates/satchless/contact/address_edit.html:15
+msgid "Save"
+msgstr "Opslaan"
+
+#: templates/satchless/contact/base.html:5
+#: templates/satchless/contact/my_contact.html:3
+#: templates/satchless/contact/my_contact.html:5
+msgid "My contact data"
+msgstr "Mijn contactgegevens"
+
+#: templates/satchless/contact/my_contact.html:6
+msgid "Email"
+msgstr "E-mailadres"
+
+#: templates/satchless/contact/my_contact.html:7
+msgid "Addresses"
+msgstr "Adressen"
+
+#: templates/satchless/contact/my_contact.html:22
+msgid "is default billing address"
+msgstr "is standaard factuuradres"
+
+#: templates/satchless/contact/my_contact.html:25
+msgid "is default shipping address"
+msgstr "is standaard verzendadres"
+
+#: templates/satchless/contact/my_contact.html:29
+msgid "edit"
+msgstr "bewerken"
+
+#: templates/satchless/contact/my_contact.html:35
+msgid "Add new address"
+msgstr "Nieuw adres toevoegen"
+
+#: templates/satchless/contact/my_contact.html:39
+msgid "You have no address defined."
+msgstr "Er zijn geen adressen opgegeven."
+
+#: templates/satchless/contact/my_contact.html:40
+msgid "Add a new one."
+msgstr "Voeg een adres toe."

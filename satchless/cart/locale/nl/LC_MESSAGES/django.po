@@ -1,0 +1,120 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2012-06-27 00:47+0200\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1)\n"
+
+#: forms.py:12
+msgid "Quantity cannot be negative"
+msgstr "Hoeveelheid kan niet negatief zijn"
+
+#: forms.py:24 templates/satchless/cart/view.html:17
+#: templates/satchless/cart/view_ajax.html:10
+#: tests/templates/satchless/cart/view.html:17
+#: tests/templates/satchless/cart/view_ajax.html:10
+msgid "Quantity"
+msgstr "Aantal"
+
+#: models.py:28
+msgid "type"
+msgstr "type"
+
+#: models.py:29
+msgid "currency"
+msgstr "valuta"
+
+#: models.py:142
+msgid "quantity"
+msgstr "aantal"
+
+#: templates/satchless/cart/view.html:3 templates/satchless/cart/view.html:6
+#: templates/satchless/cart/view.html:9
+#: templates/satchless/cart/view_ajax.html:2
+#: tests/templates/satchless/cart/view.html:3
+#: tests/templates/satchless/cart/view.html:6
+#: tests/templates/satchless/cart/view.html:9
+#: tests/templates/satchless/cart/view_ajax.html:2
+msgid "My cart"
+msgstr "Mijn winkelwagen"
+
+#: templates/satchless/cart/view.html:14
+#: templates/satchless/cart/view_ajax.html:7
+#: tests/templates/satchless/cart/view.html:14
+#: tests/templates/satchless/cart/view_ajax.html:7
+msgid "No."
+msgstr "Nr."
+
+#: templates/satchless/cart/view.html:15
+#: templates/satchless/cart/view_ajax.html:8
+#: tests/templates/satchless/cart/view.html:15
+#: tests/templates/satchless/cart/view_ajax.html:8
+msgid "Item"
+msgstr "Item"
+
+#: templates/satchless/cart/view.html:16
+#: templates/satchless/cart/view_ajax.html:9
+#: tests/templates/satchless/cart/view.html:16
+#: tests/templates/satchless/cart/view_ajax.html:9
+msgid "Unit price"
+msgstr "Stukprijs"
+
+#: templates/satchless/cart/view.html:18
+#: templates/satchless/cart/view_ajax.html:11
+#: tests/templates/satchless/cart/view.html:18
+#: tests/templates/satchless/cart/view_ajax.html:11
+msgid "Price"
+msgstr "Prijs"
+
+#: templates/satchless/cart/view.html:19
+#: templates/satchless/cart/view_ajax.html:12
+#: tests/templates/satchless/cart/view.html:19
+#: tests/templates/satchless/cart/view_ajax.html:12
+msgid "Tax"
+msgstr "Belasting"
+
+#: templates/satchless/cart/view.html:20 templates/satchless/cart/view.html:60
+#: templates/satchless/cart/view_ajax.html:13
+#: templates/satchless/cart/view_ajax.html:53
+#: tests/templates/satchless/cart/view.html:20
+#: tests/templates/satchless/cart/view.html:60
+#: tests/templates/satchless/cart/view_ajax.html:13
+#: tests/templates/satchless/cart/view_ajax.html:53
+msgid "Delete"
+msgstr "Verwijderen"
+
+#: templates/satchless/cart/view.html:48
+#: templates/satchless/cart/view_ajax.html:41
+#: tests/templates/satchless/cart/view.html:48
+#: tests/templates/satchless/cart/view_ajax.html:41
+msgid "Update"
+msgstr "Bijwerken"
+
+#: templates/satchless/cart/view.html:81
+#: templates/satchless/cart/view_ajax.html:73
+#: tests/templates/satchless/cart/view.html:80
+#: tests/templates/satchless/cart/view_ajax.html:73
+msgid "Total"
+msgstr "Totaal"
+
+#: templates/satchless/cart/view.html:94
+#: templates/satchless/cart/view_ajax.html:86
+msgid "Check out"
+msgstr "Afrekenen"
+
+#: tests/templates/satchless/base.html:7
+msgid "For Python perfectionists with real deadlines"
+msgstr ""

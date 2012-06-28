@@ -1,5 +1,6 @@
 from ....payment.models import PaymentVariant
 from django.db import models
+import datetime
 
 class PaymentsGatewayReceipt(models.Model):
     pg_merchant_id = models.CharField(blank=True, null=True, max_length=10)
@@ -50,6 +51,9 @@ class PaymentsGatewayReceipt(models.Model):
 
     pg_client_id = models.CharField(max_length=10, blank=True, null=True)
     other_error = models.CharField(max_length=100, blank=True, null=True)
+
+    creation_time = models.DateTimeField(auto_now_add=True)
+    modification_time = models.DateTimeField(auto_now=True)
 
 class PaymentsGatewayVariant(PaymentVariant):
     pg_client_token = models.CharField(max_length=50, blank=True, null=True)

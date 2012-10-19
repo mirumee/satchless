@@ -1,6 +1,8 @@
 from django.db.models import Min, Max
+from prices import Price, PriceRange
 
-from ....pricing import Price, PriceRange, PricingHandler
+from ....pricing import PricingHandler
+
 
 class SimpleQtyPricingHandler(PricingHandler):
     def _get_variants_count(self, variant, currency, quantity, **kwargs):

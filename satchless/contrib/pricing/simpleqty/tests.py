@@ -1,8 +1,8 @@
 from django.db import models
 from django.test import TestCase
+from prices import Price
 
 from ....cart.tests.app import MockCart
-from ....pricing import Price
 from ....pricing.handler import PricingQueue
 from ....product.models import Product, Variant
 from . import SimpleQtyPricingHandler
@@ -16,15 +16,13 @@ class DeadParrot(ProductPriceMixin, Product):
 
 class DeadParrotVariant(VariantPriceOffsetMixin, Variant):
 
-    product = models.ForeignKey(DeadParrot,
-                                related_name='variants')
+    product = models.ForeignKey(DeadParrot, related_name='variants')
     looks_alive = models.BooleanField()
 
 
 class TestPriceQtyOverride(PriceQtyOverride):
 
-    product = models.ForeignKey(DeadParrot,
-                                related_name='qty_overrides')
+    product = models.ForeignKey(DeadParrot, related_name='qty_overrides')
 
 
 class HandlerTestCase(TestCase):
@@ -87,7 +85,7 @@ class HandlerTestCase(TestCase):
 
         # because 1 macaw_d variant is in cart:
         #   qt_override_1.min_qty - 1 + 1 = qt_override_1.min_qty
-        cart_item_a = cart.replace_item(macaw_a, qt_override_1.min_qty-1)
+        cart_item_a = cart.replace_item(macaw_a, qt_override_1.min_qty - 1)
         price = self.pricing_queue.get_variant_price(macaw_a,
                                                      cart=cart,
                                                      cartitem=cart_item_a)
@@ -96,7 +94,7 @@ class HandlerTestCase(TestCase):
 
         # because 1 macaw_d variant is in cart:
         #   qt_override_2.min_qty - 1 + 1 = qt_override_2.min_qty
-        cart_item_a = cart.replace_item(macaw_a, qt_override_2.min_qty-1)
+        cart_item_a = cart.replace_item(macaw_a, qt_override_2.min_qty - 1)
         price = self.pricing_queue.get_variant_price(macaw_a,
                                                      cart=cart,
                                                      cartitem=cart_item_a)
@@ -156,7 +154,7 @@ class HandlerTestCase(TestCase):
 
         # because 1 macaw_d variant is in cart:
         #   qt_override_1.min_qty - 1 + 1 = qt_override_1.min_qty
-        cart_item_a = cart.replace_item(macaw_a, qt_override_1.min_qty-1)
+        cart_item_a = cart.replace_item(macaw_a, qt_override_1.min_qty - 1)
         price = self.pricing_queue.get_variant_price(macaw_a,
                                                      cart=cart,
                                                      cartitem=cart_item_a)

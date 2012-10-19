@@ -2,7 +2,8 @@
 from decimal import Decimal
 from django.db import models
 from django.utils.translation import ugettext_lazy as _
-from satchless.pricing import PriceRange
+from prices import PriceRange
+
 
 class DiscountGroup(models.Model):
 

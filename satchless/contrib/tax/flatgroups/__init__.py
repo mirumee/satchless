@@ -1,7 +1,9 @@
 from decimal import Decimal
+from prices import Price, PriceRange, LinearTax
 
-from ....pricing import Price, PriceRange, LinearTax, PricingHandler
+from ....pricing import PricingHandler
 from . import models
+
 
 class FlatGroupPricingHandler(PricingHandler):
 
@@ -12,7 +14,7 @@ class FlatGroupPricingHandler(PricingHandler):
             return price
         if not isinstance(price, (Price, PriceRange)):
             raise TypeError("Price must be a Price instance or tuple.")
-        multiplier = (product.tax_group.rate + Decimal('100')) / Decimal('100')
+        multiplier = product.tax_group.rate / Decimal('100')
         tax = LinearTax(multiplier=multiplier, name=product.tax_group.name)
         return price + tax
 

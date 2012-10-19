@@ -1,8 +1,8 @@
 from decimal import Decimal
 from django.db import models
 from django.test import TestCase
+from prices import Price, PriceRange
 
-from ....pricing import Price, PriceRange
 from ....pricing.handler import PricingQueue
 from ....product.models import Product, Variant
 from ....product.tests.pricing import FiveZlotyPriceHandler
@@ -61,4 +61,3 @@ class ParrotTaxTest(TestCase):
                                                         currency='PLN'),
                                         max_price=Price(5, 5,
                                                         currency='PLN')))
-

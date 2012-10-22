@@ -3,9 +3,9 @@ import decimal
 from django.contrib.auth.models import User
 from django.db import models
 from django.utils.translation import ugettext_lazy as _
+from prices import Price
 import random
 
-from ..pricing import Price
 from ..util import countries
 from ..util.models import DeferredForeignKey
 from . import signals
@@ -29,7 +29,7 @@ class Order(models.Model):
     created = models.DateTimeField(default=datetime.datetime.now,
                                    editable=False, blank=True)
     last_status_change = models.DateTimeField(default=datetime.datetime.now,
-                                   editable=False, blank=True)
+                                              editable=False, blank=True)
     user = models.ForeignKey(User, blank=True, null=True, related_name='+')
     currency = models.CharField(max_length=3)
     billing_first_name = models.CharField(_("first name"),

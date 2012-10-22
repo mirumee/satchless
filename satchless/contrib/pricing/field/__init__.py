@@ -1,5 +1,8 @@
 from django.db.models import Min, Max
-from ....pricing import Price, PriceRange, PricingHandler
+from prices import Price, PriceRange
+
+from ....pricing import PricingHandler
+
 
 class FieldGetter(object):
     def __init__(self, field_name='price', currency=None):

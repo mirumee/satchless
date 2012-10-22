@@ -1,4 +1,7 @@
-from satchless.pricing import Price, PriceRange, PricingHandler
+from prices import Price, PriceRange
+
+from satchless.pricing import PricingHandler
+
 
 class SalePricingHandler(PricingHandler):
     def _discount_product(self, product, price):

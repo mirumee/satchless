@@ -2,8 +2,9 @@ from decimal import Decimal
 
 from django.test import TestCase
 from localeurl.models import reverse
+from prices import Price
 from satchless.product.tests.pricing import FiveZlotyPriceHandler
-from satchless.pricing import Price, handler
+from satchless.pricing import handler
 from satchless.util.tests import ViewsTestCase
 
 from products.models import Hat

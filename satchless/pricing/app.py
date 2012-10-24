@@ -1,6 +1,7 @@
 from django.conf import settings
 from .handler import PricingQueue
 
+
 class ProductAppPricingMixin(object):
 
     def __init__(self, *args, **kwargs):

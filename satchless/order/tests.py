@@ -4,16 +4,14 @@ import os
 
 from django.contrib.auth.models import User
 from django.conf.urls.defaults import patterns, include, url
-from django.conf import settings
 from django.test import Client
+from prices import Price
 
 from . import models
 from .app import MagicOrderApp
 from ..checkout.app import CheckoutApp
 from ..cart.tests import cart_app
-from ..pricing import handler
 from ..product.tests import DeadParrot
-from ..product.tests.pricing import FiveZlotyPriceHandler
 from ..util.models import construct
 from ..util.tests import ViewsTestCase
 
@@ -73,8 +71,6 @@ class OrderTest(ViewsTestCase):
                                                              looks_alive=True)
         self.cockatoo_blue_d = self.cockatoo.variants.create(color='blue',
                                                              looks_alive=False)
-        self.original_handlers = settings.SATCHLESS_PRICING_HANDLERS
-        handler.pricing_queue = handler.PricingQueue(FiveZlotyPriceHandler)
         app_dir = os.path.dirname(__file__)
         self.custom_settings = {
             'SATCHLESS_PRODUCT_VIEW_HANDLERS': ('satchless.cart.add_to_cart_handler',),
@@ -85,9 +81,17 @@ class OrderTest(ViewsTestCase):
         self.original_settings = self._setup_settings(self.custom_settings)
 
     def tearDown(self):
-        handler.pricing_queue = handler.PricingQueue(*self.original_handlers)
         self._teardown_settings(self.original_settings,
                                 self.custom_settings)
+
+    def test_order_has_proper_total(self):
+        cart = cart_app.Cart.objects.create(typ='satchless.test_cart')
+        cart.replace_item(self.macaw_blue, 1)
+
+        order = checkout_app.Order.objects.create(cart=cart, user=cart.owner,
+                                                  currency=cart.currency)
+        checkout_app.partition_cart(cart, order)
+        self.assertEquals(order.get_total(), Price(5, currency='PLN'))
 
     def test_order_content_is_deleted_when_cart_content_changes(self):
         cart = cart_app.Cart.objects.create(typ='satchless.test_cart')

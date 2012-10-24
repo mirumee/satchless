@@ -20,5 +20,3 @@ class PricingQueue(PricingHandler, QueueHandler):
                                                       price_range=price_range,
                                                       **context)
         return price_range
-
-

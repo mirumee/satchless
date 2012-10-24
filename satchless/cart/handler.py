@@ -5,6 +5,7 @@ from ..util import JSONResponse
 from . import forms
 from . import signals
 
+
 class AddToCartHandler(object):
     """
     Parametrized handler for `product_view`, which produces *add to cart* forms,

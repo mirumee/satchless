@@ -7,7 +7,6 @@ import os
 
 from ...pricing.app import ProductAppPricingMixin
 from ...product.app import MagicProductApp
-from ...product.tests.pricing import FiveZlotyPriceHandler
 from ...product.tests import Parrot, ParrotVariant, DeadParrot, ZombieParrot, DeadParrotVariantForm
 from ...util.tests import ViewsTestCase
 
@@ -20,10 +19,11 @@ class TestProductApp(ProductAppPricingMixin, MagicProductApp):
     Product = Parrot
     Variant = ParrotVariant
 
-product_app = TestProductApp(pricing_handler=FiveZlotyPriceHandler())
+product_app = TestProductApp()
 
 
 class TestCartApp(app.MagicCartApp):
+
     app_name = 'test_cart_app'
     cart_type = 'test_cart_app'
 

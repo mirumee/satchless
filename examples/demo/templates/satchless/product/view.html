@@ -39,7 +39,7 @@
     </div>
 </div>
 
-{% product_price_range product pricing_handler as price_range %}
+{% product_price_range product as price_range %}
 <form action="" method="post" class="grid_16 omega">
     <div class="product-details">
         <div class="product-info">
@@ -63,7 +63,7 @@
             <div class="add-to-cart">
 {% if price_range %}
                 <div class="product-price">
-            {% product_price_range product pricing_handler discount=0 as undiscounted_price_range %}
+            {% product_price_range product discount=0 as undiscounted_price_range %}
     {% if price_range.min_price != price_range.max_price %}
         {% if price_range.min_price != undiscounted_price_range.min_price or price_range.max_price != undiscounted_price_range.max_price %}
                     <span class="strike">{{ undiscounted_price_range.min_price|gross|floatformat:2 }} – {{ undiscounted_price_range.max_price|gross|floatformat:2 }}</span>

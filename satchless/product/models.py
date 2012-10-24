@@ -1,16 +1,16 @@
-# -*- coding: utf-8 -*-
 from django.db import models
 from django.utils.translation import ugettext_lazy as _
 import decimal
 
+from ..item import ItemRange, Item
 from ..util.models import Subtyped
 
 __all__ = ('Product', 'Variant')
 
-class Product(Subtyped):
+
+class Product(Subtyped, ItemRange):
     """
-    The base Product to rule them all. Provides slug, a powerful item to
-    identify member of each tribe.
+    Django binding for a product group (product with multiple variants)
     """
     slug = models.SlugField(_('slug'), max_length=80, db_index=True,
                             unique=True,
@@ -26,8 +26,11 @@ class Product(Subtyped):
     class Meta:
         abstract = True
 
-    def __unicode__(self):
-        return self.slug
+    def __repr__(self):
+        return '<Product #%r: %r>' % (self.id, self.slug)
+
+    def __iter__(self):
+        return iter(self.variants.all())
 
     @models.permalink
     def get_absolute_url(self):
@@ -38,14 +41,16 @@ class Product(Subtyped):
         Returns sanitized quantity. By default it rounds the value to the
         nearest integer.
         """
-        return decimal.Decimal(quantity).quantize(self.quantity_quantizer,
-                                                  rounding=self.quantity_rounding)
+        return decimal.Decimal(quantity).quantize(
+            self.quantity_quantizer, rounding=self.quantity_rounding)
 
 
-class Variant(Subtyped):
+class Variant(Subtyped, Item):
     """
-    Base class for variants. It identifies a concrete product instance,
-    which goes to a cart. Custom variants inherit from it.
+    Django binding for a single product or variant
     """
     class Meta:
         abstract = True
+
+    def __repr__(self):
+        return '<Variant #%r>' % (self.id,)

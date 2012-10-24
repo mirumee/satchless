@@ -13,11 +13,10 @@ from .....payment import ConfirmationFormNeeded
 from .....payment.tests import TestPaymentProvider
 from .....pricing import handler as pricing_handler
 from .....product.tests import DeadParrot
-from .....product.tests.pricing import FiveZlotyPriceHandler
-
 from ..app import SingleStepCheckoutApp
 from .....cart.tests import cart_app
 from .....order.tests import order_app
+
 
 class TestPaymentProviderWithConfirmation(TestPaymentProvider):
     def confirm(self, order, typ=None):
@@ -65,7 +64,6 @@ class App(BaseCheckoutAppTests):
                                         with_customer_notes=True)
         self.anon_client = Client()
         self.original_pricing_handlers = settings.SATCHLESS_PRICING_HANDLERS
-        pricing_handler.pricing_queue = pricing_handler.PricingQueue(FiveZlotyPriceHandler)
 
     def tearDown(self):
         self._teardown_settings(self.original_settings, self.custom_settings)
@@ -108,7 +106,6 @@ class App(BaseCheckoutAppTests):
                                                kwargs={'order_token':
                                                        order.token}))
         self.assertEqual(order.status, 'payment-pending')
-
 
     def test_confirmation_view_redirects_when_order_or_payment_is_missing(self):
         cart = self._get_or_create_cart_for_client(self.anon_client)

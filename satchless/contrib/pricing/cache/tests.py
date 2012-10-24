@@ -6,6 +6,7 @@ from ....contrib.pricing.cache import PricingCacheHandler
 
 from decimal import Decimal
 
+
 class Cache(TestCase):
     def setUp(self):
         self.parrot = DeadParrot.objects.create(slug='parrot', species='Parrot')

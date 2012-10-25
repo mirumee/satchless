@@ -8,7 +8,7 @@ from satchless.contrib.pricing.cache import PricingCacheHandler
 from django.core.urlresolvers import reverse
 from django.utils.translation import ugettext_lazy as _
 
-PROJECT_ROOT = os.path.dirname( __file__ )
+PROJECT_ROOT = os.path.dirname(__file__)
 
 DEBUG = True
 TEMPLATE_DEBUG = DEBUG
@@ -21,12 +21,12 @@ MANAGERS = ADMINS
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3', # Add 'postgresql_psycopg2', 'postgresql', 'mysql', 'sqlite3' or 'oracle'.
-        'NAME': 'dev.db',                      # Or path to database file if using sqlite3.
-        'USER': '',                      # Not used with sqlite3.
-        'PASSWORD': '',                  # Not used with sqlite3.
-        'HOST': '',                      # Set to empty string for localhost. Not used with sqlite3.
-        'PORT': '',                      # Set to empty string for default. Not used with sqlite3.
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': 'dev.db',
+        'USER': '',
+        'PASSWORD': '',
+        'HOST': '',
+        'PORT': ''
     }
 }
 
@@ -208,6 +208,7 @@ SATCHLESS_DEFAULT_CURRENCY = 'GBP'
 
 INTERNAL_IPS = ['127.0.0.1']
 
+
 class CustomCacheHandler(PricingCacheHandler):
     def get_cache_key(self, *args, **kwargs):
         discount = bool(kwargs.pop('discount', True))
@@ -215,13 +216,6 @@ class CustomCacheHandler(PricingCacheHandler):
         key['discount'] = discount
         return key
 
-SATCHLESS_PRICING_HANDLERS = [
-    CustomCacheHandler(
-        'satchless.contrib.pricing.simpleqty.SimpleQtyPricingHandler',
-        'satchless.contrib.tax.flatgroups.FlatGroupPricingHandler',
-        'sale.SalePricingHandler',
-        lazy=True)
-]
 SATCHLESS_PRODUCT_VIEW_HANDLERS = [
     'carts.handler.carts_handler',
 ]

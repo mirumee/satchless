@@ -15,12 +15,27 @@ import satchless.product.models
 from satchless.util.models import construct
 
 from categories.models import Category
-from sale.models import DiscountedProductMixin
+
+
+class DiscountGroup(models.Model):
+
+    name = models.CharField(_('group name'), max_length=100)
+    rate = models.DecimalField(_('rate'), max_digits=4, decimal_places=2,
+                               help_text=_('Percentile rate of the discount.'))
+    rate_name = models.CharField(_('name of the rate'), max_length=30,
+                                 help_text=_(u'Name of the rate which will be '
+                                             'displayed to the user.'))
+
+    def get_discount_amount(self, price):
+        return price * self.rate * decimal.Decimal('0.01')
+
+    def __unicode__(self):
+        return self.name
 
 
 class Product(TaxedProductMixin,
               construct(CategorizedProductMixin, category=Category),
-              DiscountedProductMixin, satchless.product.models.Product):
+              satchless.product.models.Product):
 
     QTY_MODE_CHOICES = (
         ('product', _("per product")),
@@ -35,6 +50,18 @@ class Product(TaxedProductMixin,
                                             "quantity of all product's "
                                             "variants will be used."))
     price = models.DecimalField(_("base price"), max_digits=12, decimal_places=4)
+    discount = models.ForeignKey(DiscountGroup, null=True, blank=True,
+                                 related_name='products')
+
+    def _get_base_price(self, quantity):
+        overrides = self.qty_price_overrides.all()
+        overrides = overrides.filter(min_qty__lte=quantity).order_by('-min_qty')
+        currency = settings.SATCHESS_DEFAULT_CURRENCY
+        try:
+            override = overrides[0]
+            return Price(override.price, currency=currency)
+        except PriceQtyOverride.DoesNotExist:
+            return Price(self.price, currency=currency)
 
 
 class PriceQtyOverride(models.Model):
@@ -57,17 +84,13 @@ class Variant(TaxedVariantMixin, VariantStockLevelMixin,
                                        default=decimal.Decimal(0),
                                        max_digits=12, decimal_places=4)
 
-    def get_price_for_item(self, quantity=1, **kwargs):
-        overrides = self.product.qty_price_overrides.all()
-        overrides = overrides.filter(min_qty__lte=quantity).order_by('-min_qty')
+    def get_price_for_item(self, discount=True, quantity=1, **kwargs):
         currency = settings.SATCHESS_DEFAULT_CURRENCY
-        try:
-            override = overrides[0]
-            price = Price(override.price, currency=currency)
-        except PriceQtyOverride.DoesNotExist:
-            price = Price(self.product.price, currency=currency)
-
-        return price + Price(self.price_offset, currency=currency)
+        price = self.product._get_base_price(quantity=quantity)
+        price += Price(self.price_offset, currency=currency)
+        if discount and self.product.discount:
+            price -= self.product.discount.get_discount_amount(price)
+        return price
 
 
 class ProductImage(Image):

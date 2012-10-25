@@ -155,7 +155,6 @@ INSTALLED_APPS = (
     'pagination',
     'core',
     'carts',
-    'sale',
     'orders',
     'checkouts',
 

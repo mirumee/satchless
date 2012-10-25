@@ -15,6 +15,10 @@ from . import models
 from categories.admin.fields import CategoryMultipleChoiceField
 
 
+class DiscountGroupAdmin(admin.ModelAdmin):
+    model = models.DiscountGroup
+
+
 class TranslationInline(admin.StackedInline):
     extra = 1
     max_num = len(settings.LANGUAGES) - 1
@@ -229,3 +233,4 @@ admin.site.register(models.Trousers, TrousersAdmin)
 admin.site.register(models.TShirt, TShirtAdmin)
 
 admin.site.register(models.Make)
+admin.site.register(models.DiscountGroup, DiscountGroupAdmin)

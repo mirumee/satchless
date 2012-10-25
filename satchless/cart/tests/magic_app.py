@@ -5,7 +5,6 @@ from django.contrib.auth.models import User
 from django.test import Client
 import os
 
-from ...pricing.app import ProductAppPricingMixin
 from ...product.app import MagicProductApp
 from ...product.tests import Parrot, ParrotVariant, DeadParrot, ZombieParrot, DeadParrotVariantForm
 from ...util.tests import ViewsTestCase
@@ -14,7 +13,7 @@ from .. import app
 from . import TestCart, TestCartItem
 
 
-class TestProductApp(ProductAppPricingMixin, MagicProductApp):
+class TestProductApp(MagicProductApp):
 
     Product = Parrot
     Variant = ParrotVariant

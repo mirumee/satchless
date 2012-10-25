@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 import os
 
-from django.conf import settings
 from django.core.urlresolvers import reverse
 from django.forms.models import modelform_factory
 from django.test import Client
@@ -11,7 +10,6 @@ from .....delivery.tests import TestDeliveryProvider, TestDeliveryType
 from .....order.forms import BillingForm
 from .....payment import ConfirmationFormNeeded
 from .....payment.tests import TestPaymentProvider
-from .....pricing import handler as pricing_handler
 from .....product.tests import DeadParrot
 from ..app import SingleStepCheckoutApp
 from .....cart.tests import cart_app
@@ -63,11 +61,9 @@ class App(BaseCheckoutAppTests):
         TestDeliveryType.objects.create(price=10, typ='courier', name='Courier',
                                         with_customer_notes=True)
         self.anon_client = Client()
-        self.original_pricing_handlers = settings.SATCHLESS_PRICING_HANDLERS
 
     def tearDown(self):
         self._teardown_settings(self.original_settings, self.custom_settings)
-        pricing_handler.pricing_queue = pricing_handler.PricingQueue(*self.original_pricing_handlers)
 
     def test_checkout_view_passes_with_correct_data(self):
         cart = self._get_or_create_cart_for_client(self.anon_client)

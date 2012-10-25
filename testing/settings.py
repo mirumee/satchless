@@ -35,8 +35,6 @@ INSTALLED_APPS = [
     'satchless.contrib.payment.django_payments_provider',
     'satchless.contrib.payment.mamona_provider',
     'satchless.contrib.payment.stripe_provider',
-    'satchless.contrib.pricing.cache',
-    'satchless.contrib.pricing.simpleqty',
     'satchless.contrib.stock.singlestore',
     'satchless.contrib.tax.flatgroups',
     'satchless.delivery',
@@ -62,9 +60,6 @@ MIDDLEWARE_CLASSES = [
 ROOT_URLCONF = 'testing.urls'
 
 SATCHLESS_DEFAULT_CURRENCY = 'PLN'
-SATCHLESS_PRICING_HANDLERS = [
-    'satchless.contrib.pricing.simpleqty.SimpleQtyPricingHandler'
-]
 SATCHLESS_DELIVERY_PROVIDER = [
     'satchless.contrib.delivery.simplepost.PostDeliveryProvider'
 ]

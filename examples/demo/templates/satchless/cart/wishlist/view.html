@@ -47,8 +47,8 @@
                 <div class="grid_5 omega">
                     <div class="sidebar">
                         <div class="product-price">
-                {% product_price_range product pricing_handler as price_range %}
-                {% product_price_range product pricing_handler discount=0 as undiscounted_price_range %}
+                {% product_price_range product as price_range %}
+                {% product_price_range product discount=0 as undiscounted_price_range %}
                 {% if price_range.min != price_range.max %}
                     {% if price_range.min != undiscounted_price_range.min or price_range.max != undiscounted_price_range.max %}
                             <span class="strike">{{ undiscounted_price_range.min_price|gross|floatformat:2 }} - {{ undiscounted_price_range.max_price|gross|floatformat:2 }}</span>

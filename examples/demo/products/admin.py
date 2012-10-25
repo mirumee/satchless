@@ -9,7 +9,6 @@ from django.utils.translation import ugettext_lazy as _, ugettext
 import django.db.models
 
 from categories.app import product_app
-import pricing.models
 from . import widgets
 from . import models
 
@@ -23,7 +22,7 @@ class TranslationInline(admin.StackedInline):
 
 class ImageInline(admin.TabularInline):
     formfield_overrides = {
-        django.db.models.ImageField: { 'widget': widgets.AdminImageWidget },
+        django.db.models.ImageField: {'widget': widgets.AdminImageWidget},
     }
 
 
@@ -32,6 +31,7 @@ class ProductForm(forms.ModelForm):
                                              queryset=product_app.Category.objects
                                                                           .order_by('tree_id',
                                                                                     'lft'))
+
     def __init__(self, *args, **kwargs):
         super(ProductForm, self).__init__(*args, **kwargs)
         if self.instance.id:
@@ -49,6 +49,8 @@ product_fieldsets = (
         'fields': ('categories',),
     }),
 )
+
+
 class ProductAdmin(admin.ModelAdmin):
     form = ProductForm
     prepopulated_fields = {'slug': ('name',)}
@@ -62,7 +64,7 @@ class ProductImageInline(ImageInline):
 
 
 class PriceQtyOverrideInline(admin.TabularInline):
-    model = pricing.models.PriceQtyOverride
+    model = models.PriceQtyOverride
 
 
 class CardiganVariantInline(admin.TabularInline):
@@ -139,6 +141,7 @@ singlevariant_product_fieldsets = (
         'fields': ('categories',),
     }),
 )
+
 
 class HatAdmin(ProductAdmin):
     inlines = [HatTranslationInline,

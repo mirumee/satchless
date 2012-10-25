@@ -6,6 +6,7 @@ from categories.app import product_app
 
 from . import query
 
+
 def index(request, category_slugs=None):
     if category_slugs:
         category_slugs = filter(None, category_slugs.split('/'))
@@ -37,6 +38,5 @@ def index(request, category_slugs=None):
         'categories': categories,
         'category': category,
         'path': path,
-        'pricing_handler': product_app.pricing_handler,
         'products': products,
     })

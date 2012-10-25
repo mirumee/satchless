@@ -1,6 +1,6 @@
 from django.shortcuts import redirect
 from satchless.cart import signals
-from satchless.django.product.models import Product, Variant
+from satchless.product.models import Product, Variant
 from satchless.util import JSONResponse
 import satchless.cart.forms
 

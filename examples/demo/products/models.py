@@ -1,4 +1,5 @@
 # -*- coding:utf-8 -*-
+import decimal
 import os
 
 from django.conf import settings
@@ -6,10 +7,9 @@ from django.db import models
 from django.utils.translation import ugettext_lazy as _
 from django_images.models import Image
 from mothertongue.models import MothertongueModelTranslate
+from prices import Price
 from satchless.category.models import CategorizedProductMixin
-from satchless.contrib.pricing.simpleqty.models import (ProductPriceMixin,
-                                                        VariantPriceOffsetMixin)
-from satchless.contrib.tax.flatgroups.models import TaxedProductMixin
+from satchless.contrib.tax.flatgroups.models import TaxedProductMixin, TaxedVariantMixin
 from satchless.contrib.stock.singlestore.models import VariantStockLevelMixin
 import satchless.product.models
 from satchless.util.models import construct
@@ -18,16 +18,56 @@ from categories.models import Category
 from sale.models import DiscountedProductMixin
 
 
-class Product(ProductPriceMixin, TaxedProductMixin,
+class Product(TaxedProductMixin,
               construct(CategorizedProductMixin, category=Category),
               DiscountedProductMixin, satchless.product.models.Product):
 
-    pass
+    QTY_MODE_CHOICES = (
+        ('product', _("per product")),
+        ('variant', _("per variant"))
+    )
+    qty_mode = models.CharField(_("Quantity pricing mode"), max_length=10,
+                                choices=QTY_MODE_CHOICES, default='variant',
+                                help_text=_("In 'per variant' mode the unit "
+                                            "price will depend on quantity "
+                                            "of single variant being sold. In "
+                                            "'per product' mode, total "
+                                            "quantity of all product's "
+                                            "variants will be used."))
+    price = models.DecimalField(_("base price"), max_digits=12, decimal_places=4)
 
 
-class Variant(VariantPriceOffsetMixin, VariantStockLevelMixin, satchless.product.models.Variant):
+class PriceQtyOverride(models.Model):
+    """
+    Overrides price of product unit, depending of total quantity being sold.
+    """
+    product = models.ForeignKey(Product, related_name='qty_price_overrides')
+    min_qty = models.DecimalField(_("minimal quantity"), max_digits=10,
+                                  decimal_places=4)
+    price = models.DecimalField(_("unit price"), max_digits=12,
+                                decimal_places=4)
 
-    pass
+    class Meta:
+        ordering = ('min_qty',)
+
+
+class Variant(TaxedVariantMixin, VariantStockLevelMixin,
+              satchless.product.models.Variant):
+    price_offset = models.DecimalField(_("unit price offset"),
+                                       default=decimal.Decimal(0),
+                                       max_digits=12, decimal_places=4)
+
+    def get_price_for_item(self, quantity=1, **kwargs):
+        overrides = self.product.qty_price_overrides.all()
+        overrides = overrides.filter(min_qty__lte=quantity).order_by('-min_qty')
+        currency = settings.SATCHESS_DEFAULT_CURRENCY
+        try:
+            override = overrides[0]
+            price = Price(override.price, currency=currency)
+        except PriceQtyOverride.DoesNotExist:
+            price = Price(self.product.price, currency=currency)
+
+        return price + Price(self.price_offset, currency=currency)
 
 
 class ProductImage(Image):

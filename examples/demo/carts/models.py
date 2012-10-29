@@ -1,7 +1,26 @@
 from django.db import models
 import satchless.cart.models
+from satchless.util.models import construct
 
 import products.models
+
+
+class Cart(satchless.cart.models.Cart):
+    pass
+
+
+class CartItem(construct(satchless.cart.models.CartItem, cart=Cart,
+                         variant=products.models.Variant)):
+
+    def get_price_per_item(self, quantity=1, **kwargs):
+        variant = self.variant.get_subtype_instance()
+        if variant.product.qty_mode == 'product':
+            for i in self.cart:
+                ov = i.variant.get_subtype_instance()
+                if not ov == variant and ov.product == variant.product:
+                    quantity += i.get_quantity()
+        return variant.get_price(quantity=quantity, **kwargs)
+
 
 class Wishlist(satchless.cart.models.Cart):
 
@@ -23,7 +42,7 @@ class Wishlist(satchless.cart.models.Cart):
             wishlist_item.delete()
         quantity = 1 if quantity else 0
         return satchless.cart.models.QuantityResult(wishlist_item, quantity,
-                                                    quantity-old_quantity)
+                                                    quantity - old_quantity)
 
     def is_empty(self):
         return not self.items.exists()

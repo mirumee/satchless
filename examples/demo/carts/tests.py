@@ -75,7 +75,7 @@ class ViewsTestCase(satchless.util.tests.ViewsTestCase):
         response = self._test_GET_status(wishlist_app.reverse('details'),
                                          client_instance=self.client)
         form = response.context['cart_item_forms'][0]
-        data={
+        data = {
             form.add_prefix('request_marker'): '',
         }
         self._test_POST_status(

@@ -1,8 +1,6 @@
 # -*- coding:utf-8 -*-
 import os
 import re
-from localeurl.models import patch_reverse
-patch_reverse()
 
 from django.core.urlresolvers import reverse
 from django.utils.translation import ugettext_lazy as _
@@ -42,13 +40,8 @@ TIME_ZONE = 'Europe/Warsaw'
 # http://www.i18nguy.com/unicode/language-identifiers.html
 LANGUAGE_CODE = 'en'
 LANGUAGES = (
-    ('en', u"English"),
-    ('pl', u"Polski"),
-)
-
-PREFIX_DEFAULT_LOCALE = True
-LOCALE_INDEPENDENT_PATHS = (
-    re.compile('^/admin'),
+    ('en', u'English'),
+    ('pl', u'Polski'),
 )
 
 SITE_ID = 1
@@ -87,9 +80,9 @@ TEMPLATE_LOADERS = (
 )
 
 MIDDLEWARE_CLASSES = (
-    'localeurl.middleware.LocaleURLMiddleware',
-    'django.middleware.common.CommonMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'django.middleware.locale.LocaleMiddleware',
+    'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
@@ -108,12 +101,11 @@ TEMPLATE_DIRS = (
 TEMPLATE_CONTEXT_PROCESSORS = (
     'django.contrib.auth.context_processors.auth',
     'django.core.context_processors.debug',
+    'django.core.context_processors.request',
     'django.core.context_processors.i18n',
     'django.core.context_processors.media',
     'django.core.context_processors.static',
-    'django.core.context_processors.request',
     'django.contrib.messages.context_processors.messages',
-    'mothertongue.context_processors.router',
     'carts.context_processors.carts_sizes',
     'core.context_processors.root_categories',
 )
@@ -123,7 +115,6 @@ STATICFILES_DIRS = (
 
 
 INSTALLED_APPS = (
-    'localeurl',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
@@ -131,7 +122,6 @@ INSTALLED_APPS = (
     'django.contrib.messages',
     'django.contrib.staticfiles',
 
-    'mothertongue',
     'categories',
     'grappelli',
     'django.contrib.admin',

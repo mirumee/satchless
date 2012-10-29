@@ -6,10 +6,8 @@ from django_images.models import Image
 import satchless.category.models
 
 from localeurl.models import reverse
-from mothertongue.models import MothertongueModelTranslate
 
-class Category(satchless.category.models.Category,
-               MothertongueModelTranslate):
+class Category(satchless.category.models.Category):
     translated_fields = ('name', 'description', 'meta_description')
     translation_set = 'translations'
 

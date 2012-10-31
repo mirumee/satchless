@@ -20,21 +20,21 @@
                 {% with product|product_in_category_url:category as product_url %}
     <div class="grid_5 {% cycle 'alpha' '' '' 'omega' %}">
         <div class="product">
-            <a href="{{ product_url }}" class="product-photo">{% if product.main_image %}<img src="{{ product.main_image|at_size:'product-detail' }}" alt="{{ product.name }} image"/>{% endif %} </a>
+            {% if product.main_image %}<a href="{{ product_url }}" class="product-photo"><img src="{{ product.main_image|at_size:'product-detail' }}" alt="{{ product.name }} image"/></a>{% endif %}
             <div class="description">
                 <span class="manufacture">
                     {% if product.make %}
                     {{ product.make }}
                     {% endif %}
                 </span>
-                <h3>{{ product.name }}</h3>
+                <h3><a href="{{ product_url }}">{{ product.name }}</a></h3>
                 <div class="price">
-                    {% product_price_range product pricing_handler as price_range %}
-                    {% product_price_range product pricing_handler discount=0 as undiscounted_price_range %}
-                    {% if price_range.min != undiscounted_price_range.min %}
-                            <span class="strike">{{ undiscounted_price_range.min|gross|floatformat:2 }}</span>
+                    {% product_price_range product as price_range %}
+                    {% product_price_range product discount=0 as undiscounted_price_range %}
+                    {% if price_range.min_price != undiscounted_price_range.min_price %}
+                            <span class="strike">{{ undiscounted_price_range.min_price|gross|floatformat:2 }}</span>
                     {% endif %}
-                    <span class="fullprice">{{ price_range.min|gross|floatformat:2 }}</span> <span class="currency">{{ price_range.min|currency }}</span>
+                    <span class="fullprice">{{ price_range.min_price|gross|floatformat:2 }}</span> <span class="currency">{{ price_range.min_price|currency }}</span>
                 </div>
             </div>
         </div>

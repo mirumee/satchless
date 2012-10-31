@@ -42,13 +42,13 @@
             </tr>
         </thead>
         <tbody>
-    {% cart_total_price cart pricing_handler as cart_total %}
+    {% cart_total_price cart as cart_total %}
     {% for form in cart_item_forms %}
         {% with form.instance as cart_item %}
-        {% cartitem_unit_price cart_item pricing_handler as unit_price %}
-        {% cartitem_unit_price cart_item pricing_handler discount=0 as undiscounted_unit_price %}
-        {% cartitem_price cart_item pricing_handler as item_price %}
-        {% cartitem_price cart_item pricing_handler discount=0 as undiscounted_item_price %}
+        {% cartitem_unit_price cart_item as unit_price %}
+        {% cartitem_unit_price cart_item discount=0 as undiscounted_unit_price %}
+        {% cartitem_price cart_item as item_price %}
+        {% cartitem_price cart_item discount=0 as undiscounted_item_price %}
         {% promote cart_item.variant as variant %}
         {% with cart.currency as currency %}
         {% include "satchless/cart/snippets/row.html" %}

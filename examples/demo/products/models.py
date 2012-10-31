@@ -6,8 +6,8 @@ from django.conf import settings
 from django.db import models
 from django.utils.translation import ugettext_lazy as _
 from django_images.models import Image
+from django_prices.models import PriceField
 from mothertongue.models import MothertongueModelTranslate
-from prices import Price
 from satchless.category.models import CategorizedProductMixin
 from satchless.contrib.tax.flatgroups.models import TaxedProductMixin, TaxedVariantMixin
 from satchless.contrib.stock.singlestore.models import VariantStockLevelMixin
@@ -49,19 +49,21 @@ class Product(TaxedProductMixin,
                                             "'per product' mode, total "
                                             "quantity of all product's "
                                             "variants will be used."))
-    price = models.DecimalField(_("base price"), max_digits=12, decimal_places=4)
+    price = PriceField(_("base price"), currency='EUR',
+                       max_digits=12, decimal_places=4)
     discount = models.ForeignKey(DiscountGroup, null=True, blank=True,
                                  related_name='products')
+
+    def __unicode__(self):
+        return self.name
 
     def _get_base_price(self, quantity):
         overrides = self.qty_price_overrides.all()
         overrides = overrides.filter(min_qty__lte=quantity).order_by('-min_qty')
-        currency = settings.SATCHESS_DEFAULT_CURRENCY
         try:
-            override = overrides[0]
-            return Price(override.price, currency=currency)
-        except PriceQtyOverride.DoesNotExist:
-            return Price(self.price, currency=currency)
+            return overrides[0].price
+        except Exception:
+            return self.price
 
 
 class PriceQtyOverride(models.Model):
@@ -71,8 +73,8 @@ class PriceQtyOverride(models.Model):
     product = models.ForeignKey(Product, related_name='qty_price_overrides')
     min_qty = models.DecimalField(_("minimal quantity"), max_digits=10,
                                   decimal_places=4)
-    price = models.DecimalField(_("unit price"), max_digits=12,
-                                decimal_places=4)
+    price = PriceField(_("unit price"), currency='EUR',
+                       max_digits=12, decimal_places=4)
 
     class Meta:
         ordering = ('min_qty',)
@@ -80,14 +82,12 @@ class PriceQtyOverride(models.Model):
 
 class Variant(TaxedVariantMixin, VariantStockLevelMixin,
               satchless.product.models.Variant):
-    price_offset = models.DecimalField(_("unit price offset"),
-                                       default=decimal.Decimal(0),
-                                       max_digits=12, decimal_places=4)
+    price_offset = PriceField(_("unit price offset"), currency='EUR',
+                              default=0, max_digits=12, decimal_places=4)
 
-    def get_price_for_item(self, discount=True, quantity=1, **kwargs):
-        currency = settings.SATCHESS_DEFAULT_CURRENCY
+    def get_price_per_item(self, discount=True, quantity=1, **kwargs):
         price = self.product._get_base_price(quantity=quantity)
-        price += Price(self.price_offset, currency=currency)
+        price += self.price_offset
         if discount and self.product.discount:
             price -= self.product.discount.get_discount_amount(price)
         return price
@@ -124,11 +124,15 @@ class ProductBase(MothertongueModelTranslate, Product):
     meta_description = models.TextField(_('meta description'), blank=True,
                                         help_text=_('Description used by search'
                                                     ' and indexing engines.'))
-    make = models.ForeignKey(Make, null=True, blank=True, on_delete=models.SET_NULL,
-        help_text=_("Product manufacturer"))
-    main_image = models.ForeignKey(ProductImage, null=True, blank=True, on_delete=models.SET_NULL,
-            help_text=_("Main product image (first image by default)"))
-    translated_fields = ('name', 'description', 'meta_description', 'manufacture')
+    make = models.ForeignKey(Make, null=True, blank=True,
+                             on_delete=models.SET_NULL,
+                             help_text=_("Product manufacturer"))
+    main_image = models.ForeignKey(ProductImage, null=True, blank=True,
+                                   on_delete=models.SET_NULL,
+                                   help_text=_("Main product image"
+                                               " (first image by default)"))
+    translated_fields = ('name', 'description', 'meta_description',
+                         'manufacture')
     translation_set = 'translations'
 
     class Meta:
@@ -151,8 +155,12 @@ class ProductTranslation(models.Model):
 
 
 class ColoredVariant(Variant):
-    COLOR_CHOICES = (('red', _("Red")), ('green', _("Green")), ('blue', _("Blue")))
+    COLOR_CHOICES = [
+        ('red', _("Red")),
+        ('green', _("Green")),
+        ('blue', _("Blue"))]
     color = models.CharField(max_length=32, choices=COLOR_CHOICES)
+
     class Meta:
         abstract = True
 
@@ -169,11 +177,17 @@ class CardiganTranslation(ProductTranslation):
 
 class CardiganVariant(ColoredVariant):
     product = models.ForeignKey(Cardigan, related_name='variants')
-    SIZE_CHOICES = (('S', 'S'), ('XS', 'XS'), ('M', 'M'), ('L', 'L'), ('XL', 'XL'))
+    SIZE_CHOICES = [
+        ('XS', 'XS'),
+        ('S', 'S'),
+        ('M', 'M'),
+        ('L', 'L'),
+        ('XL', 'XL')]
     size = models.CharField(choices=SIZE_CHOICES, max_length=2)
 
     def __unicode__(self):
-        return '%s (%s / %s)' % (self.product, self.get_color_display(), self.get_size_display())
+        return '%s (%s / %s)' % (self.product, self.get_color_display(),
+                                 self.get_size_display())
 
 
 class Dress(ProductBase):
@@ -188,7 +202,7 @@ class DressTranslation(ProductTranslation):
 
 class DressVariant(ColoredVariant):
     product = models.ForeignKey(Dress, related_name='variants')
-    SIZE_CHOICES = tuple([(str(s),str(s)) for s in range(8, 15)])
+    SIZE_CHOICES = [(str(s), str(s)) for s in range(8, 15)]
     size = models.CharField(choices=SIZE_CHOICES, max_length=2)
 
     def __unicode__(self):
@@ -225,7 +239,7 @@ class JacketTranslation(ProductTranslation):
 
 class JacketVariant(ColoredVariant):
     product = models.ForeignKey(Jacket, related_name='variants')
-    SIZE_CHOICES = tuple([(str(s),str(s)) for s in range(36, 49)])
+    SIZE_CHOICES = [(str(s), str(s)) for s in range(36, 49)]
     size = models.CharField(choices=SIZE_CHOICES, max_length=2)
 
     def __unicode__(self):
@@ -245,7 +259,7 @@ class ShirtTranslation(ProductTranslation):
 
 class ShirtVariant(ColoredVariant):
     product = models.ForeignKey(Shirt, related_name='variants')
-    SIZE_CHOICES = tuple([(str(s),str(s)) for s in range(8, 17)])
+    SIZE_CHOICES = [(str(s), str(s)) for s in range(8, 17)]
     size = models.CharField(choices=SIZE_CHOICES, max_length=2)
 
     def __unicode__(self):
@@ -265,11 +279,17 @@ class TShirtTranslation(ProductTranslation):
 
 class TShirtVariant(ColoredVariant):
     product = models.ForeignKey(TShirt, related_name='variants')
-    SIZE_CHOICES = (('S', 'S'), ('XS', 'XS'), ('M', 'M'), ('L', 'L'), ('XL', 'XL'))
+    SIZE_CHOICES = [
+        ('XS', 'XS'),
+        ('S', 'S'),
+        ('M', 'M'),
+        ('L', 'L'),
+        ('XL', 'XL')]
     size = models.CharField(choices=SIZE_CHOICES, max_length=2)
 
     def __unicode__(self):
-        return u'%s / %s / %s' % (self.product, self.get_color_display(), self.get_size_display())
+        return u'%s / %s / %s' % (self.product, self.get_color_display(),
+                                  self.get_size_display())
 
 
 class Trousers(ProductBase):
@@ -284,7 +304,7 @@ class TrousersTranslation(ProductTranslation):
 
 class TrousersVariant(ColoredVariant):
     product = models.ForeignKey(Trousers, related_name='variants')
-    SIZE_CHOICES = tuple([(str(s),str(s)) for s in range(30, 39)])
+    SIZE_CHOICES = [(str(s), str(s)) for s in range(30, 39)]
     size = models.CharField(choices=SIZE_CHOICES, max_length=2)
 
     def __unicode__(self):
@@ -298,12 +318,13 @@ def assign_main_image(sender, instance, **kwargs):
         instance.product.save()
 models.signals.post_save.connect(assign_main_image, sender=ProductImage)
 
+
 def assign_new_main_image(sender, instance, **kwargs):
     try:
-        if instance.product.main_image == instance and instance.product.images.exists():
+        if (instance.product.main_image == instance and
+                instance.product.images.exists()):
             instance.product.main_image = instance.product.images.all()[0]
             instance.product.save()
     except Product.DoesNotExist:
         pass
 models.signals.post_delete.connect(assign_new_main_image, sender=ProductImage)
-

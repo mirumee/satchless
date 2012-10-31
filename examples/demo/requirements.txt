@@ -4,8 +4,9 @@ django-haystack
 django-localeurl
 django-mothertongue
 git+git://github.com/django-mptt/django-mptt.git#egg=django-mptt
-django-pagination
 django-images
+django-pagination
+django-prices
 south
 whoosh
 # these need setup.py

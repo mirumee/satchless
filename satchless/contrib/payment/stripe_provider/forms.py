@@ -8,6 +8,7 @@ from ....payment import PaymentFailure
 
 import stripe
 
+
 class StripeReceiptForm(forms.ModelForm):
     stripe_customer_id = forms.CharField(max_length=50, required=False,
                                          label=_('Stripe Customer ID'))
@@ -26,7 +27,7 @@ class StripeReceiptForm(forms.ModelForm):
     def save(self, commit=True):
         stripe.api_key = settings.STRIPE_SECRET_KEY
         stripe_card_id = self.cleaned_data.get('stripe_card_id')
-        if stripe_card_id:
+        if stripe_card_id and not self.cleaned_data.get('stripe_customer_id'):
             orderer_email = self.instance.order.user.email
             try:
                 customer = stripe.Customer.create(

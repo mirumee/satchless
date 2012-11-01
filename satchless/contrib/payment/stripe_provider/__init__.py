@@ -31,7 +31,7 @@ class StripeProvider(PaymentProvider):
 
     def confirm(self, order, typ=None):
         v = order.receipt
-        stripe.api_key = settings.STRIPE_SECRET_KEY
+        stripe.api_key = settings.STRIPE_SECRET
         amount = int(order.get_total().net * 100)   # in cents, Stripe only does USD
         try:
             if v.stripe_card_id and not v.stripe_customer_id:
@@ -58,7 +58,7 @@ class StripeProvider(PaymentProvider):
         data = {}
         try:
             data = charge.__dict__
-            data['token'] = data['id']
+            data['stripe_charge_id'] = data['id']
             data.update(data['card'].__dict__)
             data['card_type'] = data['type']
             # Stripe response has creation time as unix timestamp

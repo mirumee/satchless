@@ -25,7 +25,7 @@ class StripeReceiptForm(forms.ModelForm):
         return super(StripeReceiptForm, self).clean()
 
     def save(self, commit=True):
-        stripe.api_key = settings.STRIPE_SECRET_KEY
+        stripe.api_key = settings.STRIPE_SECRET
         stripe_card_id = self.cleaned_data.get('stripe_card_id')
         if stripe_card_id and not self.cleaned_data.get('stripe_customer_id'):
             orderer_email = self.instance.order.user.email

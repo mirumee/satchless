@@ -1,7 +1,9 @@
 import datetime
+from django.conf import settings
 from django.contrib.auth.models import User
 from django.db import models
 from django.utils.translation import ugettext_lazy as _
+from django_prices.models import PriceField
 from prices import Price
 import random
 
@@ -45,7 +47,6 @@ class Order(models.Model, ItemSet):
     last_status_change = models.DateTimeField(default=datetime.datetime.now,
                                               editable=False, blank=True)
     user = models.ForeignKey(User, blank=True, null=True, related_name='+')
-    currency = models.CharField(max_length=3)
     billing_first_name = models.CharField(_("first name"),
                                           max_length=256, blank=True)
     billing_last_name = models.CharField(_("last name"),
@@ -71,9 +72,10 @@ class Order(models.Model, ItemSet):
     payment_type_name = models.CharField(_('name'), max_length=128, blank=True,
                                          editable=False)
     payment_type_description = models.TextField(_('description'), blank=True)
-    payment_price = models.DecimalField(_('unit price'), max_digits=12,
-                                        decimal_places=4, default=0,
-                                        editable=False)
+    payment_price = PriceField(_('unit price'),
+                               currency=settings.SATCHLESS_DEFAULT_CURRENCY,
+                               max_digits=12, decimal_places=4, default=0,
+                               editable=False)
     token = models.CharField(max_length=32, blank=True, default='')
 
     class Meta:
@@ -93,6 +95,9 @@ class Order(models.Model, ItemSet):
     def __repr__(self):
         return '<Order #%r>' % (self.id,)
 
+    def get_default_currency(self):
+        return settings.SATCHLESS_DEFAULT_CURRENCY
+
     def save(self, *args, **kwargs):
         if not self.token:
             for i in xrange(100):
@@ -107,9 +112,6 @@ class Order(models.Model, ItemSet):
     def billing_full_name(self):
         return u'%s %s' % (self.billing_first_name, self.billing_last_name)
 
-    def get_default_currency(self, **kwargs):
-        return self.currency
-
     def set_status(self, new_status):
         old_status = self.status
         self.status = new_status
@@ -123,15 +125,12 @@ class Order(models.Model, ItemSet):
 
     def get_delivery_price(self):
         return sum([g.get_delivery().get_price() for g in self.get_groups()],
-                   Price(0, currency=self.currency))
+                   Price(0, currency=settings.SATCHLESS_DEFAULT_CURRENCY))
 
     def get_payment(self):
         return PaymentInfo(name=self.payment_type_name,
-                           price=self.get_payment_price(),
+                           price=self.payment_price,
                            description=self.payment_type_description)
-
-    def get_payment_price(self):
-        return Price(self.payment_price, currency=self.currency)
 
     def create_delivery_group(self, group):
         return self.groups.create(order=self,
@@ -158,9 +157,10 @@ class DeliveryInfo(ItemLine):
 class DeliveryGroup(models.Model, ItemSet):
 
     order = DeferredForeignKey('order', related_name='groups', editable=False)
-    delivery_price = models.DecimalField(_('unit price'),
-                                         max_digits=12, decimal_places=4,
-                                         default=0, editable=False)
+    delivery_price = PriceField(_('unit price'),
+                                currency=settings.SATCHLESS_DEFAULT_CURRENCY,
+                                max_digits=12, decimal_places=4,
+                                default=0, editable=False)
     delivery_type = models.CharField(max_length=256, blank=True)
     delivery_type_name = models.CharField(_('name'), max_length=128, blank=True,
                                           editable=False)
@@ -195,16 +195,13 @@ class DeliveryGroup(models.Model, ItemSet):
         if delivery:
             yield delivery
 
-    def get_default_currency(self, **kwargs):
-        return self.order.get_default_currency(**kwargs)
+    def get_default_currency(self):
+        return settings.SATCHLESS_DEFAULT_CURRENCY
 
     def get_delivery(self):
         return DeliveryInfo(name=self.delivery_type_name,
-                            price=self.get_delivery_price(),
+                            price=self.delivery_price,
                             description=self.delivery_type_description)
-
-    def get_delivery_price(self):
-        return Price(self.delivery_price, currency=self.get_default_currency())
 
     def get_items(self):
         return self.items.all()
@@ -236,7 +233,7 @@ class OrderedItem(models.Model, ItemLine):
 
     def get_price_per_item(self, **kwargs):
         return Price(net=self.unit_price_net, gross=self.unit_price_gross,
-                     currency=self.delivery_group.order.currency)
+                     currency=settings.SATCHLESS_DEFAULT_CURRENCY)
 
     def get_quantity(self):
         return self.quantity

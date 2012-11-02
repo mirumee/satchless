@@ -20,6 +20,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
 
     'django_nose',
+    'django_prices',
     'mamona',
     'payments',
 
@@ -40,7 +41,6 @@ INSTALLED_APPS = [
     'satchless.delivery',
     'satchless.order',
     'satchless.payment',
-    'satchless.pricing',
     'satchless.product',
 ]
 

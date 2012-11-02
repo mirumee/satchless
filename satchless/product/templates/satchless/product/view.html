@@ -1,5 +1,5 @@
 {% extends 'satchless/product/base.html' %}
-{% load i18n promote product_prices %}
+{% load i18n promote prices product_prices %}
 {% block title %}{{ product.name }} | {{ block.super }}{% endblock %}
 {% block meta-description %}{% if product.meta_description %}{{ product.meta_description }}{% else %}{{ block.super }}{% endif %}{% endblock %}
 {% block breadcrumbs %}
@@ -23,8 +23,8 @@
             <li>
                 <strong>{{ variant }}</strong>
                 {% variant_price variant currency='BTC' as price %}{% if price %}
-                price: {{ price.gross|floatformat:2 }} <span class="currency">BTC</span>
-                ({{ price.net|floatformat:2 }} <span class="currency">BTC</span> net)
+                price: {% gross price %}
+                ({% net price %} net)
                 {% endif %}
             </li>
         {% endfor %}

@@ -125,13 +125,13 @@ INSTALLED_APPS = (
     'grappelli',
     'django.contrib.admin',
     'django_images',
+    'django_prices',
     'mptt',
     'satchless.product',
     'satchless.category',
     #'satchless.contrib.productset',
     #'satchless.contact',
     'satchless.cart',
-    'satchless.pricing',
     'satchless.contrib.tax.flatgroups',
     'satchless.contrib.stock.singlestore',
     'satchless.order',
@@ -168,7 +168,7 @@ IMAGE_SIZES = {
         'crop': True,
     },
     'category-product': {
-        'size': (230, 307),
+        'size': (178, 179),
         'crop': True,
     },
     'product-detail': {
@@ -181,7 +181,7 @@ IMAGE_SIZES = {
         'crop': True,
     },
     'cart-product': {
-        'size': ('156', '156'),
+        'size': (158, 158),
         'crop': True,
     },
     'order-preview': {

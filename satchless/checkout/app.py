@@ -64,7 +64,6 @@ class CheckoutApp(SatchlessApp):
             order_delivery_group = order.create_delivery_group(delivery_group)
             for cartitem in delivery_group:
                 price = cartitem.get_price_per_item(
-                    currency=cart.currency,
                     quantity=cartitem.quantity, cart=cartitem.cart,
                     cartitem=cartitem, **pricing_context)
                 order_delivery_group.add_item(cartitem.variant,
@@ -72,8 +71,7 @@ class CheckoutApp(SatchlessApp):
 
     def get_order_from_cart(self, request, cart, order=None):
         if not order:
-            order = self.Order.objects.create(cart=cart, user=cart.owner,
-                                              currency=cart.currency)
+            order = self.Order.objects.create(cart=cart, user=cart.owner)
         elif order.is_empty():
             order.groups.all().delete()
         self.partition_cart(cart, order)

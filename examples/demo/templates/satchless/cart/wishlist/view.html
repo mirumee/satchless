@@ -27,7 +27,9 @@
                 <div class="grid_4 alpha">
                     <div class="image">
             {% if product.main_image %}
-                        <img src="{{ product.main_image|at_size:'cart-product' }}" alt="{{ image.caption }}"{% if forloop.first %} class="active"{% endif %} />
+                        <img src="{{ product.main_image|at_size:'cart-product' }}" />
+            {% else %}
+                        <img src="http://placekitten.com/158/158" />
             {% endif %}
                     </div>
                 </div>
@@ -51,14 +53,14 @@
                 {% product_price_range product discount=0 as undiscounted_price_range %}
                 {% if price_range.min != price_range.max %}
                     {% if price_range.min != undiscounted_price_range.min or price_range.max != undiscounted_price_range.max %}
-                            <span class="strike">{{ undiscounted_price_range.min_price|gross|floatformat:2 }} - {{ undiscounted_price_range.max_price|gross|floatformat:2 }}</span>
+                            <span class="strike">{% gross undiscounted_price_range.min_price %} - {% gross undiscounted_price_range.max_price %}</span>
                     {% endif %}
-                            <span class="fullprice">{{ price_range.min_price|gross|floatformat:2 }}</span><span class="currency">{{ price_range.min_price|currency }}</span> - <span class="fullprice">{{ price_range.max_price|gross|floatformat:2 }}</span><span class="currency">{{ price_range.max_price|currency }}</span>
+                            <span class="fullprice">{% gross price_range.min_price %} - {% gross price_range.max_price %}</span>
                 {% else %}
                     {% if price_range.max != undiscounted_price_range.max %}
-                            <span class="strike">{{ undiscounted_price_range.max_price|gross|floatformat:2 }}</span>
+                            <span class="strike">{% gross undiscounted_price_range.max_price %}</span>
                     {% endif %}
-                            <span class="fullprice">{{ price_range.min_price|gross|floatformat:2 }}</span><span class="currency">{{ price_range.min_price|currency }}</span>
+                            <span class="fullprice">{% gross price_range.min_price %}</span>
                 {% endif %}
                             <p class="info">
                                 Inclusive VAT <br />

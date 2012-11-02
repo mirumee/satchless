@@ -3,6 +3,7 @@ from django.utils.translation import ugettext
 from ....delivery import DeliveryProvider, DeliveryType
 from . import models
 
+
 class PostDeliveryProvider(DeliveryProvider):
     def __unicode__(self):
         return ugettext("Post delivery")
@@ -10,7 +11,8 @@ class PostDeliveryProvider(DeliveryProvider):
     def enum_types(self, customer=None, delivery_group=None):
         for record in models.PostShippingType.objects.all():
             if not delivery_group or delivery_group.require_shipping_address:
-                yield DeliveryType(provider=self, typ=record.typ, name=record.name)
+                yield DeliveryType(provider=self, typ=record.typ,
+                                   name=record.name)
 
     def save(self, delivery_group, typ, form):
         typ = models.PostShippingType.objects.get(typ=typ)

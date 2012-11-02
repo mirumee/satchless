@@ -8,7 +8,7 @@
 {% block body-class %}category{% if path %} cat-{{ path.0.slug }}{% endif %}{% endblock %}
 
 {% block content %}
-<div class="grid_4 alpha"><div class="sidebar">&nbsp;</div></div>
+<div class="grid_4 alpha"><div class="sidebar">{{ category }}</div></div>
 <div class="grid_20 omega products">
 {% if category.is_leaf_node %}
     {% with category.products.all as products %}
@@ -21,9 +21,9 @@
     <div class="grid_5 {% cycle 'alpha' '' '' 'omega' %}">
         <div class="product">
             {% if product.main_image %}
-            <a href="{{ product_url }}" class="product-photo"><img src="{{ product.main_image|at_size:'product-detail' }}" alt="{{ product.name }} image"/></a>
+            <a href="{{ product_url }}" class="product-photo"><img src="{{ product.main_image|at_size:'category-product' }}" alt="{{ product.name }} image"/></a>
             {% else %}
-            <a href="{{ product_url }}" class="product-photo"><img src="http://placekitten.com/308/310" alt="{{ product.name }} image"/></a>
+            <a href="{{ product_url }}" class="product-photo"><img src="http://placekitten.com/178/179" alt="{{ product.name }} image"/></a>
             {% endif %}
             <div class="description">
                 <span class="manufacture">
@@ -36,9 +36,9 @@
                     {% product_price_range product as price_range %}
                     {% product_price_range product discount=0 as undiscounted_price_range %}
                     {% if price_range.min_price != undiscounted_price_range.min_price %}
-                            <span class="strike">{{ undiscounted_price_range.min_price|gross|floatformat:2 }}</span>
+                        <span class="strike">{% gross undiscounted_price_range.min_price %}</span>
                     {% endif %}
-                    <span class="fullprice">{{ price_range.min_price|gross|floatformat:2 }}</span> <span class="currency">{{ price_range.min_price|currency }}</span>
+                    <span class="fullprice">{% gross price_range.min_price %}</span>
                 </div>
             </div>
         </div>

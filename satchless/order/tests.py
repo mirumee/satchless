@@ -88,8 +88,7 @@ class OrderTest(ViewsTestCase):
         cart = cart_app.Cart.objects.create(typ='satchless.test_cart')
         cart.replace_item(self.macaw_blue, 1)
 
-        order = checkout_app.Order.objects.create(cart=cart, user=cart.owner,
-                                                  currency=cart.currency)
+        order = checkout_app.Order.objects.create(cart=cart, user=cart.owner)
         checkout_app.partition_cart(cart, order)
         self.assertEquals(order.get_total(), Price(5, currency='PLN'))
 
@@ -97,8 +96,7 @@ class OrderTest(ViewsTestCase):
         cart = cart_app.Cart.objects.create(typ='satchless.test_cart')
         cart.replace_item(self.macaw_blue, 1)
 
-        order = checkout_app.Order.objects.create(cart=cart, user=cart.owner,
-                                                  currency=cart.currency)
+        order = checkout_app.Order.objects.create(cart=cart, user=cart.owner)
         checkout_app.partition_cart(cart, order)
 
         cart.replace_item(self.macaw_blue_fake, Decimal('2.45'))
@@ -112,8 +110,7 @@ class OrderTest(ViewsTestCase):
         cart.replace_item(self.macaw_blue_fake, Decimal('2.45'))
         cart.replace_item(self.cockatoo_white_a, Decimal('2.45'))
 
-        order = checkout_app.Order.objects.create(cart=cart, user=cart.owner,
-                                                  currency=cart.currency)
+        order = checkout_app.Order.objects.create(cart=cart, user=cart.owner)
         checkout_app.partition_cart(cart, order)
         self._test_GET_status(order_app.reverse('details',
                                                 args=(order.token,)))

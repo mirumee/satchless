@@ -68,14 +68,14 @@
             {% product_price_range product discount=0 as undiscounted_price_range %}
     {% if price_range.min_price != price_range.max_price %}
         {% if price_range.min_price != undiscounted_price_range.min_price or price_range.max_price != undiscounted_price_range.max_price %}
-                    <span class="strike">{{ undiscounted_price_range.min_price|gross|floatformat:2 }} – {{ undiscounted_price_range.max_price|gross|floatformat:2 }}</span>
+                    <span class="strike">{% gross undiscounted_price_range.min_price %} – {% gross undiscounted_price_range.max_price %}</span>
         {% endif %}
-                    <span class="fullprice">{{ price_range.min_price|gross|floatformat:2 }}</span><span class="currency">{{ price_range.min_price|currency }}</span> – <span class="fullprice">{{ price_range.max_price|gross|floatformat:2 }}</span><span class="currency">{{ price_range.max_price|currency }}</span>
+                    <span class="fullprice">{% gross price_range.min_price %} – {% gross price_range.max_price %}</span>
     {% else %}
         {% if price_range.max_price != undiscounted_price_range.max_price %}
-                    <span class="strike">{{ undiscounted_price_range.max_price|gross|floatformat:2 }}</span>
+                    <span class="strike">{% gross undiscounted_price_range.max_price %}</span>
         {% endif %}
-                    <span class="fullprice">{{ price_range.min_price|gross|floatformat:2 }}</span><span class="currency">{{ price_range.min_price|currency }}</span>
+                    <span class="fullprice">{% gross price_range.min_price %}</span>
     {% endif %}
                     <p class="info">
                     Inclusive VAT <br />

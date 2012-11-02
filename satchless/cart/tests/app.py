@@ -46,12 +46,18 @@ class MockCart(ItemSet):
         self._items = list(items) if items else []
         self.instances[self.token] = self
 
+    def __iter__(self):
+        return iter(self._items)
+
     @property
     def token(self):
         return id(self)
 
     def get_all_items(self):
         return self._items
+
+    def get_default_currency(self):
+        return 'BTC'
 
     def replace_item(self, variant, quantity):
         try:
@@ -96,8 +102,8 @@ class MockCartItem(ItemLine):
     def get_quantity(self, **kwargs):
         return self.quantity
 
-    def get_price_per_item(self, currency=None):
-        return Price(10, currency=currency)
+    def get_price_per_item(self):
+        return Price(10, currency='BTC')
 
 
 class MockOrder(object):

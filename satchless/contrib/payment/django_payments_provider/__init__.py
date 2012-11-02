@@ -6,6 +6,7 @@ from payments import signals
 from ....payment import (PaymentProvider, ConfirmationFormNeeded,
                          PaymentType)
 
+
 class DjangoPaymentsProvider(PaymentProvider):
     payment_class = None
 
@@ -21,8 +22,9 @@ class DjangoPaymentsProvider(PaymentProvider):
     def save(self, order, form, typ=None):
         typ = typ or order.payment_type
         factory = payments.factory(typ)
-        payment = factory.create_payment(currency=order.currency,
-                                         total=order.get_total().gross)
+        payment = factory.create_payment(
+            currency=settings.SATCHLESS_DEFAULT_CURRENCY,
+            total=order.get_total().gross)
         payment_variant = self.payment_class.objects.create(
                 payment=payment, order=order)
         return payment_variant

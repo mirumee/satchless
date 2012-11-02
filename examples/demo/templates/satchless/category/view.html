@@ -8,7 +8,7 @@
 {% block body-class %}category{% if path %} cat-{{ path.0.slug }}{% endif %}{% endblock %}
 
 {% block content %}
-<div class="grid_4 alpha"><div class="sidebar">{{ category }}</div></div>
+<div class="grid_4 alpha"><div class="sidebar"><h4>{{ category }}</h4></div></div>
 <div class="grid_20 omega products">
 {% if category.is_leaf_node %}
     {% with category.products.all as products %}

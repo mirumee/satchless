@@ -2,12 +2,10 @@
 import decimal
 import os
 
-from django.conf import settings
 from django.db import models
 from django.utils.translation import ugettext_lazy as _
 from django_images.models import Image
 from django_prices.models import PriceField
-from mothertongue.models import MothertongueModelTranslate
 from satchless.category.models import CategorizedProductMixin
 from satchless.contrib.tax.flatgroups.models import TaxedProductMixin, TaxedVariantMixin
 from satchless.contrib.stock.singlestore.models import VariantStockLevelMixin
@@ -118,7 +116,7 @@ class Make(models.Model):
         return self.name
 
 
-class ProductBase(MothertongueModelTranslate, Product):
+class ProductBase(Product):
     name = models.CharField(_('name'), max_length=128)
     description = models.TextField(_('description'), blank=True)
     meta_description = models.TextField(_('meta description'), blank=True,
@@ -131,27 +129,9 @@ class ProductBase(MothertongueModelTranslate, Product):
                                    on_delete=models.SET_NULL,
                                    help_text=_("Main product image"
                                                " (first image by default)"))
-    translated_fields = ('name', 'description', 'meta_description',
-                         'manufacture')
-    translation_set = 'translations'
 
     class Meta:
         abstract = True
-
-
-class ProductTranslation(models.Model):
-    language = models.CharField(max_length=5, choices=settings.LANGUAGES[1:])
-    name = models.CharField(_('name'), max_length=128)
-    description = models.TextField(_('description'), blank=True)
-    manufacture = models.TextField(_("manufacture"), default='', blank=True)
-    meta_description = models.TextField(_('meta description'), blank=True,
-            help_text=_("Description used by search and indexing engines"))
-
-    class Meta:
-        abstract = True
-
-    def __unicode__(self):
-        return "%s@%s" % (self.name, self.language)
 
 
 class ColoredVariant(Variant):
@@ -169,10 +149,6 @@ class Cardigan(ProductBase):
     class Meta:
         verbose_name = _('Cardigan')
         verbose_name_plural = _('Cardigans')
-
-
-class CardiganTranslation(ProductTranslation):
-    product = models.ForeignKey(Cardigan, related_name='translation')
 
 
 class CardiganVariant(ColoredVariant):
@@ -196,10 +172,6 @@ class Dress(ProductBase):
         verbose_name_plural = _('Dresses')
 
 
-class DressTranslation(ProductTranslation):
-    product = models.ForeignKey(Dress, related_name='translations')
-
-
 class DressVariant(ColoredVariant):
     product = models.ForeignKey(Dress, related_name='variants')
     SIZE_CHOICES = [(str(s), str(s)) for s in range(8, 15)]
@@ -216,10 +188,6 @@ class Hat(ProductBase):
         verbose_name_plural = _('Hats')
 
 
-class HatTranslation(ProductTranslation):
-    product = models.ForeignKey(Hat, related_name='translations')
-
-
 class HatVariant(Variant):
     product = models.ForeignKey(Hat, related_name='variants')
 
@@ -231,10 +199,6 @@ class Jacket(ProductBase):
     class Meta:
         verbose_name = _('Jacket')
         verbose_name_plural = _('Jackets')
-
-
-class JacketTranslation(ProductTranslation):
-    product = models.ForeignKey(Jacket, related_name='translations')
 
 
 class JacketVariant(ColoredVariant):
@@ -253,10 +217,6 @@ class Shirt(ProductBase):
         verbose_name_plural = _('Shirts')
 
 
-class ShirtTranslation(ProductTranslation):
-    product = models.ForeignKey(Shirt, related_name='translations')
-
-
 class ShirtVariant(ColoredVariant):
     product = models.ForeignKey(Shirt, related_name='variants')
     SIZE_CHOICES = [(str(s), str(s)) for s in range(8, 17)]
@@ -271,10 +231,6 @@ class TShirt(ProductBase):
     class Meta:
         verbose_name = _('TShirt')
         verbose_name_plural = _('TShirts')
-
-
-class TShirtTranslation(ProductTranslation):
-    product = models.ForeignKey(TShirt, related_name='translations')
 
 
 class TShirtVariant(ColoredVariant):
@@ -296,10 +252,6 @@ class Trousers(ProductBase):
     class Meta:
         verbose_name = _('Trousers')
         verbose_name_plural = _('Trousers')
-
-
-class TrousersTranslation(ProductTranslation):
-    product = models.ForeignKey(Trousers, related_name='translations')
 
 
 class TrousersVariant(ColoredVariant):

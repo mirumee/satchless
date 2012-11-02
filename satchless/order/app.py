@@ -7,6 +7,7 @@ from ..core.app import SatchlessApp, view
 from ..util.models import construct
 from . import models
 
+
 class OrderApp(SatchlessApp):
 
     app_name = 'order'

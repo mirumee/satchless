@@ -19,11 +19,6 @@ class DiscountGroupAdmin(admin.ModelAdmin):
     model = models.DiscountGroup
 
 
-class TranslationInline(admin.StackedInline):
-    extra = 1
-    max_num = len(settings.LANGUAGES) - 1
-
-
 class ImageInline(admin.TabularInline):
     formfield_overrides = {
         django.db.models.ImageField: {'widget': widgets.AdminImageWidget},
@@ -75,15 +70,11 @@ class CardiganVariantInline(admin.TabularInline):
     model = models.CardiganVariant
 
 
-class CardiganTranslationInline(TranslationInline):
-    model = models.CardiganTranslation
-
-
 class CardiganAdmin(ProductAdmin):
     model = models.Cardigan
     form = modelform_factory(models.Cardigan, form=ProductForm)
-    inlines = [CardiganTranslationInline, CardiganVariantInline,
-               PriceQtyOverrideInline, ProductImageInline]
+    inlines = [CardiganVariantInline, PriceQtyOverrideInline,
+               ProductImageInline]
     fieldsets = product_fieldsets
 
 
@@ -91,19 +82,10 @@ class DressVariantInline(admin.TabularInline):
     model = models.DressVariant
 
 
-class DressTranslationInline(TranslationInline):
-    model = models.DressTranslation
-
-
 class DressAdmin(ProductAdmin):
-    inlines = [DressTranslationInline, DressVariantInline,
-               PriceQtyOverrideInline, ProductImageInline]
+    inlines = [DressVariantInline, PriceQtyOverrideInline, ProductImageInline]
     form = modelform_factory(models.Dress, form=ProductForm)
     fieldsets = product_fieldsets
-
-
-class HatTranslationInline(TranslationInline):
-    model = models.HatTranslation
 
 
 class HatForm(ProductForm, forms.ModelForm):
@@ -148,8 +130,7 @@ singlevariant_product_fieldsets = (
 
 
 class HatAdmin(ProductAdmin):
-    inlines = [HatTranslationInline,
-               PriceQtyOverrideInline, ProductImageInline]
+    inlines = [PriceQtyOverrideInline, ProductImageInline]
     fieldsets = singlevariant_product_fieldsets
     form = HatForm
 
@@ -168,13 +149,8 @@ class JacketVariantInline(admin.TabularInline):
     model = models.JacketVariant
 
 
-class JacketTranslationInline(TranslationInline):
-    model = models.JacketTranslation
-
-
 class JacketAdmin(ProductAdmin):
-    inlines = [JacketTranslationInline, PriceQtyOverrideInline,
-               JacketVariantInline, ProductImageInline]
+    inlines = [PriceQtyOverrideInline, JacketVariantInline, ProductImageInline]
     fieldsets = product_fieldsets
     form = modelform_factory(models.Jacket, form=ProductForm)
 
@@ -183,13 +159,8 @@ class ShirtVariantInline(admin.TabularInline):
     model = models.ShirtVariant
 
 
-class ShirtTranslationInline(TranslationInline):
-    model = models.ShirtTranslation
-
-
 class ShirtAdmin(ProductAdmin):
-    inlines = [ShirtTranslationInline, ShirtVariantInline,
-               ProductImageInline, PriceQtyOverrideInline]
+    inlines = [ShirtVariantInline, ProductImageInline, PriceQtyOverrideInline]
     fieldsets = product_fieldsets
     form = modelform_factory(models.Shirt, form=ProductForm)
 
@@ -198,13 +169,9 @@ class TrousersVariantInline(admin.TabularInline):
     model = models.TrousersVariant
 
 
-class TrousersTranslationInline(TranslationInline):
-    model = models.TrousersTranslation
-
-
 class TrousersAdmin(ProductAdmin):
-    inlines = [TrousersTranslationInline, TrousersVariantInline,
-               ProductImageInline, PriceQtyOverrideInline]
+    inlines = [TrousersVariantInline, ProductImageInline,
+               PriceQtyOverrideInline]
     fieldsets = product_fieldsets
     form = modelform_factory(models.Trousers, form=ProductForm)
 
@@ -213,13 +180,8 @@ class TShirtVariantInline(admin.TabularInline):
     model = models.TShirtVariant
 
 
-class TShirtTranslationInline(TranslationInline):
-    model = models.TShirtTranslation
-
-
 class TShirtAdmin(ProductAdmin):
-    inlines = [TShirtTranslationInline, TShirtVariantInline,
-               ProductImageInline, PriceQtyOverrideInline]
+    inlines = [TShirtVariantInline, ProductImageInline, PriceQtyOverrideInline]
     fieldsets = product_fieldsets
     form = modelform_factory(models.TShirt, form=ProductForm)
 

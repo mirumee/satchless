@@ -89,49 +89,20 @@
 </div> {# #content #}
 
 <div id="content" class="container_24">
-<div class="grid_24 footer">
-    <div class="info">
-        <div class="contact">
-            IF YOU NEED GREAT, FAST & MODERN ECOMMERCE SOLUTION OR CONSULTING <a href="http://mirumee.com/contact">TALK TO US</a><br />
-            <span class="quality">Best quality guarantee</span>
-        </div>
-        <div class="copyright">
-            Copyright © 2009-2011 Mirumee Labs. <br />
-            <a href="http://mirumee.com"><img class="motto" src="{{ STATIC_URL }}img/motto.png" alt="Mirumee Software - We build WebApps. Better" /></a>
+    <div class="grid_24 footer">
+        <div class="info">
+            <div class="contact">
+                IF YOU NEED GREAT, FAST &amp; MODERN ECOMMERCE SOLUTION OR CONSULTING <a href="http://mirumee.com/contact">TALK TO US</a><br />
+                <span class="quality">Best quality guarantee</span>
+            </div>
+            <div class="copyright">
+                Copyright © 2009-2011 Mirumee Labs. <br />
+                <a href="http://mirumee.com"><img class="motto" src="{{ STATIC_URL }}img/motto.png" alt="Mirumee Software - We build WebApps. Better" /></a>
+            </div>
         </div>
     </div>
 </div>
 
-{% if debug %}
-<div id="debug" class="container_24">
-  <h2>Queries</h2>
-  <p>
-    {{ sql_queries|length }} Quer{{ sql_queries|pluralize:"y,ies" }}
-    {% ifnotequal sql_queries|length 0 %}
-    (<span style="cursor: pointer;" onclick="var s=document.getElementById('debugQueryTable').style;s.display=s.display=='none'?'':'none';this.innerHTML=this.innerHTML=='Show'?'Hide':'Show';">Show</span>)
-    {% endifnotequal %}
-  </p>
-  <table id="debugQueryTable" style="display: none;">
-    <col width="1"></col>
-    <col></col>
-    <col width="1"></col>
-    <thead>
-    <tr>
-      <th scope="col">#</th>
-      <th scope="col">SQL</th>
-      <th scope="col">Time</th>
-    </tr>
-    </thead>
-    <tbody>
-    {% for query in sql_queries %}<tr class="{% cycle odd,even %}">
-      <td>{{ forloop.counter }}</td>
-      <td>{{ query.sql|escape }}</td>
-      <td>{{ query.time }}</td>
-    </tr>{% endfor %}
-    </tbody>
-  </table>
-</div>
-{% endif %}
 {% block extra-body %}
 <script type="text/javascript" src="{{ STATIC_URL }}js/jquery.js"></script>
 <script>

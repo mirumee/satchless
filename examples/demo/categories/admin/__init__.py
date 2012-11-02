@@ -2,7 +2,7 @@
 from django.contrib import admin
 from django import forms
 
-from products.admin import ImageInline, TranslationInline
+from products.admin import ImageInline
 from mptt.admin import MPTTModelAdmin
 
 from .. import models
@@ -29,21 +29,13 @@ class CategoryForm(forms.ModelForm):
                     .order_by('tree_id', 'lft'))
 
 
-class CategoryTranslationInline(TranslationInline):
-    model = models.CategoryTranslation
-
-
 class CategoryImageInline(ImageInline):
     model = models.CategoryImage
-
-
-class CategoryTranslationInline(TranslationInline):
-    model = models.CategoryTranslation
 
 
 class CategoryAdmin(MPTTModelAdmin):
     form = CategoryForm
     prepopulated_fields = {'slug': ('name',)}
-    inlines = [CategoryTranslationInline, CategoryImageInline]
+    inlines = [CategoryImageInline]
 
 admin.site.register(models.Category, CategoryAdmin)

@@ -1,6 +1,5 @@
 # -*- coding:utf-8 -*-
 import os
-import re
 
 from django.core.urlresolvers import reverse
 from django.utils.translation import ugettext_lazy as _
@@ -41,7 +40,7 @@ TIME_ZONE = 'Europe/Warsaw'
 LANGUAGE_CODE = 'en'
 LANGUAGES = (
     ('en', u'English'),
-    ('pl', u'Polski'),
+    ('pl', u'polski'),
 )
 
 SITE_ID = 1

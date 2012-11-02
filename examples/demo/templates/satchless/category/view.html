@@ -20,7 +20,11 @@
                 {% with product|product_in_category_url:category as product_url %}
     <div class="grid_5 {% cycle 'alpha' '' '' 'omega' %}">
         <div class="product">
-            {% if product.main_image %}<a href="{{ product_url }}" class="product-photo"><img src="{{ product.main_image|at_size:'product-detail' }}" alt="{{ product.name }} image"/></a>{% endif %}
+            {% if product.main_image %}
+            <a href="{{ product_url }}" class="product-photo"><img src="{{ product.main_image|at_size:'product-detail' }}" alt="{{ product.name }} image"/></a>
+            {% else %}
+            <a href="{{ product_url }}" class="product-photo"><img src="http://placekitten.com/308/310" alt="{{ product.name }} image"/></a>
+            {% endif %}
             <div class="description">
                 <span class="manufacture">
                     {% if product.make %}

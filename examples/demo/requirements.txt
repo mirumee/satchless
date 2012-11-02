@@ -1,7 +1,6 @@
 Django>=1.3
 django-grappelli
 django-haystack
-django-localeurl
 git+git://github.com/django-mptt/django-mptt.git#egg=django-mptt
 django-images
 django-pagination

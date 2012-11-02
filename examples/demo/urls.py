@@ -23,7 +23,6 @@ urlpatterns = i18n_patterns('',
     url(r'^checkout/', include(checkout_app.urls)),
     #url(r'^product-set/', include(productset_app.urls)),
     url(r'^sale/', include('products.urls')),
-    url(r'^localeurl/', include('localeurl.urls')),
     url(r'^payment-gateways/django-payments/', include('payments.urls')),
     url(r'^search/', include('search.haystack_predictive.urls')),
 )

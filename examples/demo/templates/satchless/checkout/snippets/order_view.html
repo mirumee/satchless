@@ -1,5 +1,4 @@
 {% load i18n %}
-{% load images %}
 {% load prices %}
 {% load products_tags %}
 {% for group in order.groups.all %}
@@ -27,12 +26,10 @@
     </thead>
     <tbody>
     {% for item in group.items.all %}
-        {% with variant=item.product_variant.get_subtype_instance %}
-        {% with product=variant.product %}
-        {% with unit_price=item.unit_price item_price=item.price readonly=1 %}
-        {% include "satchless/cart/snippets/row.html" %}
-        {% endwith %}
-        {% endwith %}
+        {% with variant=item.product_variant.get_subtype_instance unit_price=item.get_price_per_item item_price=item.get_total readonly=1 %}
+            {% with product=variant.product %}
+                {% include "satchless/cart/snippets/row.html" %}
+            {% endwith %}
         {% endwith %}
     {% endfor %}
     </tbody>

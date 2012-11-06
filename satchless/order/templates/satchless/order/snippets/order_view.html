@@ -24,7 +24,7 @@
             <td colspan="2">{{ variant.name }}</td>
             <td class="numerical">{% gross variant.get_total %}</td>
         </tr>
-        {% endwith %}{% endif %}
+        {% endwith %}
         <tr>
             <th class="numerical" colspan="3">{% trans "Total" %}:</th>
             <td class="numerical">{% gross group.get_total %}</td>
@@ -32,7 +32,7 @@
     </tfoot>
     <tbody>
         {% for item in group.items.all %}
-        {% with item.product_variant.get_subtype_instance.product as product %}
+        {% with product=item.product_variant.get_subtype_instance.product %}
         <tr>
             <td>
                 {% url 'product:details' product.slug product.pk as product_url %}
@@ -44,7 +44,7 @@
             </td>
             <td class="numerical">{{ item.quantity }}</td>
             <td class="numerical"><span class="gross">{% gross item.get_price_per_item %}</span></td>
-            <td class="numerical">{% gross item.get_price %}</td>
+            <td class="numerical">{% gross item.get_total %}</td>
         </tr>
         {% endwith %}
         {% endfor %}

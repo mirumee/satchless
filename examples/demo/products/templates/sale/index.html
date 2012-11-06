@@ -1,5 +1,5 @@
 {% extends "sale/base.html" %}
-{% load images %}
+{% load image_tags %}
 {% load pagination_tags %}
 {% load product_prices %}
 {% load prices %}
@@ -39,7 +39,7 @@
                 {% with product|product_in_category_url:category as product_url %}
     <div class="grid_5 {% cycle 'alpha' '' '' 'omega' %}">
         <div class="product">
-            <a href="{{ product_url }}" class="product-photo">{% if product.main_image %}<img src="{{ product.main_image|at_size:'product-detail' }}" alt="{{ product.name }} image"/>{% endif %} </a>
+            <a href="{{ product_url }}" class="product-photo"><img src="{{ product.main_image|at_size_with_fallback:'product-detail' }}" alt="{{ product.name }} image"/></a>
             <div class="description">
                 <span class="manufacture">
                     {% if product.make %}

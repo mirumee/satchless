@@ -1,7 +1,7 @@
 {% extends 'satchless/cart/base.html' %}
 {% load cart_prices %}
 {% load i18n %}
-{% load images %}
+{% load image_tags %}
 {% load prices %}
 {% load product_prices %}
 {% load products_tags %}
@@ -26,11 +26,7 @@
             <li class="product{% if forloop.last %} last{% endif %}">
                 <div class="grid_4 alpha">
                     <div class="image">
-            {% if product.main_image %}
-                        <img src="{{ product.main_image|at_size:'cart-product' }}" />
-            {% else %}
-                        <img src="http://placekitten.com/158/158" />
-            {% endif %}
+                        <img src="{{ product.main_image|at_size_with_fallback:'cart-product' }}" />
                     </div>
                 </div>
                 <div class="grid_11">

@@ -1,5 +1,5 @@
 {% load i18n %}
-{% load images %}
+{% load image_tags %}
 {% load prices %}
 {% load product_prices %}
 {% load products_tags %}
@@ -23,15 +23,10 @@
         <tbody>
     {% for item in group.items.all %}
             <tr>
-            {% with variant=item.product_variant.get_subtype_instance %}
-            {% with product=variant.product %}
-            {% with unit_price=item.get_price_per_item item_price=item.get_total readonly=1 %}
+            {% with variant=item.product_variant.get_subtype_instance unit_price=item.get_price_per_item item_price=item.get_total readonly=1 %}
+                {% with product=variant.product %}
                 <td class="image">
-            {% if variant.product.main_image %}
-                    <a href="{{ variant.product.get_url }}" title="{{ variant }}"><img src="{{ variant.product.main_image|at_size:'order-preview' }}" alt="{{ variant }}" /></a>
-            {% else %}
-                    <a href="{{ variant.product.get_url }}" title="{{ variant }}"><img src="http://placekitten.com/56/56" alt="{{ variant }}" /></a>
-            {% endif %}
+                    <a href="{{ variant.product.get_url }}" title="{{ variant }}"><img src="{{ variant.product.main_image|at_size_with_fallback:'order-preview' }}" alt="{{ variant }}" /></a>
                 </td>
                 <td class="product-price">
                     <span class="fullprice">{% gross unit_price %}</span>
@@ -42,8 +37,7 @@
                 <td class="product-price">
                     <span class="fullprice">{% gross item_price %}</span>
                 </td>
-            {% endwith %}
-            {% endwith %}
+                {% endwith %}
             {% endwith %}
             </tr>
     {% endfor %}

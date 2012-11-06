@@ -1,5 +1,5 @@
 {% extends "satchless/base.html" %}
-{% load images %}
+{% load image_tags %}
 {% load pagination_tags %}
 {% load product_url %}
 {% load prices %}
@@ -20,11 +20,7 @@
                 {% with product|product_in_category_url:category as product_url %}
     <div class="grid_5 {% cycle 'alpha' '' '' 'omega' %}">
         <div class="product">
-            {% if product.main_image %}
-            <a href="{{ product_url }}" class="product-photo"><img src="{{ product.main_image|at_size:'category-product' }}" alt="{{ product.name }} image"/></a>
-            {% else %}
-            <a href="{{ product_url }}" class="product-photo"><img src="http://placekitten.com/178/179" alt="{{ product.name }} image"/></a>
-            {% endif %}
+            <a href="{{ product_url }}" class="product-photo"><img src="{{ product.main_image|at_size_with_fallback:'category-product' }}" alt="{{ product.name }} image"/></a>
             <div class="description">
                 <span class="manufacture">
                     {% if product.make %}
@@ -58,9 +54,7 @@
             {% for child in subcategories %}
                 <div class="grid_5">
                     <div class="category">
-                    {% if child.image %}
-                        <a href="{{ child.get_absolute_url }}"><img src="{{ child.image|at_size:'category' }}" alt="" /></a>
-                    {% endif %}
+                        <a href="{{ child.get_absolute_url }}"><img src="{{ child.image|at_size_with_fallback:'category' }}" alt="" /></a>
                         <h3><a href="{{ child.get_absolute_url }}">{{ child }}</a></h3>
                     </div>
                 </div>

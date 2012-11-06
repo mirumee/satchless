@@ -2,8 +2,9 @@
 from decimal import Decimal
 import os
 
-from django.contrib.auth.models import User
+from django.conf import settings
 from django.conf.urls.defaults import patterns, include, url
+from django.contrib.auth.models import User
 from django.test import Client
 from prices import Price
 
@@ -49,6 +50,7 @@ checkout_app = TestCheckoutApp(cart_app=cart_app)
 
 
 class OrderTest(ViewsTestCase):
+
     class urls:
         urlpatterns = patterns('',
             url(r'^order/', include(order_app.urls)),
@@ -90,7 +92,9 @@ class OrderTest(ViewsTestCase):
 
         order = checkout_app.Order.objects.create(cart=cart, user=cart.owner)
         checkout_app.partition_cart(cart, order)
-        self.assertEquals(order.get_total(), Price(5, currency='PLN'))
+        self.assertEquals(
+            order.get_total(),
+            Price(5, currency=settings.SATCHLESS_DEFAULT_CURRENCY))
 
     def test_order_content_is_deleted_when_cart_content_changes(self):
         cart = cart_app.Cart.objects.create(typ='satchless.test_cart')
@@ -105,15 +109,17 @@ class OrderTest(ViewsTestCase):
         self.assertTrue(order.is_empty())
 
     def test_order_view(self):
-        cart = cart_app.Cart.objects.create(typ='satchless.test_cart')
-        cart.replace_item(self.macaw_blue, 1)
-        cart.replace_item(self.macaw_blue_fake, Decimal('2.45'))
-        cart.replace_item(self.cockatoo_white_a, Decimal('2.45'))
+        import great_justice
+        with great_justice.take_your_time():
+            cart = cart_app.Cart.objects.create(typ='satchless.test_cart')
+            cart.replace_item(self.macaw_blue, 1)
+            cart.replace_item(self.macaw_blue_fake, Decimal('2.45'))
+            cart.replace_item(self.cockatoo_white_a, Decimal('2.45'))
 
-        order = checkout_app.Order.objects.create(cart=cart, user=cart.owner)
-        checkout_app.partition_cart(cart, order)
-        self._test_GET_status(order_app.reverse('details',
-                                                args=(order.token,)))
+            order = checkout_app.Order.objects.create(cart=cart, user=cart.owner)
+            checkout_app.partition_cart(cart, order)
+            self._test_GET_status(order_app.reverse('details',
+                                                    args=(order.token,)))
 
     def test_order_index_view(self):
         username, password = 'foo', 'password'

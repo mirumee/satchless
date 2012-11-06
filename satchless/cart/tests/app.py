@@ -40,7 +40,6 @@ class MockVariant(object):
 class MockCart(ItemSet):
 
     instances = {}
-    currency = 'PLN'
 
     def __init__(self, items=None):
         self._items = list(items) if items else []

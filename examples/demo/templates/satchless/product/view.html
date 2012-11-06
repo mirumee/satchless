@@ -1,6 +1,6 @@
 {% extends "satchless/base.html" %}
 {% load i18n %}
-{% load images %}
+{% load image_tags %}
 {% load pagination_tags %}
 {% load prices %}
 {% load product_prices %}
@@ -33,11 +33,7 @@
 
 <div class="grid_8 alpha">
     <div class="main-photo">
-    {% if product.main_image %}
-        <a href="{{ product.main_image.image.url }}" class="cloud-zoom" rel="position: 'inside', showTitle: false"><img src="{{ product.main_image|at_size:'product-detail' }}" /></a>
-    {% else %}
-        <a href="http://placekitten.com/308/310" class="cloud-zoom" rel="position: 'inside', showTitle: false"><img src="http://placekitten.com/308/310" /></a>
-    {% endif %}
+        <a href="{{ product.main_image.image.url }}" class="cloud-zoom" rel="position: 'inside', showTitle: false"><img src="{{ product.main_image|at_size_with_fallback:'product-detail' }}" /></a>
     </div>
 </div>
 
@@ -95,8 +91,8 @@
 <div class="thumbs grid_8 alpha">
 {% spaceless %}
 {% for image in product.images.all %}
-    {% with image|at_size:'product-thumb' as thumb %}
-        {% with image|at_size:'product-detail' as detail %}
+    {% with image|at_size_with_fallback:'product-thumb' as thumb %}
+        {% with image|at_size_with_fallback:'product-detail' as detail %}
     <a class="grid_2 {% if not forloop.counter0 or forloop.counter|divisibleby:5 %}alpha{% endif %}{% if forloop.counter0 and forloop.counter|divisibleby:4 %}omega{% endif %}" href="{{ detail }}" data-big-picture="{{ image.image.url }}" title="Click to see this image enlarged"><img src="{{ thumb }}" alt="{{ image.caption }}"{% if forloop.first %} class="active"{% endif %} /></a>
         {% endwith %}
     {% endwith %}

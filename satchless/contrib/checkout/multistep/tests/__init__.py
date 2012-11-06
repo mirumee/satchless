@@ -24,7 +24,8 @@ from .....order.tests import order_app
 
 class TestPaymentProviderWithConfirmation(TestPaymentProvider):
     def confirm(self, order, typ=None):
-        raise ConfirmationFormNeeded(action='http://test.payment.gateway.example.com')
+        raise ConfirmationFormNeeded(
+            action='http://test.payment.gateway.example.com')
 
 
 class PaymentConfigurationForm(forms.Form):
@@ -41,13 +42,14 @@ class TestCheckoutApp(app.MultiStepCheckoutApp):
 
     BillingForm = modelform_factory(order_app.Order,
                                     order_forms.BillingForm)
-    ShippingForm= modelform_factory(order_app.DeliveryGroup,
-                                    form=order_forms.ShippingForm,
-                                    fields=order_forms.ShippingForm._meta.fields)
-    DeliveryMethodForm = modelform_factory(order_app.DeliveryGroup,
-                                           form=order_forms.DeliveryMethodForm,
-                                           fields=order_forms.DeliveryMethodForm._meta.fields)
-
+    ShippingForm = modelform_factory(
+        order_app.DeliveryGroup,
+        form=order_forms.ShippingForm,
+        fields=order_forms.ShippingForm._meta.fields)
+    DeliveryMethodForm = modelform_factory(
+        order_app.DeliveryGroup,
+        form=order_forms.DeliveryMethodForm,
+        fields=order_forms.DeliveryMethodForm._meta.fields)
 
 
 class CheckoutTestCase(BaseCheckoutAppTests):

@@ -1,9 +1,11 @@
 from django import forms
 from django.db import models
 import decimal
+from prices import Price
 
 from ..forms import variant_form_for_product, BaseVariantForm
 from ..models import Product, Variant
+
 
 #models for tests
 
@@ -50,6 +52,9 @@ class DeadParrotVariant(ParrotVariant):
         return u"%s %s %s" % (
                 "alive" if self.looks_alive else "resting",
                 self.get_color_display(), self.product.slug)
+
+    def get_price_per_item(self, **kwargs):
+        return Price(5, currency='PLN')
 
 
 @variant_form_for_product(DeadParrot)

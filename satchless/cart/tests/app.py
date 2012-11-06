@@ -5,15 +5,16 @@ from decimal import Decimal
 from django.conf.urls.defaults import patterns, include, url
 from django.core.exceptions import ObjectDoesNotExist
 import django.forms
+from prices import Price
 
 from .. import app
 from .. import forms
-from ...pricing import handler as Price
+from ...item import Item, ItemSet, ItemLine
 from ...product.app import ProductApp
-from ...product.tests.pricing import FiveZlotyPriceHandler
 from ...util.tests import ViewsTestCase
 
-class MockProduct(object):
+
+class MockProduct(Item):
 
     instances = {}
 
@@ -36,14 +37,16 @@ class MockVariant(object):
         self.product = product
 
 
-class MockCart(object):
+class MockCart(ItemSet):
 
     instances = {}
-    currency = 'PLN'
 
     def __init__(self, items=None):
         self._items = list(items) if items else []
         self.instances[self.token] = self
+
+    def __iter__(self):
+        return iter(self._items)
 
     @property
     def token(self):
@@ -51,6 +54,9 @@ class MockCart(object):
 
     def get_all_items(self):
         return self._items
+
+    def get_default_currency(self):
+        return 'BTC'
 
     def replace_item(self, variant, quantity):
         try:
@@ -81,7 +87,7 @@ class MockCart(object):
             raise ObjectDoesNotExist()
 
 
-class MockCartItem(object):
+class MockCartItem(ItemLine):
 
     def __init__(self, cart, variant, quantity):
         self.cart = cart
@@ -92,11 +98,11 @@ class MockCartItem(object):
     def id(self):
         return id(self)
 
-    def get_unit_price(self, currency=None):
-        return Price(10, currency=currency)
+    def get_quantity(self, **kwargs):
+        return self.quantity
 
-    def get_price(self, currency=None):
-        return self.get_unit_price(currency=currency) * self.quantity
+    def get_price_per_item(self):
+        return Price(10, currency='BTC')
 
 
 class MockOrder(object):
@@ -137,7 +143,8 @@ class TestCartApp(app.CartApp):
 
 
 product_app = TestProductApp()
-cart_app = TestCartApp(pricing_handler=FiveZlotyPriceHandler())
+cart_app = TestCartApp()
+
 
 class AppTestCase(ViewsTestCase):
 

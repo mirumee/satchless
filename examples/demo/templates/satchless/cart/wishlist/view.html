@@ -1,7 +1,7 @@
 {% extends 'satchless/cart/base.html' %}
 {% load cart_prices %}
 {% load i18n %}
-{% load images %}
+{% load image_tags %}
 {% load prices %}
 {% load product_prices %}
 {% load products_tags %}
@@ -26,9 +26,7 @@
             <li class="product{% if forloop.last %} last{% endif %}">
                 <div class="grid_4 alpha">
                     <div class="image">
-            {% if product.main_image %}
-                        <img src="{{ product.main_image|at_size:'cart-product' }}" alt="{{ image.caption }}"{% if forloop.first %} class="active"{% endif %} />
-            {% endif %}
+                        <img src="{{ product.main_image|at_size_with_fallback:'cart-product' }}" />
                     </div>
                 </div>
                 <div class="grid_11">
@@ -47,18 +45,18 @@
                 <div class="grid_5 omega">
                     <div class="sidebar">
                         <div class="product-price">
-                {% product_price_range product pricing_handler as price_range %}
-                {% product_price_range product pricing_handler discount=0 as undiscounted_price_range %}
+                {% product_price_range product as price_range %}
+                {% product_price_range product discount=0 as undiscounted_price_range %}
                 {% if price_range.min != price_range.max %}
                     {% if price_range.min != undiscounted_price_range.min or price_range.max != undiscounted_price_range.max %}
-                            <span class="strike">{{ undiscounted_price_range.min_price|gross|floatformat:2 }} - {{ undiscounted_price_range.max_price|gross|floatformat:2 }}</span>
+                            <span class="strike">{% gross undiscounted_price_range.min_price %} - {% gross undiscounted_price_range.max_price %}</span>
                     {% endif %}
-                            <span class="fullprice">{{ price_range.min_price|gross|floatformat:2 }}</span><span class="currency">{{ price_range.min_price|currency }}</span> - <span class="fullprice">{{ price_range.max_price|gross|floatformat:2 }}</span><span class="currency">{{ price_range.max_price|currency }}</span>
+                            <span class="fullprice">{% gross price_range.min_price %} - {% gross price_range.max_price %}</span>
                 {% else %}
                     {% if price_range.max != undiscounted_price_range.max %}
-                            <span class="strike">{{ undiscounted_price_range.max_price|gross|floatformat:2 }}</span>
+                            <span class="strike">{% gross undiscounted_price_range.max_price %}</span>
                     {% endif %}
-                            <span class="fullprice">{{ price_range.min_price|gross|floatformat:2 }}</span><span class="currency">{{ price_range.min_price|currency }}</span>
+                            <span class="fullprice">{% gross price_range.min_price %}</span>
                 {% endif %}
                             <p class="info">
                                 Inclusive VAT <br />

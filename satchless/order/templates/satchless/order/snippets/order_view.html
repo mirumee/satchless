@@ -18,21 +18,21 @@
         </tr>
     </thead>
     <tfoot>
-        {% if group.deliveryvariant %}{% with group.deliveryvariant.get_subtype_instance as variant %}
+        {% with group.get_delivery as variant %}
         <tr>
             <th>{% trans "Delivery" %}:</th>
-            <td colspan="2">{{ variant }}</td>
-            <td class="numerical">{{ variant.price|floatformat:2 }} <span class="currency">{{ order.currency }}</span></td>
+            <td colspan="2">{{ variant.name }}</td>
+            <td class="numerical">{% gross variant.get_total %}</td>
         </tr>
-        {% endwith %}{% endif %}
+        {% endwith %}
         <tr>
             <th class="numerical" colspan="3">{% trans "Total" %}:</th>
-            <td class="numerical">{{ group.get_total|gross|floatformat:2 }} <span class="currency">{{ order.currency }}</span></td>
+            <td class="numerical">{% gross group.get_total %}</td>
         </tr>
     </tfoot>
     <tbody>
         {% for item in group.items.all %}
-        {% with item.product_variant.get_subtype_instance.product as product %}
+        {% with product=item.product_variant.get_subtype_instance.product %}
         <tr>
             <td>
                 {% url 'product:details' product.slug product.pk as product_url %}
@@ -43,15 +43,15 @@
                 {% endif %}
             </td>
             <td class="numerical">{{ item.quantity }}</td>
-            <td class="numerical"><span class="gross">{{ item.unit_price_gross|floatformat:2 }} <span class="currency">{{ order.currency }}</span></span></td>
-            <td class="numerical">{{ item.price|gross|floatformat:2 }} <span class="currency">{{ order.currency }}</span></td>
+            <td class="numerical"><span class="gross">{% gross item.get_price_per_item %}</span></td>
+            <td class="numerical">{% gross item.get_total %}</td>
         </tr>
         {% endwith %}
         {% endfor %}
     </tbody>
 </table>
 {% endfor %}
-<p>Total amount to pay: {{ order.get_total|gross|floatformat:2 }} <span class="currency">{{ order.currency }}</span></p>
+<p>Total amount to pay: {% gross order.get_total %}</p>
 {% if order.paymentvariant %}
-<p>{% trans "Payment method" %}: {{ order.paymentvariant.get_subtype_instance }}
+<p>{% trans "Payment method" %}: {{ order.get_payment.name }}
 {% endif %}

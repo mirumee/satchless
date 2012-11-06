@@ -7,6 +7,7 @@ from ..util.models import DeferredManyToManyField
 
 __all__ = ('Category', 'CategorizedProduct')
 
+
 class Category(MPTTModel):
 
     name = models.CharField(_('name'), max_length=128)

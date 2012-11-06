@@ -1,15 +1,11 @@
 {% load i18n %}
-{% load images %}
+{% load image_tags %}
 {% load prices %}
 {% load product_prices %}
 {% load products_tags %}
 <tr>
-<td class="image">
-{% if variant.product.main_image %}
-        <a href="{{ variant.product.get_absolute_url }}"><img src="{{ variant.product.main_image|at_size:'cart-product' }}" alt="{{ item }}" /></a>
-{% else %}
-        <a href="{{ variant.product.get_absolute_url }}">{{ variant }}</a>
-{% endif %}
+    <td class="image">
+        <a href="{{ variant.product.get_absolute_url }}"><img src="{{ variant.product.main_image|at_size_with_fallback:'cart-product' }}" alt="{{ variant }}" /></a>
     </td>
     <td class="name product-description">
 {% if variant.product.manufacture %}
@@ -29,11 +25,10 @@
     <td class="product-price">
         <div class="amounts">
 {% if undiscounted_unit_price and undiscounted_unit_price != unit_price %}
-            <span class="strike">{{ undiscounted_unit_price|gross|floatformat:2 }}</span><br />
+            <span class="strike">{% gross undiscounted_unit_price %}</span><br />
 {% endif %}
-            <span class="fullprice">{{ unit_price|gross|floatformat:2 }}</span>
+            <span class="fullprice">{% gross unit_price %}</span>
         </div>
-        <span class="currency">{{ currency }}</span>
     </td>
     <td class="qty">
         {% if not readonly %}
@@ -56,10 +51,9 @@
     <td class="product-price">
         <div class="amounts">
 {% if undiscounted_item_price and undiscounted_item_price != item_price %}
-            <span class="strike">{{ undiscounted_item_price|gross|floatformat:2 }}</span><br />
+            <span class="strike">{% gross undiscounted_item_price %}</span><br />
 {% endif %}
-            <span class="fullprice">{{ item_price|gross|floatformat:2 }}</span>
+            <span class="fullprice">{% gross item_price %}</span>
         </div>
-        <span class="currency">{{ currency }}</span>
     </td>
 </tr>

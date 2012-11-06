@@ -1,6 +1,5 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 {% load i18n %}
-{% load localeurl_tags %}
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="pl-PL" lang="pl-PL">
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
@@ -39,11 +38,18 @@
         </ul>
         <div class="shortcuts grid_6">
             <form class="search" method="get" action="{% url satchless-search-haystack-predictive %}"><input class="q" type="text" name="q" value="{{ request.GET.keywords }}" /><input class="submit" type="submit" value="Search" /></form>
-            <ul class="languages">{% spaceless %}
-{% for lang in LANGUAGES %}
-                <li class="{% if forloop.first %}first{% endif %}">{% if lang.0  == LANGUAGE_CODE %}{{ lang.1 }}{% else %}<a href="{{ request.path|chlocale:lang.0 }}">{{ lang.1 }}</a>{% endif %}</li>
-{% endfor %}
-            {% endspaceless %}</ul>
+            <form action="/i18n/setlang/" method="post" class="languages">
+                {% csrf_token %}
+                <input name="next" type="hidden" value="{{ redirect_to }}" />
+                <select name="language">
+                    {% get_language_info_list for LANGUAGES as languages %}
+                    {% for language in languages %}
+                    <option value="{{ language.code }}">{{ language.name_local }}</option>
+                    {% endfor %}
+                </select>
+                <input type="submit" value="Go" />
+                <input type="hidden" value="/" name="next" />
+            </form>
             <div class="carts">
                 <a class="wishlist" href="{% url wishlist:details %}">{{ wishlist_size|floatformat:0 }}<img src="{{ STATIC_URL }}img/icons/wishlist.png" alt="wishlist" /></a>
                 <a href="{% url cart:details %}">{{ cart_size|floatformat:0 }}<img src="{{ STATIC_URL }}img/icons/cart.png" alt="cart" /></a>
@@ -83,49 +89,20 @@
 </div> {# #content #}
 
 <div id="content" class="container_24">
-<div class="grid_24 footer">
-    <div class="info">
-        <div class="contact">
-            IF YOU NEED GREAT, FAST & MODERN ECOMMERCE SOLUTION OR CONSULTING <a href="http://mirumee.com/contact">TALK TO US</a><br />
-            <span class="quality">Best quality guarantee</span>
-        </div>
-        <div class="copyright">
-            Copyright © 2009-2011 Mirumee Labs. <br />
-            <a href="http://mirumee.com"><img class="motto" src="{{ STATIC_URL }}img/motto.png" alt="Mirumee Software - We build WebApps. Better" /></a>
+    <div class="grid_24 footer">
+        <div class="info">
+            <div class="contact">
+                IF YOU NEED GREAT, FAST &amp; MODERN ECOMMERCE SOLUTION OR CONSULTING <a href="http://mirumee.com/contact">TALK TO US</a><br />
+                <span class="quality">Best quality guarantee</span>
+            </div>
+            <div class="copyright">
+                Copyright © 2009-2011 Mirumee Labs. <br />
+                <a href="http://mirumee.com"><img class="motto" src="{{ STATIC_URL }}img/motto.png" alt="Mirumee Software - We build WebApps. Better" /></a>
+            </div>
         </div>
     </div>
 </div>
 
-{% if debug %}
-<div id="debug" class="container_24">
-  <h2>Queries</h2>
-  <p>
-    {{ sql_queries|length }} Quer{{ sql_queries|pluralize:"y,ies" }}
-    {% ifnotequal sql_queries|length 0 %}
-    (<span style="cursor: pointer;" onclick="var s=document.getElementById('debugQueryTable').style;s.display=s.display=='none'?'':'none';this.innerHTML=this.innerHTML=='Show'?'Hide':'Show';">Show</span>)
-    {% endifnotequal %}
-  </p>
-  <table id="debugQueryTable" style="display: none;">
-    <col width="1"></col>
-    <col></col>
-    <col width="1"></col>
-    <thead>
-    <tr>
-      <th scope="col">#</th>
-      <th scope="col">SQL</th>
-      <th scope="col">Time</th>
-    </tr>
-    </thead>
-    <tbody>
-    {% for query in sql_queries %}<tr class="{% cycle odd,even %}">
-      <td>{{ forloop.counter }}</td>
-      <td>{{ query.sql|escape }}</td>
-      <td>{{ query.time }}</td>
-    </tr>{% endfor %}
-    </tbody>
-  </table>
-</div>
-{% endif %}
 {% block extra-body %}
 <script type="text/javascript" src="{{ STATIC_URL }}js/jquery.js"></script>
 <script>

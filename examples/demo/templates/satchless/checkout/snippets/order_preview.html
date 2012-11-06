@@ -1,5 +1,5 @@
 {% load i18n %}
-{% load images %}
+{% load image_tags %}
 {% load prices %}
 {% load product_prices %}
 {% load products_tags %}
@@ -23,54 +23,40 @@
         <tbody>
     {% for item in group.items.all %}
             <tr>
-            {% with variant=item.product_variant.get_subtype_instance %}
-            {% with product=variant.product %}
-            {% with unit_price=item.unit_price item_price=item.price currency=order.currency readonly=1 %}
+            {% with variant=item.product_variant.get_subtype_instance unit_price=item.get_price_per_item item_price=item.get_total readonly=1 %}
+                {% with product=variant.product %}
                 <td class="image">
-            {% if variant.product.main_image %}
-                    <a href="{{ variant.product.get_url }}" title="{{ variant }}"><img src="{{ variant.product.main_image|at_size:'order-preview' }}" alt="{{ item }}" /></a>
-            {% else %}
-                    <a href="{{ variant.product.get_url }}" title="{{ variant }}">{{ variant }}</a>
-            {% endif %}
+                    <a href="{{ variant.product.get_url }}" title="{{ variant }}"><img src="{{ variant.product.main_image|at_size_with_fallback:'order-preview' }}" alt="{{ variant }}" /></a>
                 </td>
                 <td class="product-price">
-                    <span class="fullprice">{{ unit_price|gross|floatformat:2 }}</span>
-                    <span class="currency">{{ currency }}</span>
+                    <span class="fullprice">{% gross unit_price %}</span>
                 </td>
                 <td class="qty">
                     &times; {{ item.quantity }}
                 </td>
                 <td class="product-price">
-                    <span class="fullprice">{{ item_price|gross|floatformat:2 }}</span>
-                    <span class="currency">{{ currency }}</span>
+                    <span class="fullprice">{% gross item_price %}</span>
                 </td>
-            {% endwith %}
-            {% endwith %}
+                {% endwith %}
             {% endwith %}
             </tr>
     {% endfor %}
         </tbody>
         <tfoot>
-            {% if group.deliveryvariant.id %}
-                {% with group.deliveryvariant.get_subtype_instance as variant %}
-                {% if variant.id %}
+            {% with group.get_delivery as variant %}
             <tr>
                 <th>{% trans "Delivery" %}:</th>
                 <td colspan="2">
-                    {{ variant }}
+                    {{ variant.name }}
                 </td>
                 <td class="product-price">
-                    <span class="fullprice">{{ variant.price|floatformat:2 }}</span>
-                    <span class="currency">{{ order.currency }}</span><br />
+                    <span class="fullprice">{% gross variant.get_total %}</span>
                 </td>
             </tr>
-                {% endif %}
-                {% endwith %}
-            {% endif %}
+            {% endwith %}
             <tr>
                 <td class="product-price" colspan="5">
-                    <span class="fullprice">{{ group.get_total|gross|floatformat:2 }}</span>
-                    <span class="currency">{{ order.currency }}</span><br />
+                    <span class="fullprice">{% gross group.get_total %}</span>
                 </td>
             </tr>
         </tfoot>

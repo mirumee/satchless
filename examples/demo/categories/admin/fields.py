@@ -2,6 +2,7 @@
 
 from django import forms
 
+
 class CategoryMixin:
     def label_from_instance(self, obj):
         level = getattr(obj, obj._mptt_meta.level_attr)
@@ -15,9 +16,10 @@ class CategoryMixin:
                 indent += u'├ '
         return u'%s%s' % (indent, unicode(obj))
 
+
 class CategoryChoiceField(CategoryMixin, forms.ModelChoiceField):
     pass
 
+
 class CategoryMultipleChoiceField(CategoryMixin, forms.ModelMultipleChoiceField):
     pass
-

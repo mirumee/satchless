@@ -2,8 +2,7 @@
 from setuptools import setup, find_packages
 
 # dynamic retrive version number from stachless.VERSION
-version_tuple = __import__('satchless').VERSION
-version = '.'.join([str(v) for v in version_tuple])
+version = __import__('satchless').__version__
 
 CLASSIFIERS = [
     'Development Status :: 3 - Alpha',
@@ -25,7 +24,8 @@ CLASSIFIERS = [
 REQUIREMENTS = [
     'Django >= 1.3',
     'django-mptt >= 0.4.2',
-    'prices == 2012.10.1'
+    'prices == 2012.10.1',
+    'django-prices >= 2012.11.4'
 ]
 
 EXTRAS = {

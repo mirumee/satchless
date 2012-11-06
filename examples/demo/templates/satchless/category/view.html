@@ -1,5 +1,5 @@
 {% extends "satchless/base.html" %}
-{% load images %}
+{% load image_tags %}
 {% load pagination_tags %}
 {% load product_url %}
 {% load prices %}
@@ -8,7 +8,7 @@
 {% block body-class %}category{% if path %} cat-{{ path.0.slug }}{% endif %}{% endblock %}
 
 {% block content %}
-<div class="grid_4 alpha"><div class="sidebar">&nbsp;</div></div>
+<div class="grid_4 alpha"><div class="sidebar"><h4>{{ category }}</h4></div></div>
 <div class="grid_20 omega products">
 {% if category.is_leaf_node %}
     {% with category.products.all as products %}
@@ -20,21 +20,21 @@
                 {% with product|product_in_category_url:category as product_url %}
     <div class="grid_5 {% cycle 'alpha' '' '' 'omega' %}">
         <div class="product">
-            <a href="{{ product_url }}" class="product-photo">{% if product.main_image %}<img src="{{ product.main_image|at_size:'product-detail' }}" alt="{{ product.name }} image"/>{% endif %} </a>
+            <a href="{{ product_url }}" class="product-photo"><img src="{{ product.main_image|at_size_with_fallback:'category-product' }}" alt="{{ product.name }} image"/></a>
             <div class="description">
                 <span class="manufacture">
                     {% if product.make %}
                     {{ product.make }}
                     {% endif %}
                 </span>
-                <h3>{{ product.name }}</h3>
+                <h3><a href="{{ product_url }}">{{ product.name }}</a></h3>
                 <div class="price">
-                    {% product_price_range product pricing_handler as price_range %}
-                    {% product_price_range product pricing_handler discount=0 as undiscounted_price_range %}
-                    {% if price_range.min != undiscounted_price_range.min %}
-                            <span class="strike">{{ undiscounted_price_range.min|gross|floatformat:2 }}</span>
+                    {% product_price_range product as price_range %}
+                    {% product_price_range product discount=0 as undiscounted_price_range %}
+                    {% if price_range.min_price != undiscounted_price_range.min_price %}
+                        <span class="strike">{% gross undiscounted_price_range.min_price %}</span>
                     {% endif %}
-                    <span class="fullprice">{{ price_range.min|gross|floatformat:2 }}</span> <span class="currency">{{ price_range.min|currency }}</span>
+                    <span class="fullprice">{% gross price_range.min_price %}</span>
                 </div>
             </div>
         </div>
@@ -54,9 +54,7 @@
             {% for child in subcategories %}
                 <div class="grid_5">
                     <div class="category">
-                    {% if child.image %}
-                        <a href="{{ child.get_absolute_url }}"><img src="{{ child.image|at_size:'category' }}" alt="" /></a>
-                    {% endif %}
+                        <a href="{{ child.get_absolute_url }}"><img src="{{ child.image|at_size_with_fallback:'category' }}" alt="" /></a>
                         <h3><a href="{{ child.get_absolute_url }}">{{ child }}</a></h3>
                     </div>
                 </div>

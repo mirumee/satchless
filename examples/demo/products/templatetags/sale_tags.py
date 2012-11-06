@@ -6,12 +6,14 @@ from .. import query
 
 register = template.Library()
 
+
 @register.filter
 def category_in_sale_url(category):
     path = list(category.get_ancestors()) + [category]
     path = [c.slug for c in path]
     category_slugs = '/'.join(path)
     return reverse('sale', args=(category_slugs,))
+
 
 @register.filter
 def subcategories_in_sale(category):
@@ -26,12 +28,12 @@ def subcategories_in_sale(category):
     subcategories = filter(lambda cat: cat.products_count, subcategories)
     return subcategories
 
+
 @register.filter
 def product_in_category_tree_url(product, category=None):
     if not category:
         return product.get_absolute_url()
 
-    category = Category.objects.filter(products=product, lft__gte=category.lft,
-                                       rght__lte=category.rght)[0]
+    category = product_app.Category.objects.filter(
+        products=product, lft__gte=category.lft, rght__lte=category.rght)[0]
     return product.get_absolute_url(category=category)
-

@@ -1,14 +1,10 @@
 # -*- coding:utf-8 -*-
 import os
-import re
-from localeurl.models import patch_reverse
-patch_reverse()
-from satchless.contrib.pricing.cache import PricingCacheHandler
 
 from django.core.urlresolvers import reverse
 from django.utils.translation import ugettext_lazy as _
 
-PROJECT_ROOT = os.path.dirname( __file__ )
+PROJECT_ROOT = os.path.dirname(__file__)
 
 DEBUG = True
 TEMPLATE_DEBUG = DEBUG
@@ -21,12 +17,12 @@ MANAGERS = ADMINS
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3', # Add 'postgresql_psycopg2', 'postgresql', 'mysql', 'sqlite3' or 'oracle'.
-        'NAME': 'dev.db',                      # Or path to database file if using sqlite3.
-        'USER': '',                      # Not used with sqlite3.
-        'PASSWORD': '',                  # Not used with sqlite3.
-        'HOST': '',                      # Set to empty string for localhost. Not used with sqlite3.
-        'PORT': '',                      # Set to empty string for default. Not used with sqlite3.
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': 'dev.db',
+        'USER': '',
+        'PASSWORD': '',
+        'HOST': '',
+        'PORT': ''
     }
 }
 
@@ -43,13 +39,8 @@ TIME_ZONE = 'Europe/Warsaw'
 # http://www.i18nguy.com/unicode/language-identifiers.html
 LANGUAGE_CODE = 'en'
 LANGUAGES = (
-    ('en', u"English"),
-    ('pl', u"Polski"),
-)
-
-PREFIX_DEFAULT_LOCALE = True
-LOCALE_INDEPENDENT_PATHS = (
-    re.compile('^/admin'),
+    ('en', u'English'),
+    ('pl', u'polski'),
 )
 
 SITE_ID = 1
@@ -88,9 +79,9 @@ TEMPLATE_LOADERS = (
 )
 
 MIDDLEWARE_CLASSES = (
-    'localeurl.middleware.LocaleURLMiddleware',
-    'django.middleware.common.CommonMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'django.middleware.locale.LocaleMiddleware',
+    'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
@@ -109,12 +100,11 @@ TEMPLATE_DIRS = (
 TEMPLATE_CONTEXT_PROCESSORS = (
     'django.contrib.auth.context_processors.auth',
     'django.core.context_processors.debug',
+    'django.core.context_processors.request',
     'django.core.context_processors.i18n',
     'django.core.context_processors.media',
     'django.core.context_processors.static',
-    'django.core.context_processors.request',
     'django.contrib.messages.context_processors.messages',
-    'mothertongue.context_processors.router',
     'carts.context_processors.carts_sizes',
     'core.context_processors.root_categories',
 )
@@ -124,7 +114,6 @@ STATICFILES_DIRS = (
 
 
 INSTALLED_APPS = (
-    'localeurl',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
@@ -132,18 +121,17 @@ INSTALLED_APPS = (
     'django.contrib.messages',
     'django.contrib.staticfiles',
 
-    'mothertongue',
     'categories',
     'grappelli',
     'django.contrib.admin',
     'django_images',
+    'django_prices',
     'mptt',
     'satchless.product',
     'satchless.category',
     #'satchless.contrib.productset',
     #'satchless.contact',
     'satchless.cart',
-    'satchless.pricing',
     'satchless.contrib.tax.flatgroups',
     'satchless.contrib.stock.singlestore',
     'satchless.order',
@@ -156,7 +144,6 @@ INSTALLED_APPS = (
     'pagination',
     'core',
     'carts',
-    'sale',
     'orders',
     'checkouts',
 
@@ -164,7 +151,6 @@ INSTALLED_APPS = (
     'search.haystack_predictive',
     'payments',
     'payments.dummy',
-    'pricing',
     'demo_payments',
 )
 
@@ -182,7 +168,7 @@ IMAGE_SIZES = {
         'crop': True,
     },
     'category-product': {
-        'size': (230, 307),
+        'size': (178, 179),
         'crop': True,
     },
     'product-detail': {
@@ -195,7 +181,7 @@ IMAGE_SIZES = {
         'crop': True,
     },
     'cart-product': {
-        'size': ('156', '156'),
+        'size': (158, 158),
         'crop': True,
     },
     'order-preview': {
@@ -204,24 +190,11 @@ IMAGE_SIZES = {
     },
 }
 
-SATCHLESS_DEFAULT_CURRENCY = 'GBP'
+SATCHLESS_DEFAULT_CURRENCY = 'EUR'
 
 INTERNAL_IPS = ['127.0.0.1']
 
-class CustomCacheHandler(PricingCacheHandler):
-    def get_cache_key(self, *args, **kwargs):
-        discount = bool(kwargs.pop('discount', True))
-        key = super(CustomCacheHandler, self).get_cache_key(*args, **kwargs)
-        key['discount'] = discount
-        return key
 
-SATCHLESS_PRICING_HANDLERS = [
-    CustomCacheHandler(
-        'satchless.contrib.pricing.simpleqty.SimpleQtyPricingHandler',
-        'satchless.contrib.tax.flatgroups.FlatGroupPricingHandler',
-        'sale.SalePricingHandler',
-        lazy=True)
-]
 SATCHLESS_PRODUCT_VIEW_HANDLERS = [
     'carts.handler.carts_handler',
 ]

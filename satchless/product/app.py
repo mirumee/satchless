@@ -7,6 +7,7 @@ from ..core.app import SatchlessApp, view
 
 from . import models
 
+
 class ProductApp(SatchlessApp):
 
     app_name = 'product'

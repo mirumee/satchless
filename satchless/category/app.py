@@ -8,6 +8,7 @@ from ..product import models as product_models
 from ..util.models import construct
 from . import models
 
+
 class CategorizedProductApp(app.ProductApp):
 
     app_name = 'category'

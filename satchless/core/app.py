@@ -3,6 +3,7 @@ from django.conf.urls.defaults import patterns, url
 from django.core.urlresolvers import reverse
 from django.shortcuts import redirect
 
+
 class SatchlessApp(object):
 
     app_name = None

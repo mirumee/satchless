@@ -12,9 +12,9 @@ class CheckoutApp(app.MultiStepCheckoutApp):
 
     BillingForm = modelform_factory(order_app.Order,
                                     forms.BillingForm)
-    ShippingForm= modelform_factory(order_app.DeliveryGroup,
-                                    form=forms.ShippingForm,
-                                    fields=forms.ShippingForm._meta.fields)
+    ShippingForm = modelform_factory(order_app.DeliveryGroup,
+                                     form=forms.ShippingForm,
+                                     fields=forms.ShippingForm._meta.fields)
     DeliveryMethodForm = modelform_factory(order_app.DeliveryGroup,
                                            form=forms.DeliveryMethodForm,
                                            fields=forms.DeliveryMethodForm._meta.fields)

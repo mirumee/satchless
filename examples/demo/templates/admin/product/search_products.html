@@ -2,7 +2,7 @@
 
 {% load admin_list %}
 {% load i18n %}
-{% load images %}
+{% load image_tags %}
 
 {% block content %}
 <div id="search-products">
@@ -19,7 +19,7 @@
     {% with result.object.get_subtype_instance as product %}
             <div class="tr product" data-variant-pk="{{ variant.pk }}" >
                 <div class="td">
-                    <img src="{{ product.main_image|at_size:'admin' }}" alt="" />
+                    <img src="{{ product.main_image|at_size_with_fallback:'admin' }}" alt="" />
                 </div>
                 <div class="td product-id-container">
                     {% trans "Copy this value to form input to select this product." %}

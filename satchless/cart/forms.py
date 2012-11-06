@@ -4,6 +4,7 @@ from django.utils.translation import ugettext_lazy as _, ugettext
 from ..forms.widgets import DecimalInput
 from ..product.forms import registry
 
+
 class QuantityForm(object):
 
     def clean_quantity(self):
@@ -85,6 +86,8 @@ def add_to_cart_variant_form_for_product(product,
                                          addtocart_formclass=AddToCartForm,
                                          registry=registry):
     variant_formclass = registry.get_handler(type(product))
+
     class AddVariantToCartForm(addtocart_formclass, variant_formclass):
         pass
+
     return AddVariantToCartForm

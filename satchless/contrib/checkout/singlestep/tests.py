@@ -21,6 +21,7 @@ urlpatterns = patterns('',
     url(r'^checkout/', include('satchless.contrib.checkout.singlestep.urls')),
 )
 
+
 class TestPaymentProviderWithConfirmation(TestPaymentProvider):
     def confirm(self, order):
         raise ConfirmationFormNeeded(action='http://test.payment.gateway.example.com')

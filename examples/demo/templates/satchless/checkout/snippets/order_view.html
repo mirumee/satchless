@@ -1,5 +1,4 @@
 {% load i18n %}
-{% load images %}
 {% load prices %}
 {% load products_tags %}
 {% for group in order.groups.all %}
@@ -27,40 +26,34 @@
     </thead>
     <tbody>
     {% for item in group.items.all %}
-        {% with variant=item.product_variant.get_subtype_instance %}
-        {% with product=variant.product %}
-        {% with unit_price=item.unit_price item_price=item.price currency=order.currency readonly=1 %}
-        {% include "satchless/cart/snippets/row.html" %}
-        {% endwith %}
-        {% endwith %}
+        {% with variant=item.product_variant.get_subtype_instance unit_price=item.get_price_per_item item_price=item.get_total readonly=1 %}
+            {% with product=variant.product %}
+                {% include "satchless/cart/snippets/row.html" %}
+            {% endwith %}
         {% endwith %}
     {% endfor %}
     </tbody>
     <tfoot>
-        {% if group.deliveryvariant %}
-            {% with group.deliveryvariant.get_subtype_instance as variant %}
+        {% with group.get_delivery as variant %}
         <tr>
             <th>{% trans "Delivery" %}:</th>
             <td colspan="3">
-                {{ variant }}
+                {{ variant.name }}
             </td>
             <td class="product-price">
-                <span class="fullprice">{{ variant.price|floatformat:2 }}</span>
-                <span class="currency">{{ order.currency }}</span><br />
+                <span class="fullprice">{% gross variant.get_total %}</span>
             </td>
         </tr>
-            {% endwith %}
-        {% endif %}
+        {% endwith %}
         <tr>
             <td class="product-price" colspan="5">
-                <span class="fullprice">{{ group.get_total|gross|floatformat:2 }}</span>
-                <span class="currency">{{ order.currency }}</span><br />
+                <span class="fullprice">{% gross group.get_total %}</span>
             </td>
         </tr>
     </tfoot>
 </table>
 {% endfor %}
-<p>Total amount to pay: {{ order.get_total|gross|floatformat:2 }} <span class="currency">{{ order.currency }}</span></p>
+<p>Total amount to pay: {% gross order.get_total %}</p>
 {% if order.paymentvariant %}
-<p>{% trans "Payment method" %}: {{ order.paymentvariant.get_subtype_instance }}
+<p>{% trans "Payment method" %}: {{ order.get_payment.name }}
 {% endif %}

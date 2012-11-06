@@ -279,8 +279,12 @@ input.wishlist {
         font-weight: bold;
         margin-right: 4px;
     }
+        .product-price .fullprice .currency {
+            font-size: 0.5em;
+        }
     .product-price .currency {
         font-size: 0.8em;
+        font-weight: normal;
     }
     .product-price .strike {
         font-size: 1em;
@@ -591,6 +595,9 @@ body.store.checkout .order-preview {
             font-size: 12px;
             white-space: nowrap;
         }
+            body.store.checkout #content .order-preview table td.product-price .fullprice .currency {
+                font-size: 0.8em;
+            }
     body.store.checkout #content .order-preview table tfoot {
     }
         body.store.checkout #content .order-preview table tfoot th,
@@ -616,7 +623,6 @@ body .products .product {
     margin-bottom: 10px;
 }
     body .products .product .product-photo img {
-        width: 178px;
         border: 0;
     }
     body .products .product .description {

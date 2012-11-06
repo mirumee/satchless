@@ -27,8 +27,7 @@ class CartApp(SatchlessApp):
         'satchless/cart/view.html'
     ]
 
-    def __init__(self, pricing_handler, *args, **kwargs):
-        self.pricing_handler = pricing_handler
+    def __init__(self, *args, **kwargs):
         super(CartApp, self).__init__(*args, **kwargs)
         assert self.Cart, ('You need to subclass CartApp and provide Cart')
         assert self.CartItemForm, ('You need to subclass CartApp and'
@@ -66,8 +65,7 @@ class CartApp(SatchlessApp):
         context = self._handle_cart(cart, request)
         if isinstance(context, HttpResponse):
             return context
-        context = self.get_context_data(
-            request, pricing_handler=self.pricing_handler, **context)
+        context = self.get_context_data(request, **context)
         format_data = {
             'cart_type': self.cart_type,
         }
@@ -95,13 +93,8 @@ class MagicCartApp(CartApp):
     CartItem = None
     AddToCartHandler = handler.AddToCartHandler
 
-    def __init__(self, product_app, pricing_handler=None, **kwargs):
+    def __init__(self, product_app, **kwargs):
         self.product_app = product_app
-        pricing_handler = pricing_handler or getattr(product_app,
-                                                     'pricing_handler', None)
-        if not pricing_handler:
-            raise ValueError('Requires either a pricing handler '
-                             'or product app with pricing handler')
 
         self.Cart = self.Cart or self.construct_cart_class()
         self.CartItem = (self.CartItem or
@@ -113,7 +106,7 @@ class MagicCartApp(CartApp):
         if self.AddToCartHandler:
             add_to_cart_handler = self.AddToCartHandler(cart_app=self)
             product_app.register_product_view_handler(add_to_cart_handler)
-        super(MagicCartApp, self).__init__(pricing_handler=pricing_handler, **kwargs)
+        super(MagicCartApp, self).__init__(**kwargs)
 
     def construct_cart_class(self):
         class Cart(models.Cart):

@@ -35,7 +35,6 @@ class BaseCheckoutAppTests(ViewsTestCase):
         self._teardown_settings(self.original_settings,
                                 self.custom_settings)
 
-
     def _create_cart(self, client):
         cart = self._get_or_create_cart_for_client(client)
         cart.replace_item(self.macaw_blue, 1)

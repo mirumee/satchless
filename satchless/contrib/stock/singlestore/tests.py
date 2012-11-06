@@ -5,6 +5,7 @@ from ....product.tests import Parrot, ParrotVariant
 from ....cart.tests import cart_app
 from .models import VariantStockLevelMixin
 
+
 # Models for tests
 class StockedDeadParrot(Parrot):
     species = models.CharField(max_length=20)

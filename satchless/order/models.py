@@ -1,17 +1,33 @@
 import datetime
-import decimal
+from django.conf import settings
 from django.contrib.auth.models import User
 from django.db import models
 from django.utils.translation import ugettext_lazy as _
+from django_prices.models import PriceField
 from prices import Price
 import random
 
+from ..item import ItemSet, ItemLine
 from ..util import countries
 from ..util.models import DeferredForeignKey
 from . import signals
 
 
-class Order(models.Model):
+class PaymentInfo(ItemLine):
+    name = None
+    price = None
+    description = None
+
+    def __init__(self, name, price, description):
+        self.name = name
+        self.price = price
+        self.description = description
+
+    def get_price_per_item(self, **kwargs):
+        return self.price
+
+
+class Order(models.Model, ItemSet):
 
     STATUS_CHOICES = (
         ('checkout', _('undergoing checkout')),
@@ -31,7 +47,6 @@ class Order(models.Model):
     last_status_change = models.DateTimeField(default=datetime.datetime.now,
                                               editable=False, blank=True)
     user = models.ForeignKey(User, blank=True, null=True, related_name='+')
-    currency = models.CharField(max_length=3)
     billing_first_name = models.CharField(_("first name"),
                                           max_length=256, blank=True)
     billing_last_name = models.CharField(_("last name"),
@@ -57,9 +72,10 @@ class Order(models.Model):
     payment_type_name = models.CharField(_('name'), max_length=128, blank=True,
                                          editable=False)
     payment_type_description = models.TextField(_('description'), blank=True)
-    payment_price = models.DecimalField(_('unit price'), max_digits=12,
-                                        decimal_places=4, default=0,
-                                        editable=False)
+    payment_price = PriceField(_('unit price'),
+                               currency=settings.SATCHLESS_DEFAULT_CURRENCY,
+                               max_digits=12, decimal_places=4, default=0,
+                               editable=False)
     token = models.CharField(max_length=32, blank=True, default='')
 
     class Meta:
@@ -69,8 +85,18 @@ class Order(models.Model):
         verbose_name_plural = _('orders (business)')
         ordering = ('-last_status_change',)
 
-    def __unicode__(self):
-        return _('Order #%d') % self.id
+    def __iter__(self):
+        for g in self.get_groups():
+            yield g
+        payment = self.get_payment()
+        if payment:
+            yield payment
+
+    def __repr__(self):
+        return '<Order #%r>' % (self.id,)
+
+    def get_default_currency(self):
+        return settings.SATCHLESS_DEFAULT_CURRENCY
 
     def save(self, *args, **kwargs):
         if not self.token:
@@ -94,21 +120,17 @@ class Order(models.Model):
         signals.order_status_changed.send(sender=type(self), instance=self,
                                           old_status=old_status)
 
-    def get_subtotal(self):
-        return sum([g.get_subtotal() for g in self.groups.all()],
-                   Price(0, currency=self.currency))
+    def get_groups(self):
+        return self.groups.all()
 
     def get_delivery_price(self):
-        return sum([g.get_delivery_price() for g in self.groups.all()],
-                   Price(0, currency=self.currency))
+        return sum([g.get_delivery().get_price() for g in self.get_groups()],
+                   Price(0, currency=settings.SATCHLESS_DEFAULT_CURRENCY))
 
-    def get_payment_price(self):
-        return Price(self.payment_price, currency=self.currency)
-
-    def get_total(self):
-        payment_price = self.get_payment_price()
-        return payment_price + sum([g.get_total() for g in self.groups.all()],
-                                   Price(0, currency=self.currency))
+    def get_payment(self):
+        return PaymentInfo(name=self.payment_type_name,
+                           price=self.payment_price,
+                           description=self.payment_type_description)
 
     def create_delivery_group(self, group):
         return self.groups.create(order=self,
@@ -118,12 +140,27 @@ class Order(models.Model):
         return not self.groups.exists()
 
 
-class DeliveryGroup(models.Model):
+class DeliveryInfo(ItemLine):
+    name = None
+    price = None
+    description = None
+
+    def __init__(self, name, price, description):
+        self.name = name
+        self.price = price
+        self.description = description
+
+    def get_price_per_item(self, **kwargs):
+        return self.price
+
+
+class DeliveryGroup(models.Model, ItemSet):
 
     order = DeferredForeignKey('order', related_name='groups', editable=False)
-    delivery_price = models.DecimalField(_('unit price'),
-                                         max_digits=12, decimal_places=4,
-                                         default=0, editable=False)
+    delivery_price = PriceField(_('unit price'),
+                                currency=settings.SATCHLESS_DEFAULT_CURRENCY,
+                                max_digits=12, decimal_places=4,
+                                default=0, editable=False)
     delivery_type = models.CharField(max_length=256, blank=True)
     delivery_type_name = models.CharField(_('name'), max_length=128, blank=True,
                                           editable=False)
@@ -151,17 +188,23 @@ class DeliveryGroup(models.Model):
     class Meta:
         abstract = True
 
-    def get_subtotal(self):
-        return sum([i.price() for i in self.items.all()],
-                   Price(0, currency=self.order.currency))
+    def __iter__(self):
+        for i in self.get_items():
+            yield i
+        delivery = self.get_delivery()
+        if delivery:
+            yield delivery
 
-    def get_delivery_price(self):
-        return Price(self.delivery_price, currency=self.order.currency)
+    def get_default_currency(self):
+        return settings.SATCHLESS_DEFAULT_CURRENCY
 
-    def get_total(self):
-        delivery_price = self.get_delivery_price()
-        return delivery_price + sum([i.price() for i in self.items.all()],
-                                    Price(0, currency=self.order.currency))
+    def get_delivery(self):
+        return DeliveryInfo(name=self.delivery_type_name,
+                            price=self.delivery_price,
+                            description=self.delivery_type_description)
+
+    def get_items(self):
+        return self.items.all()
 
     def add_item(self, variant, quantity, price, product_name=None):
         product_name = product_name or unicode(variant)
@@ -170,7 +213,7 @@ class DeliveryGroup(models.Model):
                                  unit_price_gross=price.gross)
 
 
-class OrderedItem(models.Model):
+class OrderedItem(models.Model, ItemLine):
 
     delivery_group = DeferredForeignKey('delivery_group', related_name='items',
                                         editable=False)
@@ -188,13 +231,9 @@ class OrderedItem(models.Model):
     class Meta:
         abstract = True
 
-    def unit_price(self):
+    def get_price_per_item(self, **kwargs):
         return Price(net=self.unit_price_net, gross=self.unit_price_gross,
-                     currency=self.delivery_group.order.currency)
+                     currency=settings.SATCHLESS_DEFAULT_CURRENCY)
 
-    def price(self):
-        net = self.unit_price_net * self.quantity
-        gross = self.unit_price_gross * self.quantity
-        return Price(net=net.quantize(decimal.Decimal('0.01')),
-                     gross=gross.quantize(decimal.Decimal('0.01')),
-                     currency=self.delivery_group.order.currency)
+    def get_quantity(self):
+        return self.quantity

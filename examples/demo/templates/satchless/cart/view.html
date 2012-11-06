@@ -42,13 +42,13 @@
             </tr>
         </thead>
         <tbody>
-    {% cart_total_price cart pricing_handler as cart_total %}
+    {% cart_total_price cart as cart_total %}
     {% for form in cart_item_forms %}
         {% with form.instance as cart_item %}
-        {% cartitem_unit_price cart_item pricing_handler as unit_price %}
-        {% cartitem_unit_price cart_item pricing_handler discount=0 as undiscounted_unit_price %}
-        {% cartitem_price cart_item pricing_handler as item_price %}
-        {% cartitem_price cart_item pricing_handler discount=0 as undiscounted_item_price %}
+        {% cartitem_unit_price cart_item as unit_price %}
+        {% cartitem_unit_price cart_item discount=0 as undiscounted_unit_price %}
+        {% cartitem_price cart_item as item_price %}
+        {% cartitem_price cart_item discount=0 as undiscounted_item_price %}
         {% promote cart_item.variant as variant %}
         {% with cart.currency as currency %}
         {% include "satchless/cart/snippets/row.html" %}
@@ -59,8 +59,7 @@
         <tfoot>
             <tr class="checkout">
                 <td class="product-price" colspan="5">
-                    <span class="fullprice">{{ cart_total|gross|floatformat:2 }}</span>
-                    <span class="currency">{{ cart.currency }}</span><br />
+                    <span class="fullprice">{% gross cart_total %}</span>
                 </td>
             </tr>
             <tr class="checkout">

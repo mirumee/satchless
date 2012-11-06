@@ -12,6 +12,7 @@ from ..order.signals import order_pre_confirm
 from ..payment import PaymentFailure, ConfirmationFormNeeded
 from ..contrib.order.partitioner.simple import SimplePartitioner
 
+
 class CheckoutApp(SatchlessApp):
 
     app_name = 'checkout'
@@ -62,16 +63,15 @@ class CheckoutApp(SatchlessApp):
         for delivery_group in filter(None, delivery_groups):
             order_delivery_group = order.create_delivery_group(delivery_group)
             for cartitem in delivery_group:
-                price = self.cart_app.pricing_handler.get_variant_price(
-                    cartitem.variant.get_subtype_instance(), currency=cart.currency,
+                price = cartitem.get_price_per_item(
                     quantity=cartitem.quantity, cart=cartitem.cart,
                     cartitem=cartitem, **pricing_context)
-                order_delivery_group.add_item(cartitem.variant, cartitem.quantity, price)
+                order_delivery_group.add_item(cartitem.variant,
+                                              cartitem.quantity, price)
 
     def get_order_from_cart(self, request, cart, order=None):
         if not order:
-            order = self.Order.objects.create(cart=cart, user=cart.owner,
-                                              currency=cart.currency)
+            order = self.Order.objects.create(cart=cart, user=cart.owner)
         elif order.is_empty():
             order.groups.all().delete()
         self.partition_cart(cart, order)

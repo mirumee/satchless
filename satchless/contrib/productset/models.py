@@ -4,6 +4,7 @@ from django.utils.translation import ugettext_lazy as _
 from ...product.models import Variant
 from ...image.models import Image
 
+
 class ProductSet(models.Model):
     name = models.CharField(_('name'), max_length=128)
     slug = models.SlugField(max_length=50)
@@ -22,6 +23,7 @@ class ProductSet(models.Model):
     def variant_instances(self):
         return [psi.variant.get_subtype_instance() for psi in self.items.all()]
 
+
 class ProductSetItem(models.Model):
     productset = models.ForeignKey(ProductSet, related_name='items')
     variant = models.ForeignKey(Variant)
@@ -34,6 +36,7 @@ class ProductSetItem(models.Model):
         ordering = ['sort', 'id']
         verbose_name = _("set item")
         verbose_name_plural = _("set items")
+
 
 class ProductSetImage(Image):
     product = models.ForeignKey(ProductSet, related_name='images')

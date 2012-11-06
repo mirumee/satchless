@@ -1,10 +1,6 @@
 {% extends 'satchless/checkout/base.html' %}
 
 {% load i18n %}
-{% load images %}
-{% load prices %}
-{% load product_prices %}
-{% load products_tags %}
 
 {% block title %}{{ block.super }} | {% trans "Payment" %}{% endblock %}
 {% block body-class %}{{ block.super }} payment-choice{% endblock %}
@@ -27,7 +23,8 @@
 <div class="grid_16 alpha">
 <div class="container">
     <h1>{% trans "Choose payment method" %}</h1>
-    <form action="" method="post">{% csrf_token %}
+    <form action="" method="post">
+        {% csrf_token %}
         {{ payment_form.as_p }}
         <button type="submit" class="button">{% trans "Proceed" %}</button>
     </form>

@@ -31,15 +31,15 @@
                 <td></td>
             </tr>
         {% endif %}
-            {% cartitem_unit_price form.instance pricing_handler as unit_price %}
-            {% cartitem_price form.instance pricing_handler as item_price %}
+            {% cartitem_unit_price form.instance as unit_price %}
+            {% cartitem_price form.instance as item_price %}
             <tr class="item">
                 <td rowspan="2">{{ forloop.counter }}</td>
                 <td rowspan="2">{% promote form.instance.variant as variant %}
                     <a href="{{ variant.product.get_absolute_url }}">{{ variant }}</a>
                 </td>
                 <td class="numerical unitPrice">
-                    {{ unit_price|gross|floatformat:2 }} <span class="currency">{{ cart.currency }}</span><br />
+                    {% gross unit_price %}
                 </td>
                 <td class="numerical quantity">
                     <form method="POST" action="">
@@ -49,10 +49,10 @@
                     </form>
                 </td>
                 <td class="numerical itemPrice">
-                    = {{ item_price|gross|floatformat:2 }} <span class="currency">{{ cart.currency }}</span><br />
+                    = {% gross item_price %}
                 </td>
                 <td class="numerical tax">
-                    {{ item_price|tax|floatformat:2 }} <span class="currency">{{ cart.currency }}</span>
+                    {% tax item_price %}
                 </td>
                 <td rowspan="2">
                     <form method="POST" action="{% url cart:remove-item form.instance.id %}">
@@ -63,29 +63,31 @@
             </tr>
             <tr>
                 <td class="numerical unitPrice netPrice">
-                    {{ unit_price|net|floatformat:2 }} <span class="currency">{{ cart.currency }}</span>
+                    {% net unit_price %}
                 </td>
                 <td></td>
                 <td class="numerical itemPrice netPrice">
-                    {{ item_price|net|floatformat:2 }} <span class="currency">{{ cart.currency }}</span>
+                    {% net item_price %}
                 </td>
                 <td class="numerical taxName">
-                    {% with item_price|tax_name as taxname %}{% if taxname %}({{ taxname }}){% endif %}{% endwith %}
+                    {% trans "Tax" %}
                 </td>
             </tr>
     {% endfor %}
         </tbody>
-        {% cart_total_price cart pricing_handler as cart_total %}
+        {% cart_total_price cart as cart_total %}
         <tfoot>
             <tr class="total">
                 <th colspan="4" rowspan="2">{% trans "Total" %}:</th>
                 <td class="numerical">
-                    {{ cart_total|gross|floatformat:2 }} <span class="currency">{{ cart.currency }}</span><br />
+                    {% gross cart_total %}
                 </td>
                 <td colspan="2" rowspan="2"></td>
             </tr>
             <tr>
-                <td class="numerical netPrice">{{ cart_total|net|floatformat:2 }} <span class="currency">{{ cart.currency }}</span></td>
+                <td class="numerical netPrice">
+                    {% net cart_total %}
+                </td>
             </tr>
         </tfoot>
     </table>

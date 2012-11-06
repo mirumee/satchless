@@ -1,6 +1,6 @@
 {% extends "satchless/base.html" %}
 {% load i18n %}
-{% load images %}
+{% load image_tags %}
 {% load pagination_tags %}
 {% load prices %}
 {% load product_prices %}
@@ -22,7 +22,7 @@
 {% if path %}
 <ul id="breadcrumbs">{% spaceless %}
     {% for category in path %}
-    <li class="{% if forloop.first %}first{% endif %}{% if forloop.last %} active{% endif %}"><a href="/">{{ category }}</a></li>
+    <li class="{% if forloop.first %}first{% endif %}{% if forloop.last %} active{% endif %}"><a href="{{ category.get_absolute_url }}">{{ category }}</a></li>
     {% endfor %}
 {% endspaceless %}</ul>
 {% endif %}
@@ -33,13 +33,11 @@
 
 <div class="grid_8 alpha">
     <div class="main-photo">
-    {% if product.main_image %}
-        <a href="{{ product.main_image.image.url }}" class="cloud-zoom" rel="position: 'inside', showTitle: false"><img src="{{ product.main_image|at_size:'product-detail' }}" /></a>
-    {% endif %}
+        <a href="{{ product.main_image.image.url }}" class="cloud-zoom" rel="position: 'inside', showTitle: false"><img src="{{ product.main_image|at_size_with_fallback:'product-detail' }}" /></a>
     </div>
 </div>
 
-{% product_price_range product pricing_handler as price_range %}
+{% product_price_range product as price_range %}
 <form action="" method="post" class="grid_16 omega">
     <div class="product-details">
         <div class="product-info">
@@ -63,17 +61,17 @@
             <div class="add-to-cart">
 {% if price_range %}
                 <div class="product-price">
-            {% product_price_range product pricing_handler discount=0 as undiscounted_price_range %}
+            {% product_price_range product discount=0 as undiscounted_price_range %}
     {% if price_range.min_price != price_range.max_price %}
         {% if price_range.min_price != undiscounted_price_range.min_price or price_range.max_price != undiscounted_price_range.max_price %}
-                    <span class="strike">{{ undiscounted_price_range.min_price|gross|floatformat:2 }} – {{ undiscounted_price_range.max_price|gross|floatformat:2 }}</span>
+                    <span class="strike">{% gross undiscounted_price_range.min_price %} – {% gross undiscounted_price_range.max_price %}</span>
         {% endif %}
-                    <span class="fullprice">{{ price_range.min_price|gross|floatformat:2 }}</span><span class="currency">{{ price_range.min_price|currency }}</span> – <span class="fullprice">{{ price_range.max_price|gross|floatformat:2 }}</span><span class="currency">{{ price_range.max_price|currency }}</span>
+                    <span class="fullprice">{% gross price_range.min_price %} – {% gross price_range.max_price %}</span>
     {% else %}
         {% if price_range.max_price != undiscounted_price_range.max_price %}
-                    <span class="strike">{{ undiscounted_price_range.max_price|gross|floatformat:2 }}</span>
+                    <span class="strike">{% gross undiscounted_price_range.max_price %}</span>
         {% endif %}
-                    <span class="fullprice">{{ price_range.min_price|gross|floatformat:2 }}</span><span class="currency">{{ price_range.min_price|currency }}</span>
+                    <span class="fullprice">{% gross price_range.min_price %}</span>
     {% endif %}
                     <p class="info">
                     Inclusive VAT <br />
@@ -93,8 +91,8 @@
 <div class="thumbs grid_8 alpha">
 {% spaceless %}
 {% for image in product.images.all %}
-    {% with image|at_size:'product-thumb' as thumb %}
-        {% with image|at_size:'product-detail' as detail %}
+    {% with image|at_size_with_fallback:'product-thumb' as thumb %}
+        {% with image|at_size_with_fallback:'product-detail' as detail %}
     <a class="grid_2 {% if not forloop.counter0 or forloop.counter|divisibleby:5 %}alpha{% endif %}{% if forloop.counter0 and forloop.counter|divisibleby:4 %}omega{% endif %}" href="{{ detail }}" data-big-picture="{{ image.image.url }}" title="Click to see this image enlarged"><img src="{{ thumb }}" alt="{{ image.caption }}"{% if forloop.first %} class="active"{% endif %} /></a>
         {% endwith %}
     {% endwith %}

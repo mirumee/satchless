@@ -7,22 +7,25 @@ from django.utils.translation import ugettext_lazy as _
 from django.core.exceptions import ObjectDoesNotExist
 import random
 
+from ..item import ItemSet, ItemLine
 from ..util.models import DeferredForeignKey
 from . import signals
 
+
 def get_default_currency():
     return settings.SATCHLESS_DEFAULT_CURRENCY
+
 
 class QuantityResult(object):
 
     def __init__(self, cart_item, new_quantity, quantity_delta, reason=None):
         self.cart_item = cart_item
         self.new_quantity = new_quantity
-        self.quantity_delta =  quantity_delta
+        self.quantity_delta = quantity_delta
         self.reason = reason
 
 
-class Cart(models.Model):
+class Cart(models.Model, ItemSet):
 
     owner = models.ForeignKey(User, null=True, blank=True, related_name='+')
     typ = models.CharField(_("type"), max_length=100)
@@ -38,6 +41,10 @@ class Cart(models.Model):
             return u"%s of %s" % (self.typ, self.owner.username)
         else:
             return self.typ
+
+    def __iter__(self):
+        for i in self.get_all_items():
+            yield i
 
     def save(self, *args, **kwargs):
         if not self.token:
@@ -83,6 +90,9 @@ class Cart(models.Model):
                                              **kwargs)
             signals.cart_content_changed.send(sender=type(self), instance=self)
         return QuantityResult(item, quantity, quantity - old_qty, reason)
+
+    def get_default_currency(self, **kwargs):
+        return self.currency
 
     def get_item(self, **kwargs):
         return self.items.get(**kwargs)
@@ -135,7 +145,7 @@ class Cart(models.Model):
         return not self.items.exists()
 
 
-class CartItem(models.Model):
+class CartItem(models.Model, ItemLine):
 
     cart = DeferredForeignKey('cart', related_name='items', editable=False)
     variant = DeferredForeignKey('variant', related_name='+', editable=False)
@@ -148,6 +158,12 @@ class CartItem(models.Model):
 
     def __unicode__(self):
         return u"%s × %.10g" % (self.variant, self.quantity)
+
+    def get_price_per_item(self, **kwargs):
+        return self.variant.get_subtype_instance().get_price(**kwargs)
+
+    def get_quantity(self, **kwargs):
+        return self.quantity
 
     def save(self, *args, **kwargs):
         assert self.quantity > 0

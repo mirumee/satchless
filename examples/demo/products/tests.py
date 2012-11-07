@@ -91,3 +91,16 @@ class ModelsTestCase(TestCase):
         self.assertEqual(another_hat.get_price_range(discount=False),
                          PriceRange(Price(10, currency='EUR'),
                                     Price(20, currency='EUR')))
+
+    def test_qty_overrides(self):
+        another_hat = models.Hat.objects.create(name='Silly Hat',
+                                                slug='silly-hat',
+                                                price=10)
+        another_hat_variant = another_hat.variants.create(
+            price_offset=0, sku='silly-hat-simple')
+        models.PriceQtyOverride.objects.create(
+            product=another_hat, min_qty=5, price=8)
+        self.assertEqual(another_hat_variant.get_price(),
+                         Price(10, currency='EUR'))
+        self.assertEqual(another_hat_variant.get_price(quantity=10),
+                         Price(8, currency='EUR'))

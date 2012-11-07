@@ -3,7 +3,9 @@ from django.db import models
 from django.db.models.fields.related import SingleRelatedObjectDescriptor
 from django.dispatch import receiver
 
+
 class SubtypedManager(models.Manager):
+
     def find_subclasses(self, root):
         for a in dir(root):
             attr = getattr(root, a)
@@ -25,6 +27,7 @@ class SubtypedManager(models.Manager):
 
 
 class Subtyped(models.Model):
+
     subtype_attr = models.CharField(max_length=500, editable=False)
     __in_unicode = False
 
@@ -54,7 +57,7 @@ class Subtyped(models.Model):
         subtype = self
         path = self.subtype_attr.split()
         whoami = self._meta.module_name
-        remaining = path[path.index(whoami)+1:]
+        remaining = path[path.index(whoami) + 1:]
         for r in remaining:
             subtype = getattr(subtype, r)
         return subtype
@@ -130,9 +133,11 @@ def construct(cls, **kwargs):
     if needed_models:
         raise TypeError('construct() did not get models for fields: %s' %
                         (', '.join(needed_models.keys()), ))
+
     # construct the Meta
     class Meta:
         abstract = True
+
     # create a list of attributes
     attrs = dict(new_fields, __module__=cls.__module__, Meta=Meta)
     key = tuple(new_fields.items())

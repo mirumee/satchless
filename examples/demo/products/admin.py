@@ -1,7 +1,6 @@
 # -*- coding:utf-8 -*-
 from django import forms
 from django.contrib import admin
-from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.db.models import Q
 from django.forms.models import modelform_factory
@@ -26,10 +25,9 @@ class ImageInline(admin.TabularInline):
 
 
 class ProductForm(forms.ModelForm):
-    categories = CategoryMultipleChoiceField(required=False,
-                                             queryset=product_app.Category.objects
-                                                                          .order_by('tree_id',
-                                                                                    'lft'))
+    categories = CategoryMultipleChoiceField(
+        required=False,
+        queryset=product_app.Category.objects.order_by('tree_id', 'lft'))
 
     def __init__(self, *args, **kwargs):
         super(ProductForm, self).__init__(*args, **kwargs)

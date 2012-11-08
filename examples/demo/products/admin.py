@@ -15,8 +15,8 @@ from . import models
 from categories.admin.fields import CategoryMultipleChoiceField
 
 
-class DiscountGroupAdmin(admin.ModelAdmin):
-    model = models.DiscountGroup
+class DiscountAdmin(admin.ModelAdmin):
+    model = models.Discount
 
 
 class ImageInline(admin.TabularInline):
@@ -195,4 +195,4 @@ admin.site.register(models.Trousers, TrousersAdmin)
 admin.site.register(models.TShirt, TShirtAdmin)
 
 admin.site.register(models.Make)
-admin.site.register(models.DiscountGroup, DiscountGroupAdmin)
+admin.site.register(models.Discount, DiscountAdmin)

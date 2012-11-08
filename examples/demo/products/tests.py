@@ -67,7 +67,7 @@ class ModelsTestCase(TestCase):
                                     Price(20, currency='EUR')))
 
     def test_discounted_product_price(self):
-        another_discount = models.DiscountGroup.objects.create(
+        another_discount = models.Discount.objects.create(
             name='Flying Sale', rate=50)
         another_hat = models.Hat.objects.create(name='Silly Hat',
                                                 slug='silly-hat',

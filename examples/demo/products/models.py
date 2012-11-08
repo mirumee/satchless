@@ -1,11 +1,13 @@
 # -*- coding:utf-8 -*-
 import decimal
+import operator
 import os
 
 from django.db import models
 from django.utils.translation import ugettext_lazy as _
 from django_images.models import Image
 from django_prices.models import PriceField
+from prices import Price, PriceModifier
 from satchless.category.models import CategorizedProductMixin
 from satchless.contrib.tax.flatgroups.models import TaxedProductMixin, TaxedVariantMixin
 from satchless.contrib.stock.singlestore.models import VariantStockLevelMixin
@@ -15,20 +17,23 @@ from satchless.util.models import construct
 from categories.models import Category
 
 
-class DiscountGroup(models.Model):
+class Discount(models.Model, PriceModifier):
 
-    name = models.CharField(_('group name'), max_length=100)
+    name = models.CharField(_('internal name'), max_length=100)
     rate = models.DecimalField(_('rate'), max_digits=4, decimal_places=2,
                                help_text=_('Percentile rate of the discount.'))
-    rate_name = models.CharField(_('name of the rate'), max_length=30,
+    rate_name = models.CharField(_('display name'), max_length=30,
                                  help_text=_(u'Name of the rate which will be '
                                              'displayed to the user.'))
 
-    def get_discount_amount(self, price):
-        return price * self.rate * decimal.Decimal('0.01')
+    def apply(self, price):
+        new_price = price - price * self.rate * decimal.Decimal('0.01')
+        return Price(new_price.net, new_price.gross,
+                     currency=new_price.currency,
+                     previous=price, modifier=self, operation=operator.__add__)
 
     def __unicode__(self):
-        return self.name
+        return self.rate_name
 
 
 class Product(TaxedProductMixin,
@@ -49,7 +54,7 @@ class Product(TaxedProductMixin,
                                             "variants will be used."))
     price = PriceField(_("base price"), currency='EUR',
                        max_digits=12, decimal_places=4)
-    discount = models.ForeignKey(DiscountGroup, null=True, blank=True,
+    discount = models.ForeignKey(Discount, null=True, blank=True,
                                  related_name='products')
 
     def __unicode__(self):
@@ -87,7 +92,7 @@ class Variant(TaxedVariantMixin, VariantStockLevelMixin,
         price = self.product._get_base_price(quantity=quantity)
         price += self.price_offset
         if discount and self.product.discount:
-            price -= self.product.discount.get_discount_amount(price)
+            price += self.product.discount
         return price
 
 

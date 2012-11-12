@@ -51,7 +51,6 @@ class AddToCartForm(forms.Form, QuantityForm):
 
 
 class EditCartItemForm(forms.ModelForm, QuantityForm):
-    request_marker = forms.CharField(widget=forms.HiddenInput(), required=False)
 
     class Meta:
         widgets = {
@@ -60,8 +59,6 @@ class EditCartItemForm(forms.ModelForm, QuantityForm):
 
     def __init__(self, *args, **kwargs):
         super(EditCartItemForm, self).__init__(*args, **kwargs)
-        self.is_bound = (self.is_bound and
-                         self.add_prefix('request_marker') in self.data)
         if not self.is_bound:
             self.data = None
 

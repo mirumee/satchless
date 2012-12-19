@@ -17,7 +17,8 @@ class PaymentForm(forms.ModelForm):
     class Meta:
         model = models.PaymentsGatewayVariant
         fields = ('amount', 'pg_client_token', 'pg_payment_token',
-                  'description', 'token_first_name', 'token_last_name')
+                  'description', 'token_first_name', 'token_last_name',
+                  'merchant_bucket')
 
     def clean(self):
         if not self.cleaned_data.get('pg_client_token') \

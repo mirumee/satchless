@@ -40,6 +40,7 @@ class PaymentsGatewayProvider(PaymentProvider):
             'pg_password': settings.PG_TRANSACTION_PASSWORD,
             'pg_transaction_type': "10", # CC sale
             'pg_total_amount': amount,
+            'pg_merchant_data_1': v.merchant_bucket
         }
 
         if v.pg_payment_token:

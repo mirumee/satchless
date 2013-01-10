@@ -124,7 +124,7 @@ class Order(models.Model, ItemSet):
         return self.groups.all()
 
     def get_delivery_price(self):
-        return sum([g.get_delivery().get_price() for g in self.get_groups()],
+        return sum([g.get_delivery().get_total() for g in self.get_groups()],
                    Price(0, currency=settings.SATCHLESS_DEFAULT_CURRENCY))
 
     def get_payment(self):

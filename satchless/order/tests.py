@@ -96,6 +96,18 @@ class OrderTest(ViewsTestCase):
             order.get_total(),
             Price(5, currency=settings.SATCHLESS_DEFAULT_CURRENCY))
 
+    def test_order_get_delivery_price(self):
+        """Order.get_delivery_price returns a Price object"""
+
+        cart = cart_app.Cart.objects.create(typ='satchless.test_cart')
+        cart.replace_item(self.macaw_blue, 1)
+
+        order = checkout_app.Order.objects.create(cart=cart, user=cart.owner)
+        checkout_app.partition_cart(cart, order)
+        self.assertEquals(
+            order.get_delivery_price(),
+            Price(0, currency=settings.SATCHLESS_DEFAULT_CURRENCY))
+
     def test_order_content_is_deleted_when_cart_content_changes(self):
         cart = cart_app.Cart.objects.create(typ='satchless.test_cart')
         cart.replace_item(self.macaw_blue, 1)

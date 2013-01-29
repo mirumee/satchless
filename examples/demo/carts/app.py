@@ -23,7 +23,6 @@ cart_app = CartApp(product_app)
 class WishlistApp(satchless.cart.app.MagicCartApp):
     app_name = 'wishlist'
     namespace = 'wishlist'
-    cart_type = 'wishlist'
     Cart = models.Wishlist
     CartItem = models.WishlistItem
     CartItemForm = forms.WishlistAddToCartItemForm
@@ -34,7 +33,7 @@ class WishlistApp(satchless.cart.app.MagicCartApp):
         super(WishlistApp, self).__init__(*args, **kwargs)
 
     def _get_cart_item_form(self, request, item):
-        prefix = '%s-%i' % (self.cart_type, item.id)
+        prefix = 'wishlist-%i' % (item.id,)
 
         cart = self.cart_app.get_cart_for_request(request)
         variant = item.variant.get_subtype_instance()

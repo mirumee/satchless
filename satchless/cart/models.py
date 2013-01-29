@@ -28,7 +28,6 @@ class QuantityResult(object):
 class Cart(models.Model, ItemSet):
 
     owner = models.ForeignKey(User, null=True, blank=True, related_name='+')
-    typ = models.CharField(_("type"), max_length=100)
     currency = models.CharField(_("currency"), max_length=3,
                                 default=get_default_currency)
     token = models.CharField(max_length=32, blank=True, default='')
@@ -36,11 +35,9 @@ class Cart(models.Model, ItemSet):
     class Meta:
         abstract = True
 
-    def __unicode__(self):
-        if self.owner:
-            return u"%s of %s" % (self.typ, self.owner.username)
-        else:
-            return self.typ
+    def __repr__(self):
+        return 'Cart(owner=%r, currency=%r, token=%r)' % (
+            self.owner, self.currency, self.token)
 
     def __iter__(self):
         for i in self.get_all_items():

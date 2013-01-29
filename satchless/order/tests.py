@@ -87,7 +87,7 @@ class OrderTest(ViewsTestCase):
                                 self.custom_settings)
 
     def test_order_has_proper_total(self):
-        cart = cart_app.Cart.objects.create(typ='satchless.test_cart')
+        cart = cart_app.Cart.objects.create()
         cart.replace_item(self.macaw_blue, 1)
 
         order = checkout_app.Order.objects.create(cart=cart, user=cart.owner)
@@ -99,7 +99,7 @@ class OrderTest(ViewsTestCase):
     def test_order_get_delivery_price(self):
         """Order.get_delivery_price returns a Price object"""
 
-        cart = cart_app.Cart.objects.create(typ='satchless.test_cart')
+        cart = cart_app.Cart.objects.create()
         cart.replace_item(self.macaw_blue, 1)
 
         order = checkout_app.Order.objects.create(cart=cart, user=cart.owner)
@@ -109,7 +109,7 @@ class OrderTest(ViewsTestCase):
             Price(0, currency=settings.SATCHLESS_DEFAULT_CURRENCY))
 
     def test_order_content_is_deleted_when_cart_content_changes(self):
-        cart = cart_app.Cart.objects.create(typ='satchless.test_cart')
+        cart = cart_app.Cart.objects.create()
         cart.replace_item(self.macaw_blue, 1)
 
         order = checkout_app.Order.objects.create(cart=cart, user=cart.owner)
@@ -121,7 +121,7 @@ class OrderTest(ViewsTestCase):
         self.assertTrue(order.is_empty())
 
     def test_order_view(self):
-        cart = cart_app.Cart.objects.create(typ='satchless.test_cart')
+        cart = cart_app.Cart.objects.create()
         cart.replace_item(self.macaw_blue, 1)
         cart.replace_item(self.macaw_blue_fake, Decimal('2.45'))
         cart.replace_item(self.cockatoo_white_a, Decimal('2.45'))

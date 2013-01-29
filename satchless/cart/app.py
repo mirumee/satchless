@@ -18,12 +18,10 @@ class CartApp(SatchlessApp):
 
     app_name = 'cart'
     namespace = 'cart'
-    cart_type = 'cart'
     CartItemForm = None
     Cart = None
 
     cart_templates = [
-        'satchless/cart/%(cart_type)s/view.html',
         'satchless/cart/view.html'
     ]
 
@@ -37,7 +35,7 @@ class CartApp(SatchlessApp):
         raise NotImplementedError()
 
     def _get_cart_item_form(self, request, item):
-        prefix = '%s-%i' % (self.cart_type, item.id)
+        prefix = 'cart-%i' % (item.id,)
         form = self.CartItemForm(data=request.POST or None,
                                  instance=item,
                                  prefix=prefix)
@@ -66,11 +64,7 @@ class CartApp(SatchlessApp):
         if isinstance(context, HttpResponse):
             return context
         context = self.get_context_data(request, **context)
-        format_data = {
-            'cart_type': self.cart_type,
-        }
-        templates = [t % format_data for t in self.cart_templates]
-        response = TemplateResponse(request, templates, context)
+        response = TemplateResponse(request, self.cart_templates, context)
         if request.is_ajax():
             return JSONResponse({'total': len(cart.get_all_items()),
                                  'html': response.rendered_content})
@@ -128,16 +122,15 @@ class MagicCartApp(CartApp):
 
     @property
     def cart_session_key(self):
-        return '_satchless_cart-%s' % self.cart_type
+        return '_satchless_cart'
 
     def get_cart_for_request(self, request):
         try:
             token = request.session[self.cart_session_key]
-            cart = self.Cart.objects.get(typ=self.cart_type,
-                                         token=token)
+            cart = self.Cart.objects.get(token=token)
         except (self.Cart.DoesNotExist, KeyError):
             owner = request.user if request.user.is_authenticated() else None
-            cart = self.Cart.objects.create(typ=self.cart_type, owner=owner)
+            cart = self.Cart.objects.create(owner=owner)
             request.session[self.cart_session_key] = cart.token
         if cart.owner is None and request.user.is_authenticated():
             cart.owner = request.user

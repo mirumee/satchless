@@ -33,7 +33,7 @@ class VariantStockLevelTest(TestCase):
         self.cockatoo_white_a = self.cockatoo.variants.create(color='white', looks_alive=True, stock_level=2)
 
     def test_stocklevels(self):
-        cart = cart_app.Cart.objects.create(typ='satchless.test.cart')
+        cart = cart_app.Cart.objects.create()
         cart.replace_item(self.cockatoo_white_a, 2)
         self.assertEqual(cart.get_quantity(self.cockatoo_white_a), 2)
         cart.add_item(self.cockatoo_white_a, 1)

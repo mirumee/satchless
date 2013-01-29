@@ -19,7 +19,6 @@ class AddToCartHandler(object):
 
         Accepts:
 
-            * `typ`: the type of the cart to add to
             * `details_view`: the cart view to redirect to
             * `addtocart_formclass`: form class responsible for adding to cart.
             * `form_attribute`: name of instance's attribute to save the form under.
@@ -57,10 +56,10 @@ class AddToCartHandler(object):
 
             Form = forms.add_to_cart_variant_form_for_product(product,
                     addtocart_formclass=self.addtocart_formclass)
+            cart = self.cart_app.get_cart_for_request(request)
             if request.method == 'POST':
-                cart = self.cart_app.get_cart_for_request(request)
-                form = Form(data=request.POST, cart=cart, product=product,
-                            variant=variant, typ=self.cart_app.cart_type)
+                form = Form(cart=cart, data=request.POST, product=product,
+                            variant=variant)
                 if form.is_valid():
                     form_result = form.save()
                     signals.cart_item_added.send(sender=type(form_result.cart_item),
@@ -75,8 +74,8 @@ class AddToCartHandler(object):
                     data = dict(form.errors)
                     return JSONResponse(data, status=400)
             else:
-                form = Form(data=None, product=product, variant=variant,
-                            typ=self.cart_app.cart_type)
+                form = Form(cart=cart, data=None, product=product,
+                            variant=variant)
             # Attach the form to instance
             setattr(instance, self.form_attribute, form)
         return extra_context

@@ -48,7 +48,7 @@
                     {% tax item_price %}
                 </td>
                 <td rowspan="2">
-                    <form method="POST" action="{% url cart:remove-item cart.typ form.instance.id %}">
+                    <form method="POST" action="{% url cart:remove-item form.instance.id %}">
                         {% csrf_token %}
                         <button type="submit">{% trans "Delete" %}</button>
                     </form>

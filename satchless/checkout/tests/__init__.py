@@ -44,7 +44,7 @@ class BaseCheckoutAppTests(ViewsTestCase):
         self._test_status(cart_app.reverse('details'),
                           client_instance=client)
         token = client.session[cart_app.cart_session_key]
-        return self.checkout_app.cart_app.Cart.objects.get(token=token, typ=cart_app.cart_type)
+        return self.checkout_app.cart_app.Cart.objects.get(token=token)
 
     def _get_or_create_order_for_client(self, client):
         self._get_or_create_cart_for_client(client)

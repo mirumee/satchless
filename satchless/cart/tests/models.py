@@ -20,7 +20,7 @@ class ModelsTestCase(TestCase):
         self.cockatoo_d = self.cockatoo.variants.create(looks_alive=False)
 
     def test_replace_quantity_for_non_existing_item(self):
-        cart = cart_app.Cart.objects.create(typ='satchless.test_cart')
+        cart = cart_app.Cart.objects.create()
 
         qr = cart.replace_item(self.macaw_a, 1)
         self.assertEqual(cart.get_quantity(self.macaw_a), Decimal(1))
@@ -40,7 +40,7 @@ class ModelsTestCase(TestCase):
         self.assertEqual(Decimal(4), qr.new_quantity)
 
     def test_replace_quantity_for_existing_item(self):
-        cart = cart_app.Cart.objects.create(typ='satchless.test_cart')
+        cart = cart_app.Cart.objects.create()
 
         qr = cart.replace_item(self.macaw_a, 1)
         self.assertEqual(cart.get_quantity(self.macaw_a), Decimal(1))
@@ -51,7 +51,7 @@ class ModelsTestCase(TestCase):
         self.assertEqual(Decimal(4), qr.new_quantity)
 
     def test_add_item_for_non_existing_item(self):
-        cart = cart_app.Cart.objects.create(typ='satchless.test_cart')
+        cart = cart_app.Cart.objects.create()
 
         qr = cart.add_item(self.macaw_a, 1)
         self.assertEqual(cart.get_quantity(self.macaw_a), Decimal(1))
@@ -70,7 +70,7 @@ class ModelsTestCase(TestCase):
         self.assertEqual(Decimal(4), qr.new_quantity)
 
     def test_add_item_for_existing_item(self):
-        cart = cart_app.Cart.objects.create(typ='satchless.test_cart')
+        cart = cart_app.Cart.objects.create()
 
         qr = cart.add_item(self.macaw_a, 1)
         self.assertEqual(cart.get_quantity(self.macaw_a), 1)
@@ -81,7 +81,7 @@ class ModelsTestCase(TestCase):
         self.assertEqual(Decimal(5), qr.new_quantity)
 
     def test_remove_item(self):
-        cart = cart_app.Cart.objects.create(typ='satchless.test_cart')
+        cart = cart_app.Cart.objects.create()
 
         cart.replace_item(self.macaw_a, 1)
         self.assertEqual(cart.get_quantity(self.macaw_a), Decimal('1'))
@@ -92,7 +92,7 @@ class ModelsTestCase(TestCase):
         self.assertFalse(cart.items.exists())
 
     def test_remove_item_for_non_existing_item(self):
-        cart = cart_app.Cart.objects.create(typ='satchless.test_cart')
+        cart = cart_app.Cart.objects.create()
 
         cart.replace_item(self.macaw_a, 0)
         self.assertEqual(cart.get_quantity(self.macaw_a), 0)
@@ -101,13 +101,10 @@ class ModelsTestCase(TestCase):
 
 
     def test_signals(self):
-        cart = cart_app.Cart.objects.create(
-            typ='satchless.test_cart_with_signals')
+        cart = cart_app.Cart.objects.create()
 
         def modify_qty(sender, instance=None, variant=None, old_quantity=None,
                        new_quantity=None, result=None, **kwargs):
-            if instance.typ != 'satchless.test_cart_with_signals':
-                return
             if variant.product == self.macaw:
                 result.append((Decimal('0'), u"Out of stock"))
             elif not variant.looks_alive:

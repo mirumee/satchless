@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 from decimal import Decimal
+from collections import namedtuple
 from django.conf import settings
 from django.db import models
 from django.contrib.auth.models import User
@@ -16,13 +17,8 @@ def get_default_currency():
     return settings.SATCHLESS_DEFAULT_CURRENCY
 
 
-class QuantityResult(object):
-
-    def __init__(self, cart_item, new_quantity, quantity_delta, reason=None):
-        self.cart_item = cart_item
-        self.new_quantity = new_quantity
-        self.quantity_delta = quantity_delta
-        self.reason = reason
+QuantityResult = namedtuple('QuantityResult', ['cart_item', 'new_quantity',
+                                               'quantity_delta', 'reason'])
 
 
 class Cart(models.Model, ItemSet):

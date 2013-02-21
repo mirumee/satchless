@@ -1,10 +1,9 @@
-from django.conf import settings
-from django.core.exceptions import ImproperlyConfigured
+class InvalidQuantityException(Exception):
 
-from .handler import AddToCartHandler
+    def __init__(self, reason, quantity_delta):
+        self.reason = reason
+        self.quantity_delta = quantity_delta
 
-add_to_cart_handler = AddToCartHandler('cart')
+    def __str__(self):
+        return self.reason
 
-if not getattr(settings, 'SATCHLESS_DEFAULT_CURRENCY', None):
-    raise ImproperlyConfigured('You need to configure '
-                               'SATCHLESS_DEFAULT_CURRENCY')

@@ -19,6 +19,8 @@ class TestSessionCart(TestCase):
         self.product = Product()
 
     def test_add_item(self):
+        cart_item = self.cart.add_item(self.product, 0)
+        self.assertIsNone(cart_item)
         cart_item = self.cart.add_item(self.product, 1)
         self.assertEqual(cart_item.get_quantity(), 1)
         cart_item = self.cart.add_item(self.product, 2)

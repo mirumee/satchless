@@ -73,10 +73,9 @@ class Cart(dict, ItemSet):
 
         if not quantity and product in self:
             del self[product]
-        else:
+        elif quantity:
             self[product] = quantity
-
-        return self[product]
+            return self[product]
 
     def replace_item(self, product, quantity):
         return self.add_item(product, quantity, replace=True)

@@ -19,15 +19,14 @@ class ItemSet(object):
     """
     Represents a set of products like an order or a basket
     """
-    def get_default_currency(self, **kwargs):
-        raise NotImplementedError()
-
     def get_subtotal(self, line, **kwargs):
         return line.get_total(**kwargs)
 
     def get_total(self, **kwargs):
-        return sum([self.get_subtotal(line, **kwargs) for line in self],
-                   Price(0, currency=self.get_default_currency(**kwargs)))
+        items = [self.get_subtotal(line, **kwargs) for line in self]
+        if not items:
+            return None
+        return sum(items[1:], items[0])
 
 
 class ItemLine(object):

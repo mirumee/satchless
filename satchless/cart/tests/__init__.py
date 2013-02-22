@@ -27,25 +27,11 @@ class TestSessionCart(TestCase):
         self.assertEqual(cart_item.get_quantity(), 3)
 
         self.assertEqual((len(self.cart)), 3)
-
-    def test_replace_item(self):
-        cart_item = self.cart.replace_item(self.product, 10)
+        cart_item = self.cart.add_item(self.product, 10, replace=True)
         self.assertEqual(cart_item.get_quantity(), 10)
 
         self.assertEqual((len(self.cart)), 10)
 
-    def test_check_quantity(self):
-
-        quantity = self.cart.check_quantity(self.product, 3)
-        self.assertEqual(quantity, 3)
-
-        quantity = self.cart.check_quantity(self.product, 0, replace=True)
-        self.assertEqual(quantity, 0)
-
-        quantity = self.cart.check_quantity(self.product, -3, replace=True)
-        self.assertEqual(quantity, 0)
-
-        self.assertEqual((len(self.cart)), 0)
 
 
 class TestCart(models.Cart):

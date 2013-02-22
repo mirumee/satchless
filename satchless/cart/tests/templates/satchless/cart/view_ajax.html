@@ -1,6 +1,7 @@
 {% load i18n promote prices product_prices cart_prices %}
     <h1>{% trans "My cart" %}</h1>
     {% csrf_token %}
+    {% if cart_item_forms %}
     <table class="cart">
         <thead>
             <tr>
@@ -29,7 +30,7 @@
             <tr class="item">
                 <td rowspan="2">{{ forloop.counter }}</td>
                 <td rowspan="2">{% promote form.instance.variant as variant %}
-                    <a href="{% url product:details variant.product.slug variant.product.pk %}">{{ variant }}</a>
+                    <a href="{{ variant.product.get_absolute_url }}">{{ variant }}</a>
                 </td>
                 <td class="numerical unitPrice">
                     {% gross unit_price %}
@@ -85,3 +86,4 @@
             {% endwith %}
         </tfoot>
     </table>
+    {% endif %}

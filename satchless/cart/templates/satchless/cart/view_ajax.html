@@ -1,6 +1,7 @@
 {% load i18n promote prices product_prices cart_prices %}
     <h1>{% trans "My cart" %}</h1>
     {% csrf_token %}
+    {% if cart_item_forms %}
     <table class="cart">
         <thead>
             <tr>
@@ -89,3 +90,6 @@
         {% csrf_token %}
         <button type="submit">{% trans "Check out" %}</button>
     </form>
+    {% else %}
+    <p>Your cart is empty.</p>
+    {% endif %}

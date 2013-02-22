@@ -1,53 +1,67 @@
-from decimal import Decimal
-from django.conf import settings
 from django.utils.translation import ugettext as _
 from satchless.item import ItemSet, ItemLine
 
 
-class CartItem(ItemLine):
+class CartLine(ItemLine):
 
-    def __init__(self, product, quantity):
-        self._product = product
+    def __init__(self, product, quantity, data=None):
+        self.product = product
         self._quantity = quantity
+        self.data = data
 
-    def get_product(self):
-        return self._product
+    def __repr__(self):
+        return 'CartLine(product=%r, quantity=%r, data=%r)' % (
+            self.product, self.quantity, self.data)
 
     def get_quantity(self):
         return self._quantity
 
+    quantity = property(get_quantity)
+
     def get_price_per_item(self, **kwargs):
-        return self._product.get_price(**kwargs)
+        return self.product.get_price(**kwargs)
 
 
-class Cart(dict, ItemSet):
+class Cart(ItemSet):
 
     SESSION_KEY = 'cart'
     modified = False
 
+    state = None
+
+    def __init__(self, items=None):
+        self.state = {}
+        items = items or []
+        for l in items:
+            self.add_item(l.product, l.quantity, l.data, replace=True)
+
+    def __repr__(self):
+        return 'Cart(%r)' % (list(self),)
+
     def __iter__(self):
-        for product, quantity in self.items():
-            yield CartItem(product, quantity)
-
-    def __getitem__(self, key):
-        return CartItem(key, super(Cart, self).__getitem__(key))
-
-    def __setitem__(self, key, val):
-        self.modified = True
-        return dict.__setitem__(self, key, val)
-
-    def __len__(self):
-        return sum([item.get_quantity() for item in self])
+        for key, qty in self.state.iteritems():
+            product, data = key
+            yield CartLine(product, qty, data)
 
     def __unicode__(self):
-        return _('Cart (%(cart_count)s)' % {'cart_count': len(self)})
+        return _('Cart (%(cart_count)s)' % {'cart_count': self.count()})
+
+    def __getstate__(self):
+        return self.state
+
+    def __setstate__(self, state):
+        self.state = state
+
+    def count(self):
+        return sum([item.get_quantity() for item in self])
 
     def check_quantity(self, product, quantity, data=None):
         return True
 
     def add_item(self, product, quantity, data=None, replace=False):
-        if not replace and product in self:
-            quantity += self[product].get_quantity()
+        key = (product, data)
+        if not replace and key in self.state:
+            quantity += self.state[key]
 
         if quantity < 0:
             raise ValueError('%r is not a valid quantity' % (quantity,))
@@ -55,8 +69,6 @@ class Cart(dict, ItemSet):
         self.check_quantity(product, quantity, data)
 
         if not quantity and product in self:
-            del self[product]
+            del self.state[key]
         elif quantity:
-            self[product] = quantity
-            return self[product]
-
+            self.state[key] = quantity

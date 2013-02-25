@@ -1,4 +1,3 @@
-from django.utils.translation import ugettext as _
 from satchless.item import ItemSet, ItemLine
 
 
@@ -31,6 +30,7 @@ class Cart(ItemSet):
 
     def __init__(self, items=None):
         self.state = {}
+        self.modified = True
         items = items or []
         for l in items:
             self.add_item(l.product, l.quantity, l.data, replace=True)
@@ -42,9 +42,6 @@ class Cart(ItemSet):
         for key, qty in self.state.iteritems():
             product, data = key
             yield CartLine(product, qty, data)
-
-    def __unicode__(self):
-        return _('Cart (%(cart_count)s)' % {'cart_count': self.count()})
 
     def __getstate__(self):
         return self.state
@@ -72,3 +69,5 @@ class Cart(ItemSet):
             del self.state[key]
         elif quantity:
             self.state[key] = quantity
+
+        self.modified = True

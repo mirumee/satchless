@@ -1,4 +1,4 @@
-from prices import Price, PriceRange
+from prices import PriceRange
 
 __all__ = ('Item', 'ItemLine', 'ItemRange', 'ItemSet')
 

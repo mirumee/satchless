@@ -29,7 +29,7 @@ setup(
     classifiers=CLASSIFIERS,
     platforms=['any'],
     install_requires=['prices>=2012.11'],
-    tests_require=['coverage', 'nose'],
+    tests_require=['coverage', 'nose>=1.2.1'],
     test_suite='nose.collector',
     include_package_data=True,
     zip_safe=False)

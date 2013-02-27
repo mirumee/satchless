@@ -46,9 +46,9 @@ class TestCart(TestCase):
     def test__getstate__(self):
         cart = Cart()
         state = cart.__getstate__()
-        self.assertIsInstance(state, list)
+        self.assertTrue(isinstance(state, list))
         self.assertEqual(len(cart.state), 0)
         cart.add_line('shrubbery', 2)
         self.assertEqual(len(cart.state), 1)
-        self.assertIsInstance(cart.state[0], CartLine)
+        self.assertTrue(isinstance(cart.state[0], CartLine))
 

@@ -13,10 +13,10 @@ class CartLine(ItemLine):
             self.product, self.quantity, self.data)
 
     def __getstate__(self):
-        return (self.product, self._quantity, self.data)
+        return (self.product, self.quantity, self.data)
 
     def __setstate__(self, data):
-        self.product, self._quantity, self.data = data
+        self.product, self.quantity, self.data = data
 
     def get_quantity(self):
         return self.quantity

@@ -8,6 +8,14 @@ class CartLine(ItemLine):
         self.quantity = quantity
         self.data = data
 
+    def __eq__(self, other):
+        if not isinstance(other, CartLine):
+            return NotImplemented
+
+        return (self.product == other.product and
+                self.quantity == other.quantity and
+                self.data == other.data)
+
     def __repr__(self):
         return 'CartLine(product=%r, quantity=%r, data=%r)' % (
             self.product, self.quantity, self.data)

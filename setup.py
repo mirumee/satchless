@@ -13,8 +13,9 @@ CLASSIFIERS = [
     'Programming Language :: Python :: 2.6',
     'Programming Language :: Python :: 2.7',
     'Topic :: Software Development :: Libraries :: Application Frameworks',
-    'Topic :: Software Development :: Libraries :: Python Modules',
-]
+    'Topic :: Software Development :: Libraries :: Python Modules']
+
+packages = find_packages(exclude=['doc*', 'examples*', 'tests*', 'website*'])
 
 setup(
     name='satchless',
@@ -24,8 +25,7 @@ setup(
     license='BSD',
     version='2013.2a',
     url='http://satchless.com/',
-    packages=find_packages(exclude=['doc*', 'examples*', 'tests*',
-                                    'website*']),
+    packages=packages,
     classifiers=CLASSIFIERS,
     platforms=['any'],
     install_requires=['prices>=2012.11'],

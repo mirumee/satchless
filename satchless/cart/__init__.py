@@ -16,6 +16,9 @@ class CartLine(ItemLine):
                 self.quantity == other.quantity and
                 self.data == other.data)
 
+    def __ne__(self, other):
+        return not self == other
+
     def __repr__(self):
         return 'CartLine(product=%r, quantity=%r, data=%r)' % (
             self.product, self.quantity, self.data)

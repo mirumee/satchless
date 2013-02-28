@@ -97,9 +97,10 @@ class CartTest(TestCase):
     def test_getstate(self):
         cart = Cart()
         state = cart.__getstate__()
-        self.assertEqual(cart.state, [])
+        self.assertEqual(state, [])
         cart.add_line('shrubbery', 2)
-        self.assertEqual(cart.state, [CartLine('shrubbery', 2, None)])
+        state = cart.__getstate__()
+        self.assertEqual(state, [CartLine('shrubbery', 2, None)])
 
     def test_setstate(self):
         cart = Cart()

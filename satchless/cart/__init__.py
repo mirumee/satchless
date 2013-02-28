@@ -40,7 +40,6 @@ class Cart(ItemSet):
 
     SESSION_KEY = 'cart'
     modified = False
-
     state = None
 
     def __init__(self, items=None):

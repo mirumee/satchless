@@ -96,7 +96,7 @@ class Cart(ItemSet):
         self.check_quantity(product, quantity, data)
 
         if not cart_line.quantity and not created:
-            self.remove(cart_line)
+            self.state.remove(cart_line)
             self.modified = True
         elif cart_line.quantity and created:
             self.state.append(cart_line)

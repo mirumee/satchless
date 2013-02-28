@@ -1,8 +1,5 @@
 '''
 Satchless
 
-The Django e-commerce framework for perfectionists who also care about code
-quality.
+An e-commerce framework for Python
 '''
-
-__version__ = '2012.11b'

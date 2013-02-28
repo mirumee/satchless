@@ -34,7 +34,7 @@ class ItemLine(object):
     Represents a single line of an order or basket
     """
     def get_price_per_item(self, **kwargs):
-        raise NotImplementedError()
+        return NotImplemented  # pragma: no cover
 
     def get_quantity(self, **kwargs):
         return 1
@@ -51,7 +51,7 @@ class Item(object):
     Stands for a single product or a single product variant (ie. White XL shirt)
     """
     def get_price_per_item(self, **kwargs):
-        raise NotImplementedError()
+        return NotImplemented  # pragma: no cover
 
     def get_price(self, **kwargs):
         return self.get_price_per_item(**kwargs)

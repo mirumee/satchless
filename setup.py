@@ -33,4 +33,5 @@ setup(
     tests_require=['coverage', 'nose>=1.2.1'],
     test_suite='nose.collector',
     include_package_data=True,
+    use_2to3 = True,
     zip_safe=False)

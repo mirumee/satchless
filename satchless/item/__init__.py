@@ -25,7 +25,7 @@ class ItemSet(object):
     def get_total(self, **kwargs):
         items = [self.get_subtotal(line, **kwargs) for line in self]
         if not items:
-            return None
+            raise AttributeError('Calling get_total() on an empty item set')
         return sum(items[1:], items[0])
 
 

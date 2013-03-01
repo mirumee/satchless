@@ -3,10 +3,12 @@ Greetings
 
 It seems you're trying to help us build Satchless. Here are some ground rules:
 
-* Test your code. The testing harness is set to fail if test coverage falls
+* **Test your code.** The testing harness is set to fail if test coverage falls
   below a certain value¹.
-* Write documentation. Code people don't know how to use is as good as code
+
+* **Write documentation.** Code people don't know how to use is as good as code
   that does not exist.
+
 * Don't be afraid to open pull requests. Open them early and use them to
   discuss proposed changes.
 
@@ -36,3 +38,22 @@ distributions and hosting sites still rely on older versions of Python.
 
 Python 3.x support uses `2to3` conversion and all code should be written with
 Python 2 in mind.
+
+
+Style guide
+-----------
+
+* Follow PEP8.
+
+* Always use dot notation for relative imports.
+
+* Learn to love code checking tools like `pyflakes`. Chances are you can
+  integrate it with your editor or IDE.
+
+* Use new style exception handling as it's easier to read and far less
+  ambiguous:
+
+        try:
+            # …
+        except Exception as e:
+            # …

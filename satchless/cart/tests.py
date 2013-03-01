@@ -57,48 +57,56 @@ class CartTest(TestCase):
 
     def test_add_zero_does_nothing(self):
         cart = Cart()
-        cart.add_line('shrubbery', 0)
+        cart.add('shrubbery', 0)
         self.assertEqual(cart.count(), 0)
         self.assertEqual(list(cart), [])
 
     def test_add_increases_count(self):
         cart = Cart()
-        cart.add_line('shrubbery', 1)
+        cart.add('shrubbery')
         self.assertEqual(cart.count(), 1)
-        cart.add_line('shrubbery', 2)
+        cart.add('shrubbery', 2)
         self.assertEqual(cart.count(), 3)
 
     def test_negative_shalt_thou_not_count(self):
         cart = Cart()
         def illegal():
-            cart.add_line('holy hand grenade', -1, None)
+            cart.add('holy hand grenade', -1, None)
         self.assertRaises(ValueError, illegal)
+
+    def test_bad_values_do_not_break_state(self):
+        cart = Cart()
+        cart.add('seconds', 3)
+        def illegal():
+            cart.add('seconds', 'five')
+        self.assertRaises(TypeError, illegal)
+        self.assertEqual(cart[0], CartLine('seconds', 3))
 
     def test_replace(self):
         cart = Cart()
-        cart.add_line('shrubbery', 1)
+        cart.add('shrubbery')
         self.assertEqual(cart.count(), 1)
-        cart.add_line('shrubbery', 10, replace=True)
+        cart.add('shrubbery', 10, replace=True)
         self.assertEqual(cart.count(), 10)
 
     def test_replace_by_zero(self):
         cart = Cart()
-        cart.add_line('shrubbery', 1)
+        cart.add('shrubbery')
         self.assertEqual(cart.count(), 1)
-        cart.add_line('shrubbery', 0, replace=True)
+        cart.add('shrubbery', 0, replace=True)
         self.assertEqual(cart.count(), 0)
 
     def test_data_uniqueness(self):
         cart = Cart()
-        cart.add_line('shrubbery', 10)
-        cart.add_line('shrubbery', 10, data='trimmed', replace=True)
+        cart.add('shrubbery', 10)
+        cart.add('shrubbery', 10, data='trimmed', replace=True)
         self.assertEqual(cart.count(), 20)
 
     def test_getstate(self):
         cart = Cart()
         state = cart.__getstate__()
         self.assertEqual(state, [])
-        cart.add_line('shrubbery', 2)
+        cart.add('shrubbery', 2)
         state = cart.__getstate__()
         self.assertEqual(state, [CartLine('shrubbery', 2, None)])
 
@@ -106,7 +114,7 @@ class CartTest(TestCase):
         cart = Cart()
         state = [CartLine('shrubbery', 2, None)]
         cart.__setstate__(state)
-        self.assertEqual(cart.state, [CartLine('shrubbery', 2, None)])
+        self.assertEqual(cart._state, [CartLine('shrubbery', 2, None)])
 
     def test_init_with_items(self):
         carrier = CartLine('swallow', 2, 'african')
@@ -116,7 +124,13 @@ class CartTest(TestCase):
 
     def test_repr(self):
         cart = Cart()
-        cart.add_line('rabbit', 1, None)
+        cart.add('rabbit')
         self.assertEqual(
             repr(cart),
             "Cart([CartLine(product='rabbit', quantity=1, data=None)])")
+
+    def test_truthiness(self):
+        cart = Cart()
+        self.assertFalse(cart)
+        cart.add('book of armaments')
+        self.assertTrue(cart)

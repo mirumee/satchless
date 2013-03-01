@@ -2,7 +2,9 @@ from satchless.item import ItemSet, ItemLine
 
 
 class CartLine(ItemLine):
-
+    """
+    Represents a cart line, ie. an ItemLine suitable for Cart use
+    """
     def __init__(self, product, quantity, data=None):
         self.product = product
         self.quantity = quantity
@@ -37,42 +39,44 @@ class CartLine(ItemLine):
 
 
 class Cart(ItemSet):
-
-    SESSION_KEY = 'cart'
+    """
+    Represents a Cart (Shopping Cart, Basket, etc.)
+    """
     modified = False
-    state = None
+    "'Dirty' flag in case you need to sync the cart to a persistent storage"
+    _state = None
+    "Internal state, do not touch"
 
     def __init__(self, items=None):
-        self.state = []
+        self._state = []
         self.modified = True
         items = items or []
         for l in items:
-            self.add_line(l.product, l.quantity, l.data, replace=True)
+            self.add(l.product, l.quantity, l.data, replace=True)
 
     def __repr__(self):
         return 'Cart(%r)' % (list(self),)
 
     def __iter__(self):
-        for cart_line in self.state:
-            yield cart_line
+        return iter(self._state)
 
     def __getstate__(self):
-        return self.state
+        return self._state
 
     def __setstate__(self, state):
-        self.state = state
+        self._state = state
 
     def __len__(self):
-        return len(self.state)
+        return len(self._state)
 
     def __nonzero__(self):
-        return bool(self.state)
+        return bool(self._state)
 
     def __getitem__(self, key):
-        return self.state[key]
+        return self._state[key]
 
     def count(self):
-        return sum([item.get_quantity() for item in self.state])
+        return sum([item.get_quantity() for item in self._state])
 
     def check_quantity(self, product, quantity, data=None):
         return True
@@ -82,36 +86,38 @@ class Cart(ItemSet):
 
     def get_line(self, product, data=None):
         return next(
-            (cart_line for cart_line in self.state
+            (cart_line for cart_line in self._state
              if cart_line.product == product and cart_line.data == data ),
             None)
 
-    def get_or_create_line(self, product, quantity, data=None):
+    def _get_or_create_line(self, product, quantity, data=None):
         cart_line = self.get_line(product, data)
         if cart_line:
             return (False, cart_line)
         else:
             return (True, self.create_line(product, quantity, data))
 
-    def add_line(self, product, quantity, data=None, replace=False):
-        created, cart_line = self.get_or_create_line(product, 0, data)
+    def add(self, product, quantity=1, data=None, replace=False):
+        created, cart_line = self._get_or_create_line(product, 0, data)
 
         if replace:
-            cart_line.quantity = quantity
+            new_quantity = quantity
         else:
-            cart_line.quantity += quantity
+            new_quantity = cart_line.quantity + quantity
 
-        if cart_line.quantity < 0:
-            raise ValueError('%r is not a valid quantity' % (quantity,))
+        if new_quantity < 0:
+            raise ValueError('%r is not a valid quantity (results in %r)' %
+                (quantity, new_quantity))
 
-        self.check_quantity(product, quantity, data)
+        self.check_quantity(product, new_quantity, data)
+
+        cart_line.quantity = new_quantity
 
         if not cart_line.quantity and not created:
-            self.state.remove(cart_line)
+            self._state.remove(cart_line)
             self.modified = True
         elif cart_line.quantity and created:
-            self.state.append(cart_line)
+            self._state.append(cart_line)
             self.modified = True
         elif not created:
             self.modified = True
-

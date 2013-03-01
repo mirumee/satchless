@@ -62,6 +62,15 @@ class Cart(ItemSet):
     def __setstate__(self, state):
         self.state = state
 
+    def __len__(self):
+        return len(self.state)
+
+    def __nonzero__(self):
+        return bool(self.state)
+
+    def __getitem__(self, key):
+        return self.state[key]
+
     def count(self):
         return sum([item.get_quantity() for item in self.state])
 

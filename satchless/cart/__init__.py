@@ -87,7 +87,7 @@ class Cart(ItemSet):
     def get_line(self, product, data=None):
         return next(
             (cart_line for cart_line in self._state
-             if cart_line.product == product and cart_line.data == data ),
+             if cart_line.product == product and cart_line.data == data),
             None)
 
     def _get_or_create_line(self, product, quantity, data=None):
@@ -106,8 +106,8 @@ class Cart(ItemSet):
             new_quantity = cart_line.quantity + quantity
 
         if new_quantity < 0:
-            raise ValueError('%r is not a valid quantity (results in %r)' %
-                (quantity, new_quantity))
+            raise ValueError('%r is not a valid quantity (results in %r)' % (
+                quantity, new_quantity))
 
         self.check_quantity(product, new_quantity, data)
 

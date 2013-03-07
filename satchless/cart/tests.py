@@ -1,7 +1,7 @@
 from prices import Price
 from unittest import TestCase
 
-from . import Cart, CartLine, CartPartition, CartPartitioner
+from . import Cart, CartLine
 from ..item import Item
 
 
@@ -162,27 +162,3 @@ class CartTest(TestCase):
         self.assertFalse(cart)
         cart.add('book of armaments')
         self.assertTrue(cart)
-
-
-class CartPartitionerTest(TestCase):
-
-    def test_default_is_all_items(self):
-        'Default implementation returns a single group with all items'
-        fake_cart = ['one', 'two', 'five']
-        partitioner = CartPartitioner(fake_cart)
-        self.assertEqual(list(partitioner), [CartPartition(fake_cart)])
-
-    def test_total_works(self):
-        'CartPartitioner returns the same price the cart does'
-        cart = Cart()
-        cart.add(Swallow('european'), 5)
-        partitioner = CartPartitioner(cart)
-        self.assertEqual(partitioner.get_total(), Price(50, currency='GBP'))
-
-    def test_truthiness(self):
-        'bool(cart_partitioner) is only true if cart contains items'
-        cart = Cart()
-        partitioner = CartPartitioner(cart)
-        self.assertFalse(partitioner)
-        cart.add('book of armaments')
-        self.assertTrue(partitioner)

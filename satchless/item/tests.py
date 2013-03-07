@@ -1,7 +1,7 @@
 from prices import Price, PriceRange
 from unittest import TestCase
 
-from ..item import Item, ItemLine, ItemRange, ItemSet
+from ..item import Item, ItemLine, ItemRange, ItemSet, Partitioner
 
 
 class Swallow(Item):
@@ -78,3 +78,27 @@ class ItemSetTest(TestCase):
         'ItemSet.get_total() raises an exception on an empty cart'
         empty = ItemSet()
         self.assertRaises(AttributeError, empty.get_total)
+
+
+class PartitionerTest(TestCase):
+
+    def test_default_is_all_items(self):
+        'Default implementation returns a single group with all items'
+        fake_cart = ['one', 'two', 'five']
+        partitioner = Partitioner(fake_cart)
+        self.assertEqual(list(partitioner), [ItemSet(fake_cart)])
+
+    def test_total_works(self):
+        'Partitioner returns the same price the cart does'
+        item_set = ItemSet([SwallowLine()])
+        partitioner = Partitioner(item_set)
+        self.assertEqual(partitioner.get_total(), Price(10, currency='EUR'))
+
+    def test_truthiness(self):
+        'bool(partitioner) is only true if the set contains items'
+        item_set = ItemSet()
+        partitioner = Partitioner(item_set)
+        self.assertFalse(partitioner)
+        item_set = ItemSet([SwallowLine()])
+        partitioner = Partitioner(item_set)
+        self.assertTrue(partitioner)

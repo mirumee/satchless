@@ -55,3 +55,20 @@ class Item(object):
 
     def get_price(self, **kwargs):
         return self.get_price_per_item(**kwargs)
+
+
+class Partitioner(ItemSet):
+    """
+    Represents an ItemSet partitioned for purposes such as delivery
+
+    Override the __iter__() method to provide custom partitioning.
+    """
+    def __init__(self, item_set):
+        self.item_set = item_set
+
+    def __iter__(self):
+        'Override this method to provide custom partitioning'
+        yield ItemSet(list(self.item_set))
+
+    def __nonzero__(self):
+        return bool(self.item_set)

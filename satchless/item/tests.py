@@ -46,10 +46,6 @@ class CoconutLine(ItemLine):
         return Price(15, currency='EUR')
 
 
-class ListBasedSet(list, ItemSet):
-    pass
-
-
 class ItemTest(TestCase):
 
     def test_get_price(self):
@@ -74,11 +70,11 @@ class ItemSetTest(TestCase):
 
     def test_get_total(self):
         'ItemSet.get_total() works and calls its lines'
-        coconut_delivery = ListBasedSet([SwallowLine(), CoconutLine()])
+        coconut_delivery = ItemSet([SwallowLine(), CoconutLine()])
         self.assertEqual(coconut_delivery.get_total(),
                          Price(25, currency='EUR'))
 
     def test_get_total_on_empty(self):
         'ItemSet.get_total() raises an exception on an empty cart'
-        empty = ListBasedSet()
+        empty = ItemSet()
         self.assertRaises(AttributeError, empty.get_total)

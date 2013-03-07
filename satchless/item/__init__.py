@@ -3,7 +3,7 @@ from prices import PriceRange
 __all__ = ('Item', 'ItemLine', 'ItemRange', 'ItemSet')
 
 
-class ItemRange(object):
+class ItemRange(list):
     """
     Represents a group of products like a product with multiple variants
     """
@@ -15,7 +15,7 @@ class ItemRange(object):
         return PriceRange(min(prices), max(prices))
 
 
-class ItemSet(object):
+class ItemSet(list):
     """
     Represents a set of products like an order or a basket
     """

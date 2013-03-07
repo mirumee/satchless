@@ -121,3 +121,26 @@ class Cart(ItemSet):
             self.modified = True
         elif not created:
             self.modified = True
+
+
+class CartPartition(ItemSet):
+    """
+    Represents a single cart partition meant for delivery
+    """
+
+
+class CartPartitioner(ItemSet):
+    """
+    Represents a cart partitioned for delivery
+
+    Override the __iter__() method to provide custom partitioning.
+    """
+    def __init__(self, cart):
+        self.cart = cart
+
+    def __iter__(self):
+        'Override this method to provide custom partitioning'
+        yield CartPartition(list(self.cart))
+
+    def __nonzero__(self):
+        return bool(self.cart)

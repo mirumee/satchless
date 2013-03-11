@@ -14,9 +14,9 @@ class ProcessManager(object):
     def validate_step(self, step):
         try:
             step.validate()
-            return True
         except InvalidData:
             return False
+        return True
 
     def get_next_step(self):
         for step in self:

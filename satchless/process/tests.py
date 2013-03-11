@@ -54,7 +54,7 @@ class ProcessManagerTest(TestCase):
         process.coconuts = 1
         self.assertEqual(str(process.get_next_step()), 'swallows-needed')
         process.swallows = 2
-        self.assertIsNone(process.get_next_step())
+        self.assertEqual(process.get_next_step(), None)
         process.coconuts = 0
         self.assertEqual(str(process.get_next_step()), 'coconuts-needed')
 
@@ -69,7 +69,7 @@ class ProcessManagerTest(TestCase):
     def test_item_access(self):
         'You can index a ProcessManager using step names'
         process = CoconutDelivery()
-        self.assertIsInstance(process['coconuts-needed'], AddCoconuts)
+        self.assertTrue(isinstance(process['coconuts-needed'], AddCoconuts))
 
         def invalid():
             return process['spam-needed']
@@ -81,5 +81,5 @@ class ProcessManagerTest(TestCase):
         process = CoconutDelivery()
         process.swallows = 2
         errors = process.get_errors()
-        self.assertNotIn('swallows-needed', errors)
-        self.assertIn('coconuts-needed', errors)
+        self.assertFalse('swallows-needed' in errors)
+        self.assertTrue('coconuts-needed' in errors)

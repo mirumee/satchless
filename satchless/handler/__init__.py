@@ -2,22 +2,12 @@ class Handler(object):
     """
     An action carrier
     """
-    def __new__(cls, subject):
-        if not cls.can_handle(subject):
-            raise ValueError("%r does know how to handle %r" % (cls, subject))
-        return object.__new__(cls, subject)
-
-    def __init__(self, subject):
-        self.subject = subject
-
     @classmethod
-    def can_handle(cls, subject):
+    def can_handle(cls, *args, **kwargs):
         raise NotImplementedError()  # pragma: no cover
 
 
-def handlers_for(subject, handler_candidates):
+def filter_handlers(handler_candidates, *args, **kwargs):
     for handler_class in handler_candidates:
-        try:
-            yield handler_class(subject)
-        except ValueError:
-            pass
+        if handler_class.can_handle(*args, **kwargs):
+            yield handler_class(*args, **kwargs)

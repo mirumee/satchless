@@ -1,9 +1,12 @@
 from unittest import TestCase
 
-from . import Handler, handlers_for
+from . import Handler, filter_handlers
 
 
 class IntegerHandler(Handler):
+
+    def __init__(self, subject):
+        self.subject = subject
 
     def __eq__(self, other):
         if not isinstance(other, IntegerHandler):
@@ -17,6 +20,9 @@ class IntegerHandler(Handler):
 
 class StringHandler(Handler):
 
+    def __init__(self, subject):
+        self.subject = subject
+
     def __eq__(self, other):
         if not isinstance(other, StringHandler):
             return NotImplemented
@@ -29,17 +35,8 @@ class StringHandler(Handler):
 
 class HandlerTest(TestCase):
 
-    def test_can_handle(self):
-        int_handler = IntegerHandler(42)
-        self.assertTrue(isinstance(int_handler, IntegerHandler))
-
-        def pass_str():
-            return IntegerHandler('what is your favourite colour?')
-
-        self.assertRaises(ValueError, pass_str)
-
     def test_handlers_for(self):
-        int_handlers = handlers_for(42, [IntegerHandler, StringHandler])
+        int_handlers = filter_handlers([IntegerHandler, StringHandler], 42)
         self.assertEqual(list(int_handlers), [IntegerHandler(42)])
-        str_handlers = handlers_for('ni!', [IntegerHandler, StringHandler])
+        str_handlers = filter_handlers([IntegerHandler, StringHandler], 'ni!')
         self.assertEqual(list(str_handlers), [StringHandler('ni!')])

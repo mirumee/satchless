@@ -63,12 +63,12 @@ class Partitioner(ItemSet):
 
     Override the __iter__() method to provide custom partitioning.
     """
-    def __init__(self, item_set):
-        self.item_set = item_set
+    def __init__(self, subject):
+        self.subject = subject
 
     def __iter__(self):
         'Override this method to provide custom partitioning'
-        yield ItemSet(list(self.item_set))
+        yield ItemSet(list(self.subject))
 
     def __nonzero__(self):
-        return bool(self.item_set)
+        return bool(self.subject)

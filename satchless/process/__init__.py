@@ -1,16 +1,22 @@
 class InvalidData(Exception):
-
+    """
+    Raised for by step validation process
+    """
     pass
 
 
 class Step(object):
-
+    """
+    A single step in a multistep process
+    """
     def validate(self):
         raise NotImplementedError()  # pragma: no cover
 
 
 class ProcessManager(object):
-
+    """
+    A multistep process handler
+    """
     def validate_step(self, step):
         try:
             step.validate()

@@ -3,10 +3,13 @@ from prices import PriceRange
 __all__ = ('Item', 'ItemLine', 'ItemRange', 'ItemSet')
 
 
-class ItemRange(list):
+class ItemRange(object):
     """
     Represents a group of products like a product with multiple variants
     """
+    def __iter__(self):
+        raise NotImplementedError  # pragma: no cover
+
     def get_price_per_item(self, item, **kwargs):
         return item.get_price(**kwargs)
 
@@ -15,10 +18,13 @@ class ItemRange(list):
         return PriceRange(min(prices), max(prices))
 
 
-class ItemSet(list):
+class ItemSet(object):
     """
     Represents a set of products like an order or a basket
     """
+    def __iter__(self):
+        raise NotImplementedError  # pragma: no cover
+
     def get_subtotal(self, line, **kwargs):
         return line.get_total(**kwargs)
 
@@ -27,6 +33,10 @@ class ItemSet(list):
         if not items:
             raise AttributeError('Calling get_total() on an empty item set')
         return sum(items[1:], items[0])
+
+
+class ItemList(list, ItemSet):
+    pass
 
 
 class ItemLine(object):
@@ -68,7 +78,7 @@ class Partitioner(ItemSet):
 
     def __iter__(self):
         'Override this method to provide custom partitioning'
-        yield ItemSet(list(self.subject))
+        yield ItemList(list(self.subject))
 
     def __nonzero__(self):
         return bool(self.subject)

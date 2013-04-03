@@ -7,7 +7,7 @@ python:
 install:
   - python setup.py install
   - pip install coverage
-script: coverage run setup.py nosetests
+script: coverage run setup.py -q nosetests
 after_success:
   - pip install coveralls
-  - coveralls --verbose
+  - coveralls

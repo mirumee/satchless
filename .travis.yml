@@ -6,3 +6,6 @@ python:
   - 3.3
 install: python setup.py install
 script: python setup.py nosetests
+after_success:
+  - pip install python-coveralls
+  - coveralls

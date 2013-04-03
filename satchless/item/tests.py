@@ -1,7 +1,7 @@
 from prices import Price, PriceRange
 from unittest import TestCase
 
-from . import Item, ItemLine, ItemRange, ItemSet, Partitioner, ItemList
+from . import Item, ItemLine, ItemRange, Partitioner, ItemList
 
 
 class Swallow(Item):

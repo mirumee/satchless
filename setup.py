@@ -30,8 +30,8 @@ setup(
     classifiers=CLASSIFIERS,
     platforms=['any'],
     install_requires=['prices>=0.4,<0.5a0'],
-    tests_require=['coverage', 'discover'],
-    test_suite='discover.collector',
+    tests_require=['coverage'],
+    test_suite='satchless.tests.suite',
     include_package_data=True,
     use_2to3=True,
     zip_safe=False)

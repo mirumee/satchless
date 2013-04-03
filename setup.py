@@ -30,7 +30,7 @@ setup(
     classifiers=CLASSIFIERS,
     platforms=['any'],
     install_requires=['prices>=0.4,<0.5a0'],
-    setup_requires=['distribute>=0.6.35'],
+    setup_requires=['distribute>=0.6.34'],
     tests_require=['coverage'],
     test_suite='satchless.tests.suite',
     include_package_data=True,

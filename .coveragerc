@@ -1,4 +1,5 @@
 [run]
+branch = 1
 omit = */tests.py
 source = satchless
 

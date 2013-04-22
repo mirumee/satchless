@@ -5,22 +5,9 @@
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
     <meta name="description" content="Satchless is an e-commerce framework built on top of Python and Django. It provides all necessary tools to build full-blown online shop." />
     <title>Satchless &mdash; an e-commerce framework built with Python &amp; Django</title>
-    <link rel="stylesheet" type="text/css" href="{{ MEDIA_URL }}css/960.css" />
-    <link rel="stylesheet" href="{{ MEDIA_URL }}css/styles.css" />
-    <link rel="shortcut icon" href="{{ MEDIA_URL }}img/favicon.ico" />
-    {% if GOOGLE_ANALYTICS_ID %}
-    <script type="text/javascript">
-        var _gaq = _gaq || [];
-        _gaq.push(['_setAccount', '{{ GOOGLE_ANALYTICS_ID }}']);
-        _gaq.push(['_trackPageview']);
-
-        (function() {
-            var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
-            ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
-            var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
-        })();
-    </script>
-    {% endif %}
+    <link rel="stylesheet" type="text/css" href="/static/css/960.css" />
+    <link rel="stylesheet" href="/static/css/styles.css" />
+    <link rel="shortcut icon" href="/static/img/favicon.ico" />
 </head>
 <body>
 <div class="container_16">
@@ -31,12 +18,12 @@
         <div class="info grid_13 omega">
             <p class="is_what">Less is mo'</p>
             <p class="links">
-                <a href="https://github.com/mirumee/satchless">Source Code</a> | 
+                <a href="https://github.com/mirumee/satchless">Source Code</a> |
                 <a href="http://docs.satchless.com/">Documentation</a>
             </p>
             <p class="founded">
                 Founded by <a href="https://www.github.com/mirumee/">
-                <img src="{{ MEDIA_URL }}img/mirumee-labs.png" alt="Mirumee Labs" title="Mirumee Labs"/></a>
+                <img src="/static/img/mirumee-labs.png" alt="Mirumee Labs" title="Mirumee Labs"/></a>
             </p>
         </div>
     </div>
@@ -53,7 +40,7 @@
                 <h3 class="hint">+ No livesettings, pony included</h3>
             </div>
             <div class="grid_6 omega">
-                <img src="{{ MEDIA_URL }}img/chariot.png" alt="A fancy shopping cart" />
+                <img src="/static/img/chariot.png" alt="A fancy shopping cart" />
             </div>
         </div>
     </div>
@@ -98,10 +85,10 @@
             <p class="hint">Coming soon.</p>
             <hr/>
             <div class="twitter">
-                <a href="http://twitter.com/satchless"><span>Follow us on</span><img src="{{ MEDIA_URL}}img/follow-us-on-twitter.png" /></a>
+                <a href="http://twitter.com/satchless"><span>Follow us on</span><img src="/static/img/follow-us-on-twitter.png" /></a>
             </div>
             <div class="google-groups">
-                <a href="http://groups.google.com/group/satchless"><div>Discuss on Google Groups</div><img src="{{ MEDIA_URL}}img/google-groups-icon.gif" /></a>
+                <a href="http://groups.google.com/group/satchless"><div>Discuss on Google Groups</div><img src="/static/img/google-groups-icon.gif" /></a>
             </div>
         </div>
     </div>
@@ -110,16 +97,29 @@
 <div id="footer" class="container_16">
     <div class="grid_10">
         <p>
-            <a href="http://mirumee.com/"><img src="{{ MEDIA_URL }}img/we-build.png" alt="Mirumee &mdash; We build webapps. Better." /></a>
+            <a href="http://mirumee.com/"><img src="/static/img/we-build.png" alt="Mirumee &mdash; We build webapps. Better." /></a>
         </p>
         <p class="copyright">Copyright &copy; 2010-2011 Mirumee Software.</p>
     </div>
     <div class="grid_6">
         <div class="technologies">
-            <a href="http://python.org"><img src="{{ MEDIA_URL }}img/python-logo.png"/></a>
-            <a href="http://djangoproject.com"><img src="{{ MEDIA_URL }}img/django-logo.png"/></a>
+            <a href="http://python.org"><img src="/static/img/python-logo.png"/></a>
+            <a href="http://djangoproject.com"><img src="/static/img/django-logo.png"/></a>
         </div>
     </div>
     <div class="clear"></div>
+    <script type="text/javascript">
+
+      var _gaq = _gaq || [];
+      _gaq.push(['_setAccount', 'UA-10159761-9']);
+      _gaq.push(['_trackPageview']);
+
+      (function() {
+        var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+        ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+        var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+      })();
+
+    </script>
 </body>
 </html>

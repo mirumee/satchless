@@ -20,6 +20,9 @@ a, a:link, a:visited {
 img {
     border: 0;
 }
+.status img {
+    vertical-align: bottom;
+}
 h2 {
     font-family: Georgia, serif;
     font-weight: normal;
@@ -30,6 +33,15 @@ hr {
     border-top: 1px dashed #CCC;
     height: 1px;
 } 
+pre {
+    background-color: #f3f3f3;
+    border: 1px solid #e3e3e3;
+    border-radius: 5px;
+    -moz-border-radius: 5px;
+    -webkit-border-radius: 5px;
+    margin-top: 15px;
+    padding: 10px 15px;
+}
 #header {
     overflow: visible;
     height: 62px;
@@ -54,17 +66,8 @@ hr {
             margin: 0 25px;
         }
             #header .info p.is_what {
+                font-style: oblique;
                 margin-left: -25px;
-            }
-            #header .info p.links a {
-                margin: 0 6px;
-            }
-            #header .info p.founded {
-                float: right;
-                margin-right: 0;
-                padding-top: 23px;
-                color: #777;
-                font-size: 12px;
             }
 #banner {
     border-top: 1px solid #e3e3e3;
@@ -72,34 +75,32 @@ hr {
     background: transparent url('../img/banner-bg.png') 0 0 repeat;
     padding: 10px 0;
 }
+    #banner .hero {
+        background: url('../img/chariot.png') 100% 100% no-repeat;
+        height: 270px;
+    }
     #banner h2, #banner h3 {
         font-weight: normal;
     }
     #banner h2 {
-        margin: 25px 0 15px;
+        margin: 40px 0 15px;
         font-size: 40px;
     }
-    #banner h3 {
-        margin: 5px 0;
-        padding: 0 10px;
-        color: #de1515;
-    }
-        #banner h3.hint {
-            color: #AAA;
-            font-size: 12px;
-        }
 #body {
 }
     #body .text p {
         color: #646464;
-        text-align: justify;
         line-height: 1.4em;
     }
-    #body .sidebar {
-        margin-top: 15px;
-        padding: 10px 15px 15px 15px;
+    #body .text h2 {
+        margin: 20px 0 10px;
     }
-        #body .sidebar h2 {
+    #body .sidebar {
+        color: #646464;
+        line-height: 1.4em;
+        padding: 10px 15px;
+    }
+        #body .sidebar h3 {
             font-size: 18px;
             margin-top: 0;
             margin-bottom: 10px;
@@ -110,7 +111,8 @@ hr {
         border-radius: 5px;
         -moz-border-radius: 5px;
         -webkit-border-radius: 5px;
-        margin-top: 15px;
+        margin-bottom: 15px;
+        margin-top: 20px;
         padding: 10px 15px 15px 15px;
     }
         #body .download h2 {
@@ -118,7 +120,7 @@ hr {
             margin-top: 0;
             margin-bottom: 10px;
         }
-        #body .download .license {
+        #body .download p {
             color: #646464;
         }
         #body .download .get_it {
@@ -148,17 +150,15 @@ hr {
     color: #777;
     font-size: 12px;
 }
-.google-groups div {
+.google-groups span {
     color: #777;
     display: inline-block;
-    font-size: 12px;
     padding-top: 5px;
     vertical-align: top;
     width: 108px;
 }
 .twitter span {
     color: #777;
-    font-size: 12px;
     vertical-align: top;
 }
     .twitter a, .google-groups a {

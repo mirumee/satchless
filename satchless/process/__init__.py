@@ -39,7 +39,7 @@ class ProcessManager(object):
         return errors
 
     def is_complete(self):
-        return not self.get_next_step()
+        return self.get_next_step() is None
 
     def __getitem__(self, step_id):
         for step in self:

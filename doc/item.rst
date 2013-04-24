@@ -260,11 +260,11 @@ A more advanced example could split an imaginary cart object into groups of obje
    class DeliveryPartitioner(Partitioner):
 
        def __iter__(self):
-           '''
-           Yield single-product groups for products that need to be shipped separately.
-           Yield a separate group for digital products if present.
+           """
+           Yield single-product groups for products that need to be shipped
+           separately. Yield a separate group for digital products if present.
            Everything else can be shipped together.
-           '''
+           """
            digital = []
            remaining = []
            for it in self.subject:

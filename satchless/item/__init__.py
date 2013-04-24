@@ -8,7 +8,7 @@ class ItemRange(object):
     Represents a group of products like a product with multiple variants
     """
     def __iter__(self):
-        raise NotImplementedError  # pragma: no cover
+        raise NotImplementedError()  # pragma: no cover
 
     def get_price_per_item(self, item, **kwargs):
         return item.get_price(**kwargs)
@@ -26,7 +26,7 @@ class ItemSet(object):
     Represents a set of products like an order or a basket
     """
     def __iter__(self):
-        raise NotImplementedError  # pragma: no cover
+        raise NotImplementedError()  # pragma: no cover
 
     def get_subtotal(self, item, **kwargs):
         return item.get_total(**kwargs)

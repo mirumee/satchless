@@ -9,6 +9,9 @@ class Step(object):
     """
     A single step in a multistep process
     """
+    def __str__(self):
+        raise NotImplementedError()  # pragma: no cover
+
     def validate(self):
         raise NotImplementedError()  # pragma: no cover
 
@@ -17,6 +20,15 @@ class ProcessManager(object):
     """
     A multistep process handler
     """
+    def __iter__(self):
+        raise NotImplementedError()  # pragma: no cover
+
+    def __getitem__(self, step_id):
+        for step in self:
+            if str(step) == step_id:
+                return step
+        raise KeyError('%r is not a valid step' % (step_id,))
+
     def validate_step(self, step):
         try:
             step.validate()
@@ -40,9 +52,3 @@ class ProcessManager(object):
 
     def is_complete(self):
         return self.get_next_step() is None
-
-    def __getitem__(self, step_id):
-        for step in self:
-            if str(step) == step_id:
-                return step
-        raise KeyError('%r is not a valid step' % (step_id,))

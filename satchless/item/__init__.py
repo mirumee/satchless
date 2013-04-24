@@ -39,7 +39,9 @@ class ItemSet(object):
 
 
 class ItemList(list, ItemSet):
-    pass
+
+    def __repr__(self):
+        return 'ItemList(%s)' % (super(ItemList, self).__repr__(),)
 
 
 class ItemLine(object):

@@ -79,6 +79,11 @@ class ItemRangeTest(TestCase):
 
 class ItemListTest(TestCase):
 
+    def test_repr(self):
+        'ItemList.__repr__() returns valid code'
+        item_list = ItemList([1])
+        self.assertEqual(item_list.__repr__(), 'ItemList([1])')
+
     def test_get_total(self):
         'ItemSet.get_total() works and calls its lines'
         coconut_delivery = ItemList([SwallowLine(), CoconutLine()])

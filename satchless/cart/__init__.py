@@ -78,11 +78,11 @@ class Cart(ItemSet):
     def count(self):
         return sum([item.get_quantity() for item in self._state])
 
-    def check_quantity(self, product, quantity, data=None):
-        return True
+    def check_quantity(self, product, quantity, data):
+        pass
 
-    def create_line(self, product, quantity=0, data=None):
-        return CartLine(product, quantity, data=None)
+    def create_line(self, product, quantity, data):
+        return CartLine(product, quantity, data=data)
 
     def get_line(self, product, data=None):
         return next(
@@ -90,7 +90,7 @@ class Cart(ItemSet):
              if cart_line.product == product and cart_line.data == data),
             None)
 
-    def _get_or_create_line(self, product, quantity, data=None):
+    def _get_or_create_line(self, product, quantity, data):
         cart_line = self.get_line(product, data)
         if cart_line:
             return (False, cart_line)

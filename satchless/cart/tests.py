@@ -118,6 +118,12 @@ class CartTest(TestCase):
         cart.add('shrubbery', 0, replace=True)
         self.assertEqual(cart.count(), 0)
 
+    def test_data_is_stored(self):
+        'Data is stored in cart lines'
+        cart = Cart()
+        cart.add('shrubbery', 10, data='trimmed')
+        self.assertEqual(list(cart), [CartLine('shrubbery', 10, 'trimmed')])
+
     def test_data_uniqueness(self):
         'Unique data results in a separate cart line'
         cart = Cart()

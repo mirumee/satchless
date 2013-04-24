@@ -50,7 +50,13 @@ All of the following types are abstract and meant to be subclassed to implement 
 
    An :class:`Item` instance represents a priceable item.
 
-   Use the :meth:`get_price` method to retrieve the price of a priceable instance.
+Instance methods:
+
+.. method:: Item.get_price(**kwargs)
+
+   Returns a :class:`prices.Price` object representing the price of the priceable.
+
+   The default implementation passes all keyword arguments to :meth:`get_price_per_item`. Override to implement discounts and such.
 
 For subclassing:
 
@@ -59,14 +65,6 @@ For subclassing:
    Returns a :class:`prices.Price` object representing the price for a single piece of the priceable.
 
    The default implementation will raise a :exc:`NotImplementedError` exception.
-
-Public methods:
-
-.. method:: Item.get_price(**kwargs)
-
-   Returns a :class:`prices.Price` object representing the price of the priceable.
-
-   The default implementation passes all keyword arguments to :meth:`get_price_per_item`. Override to implement discounts and such.
 
 Example use::
 
@@ -87,9 +85,7 @@ Example use::
 
    An :class:`ItemRange` instance represents a range of priceables.
 
-   Use the :meth:`get_price_range` method to retrieve the price range of the range instance.
-
-For subclassing:
+Instance methods:
 
 .. method:: ItemRange.__iter__()
 
@@ -97,19 +93,19 @@ For subclassing:
 
    The default implementation will raise a :exc:`NotImplementedError` exception.
 
-.. method:: ItemRange.get_price_per_item(item, **kwargs)
-
-   Return a :class:`prices.Price` object representing the price of a given item.
-
-   The default implementation will pass all keyword arguments to ``item.get_price()``. Override to implement discounts or caching.
-
-Public methods:
-
 .. method:: ItemRange.get_price_range(**kwargs)
 
    Returns a :class:`prices.PriceRange` object representing the price range of the priceables included in the range object. Keyword arguments are passed to :meth:`get_price_per_item`.
 
    Calling this method on an empty range will raise an :exc:`AttributeError` exception.
+
+For subclassing:
+
+.. method:: ItemRange.get_price_per_item(item, **kwargs)
+
+   Return a :class:`prices.Price` object representing the price of a given item.
+
+   The default implementation will pass all keyword arguments to ``item.get_price()``. Override to implement discounts or caching.
 
 Example use::
 
@@ -134,11 +130,17 @@ Example use::
 :class:`ItemLine` Objects
 -------------------------
 
+.. _item-line-class:
+
 .. class:: ItemLine
 
    An :class:`ItemLine` instance represents a certain quantity of a particular priceable.
 
-   Use the :meth:`get_total` method to retrieve the total price.
+Instance methods:
+
+.. method:: ItemLine.get_total(**kwargs)
+
+   Return a :class:`prices.Price` object representing the total price of the line. Keyword arguments are passed to both :meth:`get_quantity` and :meth:`get_price_per_item`.
 
 For subclassing:
 
@@ -153,12 +155,6 @@ For subclassing:
    Returns a :class:`prices.Price` object representing the price of a single piece of the item.
 
    The default implementation will raise a :exc:`NotImplementedError` exception.
-
-Public methods:
-
-.. method:: ItemLine.get_total(**kwargs)
-
-   Return a :class:`prices.Price` object representing the total price of the line. Keyword arguments are passed to both :meth:`get_quantity` and :meth:`get_price_per_item`.
 
 Example use::
 
@@ -177,13 +173,13 @@ Example use::
 :class:`ItemSet` Objects
 ------------------------
 
+.. _item-set-class:
+
 .. class:: ItemSet
 
    An :class:`ItemSet` instance represents a set of :class:`ItemLine` or other :class:`ItemSet` objects that has a total price.
 
-   Use the :meth:`get_total` method to retrieve the total price.
-
-For subclassing:
+Instance methods:
 
 .. method:: ItemSet.__iter__()
 
@@ -191,19 +187,19 @@ For subclassing:
 
    The default implementation will raise a :exc:`NotImplementedError` exception.
 
-.. method:: ItemSet.get_subtotal(item, **kwargs)
-
-   Returns a :class:`prices.Price` object representing the total price of ``item``.
-
-   The default implementation will pass keyword arguments to ``item.get_total()``. Override to implement discounts or caching.
-
-Public methods:
-
 .. method:: ItemSet.get_total(**kwargs)
 
    Return a :class:`prices.Price` object representing the total price of the set. Keyword arguments are passed to :meth:`get_subtotal`.
 
    Calling this method on an empty set will raise an :exc:`AttributeError` exception.
+
+For subclassing:
+
+.. method:: ItemSet.get_subtotal(item, **kwargs)
+
+   Returns a :class:`prices.Price` object representing the total price of ``item``.
+
+   The default implementation will pass keyword arguments to ``item.get_total()``. Override to implement discounts or caching.
 
 Example use::
 
@@ -233,7 +229,7 @@ Example use::
 
    A :class:`Partitioner` instance is an iterable view of the ``subject`` that partitions it for purposes such as split delivery.
 
-For subclassing:
+Instance methods:
 
 .. method:: Partitioner.__iter__()
 

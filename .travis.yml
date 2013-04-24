@@ -2,5 +2,12 @@ language: python
 python:
   - 2.6
   - 2.7
-install: python setup.py install && pip install -r .travis.requirements
-script: ./runtests.py
+  - 3.2
+  - 3.3
+install:
+  - python setup.py install
+  - pip install coverage
+script: coverage run setup.py test
+after_success:
+  - pip install coveralls
+  - coveralls

@@ -24,6 +24,12 @@ class FetchezLaVache(Item):
         return Price(5, currency='BTC')
 
 
+class EmptyRange(ItemRange):
+
+    def __iter__(self):
+        return iter([])
+
+
 class ThingsNobodyExpects(ItemRange):
 
     def __iter__(self):
@@ -64,6 +70,11 @@ class ItemRangeTest(TestCase):
         self.assertEqual(unexpected.get_price_range(),
                          PriceRange(Price(5, currency='BTC'),
                                     Price(15, currency='BTC')))
+
+    def test_get_price_range_on_empty(self):
+        'ItemRange.get_price_range() raises an exception on an empty range'
+        empty = EmptyRange()
+        self.assertRaises(AttributeError, empty.get_price_range)
 
 
 class ItemListTest(TestCase):

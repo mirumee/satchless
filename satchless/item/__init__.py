@@ -15,6 +15,9 @@ class ItemRange(object):
 
     def get_price_range(self, **kwargs):
         prices = [self.get_price_per_item(item, **kwargs) for item in self]
+        if not prices:
+            raise AttributeError(
+                'Calling get_price_range() on an empty item range')
         return PriceRange(min(prices), max(prices))
 
 
@@ -25,14 +28,14 @@ class ItemSet(object):
     def __iter__(self):
         raise NotImplementedError  # pragma: no cover
 
-    def get_subtotal(self, line, **kwargs):
-        return line.get_total(**kwargs)
+    def get_subtotal(self, item, **kwargs):
+        return item.get_total(**kwargs)
 
     def get_total(self, **kwargs):
-        items = [self.get_subtotal(line, **kwargs) for line in self]
-        if not items:
+        subtotals = [self.get_subtotal(item, **kwargs) for item in self]
+        if not subtotals:
             raise AttributeError('Calling get_total() on an empty item set')
-        return sum(items[1:], items[0])
+        return sum(subtotals[1:], subtotals[0])
 
 
 class ItemList(list, ItemSet):

@@ -1,3 +1,7 @@
+[![Build Status](https://secure.travis-ci.org/mirumee/satchless.png)](https://travis-ci.org/mirumee/satchless)
+[![Coverage](https://coveralls.io/repos/mirumee/satchless/badge.png)](https://coveralls.io/r/mirumee/satchless)
+
+
 Satchless: less is mo'
 ======================
 

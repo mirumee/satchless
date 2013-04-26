@@ -80,7 +80,6 @@ pre {
         height: 270px;
     }
         #banner .hero .lead {
-            color: #de1515;
             font-size: 18px;
             line-height: 1.3em;
         }
@@ -96,6 +95,10 @@ pre {
     }
 #body {
 }
+    #body .grid_12 p,
+    #body .grid_12 pre {
+        width: 560px;
+    }
     #body .text p {
         color: #646464;
         line-height: 1.4em;

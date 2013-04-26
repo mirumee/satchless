@@ -1,4 +1,5 @@
 .*
+!.coveragerc
 !.gitignore
 !.travis.*
 *.py[co]
@@ -6,3 +7,4 @@
 doc/_build
 website/*.db
 dev.db
+*\.egg*

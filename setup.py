@@ -1,61 +1,37 @@
 #! /usr/bin/env python
 from setuptools import setup, find_packages
 
-# dynamic retrive version number from stachless.VERSION
-version = __import__('satchless').__version__
 
 CLASSIFIERS = [
     'Development Status :: 3 - Alpha',
     'Environment :: Web Environment',
-    'Framework :: Django',
     'Intended Audience :: Developers',
     'License :: OSI Approved :: BSD License',
     'Operating System :: OS Independent',
     'Programming Language :: Python',
-    'Programming Language :: Python :: 2.5',
     'Programming Language :: Python :: 2.6',
     'Programming Language :: Python :: 2.7',
-    'Topic :: Internet :: WWW/HTTP',
-    'Topic :: Internet :: WWW/HTTP :: Dynamic Content',
+    'Programming Language :: Python :: 3.2',
+    'Programming Language :: Python :: 3.3',
     'Topic :: Software Development :: Libraries :: Application Frameworks',
-    'Topic :: Software Development :: Libraries :: Python Modules',
-]
+    'Topic :: Software Development :: Libraries :: Python Modules']
 
-REQUIREMENTS = [
-    'Django >= 1.4',
-    'django-mptt >= 0.4.2',
-    'prices >= 2012.11',
-    'django-prices >= 2012.11.5'
-]
+packages = find_packages(exclude=['doc*', 'examples*', 'tests*', 'website*'])
 
-EXTRAS = {
-    'authorize.net payment provider': [
-        'django-authorizenet >= 1.0',
-        'unidecode'
-    ],
-    'django-payments payment provider': [
-        'django-payments'
-    ],
-    'mamona payment provider': [
-        'mamona',
-    ],
-    'stripe payment provider': [
-        'stripe',
-    ],
-}
-
-setup(name='satchless',
-      author='Mirumee Software',
-      author_email='hello@mirumee.com',
-      description='An e-commerence framework for Django',
-      license='BSD',
-      version=version,
-      url='http://satchless.com/',
-      packages=find_packages(exclude=['doc*', 'examples*', 'tests*',
-                                      'website*']),
-      include_package_data=True,
-      classifiers=CLASSIFIERS,
-      install_requires=REQUIREMENTS,
-      extras_require=EXTRAS,
-      platforms=['any'],
-      zip_safe=False)
+setup(
+    name='satchless',
+    author='Mirumee Software',
+    author_email='hello@mirumee.com',
+    description='An e-commerence framework',
+    license='BSD',
+    version='1.0a0',
+    url='http://satchless.com/',
+    packages=packages,
+    classifiers=CLASSIFIERS,
+    platforms=['any'],
+    install_requires=['prices>=0.4,<0.5a0'],
+    #setup_requires=['distribute>=0.6.34'],
+    test_suite='satchless.tests.suite',
+    include_package_data=True,
+    use_2to3=True,
+    zip_safe=False)

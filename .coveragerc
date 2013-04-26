@@ -1,0 +1,9 @@
+[run]
+branch = 1
+omit = */tests.py
+source = satchless
+
+[report]
+exclude_lines =
+    pragma: no cover
+    raise NotImplementedError

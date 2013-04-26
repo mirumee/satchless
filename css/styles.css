@@ -32,7 +32,7 @@ hr {
     border: none 0;
     border-top: 1px dashed #CCC;
     height: 1px;
-} 
+}
 pre {
     background-color: #f3f3f3;
     border: 1px solid #e3e3e3;
@@ -79,12 +79,20 @@ pre {
         background: url('../img/chariot.png') 100% 100% no-repeat;
         height: 270px;
     }
+        #banner .hero .lead {
+            color: #de1515;
+            font-size: 18px;
+            line-height: 1.3em;
+        }
     #banner h2, #banner h3 {
         font-weight: normal;
     }
     #banner h2 {
-        margin: 40px 0 15px;
+        margin: 30px 0 15px;
         font-size: 40px;
+    }
+    #banner p {
+        color: #353535;
     }
 #body {
 }
@@ -113,7 +121,7 @@ pre {
         -webkit-border-radius: 5px;
         margin-bottom: 15px;
         margin-top: 20px;
-        padding: 10px 15px 15px 15px;
+        padding: 10px;
     }
         #body .download h2 {
             font-size: 18px;
@@ -129,7 +137,6 @@ pre {
             border-radius: 5px;
             -moz-border-radius: 5px;
             -webkit-border-radius: 5px;
-            margin: 20px 0 10px 0;
             padding: 8px 20px 8px 40px;
             color: white;
             text-decoration: none;

@@ -3,7 +3,6 @@ from setuptools import setup, find_packages
 
 
 CLASSIFIERS = [
-    'Development Status :: 3 - Alpha',
     'Environment :: Web Environment',
     'Intended Audience :: Developers',
     'License :: OSI Approved :: BSD License',
@@ -16,17 +15,15 @@ CLASSIFIERS = [
     'Topic :: Software Development :: Libraries :: Application Frameworks',
     'Topic :: Software Development :: Libraries :: Python Modules']
 
-packages = find_packages(exclude=['doc*', 'examples*', 'tests*', 'website*'])
-
 setup(
     name='satchless',
     author='Mirumee Software',
     author_email='hello@mirumee.com',
     description='An e-commerence framework',
     license='BSD',
-    version='1.0a0',
+    version='1.0',
     url='http://satchless.com/',
-    packages=packages,
+    packages=find_packages(),
     classifiers=CLASSIFIERS,
     platforms=['any'],
     install_requires=['prices>=0.4,<0.5a0'],

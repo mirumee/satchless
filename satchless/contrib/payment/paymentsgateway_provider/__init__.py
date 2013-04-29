@@ -63,7 +63,7 @@ def pg_pay(variant, transaction_type, amount=None, first_name=None,
         receipt_form = forms.PaymentsGatewayReceiptForm(data)
         if receipt_form.is_valid():
             variant.receipt = receipt_form.save()
-            variant.name = ""
+            variant.name = "Credit"
             variant.description = ""
             variant.save()
         if data.get('pg_response_type') != 'A':

@@ -41,15 +41,14 @@ class CartLine(ItemLine):
 class Cart(ItemSet):
     """
     Represents a Cart (Shopping Cart, Basket, etc.)
+
+    Cart.modified:
+        'Dirty' flag in case you need to sync the cart to a persistent storage
     """
-    modified = False
-    "'Dirty' flag in case you need to sync the cart to a persistent storage"
-    _state = None
-    "Internal state, do not touch"
 
     def __init__(self, items=None):
         self._state = []
-        self.modified = True
+        self.modified = False
         items = items or []
         for l in items:
             self.add(l.product, l.quantity, l.data, replace=True)
@@ -61,10 +60,11 @@ class Cart(ItemSet):
         return iter(self._state)
 
     def __getstate__(self):
-        return self._state
+        # return a tuple as __getstate__ *must* return a truthy value
+        return (self._state,)
 
     def __setstate__(self, state):
-        self._state = state
+        (self._state,) = state
 
     def __len__(self):
         return len(self._state)

@@ -135,15 +135,21 @@ class CartTest(TestCase):
         'Cart.__getstate__() returns a list of cart lines'
         cart = Cart()
         state = cart.__getstate__()
-        self.assertEqual(state, [])
+        self.assertEqual(state, ([],))
         cart.add('shrubbery', 2)
         state = cart.__getstate__()
-        self.assertEqual(state, [CartLine('shrubbery', 2, None)])
+        self.assertEqual(state, ([CartLine('shrubbery', 2, None)],))
+
+    def test_getstate_is_true(self):
+        'Cart.__getstate__() returns a truthy value'
+        cart = Cart()
+        state = cart.__getstate__()
+        self.assertTrue(state)
 
     def test_setstate(self):
         'Cart.__setstate__() properly restores state'
         cart = Cart()
-        state = [CartLine('shrubbery', 2, None)]
+        state = ([CartLine('shrubbery', 2, None)],)
         cart.__setstate__(state)
         self.assertEqual(cart._state, [CartLine('shrubbery', 2, None)])
 

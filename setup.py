@@ -21,7 +21,7 @@ setup(
     author_email='hello@mirumee.com',
     description='An e-commerence framework',
     license='BSD',
-    version='1.0',
+    version='1.0.1',
     url='http://satchless.com/',
     packages=find_packages(),
     classifiers=CLASSIFIERS,

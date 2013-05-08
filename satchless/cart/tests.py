@@ -149,9 +149,15 @@ class CartTest(TestCase):
     def test_setstate(self):
         'Cart.__setstate__() properly restores state'
         cart = Cart()
-        state = ([CartLine('shrubbery', 2, None)],)
-        cart.__setstate__(state)
+        cart.__setstate__(([CartLine('shrubbery', 2, None)],))
         self.assertEqual(cart._state, [CartLine('shrubbery', 2, None)])
+
+    def test_setstate_resets_modified(self):
+        'Cart.__setstate__() sets modified to False'
+        cart = Cart()
+        cart.modified = True
+        cart.__setstate__(([],))
+        self.assertFalse(cart.modified)
 
     def test_init_with_items(self):
         'Passing lines to Cart.__init__() works'

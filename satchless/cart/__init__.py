@@ -65,6 +65,7 @@ class Cart(ItemSet):
 
     def __setstate__(self, state):
         (self._state,) = state
+        self.modified = False
 
     def __len__(self):
         return len(self._state)

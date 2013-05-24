@@ -77,8 +77,14 @@ class PaymentQueue(PaymentProvider, QueueHandler):
         return provider.create_variant(order=order, form=form, typ=typ)
 
     def create_variants(self, order, forms, clear=False):
-        return [(typ, self.create_variant(order, form, typ, clear))
-            for typ, form in forms]
+        variants = []
+        for index, (typ, form) in enumerate(forms):
+            try:
+                variants.append((typ, self.create_variant(order, form, typ, clear),))
+            except PaymentFailure as pf:
+                pf.index = index
+                raise
+        return variants
 
     def confirm(self, order, typ=None, variant=None):
         typ = typ or order.payment_type

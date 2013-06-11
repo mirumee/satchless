@@ -83,7 +83,13 @@ class PaymentQueue(PaymentProvider, QueueHandler):
                 variants.append((typ, self.create_variant(order, form, typ, clear),))
             except PaymentFailure as pf:
                 pf.index = index
+                for typ, variant_ref in variants:
+                    if typ == 'paymentsgateway':
+                        for reused_variant in variant_ref.reused_set.all():
+                            reused_variant.reused_by = None
+                            reused_variant.save()
                 raise
+
         return variants
 
     def confirm(self, order, typ=None, variant=None):

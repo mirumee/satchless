@@ -108,6 +108,7 @@ class PaymentsGatewayProvider(PaymentProvider):
             past_variants = models.PaymentsGatewayVariant.objects.filter(
                 Q(pg_client_token=form.cleaned_data['pg_client_token']) |
                 Q(pg_payment_token=form.cleaned_data['pg_payment_token']),
+                reused_by__isnull=True,
                 receipt__creation_time__gt=time_window,
                 order__ssorder__appointment=order.ssorder.appointment,
                 amount=form.cleaned_data['amount'],
@@ -118,9 +119,12 @@ class PaymentsGatewayProvider(PaymentProvider):
             amount = str(variant_ref.amount.quantize(Decimal('.01')))
 
             if past_variants:
+                past_variant = past_variants[0]
                 variant_ref.pg_authorization_code = \
-                    past_variants[0].pg_authorization_code
-                variant_ref.pg_trace_number = past_variants[0].pg_trace_number
+                    past_variant.pg_authorization_code
+                variant_ref.pg_trace_number = past_variant.pg_trace_number
+                past_variant.reused_by = variant_ref
+                past_variant.save()
             else:
                 if variant_ref.pg_payment_token:
                     auth_via_cc(variant_ref, amount,

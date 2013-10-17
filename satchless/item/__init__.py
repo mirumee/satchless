@@ -1,6 +1,15 @@
 from prices import PriceRange
 
-__all__ = ('Item', 'ItemLine', 'ItemRange', 'ItemSet')
+__all__ = ['InsufficientStockException', 'Item', 'ItemLine', 'ItemRange',
+           'ItemSet', 'StockedItem']
+
+
+class InsufficientStockException(Exception):
+
+    def __init__(self, item):
+        super(InsufficientStockException, self).__init__(
+            'Insufficient stock for %r' % (item,))
+        self.item = item
 
 
 class ItemRange(object):
@@ -63,7 +72,8 @@ class ItemLine(object):
 
 class Item(object):
     """
-    Stands for a single product or a single product variant (ie. White XL shirt)
+    Stands for a single product or a single product variant (ie. White XL
+    shirt)
     """
     def get_price_per_item(self, **kwargs):
         return NotImplemented  # pragma: no cover
@@ -87,3 +97,15 @@ class Partitioner(ItemSet):
 
     def __nonzero__(self):
         return bool(self.subject)
+
+
+class StockedItem(Item):
+
+    def get_stock(self):
+        raise NotImplementedError()
+
+    def check_quantity(self, quantity):
+        if quantity < 0:
+            raise ValueError('Negative quantities are not supported')
+        if quantity > self.get_stock():
+            raise InsufficientStockException(self)

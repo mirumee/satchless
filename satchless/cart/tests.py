@@ -2,7 +2,7 @@ from prices import Price
 from unittest import TestCase
 
 from . import Cart, CartLine
-from ..item import Item
+from ..item import InsufficientStockException, Item, StockedItem
 
 
 class Swallow(Item):
@@ -17,6 +17,12 @@ class Swallow(Item):
         elif self.kind == 'european':
             return Price(10, currency='GBP')
         return NotImplemented
+
+
+class LimitedShrubbery(StockedItem):
+
+    def get_stock(self):
+        return 1
 
 
 class CartLineTest(TestCase):
@@ -85,21 +91,14 @@ class CartTest(TestCase):
     def test_negative_shalt_thou_not_count(self):
         'No operation can result in negative quantity'
         cart = Cart()
-
-        def illegal():
-            cart.add('holy hand grenade', -1, None)
-
-        self.assertRaises(ValueError, illegal)
+        self.assertRaises(ValueError,
+                          lambda: cart.add('holy hand grenade', -1, None))
 
     def test_bad_values_do_not_break_state(self):
         'Invalid operations do not alter the cart state'
         cart = Cart()
         cart.add('seconds', 3)
-
-        def illegal():
-            cart.add('seconds', 'five')
-
-        self.assertRaises(TypeError, illegal)
+        self.assertRaises(TypeError, lambda: cart.add('seconds', 'five'))
         self.assertEqual(cart[0], CartLine('seconds', 3))
 
     def test_replace(self):
@@ -180,3 +179,14 @@ class CartTest(TestCase):
         self.assertFalse(cart)
         cart.add('book of armaments')
         self.assertTrue(cart)
+
+    def test_sufficient_quantity(self):
+        'Cart.add() should allow product to be added if enough is in stock'
+        cart = Cart()
+        cart.add(LimitedShrubbery(), 1)
+
+    def test_insufficient_quantity(self):
+        'Cart.add() should disallow product to be added if stock is exceeded'
+        cart = Cart()
+        self.assertRaises(InsufficientStockException,
+                          lambda: cart.add(LimitedShrubbery(), 2))

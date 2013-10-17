@@ -1,4 +1,4 @@
-from satchless.item import ItemSet, ItemLine
+from ..item import ItemSet, ItemLine
 
 
 class CartLine(ItemLine):
@@ -80,7 +80,8 @@ class Cart(ItemSet):
         return sum([item.get_quantity() for item in self._state])
 
     def check_quantity(self, product, quantity, data):
-        pass
+        if hasattr(product, 'check_quantity'):
+            return product.check_quantity(quantity)
 
     def create_line(self, product, quantity, data):
         return CartLine(product, quantity, data=data)

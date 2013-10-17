@@ -42,6 +42,16 @@ All of the following types are abstract and meant to be subclassed to implement 
 
    An object capable of partitioning an :class:`ItemSet` into multiple sets for purposes such as split delivery.
 
+.. class:: StockedItem
+   :noindex:
+
+   A stocked :class:`Item`. Introduces the concept of stock quantities.
+
+.. class:: InsufficientStock
+   :noindex:
+
+   Exception class that is raised by :class:`StockedItem` when trying to exceed the stock quantity.
+
 
 :class:`Item` Objects
 ---------------------
@@ -274,3 +284,47 @@ A more advanced example could split an imaginary cart object into groups of obje
                yield ItemList(digital)
            if the_rest:
                yield ItemList(remaining)
+
+
+:class:`StockedItem` Objects
+----------------------------
+
+.. class:: StockedItem
+
+   A :class:`StockedItem` object is subclass of :class:`Item` that allows you to track stock quantities and guard against excess allocation.
+
+Instance methods:
+
+.. method:: ItemSet.get_stock()
+
+   Returns the current stock quantity of the item.
+
+   The default implementation will raise a :exc:`NotImplementedError` exception.
+
+.. method:: StockedItem.check_quantity(quantity)
+
+   Makes sure that at least `quantity` of the object are in stock by comparing the value with the result of `self.get_stock()`.
+   If there is not enough, an :class:`InsufficientStock` exception will be raised.
+
+Example use:
+
+   >>> from satchless.item import InsufficientStock, StockedItem
+   >>> class LimitedShrubbery(StockedItem):
+   ...     def get_stock(self):
+   ...         return 1
+   ... 
+   >>> shrubbery = LimitedShrubbery()
+   >>> try:
+   ...     shrubbery.check_quantity(2)
+   ... except InsufficientStock as e:
+   ...     print('only %d remaining!' % (e.item.get_stock(),))
+   ... 
+   only 1 remaining!
+
+
+:class:`InsufficientStock` Exception
+------------------------------------
+
+.. class:: InsufficientStock(item)
+
+   Informs you that a stock quantity check failed against `item`. Raised by :meth:`StockedItem.check_quantity`.

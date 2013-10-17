@@ -4,10 +4,10 @@ __all__ = ['InsufficientStockException', 'Item', 'ItemLine', 'ItemRange',
            'ItemSet', 'StockedItem']
 
 
-class InsufficientStockException(Exception):
+class InsufficientStock(Exception):
 
     def __init__(self, item):
-        super(InsufficientStockException, self).__init__(
+        super(InsufficientStock, self).__init__(
             'Insufficient stock for %r' % (item,))
         self.item = item
 
@@ -108,4 +108,4 @@ class StockedItem(Item):
         if quantity < 0:
             raise ValueError('Negative quantities are not supported')
         if quantity > self.get_stock():
-            raise InsufficientStockException(self)
+            raise InsufficientStock(self)

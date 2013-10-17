@@ -1,4 +1,4 @@
-from ..item import InsufficientStockException, ItemSet, ItemLine, StockedItem
+from ..item import ItemSet, ItemLine
 
 
 class CartLine(ItemLine):

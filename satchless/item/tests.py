@@ -1,8 +1,8 @@
 from prices import Price, PriceRange
 from unittest import TestCase
 
-from . import (InsufficientStockException, Item, ItemLine, ItemRange,
-               Partitioner, ItemList, StockedItem)
+from . import (InsufficientStock, Item, ItemLine, ItemRange, Partitioner,
+               ItemList, StockedItem)
 
 
 class Swallow(Item):
@@ -143,5 +143,4 @@ class StockedItemTest(TestCase):
     def test_check_excessive_quantity(self):
         'StockedItem.get_quantity() disallows excessive quantities'
         item = LimitedShrubbery()
-        self.assertRaises(InsufficientStockException,
-                          lambda: item.check_quantity(2))
+        self.assertRaises(InsufficientStock, lambda: item.check_quantity(2))

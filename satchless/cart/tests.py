@@ -2,7 +2,7 @@ from prices import Price
 from unittest import TestCase
 
 from . import Cart, CartLine
-from ..item import InsufficientStockException, Item, StockedItem
+from ..item import InsufficientStock, Item, StockedItem
 
 
 class Swallow(Item):
@@ -188,5 +188,5 @@ class CartTest(TestCase):
     def test_insufficient_quantity(self):
         'Cart.add() should disallow product to be added if stock is exceeded'
         cart = Cart()
-        self.assertRaises(InsufficientStockException,
+        self.assertRaises(InsufficientStock,
                           lambda: cart.add(LimitedShrubbery(), 2))

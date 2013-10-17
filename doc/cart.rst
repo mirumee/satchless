@@ -96,7 +96,7 @@ For subclassing:
 
    Checks if given quantity is valid for the product and its data.
 
-   Default implementation does nothing. Override and raise a meaningful exception if given quantity is invalid.
+   Default implementation will call `product.check_quantity(quantity)` if such a method exists. This is useful when working with :class:`satchless.item.StockedItem` objects.
 
 .. method:: Cart.create_line(product, quantity, data)
 

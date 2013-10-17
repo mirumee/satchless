@@ -1,7 +1,8 @@
 from prices import Price, PriceRange
 from unittest import TestCase
 
-from . import Item, ItemLine, ItemRange, Partitioner, ItemList
+from . import (InsufficientStock, Item, ItemLine, ItemRange, Partitioner,
+               ItemList, StockedItem)
 
 
 class Swallow(Item):
@@ -50,6 +51,12 @@ class CoconutLine(ItemLine):
 
     def get_price_per_item(self):
         return Price(15, currency='EUR')
+
+
+class LimitedShrubbery(StockedItem):
+
+    def get_stock(self):
+        return 1
 
 
 class ItemTest(TestCase):
@@ -118,3 +125,22 @@ class PartitionerTest(TestCase):
         item_set = ItemList([SwallowLine()])
         partitioner = Partitioner(item_set)
         self.assertTrue(partitioner)
+
+
+class StockedItemTest(TestCase):
+
+    def test_check_valid_quantity(self):
+        'StockedItem.get_quantity() allows smaller quantities to be used'
+        item = LimitedShrubbery()
+        item.check_quantity(0)
+        item.check_quantity(1)
+
+    def test_check_negative_quantity(self):
+        'StockedItem.get_quantity() disallows negative quantities'
+        item = LimitedShrubbery()
+        self.assertRaises(ValueError, lambda: item.check_quantity(-1))
+
+    def test_check_excessive_quantity(self):
+        'StockedItem.get_quantity() disallows excessive quantities'
+        item = LimitedShrubbery()
+        self.assertRaises(InsufficientStock, lambda: item.check_quantity(2))

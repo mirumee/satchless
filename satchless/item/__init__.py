@@ -2,8 +2,9 @@ from itertools import groupby
 
 from prices import PriceRange
 
-__all__ = ['InsufficientStockException', 'Item', 'ItemLine', 'ItemRange',
-           'ItemSet', 'StockedItem']
+__all__ = ['ClassifyingPartitioner', 'InsufficientStockException', 'Item',
+           'ItemLine', 'ItemRange', 'ItemSet', 'Partitioner', 'StockedItem',
+           'partition']
 
 
 class InsufficientStock(Exception):
@@ -105,6 +106,7 @@ class Partitioner(ItemSet):
 
 
 class ClassifyingPartitioner(Partitioner):
+
     def __iter__(self):
         subject = sorted(self.subject, key=self.classify)
         for classifier, items in groupby(subject, key=self.classify):
@@ -115,6 +117,24 @@ class ClassifyingPartitioner(Partitioner):
 
     def get_partition(self, classifier, items):
         return ItemList(items)
+
+
+class GroupingPartitioner(ClassifyingPartitioner):
+
+    def __init__(self, subject, keyfunc, partition_class):
+        self.keyfunc = keyfunc
+        self.partition_class = partition_class
+        super(GroupingPartitioner, self).__init__(subject)
+
+    def classify(self, item):
+        return self.keyfunc(item)
+
+    def get_partition(self, classifier, items):
+        return self.partition_class(items)
+
+
+def partition(subject, keyfunc, partition_class=ItemList):
+    return GroupingPartitioner(subject, keyfunc, partition_class)
 
 
 class StockedItem(Item):

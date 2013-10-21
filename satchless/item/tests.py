@@ -2,7 +2,7 @@ from prices import Price, PriceRange
 from unittest import TestCase
 
 from . import (ClassifyingPartitioner, InsufficientStock, Item, ItemLine,
-               ItemList, ItemRange, Partitioner, StockedItem)
+               ItemList, ItemRange, Partitioner, StockedItem, partition)
 
 
 class Swallow(Item):
@@ -152,6 +152,29 @@ class ClassifyingPartitionerTest(TestCase):
         self.assertEqual(list(partitioner),
                          [ItemList([swallow]),
                           ItemList([inquisition, cow])])
+
+
+class PartitionTest(TestCase):
+
+    def test_basic_classification(self):
+        def keyfunc(item):
+            if item > 5:
+                return 'more'
+            return 'less'
+        partitioner = partition([1, 2, 3, 4, 5, 6, 7, 8, 9, 10], keyfunc)
+        self.assertEqual(list(partitioner),
+                         [ItemList([1, 2, 3, 4, 5]),
+                          ItemList([6, 7, 8, 9, 10])])
+
+    def test_custom_class(self):
+        def keyfunc(item):
+            if item > 5:
+                return 'more'
+            return 'less'
+        partitioner = partition([1, 2, 3, 4, 5, 6, 7, 8, 9, 10], keyfunc,
+                                partition_class=list)
+        self.assertEqual(list(partitioner),
+                         [[1, 2, 3, 4, 5], [6, 7, 8, 9, 10]])
 
 
 class StockedItemTest(TestCase):

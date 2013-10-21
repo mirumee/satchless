@@ -42,6 +42,11 @@ All of the following types are abstract and meant to be subclassed to implement 
 
    An object capable of partitioning an :class:`ItemSet` into multiple sets for purposes such as split delivery.
 
+.. class:: ClassifyingPartitioner
+   :noindex:
+
+   A :class:`Partitioner` that automatically splits based on a classifying function.
+
 .. class:: StockedItem
    :noindex:
 
@@ -51,6 +56,14 @@ All of the following types are abstract and meant to be subclassed to implement 
    :noindex:
 
    Exception class that is raised by :class:`StockedItem` when trying to exceed the stock quantity.
+
+
+Available functions
+-------------------
+
+.. function:: partition(subject, keyfunc[, partition_class=ItemList])
+
+   Returns a :class:`Partitioner` objects that splits `subject` based on the result of `keyfunc(item)`.
 
 
 :class:`Item` Objects
@@ -257,7 +270,7 @@ Example use:
    ... 
    >>> splitter = EvenOddSplitter(['a', 'b', 'c', 'd', 'e', 'f'])
    >>> list(splitter)
-   [['a', 'c', 'e'], ['b', 'd', 'f']]
+   [ItemList(['a', 'c', 'e']), ItemList(['b', 'd', 'f'])]
 
 A more advanced example could split an imaginary cart object into groups of objects that can be delivered together::
 
@@ -284,6 +297,34 @@ A more advanced example could split an imaginary cart object into groups of obje
                yield ItemList(digital)
            if the_rest:
                yield ItemList(remaining)
+
+
+:class:`ClassifyingPartitioner` Objects
+---------------------------------------
+
+.. class:: ClassifyingPartitioner(subject)
+
+   A :class:`Partitioner` subclass that splits the subject into groups based on the result of the classifying method.
+
+Instance methods:
+
+.. method:: ClassifyingPartitioner.classify(item)
+
+   Returns a classification key that groups together items that are meant for the same group.
+
+   The default implementation will raise a :exc:`NotImplementedError` exception.
+
+Example use:
+
+   >>> from satchless.item import ItemList, ClassifyingPartitioner
+   >>> class ClassNameSplitter(ClassifyingPartitioner):
+   ...     def classify(self, item):
+   ...         return type(item).__name__
+   ... 
+   >>> splitter = ClassNameSplitter(['a', 'b', 1, ['one'], 2, ['two']])
+   >>> list(splitter)
+   [ItemList([1, 2]), ItemList([['one'], ['two']]), ItemList(['a', 'b'])]
+
 
 
 :class:`StockedItem` Objects

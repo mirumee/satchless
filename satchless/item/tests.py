@@ -1,8 +1,8 @@
 from prices import Price, PriceRange
 from unittest import TestCase
 
-from . import (InsufficientStock, Item, ItemLine, ItemRange, Partitioner,
-               ItemList, StockedItem)
+from . import (ClassifyingPartitioner, InsufficientStock, Item, ItemLine,
+               ItemList, ItemRange, Partitioner, StockedItem)
 
 
 class Swallow(Item):
@@ -57,6 +57,14 @@ class LimitedShrubbery(StockedItem):
 
     def get_stock(self):
         return 1
+
+
+class SwallowPartitioner(ClassifyingPartitioner):
+
+    def classify(self, item):
+        if isinstance(item, Swallow):
+            return 'swallow'
+        return 'unknown'
 
 
 class ItemTest(TestCase):
@@ -125,6 +133,25 @@ class PartitionerTest(TestCase):
         item_set = ItemList([SwallowLine()])
         partitioner = Partitioner(item_set)
         self.assertTrue(partitioner)
+
+    def test_repr(self):
+        'Partitioner.__repr__() returns valid code'
+        partitioner = Partitioner([1])
+        self.assertEqual(partitioner.__repr__(), 'Partitioner([1])')
+
+
+class ClassifyingPartitionerTest(TestCase):
+
+    def test_classification(self):
+        'Partitions should be split according to the classifying key'
+        swallow = Swallow()
+        inquisition = SpanishInquisition()
+        cow = FetchezLaVache()
+        fake_cart = [inquisition, swallow, cow]
+        partitioner = SwallowPartitioner(fake_cart)
+        self.assertEqual(list(partitioner),
+                         [ItemList([swallow]),
+                          ItemList([inquisition, cow])])
 
 
 class StockedItemTest(TestCase):

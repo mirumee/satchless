@@ -2,7 +2,7 @@ from itertools import groupby
 
 from prices import PriceRange
 
-__all__ = ['ClassifyingPartitioner', 'InsufficientStockException', 'Item',
+__all__ = ['ClassifyingPartitioner', 'InsufficientStock', 'Item',
            'ItemLine', 'ItemRange', 'ItemSet', 'Partitioner', 'StockedItem',
            'partition']
 

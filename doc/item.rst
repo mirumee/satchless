@@ -295,7 +295,7 @@ A more advanced example could split an imaginary cart object into groups of obje
                    remaining.append(it)
            if digital:
                yield ItemList(digital)
-           if the_rest:
+           if remaining:
                yield ItemList(remaining)
 
 

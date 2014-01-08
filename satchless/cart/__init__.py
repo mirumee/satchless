@@ -83,6 +83,9 @@ class Cart(ItemSet):
         if hasattr(product, 'check_quantity'):
             return product.check_quantity(quantity)
 
+    def clear(self):
+        self._state = []
+
     def create_line(self, product, quantity, data):
         return CartLine(product, quantity, data=data)
 

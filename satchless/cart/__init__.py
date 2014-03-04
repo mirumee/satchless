@@ -102,7 +102,8 @@ class Cart(ItemSet):
         else:
             return (True, self.create_line(product, quantity, data))
 
-    def add(self, product, quantity=1, data=None, replace=False):
+    def add(self, product, quantity=1, data=None, replace=False,
+            check_quantity=True):
         created, cart_line = self._get_or_create_line(product, 0, data)
 
         if replace:
@@ -114,7 +115,8 @@ class Cart(ItemSet):
             raise ValueError('%r is not a valid quantity (results in %r)' % (
                 quantity, new_quantity))
 
-        self.check_quantity(product, new_quantity, data)
+        if check_quantity:
+            self.check_quantity(product, new_quantity, data)
 
         cart_line.quantity = new_quantity
 

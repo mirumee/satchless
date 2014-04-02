@@ -190,3 +190,19 @@ class CartTest(TestCase):
         cart = Cart()
         self.assertRaises(InsufficientStock,
                           lambda: cart.add(LimitedShrubbery(), 2))
+
+    def test_insufficient_quantity_without_checks(self):
+        'Cart.add() should allow product to exceeded stock with checks off'
+        cart = Cart()
+        cart.add(LimitedShrubbery(), 2, check_quantity=False)
+        self.assertEqual(cart[0].quantity, 2)
+
+    def test_clear(self):
+        'Cart.clear() clears the cart and marks it as modified'
+        cart = Cart()
+        cart.add('rabbit')
+        cart.modified = False
+        cart.clear()
+        self.assertEqual(len(cart), 0)
+        self.assertEqual(cart.modified, True)
+

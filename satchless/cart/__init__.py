@@ -85,6 +85,7 @@ class Cart(ItemSet):
 
     def clear(self):
         self._state = []
+        self.modified = True
 
     def create_line(self, product, quantity, data):
         return CartLine(product, quantity, data=data)

@@ -1,13 +1,15 @@
 language: python
 python:
-  - 2.6
-  - 2.7
-  - 3.2
-  - 3.3
+- 2.6
+- 2.7
+- 3.2
+- 3.3
 install:
-  - python setup.py install
-  - pip install coverage
+- python setup.py install
+- pip install coverage
 script: coverage run setup.py test
 after_success:
-  - pip install coveralls
-  - coveralls
+- pip install coveralls
+- coveralls
+notifications:
+  webhooks: https://webhooks.gitter.im/e/af18bf2decb40329066b

@@ -126,20 +126,21 @@ class PaymentsGatewayProvider(PaymentProvider):
                 past_variant.reused_by = variant_ref
                 past_variant.save()
             else:
-                if variant_ref.pg_payment_token:
-                    auth_via_cc(variant_ref, amount,
-                                first_name=variant_ref.token_first_name,
-                                last_name=variant_ref.token_last_name,
-                                payment_token=variant_ref.pg_payment_token)
-                elif variant_ref.pg_client_token:
-                    auth_via_cc(variant_ref, amount,
-                                client_token=variant_ref.pg_client_token)
-                else:
-                    raise PaymentFailure(_("Payment or Client Token Required"))
-                variant_ref.pg_authorization_code = \
-                    variant_ref.receipt.pg_authorization_code
-                variant_ref.pg_trace_number = \
-                    variant_ref.receipt.pg_trace_number
+                if variant_ref.amount > 0:
+                    if variant_ref.pg_payment_token:
+                        auth_via_cc(variant_ref, amount,
+                                    first_name=variant_ref.token_first_name,
+                                    last_name=variant_ref.token_last_name,
+                                    payment_token=variant_ref.pg_payment_token)
+                    elif variant_ref.pg_client_token:
+                        auth_via_cc(variant_ref, amount,
+                                    client_token=variant_ref.pg_client_token)
+                    else:
+                        raise PaymentFailure(_("Payment or Client Token Required"))
+                    variant_ref.pg_authorization_code = \
+                        variant_ref.receipt.pg_authorization_code
+                    variant_ref.pg_trace_number = \
+                        variant_ref.receipt.pg_trace_number
             variant_ref.save()
             return variant_ref
         raise PaymentFailure(_("Could not create PaymentsGateway Variant"))
@@ -148,4 +149,5 @@ class PaymentsGatewayProvider(PaymentProvider):
         if not variant:
             variant = order.paymentvariant
         v = variant.get_subtype_instance()
-        capture_via_cc(v, v.pg_authorization_code, v.pg_trace_number)
+        if v.pg_authorization_code and v.pg_trace_number:
+            capture_via_cc(v, v.pg_authorization_code, v.pg_trace_number)

@@ -5,7 +5,6 @@ from django.db.models.query_utils import Q
 from django.utils.translation import ugettext_lazy as _
 from io import StringIO
 from suds.client import Client as SudsClient
-import calendar
 import datetime
 import os
 
@@ -149,5 +148,5 @@ class PaymentsGatewayProvider(PaymentProvider):
         if not variant:
             variant = order.paymentvariant
         v = variant.get_subtype_instance()
-        if v.pg_authorization_code and v.pg_trace_number:
+        if v.amount > 0:
             capture_via_cc(v, v.pg_authorization_code, v.pg_trace_number)

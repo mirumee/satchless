@@ -125,7 +125,7 @@ class PaymentsGatewayProvider(PaymentProvider):
                 past_variant.reused_by = variant_ref
                 past_variant.save()
             else:
-                if variant_ref.amount > 0:
+                if variant_ref.amount > Decimal('0.00'):
                     if variant_ref.pg_payment_token:
                         auth_via_cc(variant_ref, amount,
                                     first_name=variant_ref.token_first_name,
@@ -148,5 +148,5 @@ class PaymentsGatewayProvider(PaymentProvider):
         if not variant:
             variant = order.paymentvariant
         v = variant.get_subtype_instance()
-        if v.amount > 0:
+        if v.amount > Decimal('0.00'):
             capture_via_cc(v, v.pg_authorization_code, v.pg_trace_number)

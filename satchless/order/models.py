@@ -101,7 +101,7 @@ class Order(models.Model):
             for i in xrange(100):
                 token = ''.join(random.sample(
                                 '0123456789abcdefghijklmnopqrstuvwxyz', 32))
-                if not Order.objects.filter(token=token).count():
+                if not Order.objects.filter(token=token).exists():
                     self.token = token
                     break
         return super(Order, self).save(*args, **kwargs)

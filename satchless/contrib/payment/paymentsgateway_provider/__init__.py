@@ -18,6 +18,7 @@ import random
 def id_generator(size=6, chars=string.ascii_uppercase + string.digits):
     return ''.join(random.choice(chars) for x in range(size))
 
+
 def pg_pay(variant, transaction_type, amount=None, first_name=None,
            last_name=None, client_token=None, payment_token=None,
            merchant_data=None, dict_extras=None):
@@ -63,13 +64,13 @@ def pg_pay(variant, transaction_type, amount=None, first_name=None,
         receipt_form = forms.PaymentsGatewayReceiptForm(data)
         if receipt_form.is_valid():
             variant.receipt = receipt_form.save()
-            variant.name = "Credit"
             variant.description = ""
             variant.save()
         if data.get('pg_response_type') != 'A':
             raise PaymentFailure("%s %s" %
                                  (data.get('pg_response_code'),
                                   data.get('pg_response_description')))
+
 
 def auth_via_cc(variant, amount, first_name=None, last_name=None,
                 client_token=None, payment_token=None):
@@ -78,11 +79,13 @@ def auth_via_cc(variant, amount, first_name=None, last_name=None,
                   last_name=last_name, client_token=client_token,
                   payment_token=payment_token, dict_extras=random_order_id)
 
+
 def void_via_cc(variant, authorization_code, trace_number):
     # void the auth
     extras_dict = { 'pg_original_authorization_code': authorization_code,
                     'pg_original_trace_number': trace_number, }
     return pg_pay(variant, "14", dict_extras=extras_dict)
+
 
 def capture_via_cc(variant, authorization_code, trace_number):
     # void the auth
@@ -90,7 +93,9 @@ def capture_via_cc(variant, authorization_code, trace_number):
                     'pg_original_trace_number': trace_number, }
     return pg_pay(variant, "12", dict_extras=extras_dict)
 
+
 class PaymentsGatewayProvider(PaymentProvider):
+    NAME = 'Credit'
     form_class = forms.PaymentForm
 
     def enum_types(self, order=None, customer=None):
@@ -98,7 +103,8 @@ class PaymentsGatewayProvider(PaymentProvider):
                                 name='paymentsgateway.com')
 
     def get_configuration_form(self, order, typ, data):
-        instance = models.PaymentsGatewayVariant(order=order, price=0)
+        instance = models.PaymentsGatewayVariant(order=order, price=0,
+                                                 name=self.NAME)
         return self.form_class(data or None, instance=instance)
 
     def create_variant(self, order, form, typ=None):

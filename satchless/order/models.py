@@ -168,8 +168,8 @@ class DeliveryGroup(models.Model):
     order = models.ForeignKey(Order, related_name='groups')
     delivery_type = models.CharField(max_length=256, blank=True)
 
-    def subtotal(self, **kwargs):
-        currency = kwargs.get('currency', self.order.currency)
+    def subtotal(self, currency=None):
+        currency = currency or self.order.currency
         return sum([i.price(currency=currency) for i in self.items.all()],
                 Price(0, currency=currency))    
 
@@ -203,10 +203,10 @@ class OrderedItem(models.Model):
         return Price(net=self.unit_price_net, gross=self.unit_price_gross,
                      currency=self.delivery_group.order.currency)
 
-    def price(self, **kwargs):
+    def price(self, currency=None):
         net = self.unit_price_net * self.quantity
         gross = self.unit_price_gross * self.quantity
-        currency = kwargs.get('currency', self.delivery_group.order.currency)
+        currency = currency or self.delivery_group.order.currency
         return Price(net=net.quantize(decimal.Decimal('0.01')),
                  gross=gross.quantize(decimal.Decimal('0.01')),
                  currency=currency)

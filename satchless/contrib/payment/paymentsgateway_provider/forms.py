@@ -1,3 +1,4 @@
+from decimal import Decimal
 from django import forms
 from django.core.exceptions import ValidationError
 from django.utils.translation import ugettext_lazy as _
@@ -36,6 +37,14 @@ class PaymentForm(forms.ModelForm):
             (self.cleaned_data.get('token_first_name') and self.cleaned_data.get('token_last_name')):
             raise ValidationError(_("If paying by method token, First and Last Names are required."))
         return super(PaymentForm, self).clean()
+
+    def clean_amount(self):
+        amount = self.cleaned_data.get('amount')
+        if amount is not None and amount <= Decimal('0.00'):
+            raise ValidationError(
+                _("Payment amount must be greater than $0.00"))
+        return amount
+
 
 class PaymentsGatewayReceiptForm(forms.ModelForm):
     class Meta:

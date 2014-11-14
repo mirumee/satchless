@@ -15,6 +15,11 @@ import string
 import random
 
 
+PG_TRANSACTION_TYPE_AUTH = '11'
+PG_TRANSACTION_TYPE_CAPTURE = '12'
+PG_TRANSACTION_TYPE_VOID = '14'
+
+
 def id_generator(size=6, chars=string.ascii_uppercase + string.digits):
     return ''.join(random.choice(chars) for x in range(size))
 
@@ -30,6 +35,7 @@ def pg_pay(variant, transaction_type, amount=None, first_name=None,
     }
     if amount:
         kwargs['pg_total_amount'] = amount
+
     if first_name:
         kwargs['ecom_billto_postal_name_first'] = first_name
     if last_name:
@@ -64,7 +70,6 @@ def pg_pay(variant, transaction_type, amount=None, first_name=None,
         receipt_form = forms.PaymentsGatewayReceiptForm(data)
         if receipt_form.is_valid():
             variant.receipt = receipt_form.save()
-            variant.description = ""
             variant.save()
         if data.get('pg_response_type') != 'A':
             raise PaymentFailure("%s %s" %
@@ -74,27 +79,28 @@ def pg_pay(variant, transaction_type, amount=None, first_name=None,
 
 def auth_via_cc(variant, amount, first_name=None, last_name=None,
                 client_token=None, payment_token=None):
-    random_order_id = { 'ecom_consumerorderid': id_generator(15) }
-    return pg_pay(variant, "11", amount=amount, first_name=first_name,
+    random_order_id = {'ecom_consumerorderid': id_generator(15)}
+    return pg_pay(variant, PG_TRANSACTION_TYPE_AUTH, amount=amount, first_name=first_name,
                   last_name=last_name, client_token=client_token,
                   payment_token=payment_token, dict_extras=random_order_id)
 
 
 def void_via_cc(variant, authorization_code, trace_number):
     # void the auth
-    extras_dict = { 'pg_original_authorization_code': authorization_code,
-                    'pg_original_trace_number': trace_number, }
-    return pg_pay(variant, "14", dict_extras=extras_dict)
+    extras_dict = {'pg_original_authorization_code': authorization_code,
+                   'pg_original_trace_number': trace_number, }
+    return pg_pay(variant, PG_TRANSACTION_TYPE_VOID, dict_extras=extras_dict)
 
 
-def capture_via_cc(variant, authorization_code, trace_number):
-    # void the auth
-    extras_dict = { 'pg_original_authorization_code': authorization_code,
-                    'pg_original_trace_number': trace_number, }
-    return pg_pay(variant, "12", dict_extras=extras_dict)
+def capture_via_cc(variant, amount, authorization_code, trace_number):
+    # capture the auth
+    extras_dict = {'pg_original_authorization_code': authorization_code,
+                   'pg_original_trace_number': trace_number, }
+    return pg_pay(variant, PG_TRANSACTION_TYPE_CAPTURE, dict_extras=extras_dict, amount=amount)
 
 
 class PaymentsGatewayProvider(PaymentProvider):
+    PAST_VARIANT_WINDOW = datetime.timedelta(hours=18)
     NAME = 'Credit'
     form_class = forms.PaymentForm
 
@@ -107,52 +113,82 @@ class PaymentsGatewayProvider(PaymentProvider):
                                                  name=self.NAME)
         return self.form_class(data or None, instance=instance)
 
-    def create_variant(self, order, form, typ=None):
-        if form.is_valid():
-            time_window = datetime.datetime.now() - datetime.timedelta(hours=18)
-            past_variants = models.PaymentsGatewayVariant.objects.filter(
-                Q(pg_client_token=form.cleaned_data['pg_client_token']) |
-                Q(pg_payment_token=form.cleaned_data['pg_payment_token']),
-                reused_by__isnull=True,
-                receipt__creation_time__gt=time_window,
-                order__ssorder__appointment=order.ssorder.appointment,
-                amount=form.cleaned_data['amount'],
-                receipt__pg_response_code='A01',
-                receipt__pg_transaction_type='11')\
-                .order_by("-receipt__creation_time")
-            variant_ref = form.save()
-            amount = str(variant_ref.amount.quantize(Decimal('.01')))
+    def get_past_variant(self, order, form):
+        data = form.cleaned_data
 
-            if past_variants:
-                past_variant = past_variants[0]
-                variant_ref.pg_authorization_code = \
-                    past_variant.pg_authorization_code
-                variant_ref.pg_trace_number = past_variant.pg_trace_number
-                past_variant.reused_by = variant_ref
-                past_variant.save()
-            else:
-                if variant_ref.amount > Decimal('0.00'):
-                    if variant_ref.pg_payment_token:
-                        auth_via_cc(variant_ref, amount,
-                                    first_name=variant_ref.token_first_name,
-                                    last_name=variant_ref.token_last_name,
-                                    payment_token=variant_ref.pg_payment_token)
-                    elif variant_ref.pg_client_token:
-                        auth_via_cc(variant_ref, amount,
-                                    client_token=variant_ref.pg_client_token)
-                    else:
-                        raise PaymentFailure(_("Payment or Client Token Required"))
-                    variant_ref.pg_authorization_code = \
-                        variant_ref.receipt.pg_authorization_code
-                    variant_ref.pg_trace_number = \
-                        variant_ref.receipt.pg_trace_number
+        pg_authorization_code = data.get('pg_authorization_code')
+        pg_trace_number = data.get('pg_trace_number')
+        pg_client_token = data.get('pg_client_token')
+        pg_payment_token = data.get('pg_payment_token')
+
+        variant_matcher = ~Q(id=form.instance.id)
+        if pg_authorization_code and pg_trace_number:
+            variant_matcher &= Q(
+                pg_authorization_code=pg_authorization_code,
+                pg_trace_number=pg_trace_number, amount__gte=data['amount'])
+        elif pg_client_token:
+            variant_matcher &= Q(
+                pg_client_token=pg_client_token, amount=data['amount'])
+        elif pg_payment_token:
+            variant_matcher &= Q(
+                pg_payment_token=pg_payment_token, amount=data['amount'])
+        else:
+            return
+
+        time_window = datetime.datetime.utcnow() - self.PAST_VARIANT_WINDOW
+        past_variants = models.PaymentsGatewayVariant.objects.filter(
+            variant_matcher,
+            reused_by__isnull=True,
+            receipt__creation_time__gt=time_window,
+            order__ssorder__appointment=order.ssorder.appointment,
+            receipt__pg_response_code='A01',
+            receipt__pg_transaction_type=PG_TRANSACTION_TYPE_AUTH)
+        try:
+            return past_variants.order_by('amount')[0]
+        except IndexError:
+            pass
+
+    def create_variant(self, order, form, typ=None):
+        if not form.is_valid():
+            raise PaymentFailure(_("Could not create PaymentsGateway Variant"))
+
+        variant_ref = form.save()
+
+        past_variant = self.get_past_variant(order, form)
+        if past_variant is not None:
+            variant_ref.pg_authorization_code = \
+                past_variant.pg_authorization_code
+            variant_ref.pg_trace_number = past_variant.pg_trace_number
             variant_ref.save()
+            past_variant.reused_by = variant_ref
+            past_variant.save()
             return variant_ref
-        raise PaymentFailure(_("Could not create PaymentsGateway Variant"))
+
+        amount = str(variant_ref.amount.quantize(Decimal('.01')))
+        if variant_ref.pg_payment_token:
+            auth_via_cc(variant_ref, amount,
+                        first_name=variant_ref.token_first_name,
+                        last_name=variant_ref.token_last_name,
+                        payment_token=variant_ref.pg_payment_token)
+        elif variant_ref.pg_client_token:
+            auth_via_cc(variant_ref, amount,
+                        client_token=variant_ref.pg_client_token)
+        else:
+            raise PaymentFailure(
+                _("Payment Token, Client Token, or Authorization "
+                  "Code Required"))
+
+        receipt_ref = variant_ref.receipt
+        variant_ref.pg_authorization_code = receipt_ref.pg_authorization_code
+        variant_ref.pg_trace_number = receipt_ref.pg_trace_number
+        variant_ref.save()
+
+        return variant_ref
 
     def confirm(self, order, typ=None, variant=None):
         if not variant:
             variant = order.paymentvariant
         v = variant.get_subtype_instance()
         if v.amount > Decimal('0.00'):
-            capture_via_cc(v, v.pg_authorization_code, v.pg_trace_number)
+            capture_via_cc(
+                v, v.amount, v.pg_authorization_code, v.pg_trace_number)

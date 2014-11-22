@@ -2,7 +2,7 @@ from ConfigParser import ConfigParser
 from decimal import Decimal
 from django.conf import settings
 from django.db.models.query_utils import Q
-from django.utils.translation import ugettext_lazy as _
+from django.utils.translation import ugettext
 from io import StringIO
 from suds.client import Client as SudsClient
 import datetime
@@ -150,7 +150,8 @@ class PaymentsGatewayProvider(PaymentProvider):
 
     def create_variant(self, order, form, typ=None):
         if not form.is_valid():
-            raise PaymentFailure(_("Could not create PaymentsGateway Variant"))
+            raise PaymentFailure(ugettext(
+                "Could not create PaymentsGateway Variant"))
 
         variant_ref = form.save()
 
@@ -174,9 +175,9 @@ class PaymentsGatewayProvider(PaymentProvider):
             auth_via_cc(variant_ref, amount,
                         client_token=variant_ref.pg_client_token)
         else:
-            raise PaymentFailure(
-                _("Payment Token, Client Token, or Authorization "
-                  "Code Required"))
+            raise PaymentFailure(ugettext(
+                "Payment Token, Client Token, or Authorization "
+                "Code Required"))
 
         receipt_ref = variant_ref.receipt
         variant_ref.pg_authorization_code = receipt_ref.pg_authorization_code

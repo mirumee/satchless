@@ -1,7 +1,7 @@
 from decimal import Decimal
 from django import forms
 from django.core.exceptions import ValidationError
-from django.utils.translation import ugettext_lazy as _
+from django.utils.translation import ugettext, ugettext_lazy as _
 
 from . import models
 
@@ -29,20 +29,20 @@ class PaymentForm(forms.ModelForm):
            and not self.cleaned_data.get('pg_payment_token') \
            and not (self.cleaned_data.get('pg_trace_number') \
                     and self.cleaned_data.get('pg_authorization_code')):
-            raise ValidationError(_("Either a Payment Method, Client, or Auth is required"))
+            raise ValidationError(ugettext("Either a Payment Method, Client, or Auth is required"))
         if self.cleaned_data.get('pg_client_token') \
            and self.cleaned_data.get('pg_payment_token'):
-            raise ValidationError(_("Cannot use both Payment Method and Client"))
+            raise ValidationError(ugettext("Cannot use both Payment Method and Client"))
         if self.cleaned_data.get('pg_payment_token') and not \
             (self.cleaned_data.get('token_first_name') and self.cleaned_data.get('token_last_name')):
-            raise ValidationError(_("If paying by method token, First and Last Names are required."))
+            raise ValidationError(ugettext("If paying by method token, First and Last Names are required."))
         return super(PaymentForm, self).clean()
 
     def clean_amount(self):
         amount = self.cleaned_data.get('amount')
         if amount is not None and amount <= Decimal('0.00'):
             raise ValidationError(
-                _("Payment amount must be greater than $0.00"))
+                ugettext("Payment amount must be greater than $0.00"))
         return amount
 
 

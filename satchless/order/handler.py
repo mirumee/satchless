@@ -142,10 +142,11 @@ class DeliveryQueue(DeliveryProvider, QueueHandler):
         typ = typ or delivery_group.delivery_type
         provider = self._get_provider(delivery_group, typ)
         # XXX: Do we really need it here?
-        try:
-            delivery_group.deliveryvariant.delete()
-        except DeliveryVariant.DoesNotExist:
-            pass
+        if delivery_group.deliveryvariant.pk:
+            try:
+                delivery_group.deliveryvariant.delete()
+            except DeliveryVariant.DoesNotExist:
+                pass
         return provider.create_variant(delivery_group=delivery_group,
                                        form=form, typ=typ)
 

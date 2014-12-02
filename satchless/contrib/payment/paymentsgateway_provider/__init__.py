@@ -13,6 +13,8 @@ from . import forms
 from . import models
 import string
 import random
+from satchless.contrib.payment.paymentsgateway_provider.models import (
+    PaymentsGatewayVariant)
 
 
 PG_TRANSACTION_TYPE_AUTH = '11'
@@ -20,8 +22,20 @@ PG_TRANSACTION_TYPE_CAPTURE = '12'
 PG_TRANSACTION_TYPE_VOID = '14'
 
 
+PG_RESPONSE_CODE_SUCCESS = 'A01'
+
+
 def id_generator(size=6, chars=string.ascii_uppercase + string.digits):
     return ''.join(random.choice(chars) for x in range(size))
+
+
+def get_authed_amounts(pg_trace_number, pg_authorization_code):
+    auth_pg_variant_refs = PaymentsGatewayVariant.objects.filter(
+        receipt__pg_transaction_type=PG_TRANSACTION_TYPE_AUTH,
+        pg_authorization_code=pg_authorization_code,
+        pg_trace_number=pg_trace_number)
+    return [Decimal(p.receipt.pg_total_amount).quantize(Decimal('0.01'))
+            for p in auth_pg_variant_refs]
 
 
 def pg_pay(variant, transaction_type, amount=None, first_name=None,
@@ -33,9 +47,6 @@ def pg_pay(variant, transaction_type, amount=None, first_name=None,
         'pg_password': settings.PG_TRANSACTION_PASSWORD,
         'pg_transaction_type': transaction_type,
     }
-    if amount:
-        kwargs['pg_total_amount'] = amount
-
     if first_name:
         kwargs['ecom_billto_postal_name_first'] = first_name
     if last_name:
@@ -48,6 +59,33 @@ def pg_pay(variant, transaction_type, amount=None, first_name=None,
         kwargs['pg_merchant_data_1'] = merchant_data
     if dict_extras:
         kwargs.update(dict_extras)
+
+    if amount is not None:
+        amount = Decimal(amount).quantize(Decimal('0.01'))
+
+        if transaction_type == PG_TRANSACTION_TYPE_AUTH:
+            # Someday, Forte should support this argument for capture.
+            # It would allow capturing < than we've authorized
+            kwargs['pg_total_amount'] = str(amount)
+
+        elif transaction_type == PG_TRANSACTION_TYPE_CAPTURE:
+            # Forte will return a U25 INVALID AMOUNT error if we provide an
+            # explicit pg_total_amount on capture - so we must compare the
+            # amount we're trying to capture with the amount we've authorized
+            # and throw a PaymentFailure if they don't match
+            pg_trace_number = kwargs.get('pg_original_trace_number')
+            pg_authorization_code = kwargs.get('pg_original_authorization_code')
+            if pg_trace_number and pg_authorization_code:
+                authed_amounts = get_authed_amounts(
+                    pg_trace_number, pg_authorization_code)
+                if len(authed_amounts) != 1:
+                    raise PaymentFailure(
+                        'There are an incorrect number of authorized amounts '
+                        'for the given trace number and auth code.')
+                authed_amount = authed_amounts[0]
+                if authed_amount != amount:
+                    raise PaymentFailure(
+                        'Capture amount must match authorized amount')
 
     result = svc.ExecuteSocketQuery(**kwargs)
 
@@ -80,9 +118,10 @@ def pg_pay(variant, transaction_type, amount=None, first_name=None,
 def auth_via_cc(variant, amount, first_name=None, last_name=None,
                 client_token=None, payment_token=None):
     random_order_id = {'ecom_consumerorderid': id_generator(15)}
-    return pg_pay(variant, PG_TRANSACTION_TYPE_AUTH, amount=amount, first_name=first_name,
-                  last_name=last_name, client_token=client_token,
-                  payment_token=payment_token, dict_extras=random_order_id)
+    return pg_pay(variant, PG_TRANSACTION_TYPE_AUTH, amount=amount,
+                  first_name=first_name, last_name=last_name,
+                  client_token=client_token, payment_token=payment_token,
+                  dict_extras=random_order_id)
 
 
 def void_via_cc(variant, authorization_code, trace_number):
@@ -96,7 +135,25 @@ def capture_via_cc(variant, amount, authorization_code, trace_number):
     # capture the auth
     extras_dict = {'pg_original_authorization_code': authorization_code,
                    'pg_original_trace_number': trace_number, }
-    return pg_pay(variant, PG_TRANSACTION_TYPE_CAPTURE, dict_extras=extras_dict, amount=amount)
+    return pg_pay(variant, PG_TRANSACTION_TYPE_CAPTURE, dict_extras=extras_dict,
+                  amount=amount)
+
+
+def filter_reusable_past_variants(variant_refs):
+    # DJANGO-1.4
+    variant_refs = variant_refs.select_related(
+        'reused_by', 'reused_by__receipt')
+    variant_ids = []
+    for variant_ref in variant_refs:
+        if variant_ref.reused_by and variant_ref.reused_by.receipt \
+                and variant_ref.reused_by.receipt.pg_response_code \
+                == PG_RESPONSE_CODE_SUCCESS:
+            continue
+        variant_ids.append(variant_ref.id)
+    # DJANGO-1.6
+    # variant_refs = variant_refs.exclude(
+    #     reused_by__receipt__pg_response_code=PG_RESPONSE_CODE_SUCCESS)
+    return PaymentsGatewayVariant.objects.filter(id__in=variant_ids)
 
 
 class PaymentsGatewayProvider(PaymentProvider):
@@ -138,11 +195,11 @@ class PaymentsGatewayProvider(PaymentProvider):
         time_window = datetime.datetime.utcnow() - self.PAST_VARIANT_WINDOW
         past_variants = models.PaymentsGatewayVariant.objects.filter(
             variant_matcher,
-            reused_by__isnull=True,
             receipt__creation_time__gt=time_window,
             order__ssorder__appointment=order.ssorder.appointment,
-            receipt__pg_response_code='A01',
+            receipt__pg_response_code=PG_RESPONSE_CODE_SUCCESS,
             receipt__pg_transaction_type=PG_TRANSACTION_TYPE_AUTH)
+        past_variants = filter_reusable_past_variants(past_variants)
         try:
             return past_variants.order_by('amount')[0]
         except IndexError:

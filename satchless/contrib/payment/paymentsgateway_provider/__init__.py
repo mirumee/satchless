@@ -138,12 +138,20 @@ def capture_via_cc(variant, amount, authorization_code, trace_number):
 
 
 def filter_reusable_past_variants(variant_refs):
-    q = Q(Q(reused_by__isnull=True) |
-          Q(reused_by__isnull=False, reused_by__receipt__isnull=True))
-    for error_prefix in ('POS', 'NEG', 'UNK', 'U', 'E', 'F'):
-        q |= Q(reused_by__isnull=False, reused_by__receipt__isnull=False,
-               reused_by__receipt__pg_response_code__startswith=error_prefix)
-    return variant_refs.filter(q)
+    # DJANGO-1.4
+    variant_refs = variant_refs.select_related(
+        'reused_by', 'reused_by__receipt')
+    variant_ids = []
+    for variant_ref in variant_refs:
+        if variant_ref.reused_by and variant_ref.reused_by.receipt \
+                and variant_ref.reused_by.receipt.pg_response_code \
+                == PG_RESPONSE_CODE_SUCCESS:
+            continue
+        variant_ids.append(variant_ref.id)
+    # DJANGO-1.6
+    # variant_refs = variant_refs.exclude(
+    #     reused_by__receipt__pg_response_code=PG_RESPONSE_CODE_SUCCESS)
+    return PaymentsGatewayVariant.objects.filter(id__in=variant_ids)
 
 
 class PaymentsGatewayProvider(PaymentProvider):

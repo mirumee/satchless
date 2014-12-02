@@ -118,9 +118,10 @@ def pg_pay(variant, transaction_type, amount=None, first_name=None,
 def auth_via_cc(variant, amount, first_name=None, last_name=None,
                 client_token=None, payment_token=None):
     random_order_id = {'ecom_consumerorderid': id_generator(15)}
-    return pg_pay(variant, PG_TRANSACTION_TYPE_AUTH, amount=amount, first_name=first_name,
-                  last_name=last_name, client_token=client_token,
-                  payment_token=payment_token, dict_extras=random_order_id)
+    return pg_pay(variant, PG_TRANSACTION_TYPE_AUTH, amount=amount,
+                  first_name=first_name, last_name=last_name,
+                  client_token=client_token, payment_token=payment_token,
+                  dict_extras=random_order_id)
 
 
 def void_via_cc(variant, authorization_code, trace_number):
@@ -134,7 +135,8 @@ def capture_via_cc(variant, amount, authorization_code, trace_number):
     # capture the auth
     extras_dict = {'pg_original_authorization_code': authorization_code,
                    'pg_original_trace_number': trace_number, }
-    return pg_pay(variant, PG_TRANSACTION_TYPE_CAPTURE, dict_extras=extras_dict, amount=amount)
+    return pg_pay(variant, PG_TRANSACTION_TYPE_CAPTURE, dict_extras=extras_dict,
+                  amount=amount)
 
 
 def filter_reusable_past_variants(variant_refs):

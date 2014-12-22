@@ -1,3 +1,4 @@
+from decimal import Decimal
 from unidecode import unidecode
 import urllib2
 from django.utils.translation import ugettext
@@ -18,7 +19,8 @@ class AuthorizeNetProvider(PaymentProvider):
         yield self, PaymentType(typ='authorizenet', name='Authorize.net')
 
     def get_configuration_form(self, order, typ, data):
-        instance = models.AuthorizeNetVariant(order=order, price=0)
+        instance = models.AuthorizeNetVariant(
+            order=order, price=Decimal('0.0000'))
         return self.form_class(data or None, instance=instance)
 
     def create_variant(self, order, typ, form):

@@ -1,3 +1,4 @@
+from decimal import Decimal
 from mamona.utils import get_backend_choices
 
 from ....payment import (PaymentProvider, ConfirmationFormNeeded,
@@ -11,8 +12,8 @@ class MamonaProvider(PaymentProvider):
             yield self, PaymentType(typ=typ, name=name)
 
     def create_variant(self, order, typ, form):
-        variant = models.MamonaPaymentVariant.objects.get_or_create(order=order,
-                                                                    price=0)[0]
+        variant = models.MamonaPaymentVariant.objects.get_or_create(
+            order=order, price=Decimal('0.0000'))[0]
         models.Payment.objects.create(order=variant, amount=order.total().gross,
                                       currency=order.currency, backend=typ)
         return variant

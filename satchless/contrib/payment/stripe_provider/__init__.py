@@ -1,3 +1,4 @@
+from decimal import Decimal
 import urllib2
 from django.conf import settings
 from django.utils.translation import ugettext_lazy as _
@@ -16,7 +17,7 @@ class StripeProvider(PaymentProvider):
         yield self, PaymentType(typ='stripe', name='Stripe.com')
 
     def get_configuration_form(self, order, typ, data):
-        instance = models.StripeVariant(order=order, price=0)
+        instance = models.StripeVariant(order=order, price=Decimal('0.0000'))
         return self.form_class(data or None, instance=instance)
 
     def create_variant(self, order, form, typ=None):

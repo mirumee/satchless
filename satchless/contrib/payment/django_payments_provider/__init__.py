@@ -1,3 +1,4 @@
+from decimal import Decimal
 from django.conf import settings
 import payments
 
@@ -17,7 +18,7 @@ class DjangoPaymentsProvider(PaymentProvider):
         payment = factory.create_payment(currency=order.currency,
                                          total=order.total().gross)
         payment_variant = models.DjangoPaymentsVariant.objects.create(
-                payment=payment, order=order, price=0)
+                payment=payment, order=order, price=Decimal('0.0000'))
         return payment_variant
 
     def confirm(self, order, typ=None):

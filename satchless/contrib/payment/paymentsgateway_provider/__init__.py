@@ -166,8 +166,8 @@ class PaymentsGatewayProvider(PaymentProvider):
                                 name='paymentsgateway.com')
 
     def get_configuration_form(self, order, typ, data):
-        instance = models.PaymentsGatewayVariant(order=order, price=0,
-                                                 name=self.NAME)
+        instance = models.PaymentsGatewayVariant(
+            order=order, price=Decimal('0.0000'), name=self.NAME)
         return self.form_class(data or None, instance=instance)
 
     def get_past_variant(self, order, form):

@@ -1,7 +1,7 @@
 Satchless: less is mo'
 ======================
 
-[![Build Status](https://secure.travis-ci.org/mirumee/satchless.png)](https://travis-ci.org/mirumee/satchless) [![Coverage](https://coveralls.io/repos/mirumee/satchless/badge.png)](https://coveralls.io/r/mirumee/satchless)
+[![Build Status](https://secure.travis-ci.org/mirumee/satchless.png)](https://travis-ci.org/mirumee/satchless) [![Coverage](https://img.shields.io/codecov/c/github/mirumee/satchless/master.svg)](http://codecov.io/github/mirumee/satchless?branch=master)
 
 ------
 

@@ -27,7 +27,7 @@ setup(
     packages=find_packages(),
     classifiers=CLASSIFIERS,
     platforms=['any'],
-    install_requires=['prices>=0.5,<0.6a0'],
+    install_requires=['prices>=1.0,<1.1'],
     test_suite='satchless.tests.suite',
     include_package_data=True,
     use_2to3=True,

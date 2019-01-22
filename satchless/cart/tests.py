@@ -1,4 +1,4 @@
-from prices import Price
+from prices import Money
 from unittest import TestCase
 
 from . import Cart, CartLine
@@ -13,9 +13,9 @@ class Swallow(Item):
 
     def get_price_per_item(self):
         if self.kind == 'african':
-            return Price(10, currency='BTC')
+            return Money(10, currency='BTC')
         elif self.kind == 'european':
-            return Price(10, currency='GBP')
+            return Money(10, currency='GBP')
         return NotImplemented
 
 
@@ -59,9 +59,9 @@ class CartLineTest(TestCase):
     def test_get_total(self):
         'CartLine.get_total() works and correctly passes **kwargs'
         swallows_a = CartLine(Swallow(kind='african'), 2, None)
-        self.assertEqual(swallows_a.get_total(), Price(20, currency='BTC'))
+        self.assertEqual(swallows_a.get_total(), Money(20, currency='BTC'))
         swallows_e = CartLine(Swallow(kind='european'), 2, None)
-        self.assertEqual(swallows_e.get_total(), Price(20, currency='GBP'))
+        self.assertEqual(swallows_e.get_total(), Money(20, currency='GBP'))
 
 
 class CartTest(TestCase):

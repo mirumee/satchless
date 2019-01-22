@@ -10,7 +10,7 @@ All of the following types are abstract and meant to be subclassed to implement 
 
 .. note::
 
-   Implementations provided by Satchless expect to work with price objects as implemented by the `prices <http://github.com/mirumee/prices>`_ library.
+   Implementations provided by Satchless expect to work with money objects as implemented by the `prices <http://github.com/mirumee/prices>`_ library.
 
 .. class:: Item
    :noindex:
@@ -77,7 +77,7 @@ Instance methods:
 
 .. method:: Item.get_price(**kwargs)
 
-   Returns a :class:`prices.Price` object representing the price of the priceable.
+   Returns a :class:`prices.Money` or :class:`prices.TaxedMoney` object representing the price of the priceable.
 
    The default implementation passes all keyword arguments to :meth:`get_price_per_item`. Override to implement discounts and such.
 
@@ -85,7 +85,7 @@ For subclassing:
 
 .. method:: Item.get_price_per_item(**kwargs)
 
-   Returns a :class:`prices.Price` object representing the price for a single piece of the priceable.
+   Returns a :class:`prices.Money` or :class:`prices.TaxedMoney` object representing the price for a single piece of the priceable.
 
    The default implementation will raise a :exc:`NotImplementedError` exception.
 
@@ -94,11 +94,11 @@ Example use::
    >>> import prices
    >>> from satchless.item import Item
    >>> class Coconut(Item):
-   ...     def get_price_per_item(self): return prices.Price(10, currency='USD')
+   ...     def get_price_per_item(self): return prices.Money(10, currency='USD')
    ...
    >>> coconut = Coconut()
    >>> coconut.get_price()
-   Price('10', currency='USD')
+   Money('10', currency='USD')
 
 
 :class:`ItemRange` Objects
@@ -118,7 +118,7 @@ Instance methods:
 
 .. method:: ItemRange.get_price_range(**kwargs)
 
-   Returns a :class:`prices.PriceRange` object representing the price range of the priceables included in the range object. Keyword arguments are passed to :meth:`get_price_per_item`.
+   Returns a :class:`prices.MoneyRange` or :class:`prices.TaxedMoneyRange` object representing the price range of the priceables included in the range object. Keyword arguments are passed to :meth:`get_price_per_item`.
 
    Calling this method on an empty range will raise an :exc:`AttributeError` exception.
 
@@ -126,7 +126,7 @@ For subclassing:
 
 .. method:: ItemRange.get_price_per_item(item, **kwargs)
 
-   Return a :class:`prices.Price` object representing the price of a given item.
+   Return a :class:`prices.Money` or :class:`prices.TaxedMoney` object representing the price of a given item.
 
    The default implementation will pass all keyword arguments to ``item.get_price()``. Override to implement discounts or caching.
 
@@ -135,10 +135,10 @@ Example use::
    >>> import prices
    >>> from satchless.item import Item, ItemRange
    >>> class SpanishInquisition(Item):
-   ...     def get_price_per_item(self): return prices.Price(50, currency='BTC')
+   ...     def get_price_per_item(self): return prices.Money(50, currency='BTC')
    ...
    >>> class LaVache(Item):
-   ...     def get_price_per_item(self): return prices.Price(15, currency='BTC')
+   ...     def get_price_per_item(self): return prices.Money(15, currency='BTC')
    ...
    >>> class ThingsNobodyExpects(ItemRange):
    ...     def __iter__(self):
@@ -147,7 +147,7 @@ Example use::
    ...
    >>> tne = ThingsNobodyExpects()
    >>> tne.get_price_range()
-   PriceRange(Price('15', currency='BTC'), Price('50', currency='BTC'))
+   MoneyRange(Money('15', currency='BTC'), Money('50', currency='BTC'))
 
 
 :class:`ItemLine` Objects
@@ -163,7 +163,7 @@ Instance methods:
 
 .. method:: ItemLine.get_total(**kwargs)
 
-   Return a :class:`prices.Price` object representing the total price of the line. Keyword arguments are passed to both :meth:`get_quantity` and :meth:`get_price_per_item`.
+   Return a :class:`prices.Money` or :class:`prices.TaxedMoney` object representing the total price of the line. Keyword arguments are passed to both :meth:`get_quantity` and :meth:`get_price_per_item`.
 
 For subclassing:
 
@@ -175,7 +175,7 @@ For subclassing:
 
 .. method:: ItemLine.get_price_per_item(**kwargs)
 
-   Returns a :class:`prices.Price` object representing the price of a single piece of the item.
+   Returns a :class:`prices.Money` or :class:`prices.TaxedMoney` object representing the price of a single piece of the item.
 
    The default implementation will raise a :exc:`NotImplementedError` exception.
 
@@ -186,11 +186,11 @@ Example use::
    >>> class Shrubberies(ItemLine):
    ...     def __init__(self, qty): self.qty = qty
    ...     def get_quantity(self): return self.qty
-   ...     def get_price_per_item(self): return prices.Price(11, currency='GBP')
+   ...     def get_price_per_item(self): return prices.Money(11, currency='GBP')
    ... 
    >>> shrubberies = Shrubberies(7)
    >>> shrubberies.get_total()
-   Price('77', currency='GBP')
+   Money('77', currency='GBP')
 
 
 :class:`ItemSet` Objects
@@ -212,7 +212,7 @@ Instance methods:
 
 .. method:: ItemSet.get_total(**kwargs)
 
-   Return a :class:`prices.Price` object representing the total price of the set. Keyword arguments are passed to :meth:`get_subtotal`.
+   Return a :class:`prices.Money` or :class:`prices.TaxedMoney` object representing the total price of the set. Keyword arguments are passed to :meth:`get_subtotal`.
 
    Calling this method on an empty set will raise an :exc:`AttributeError` exception.
 
@@ -220,7 +220,7 @@ For subclassing:
 
 .. method:: ItemSet.get_subtotal(item, **kwargs)
 
-   Returns a :class:`prices.Price` object representing the total price of ``item``.
+   Returns a :class:`prices.Money` or :class:`prices.TaxedMoney` object representing the total price of ``item``.
 
    The default implementation will pass keyword arguments to ``item.get_total()``. Override to implement discounts or caching.
 
@@ -229,7 +229,7 @@ Example use::
    >>> import prices
    >>> from satchless.item import Item, ItemLine, ItemSet
    >>> class Product(Item):
-   ...     def get_price_per_item(self): return prices.Price(10, currency='EUR')
+   ...     def get_price_per_item(self): return prices.Money(10, currency='EUR')
    ... 
    >>> class CartLine(ItemLine):
    ...     def __init__(self, product, qty): self.product, self.qty = product, qty
@@ -242,7 +242,7 @@ Example use::
    ... 
    >>> cart = Cart()
    >>> cart.get_total()
-   Price('50', currency='EUR')
+   Money('50', currency='EUR')
 
 
 :class:`Partitioner` Objects

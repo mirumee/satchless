@@ -10,7 +10,7 @@ All of the following types are abstract and meant to be subclassed to implement 
 
 .. note::
 
-   Implementations provided by Satchless expect to work with price objects as implemented by the `prices <http://github.com/mirumee/prices>`_ library.
+   Implementations provided by Satchless expect to work with money objects as implemented by the `prices <http://github.com/mirumee/prices>`_ library.
 
 .. class:: CartLine
    :noindex:
@@ -86,7 +86,7 @@ Instance methods:
 
 .. method:: Cart.get_total(**kwargs)
 
-   Return a :class:`prices.Price` object representing the total price of the cart.
+   Return a :class:`prices.Money` or :class:`prices.TaxedMoney` object representing the total price of the cart.
 
    See :ref:`ItemSet <item-set-class>`.
 
@@ -109,7 +109,7 @@ Example use::
    >>> from satchless.cart import Cart
    >>> class Taco(Item):
    ...     def __repr__(self): return 'Taco()'
-   ...     def get_price_per_item(self): return prices.Price(5, currency='CHF')
+   ...     def get_price_per_item(self): return prices.Money(5, currency='CHF')
    ... 
    >>> cart = Cart()
    >>> veggie_taco = Taco()
@@ -120,4 +120,4 @@ Example use::
    [CartLine(product=Taco(), quantity=3, data=['extra cheese']),
     CartLine(product=Taco(), quantity=2, data=['very small rocks'])]
    >>> cart.get_total()
-   Price('25', currency='CHF')
+   Money('25', currency='CHF')

@@ -1,6 +1,6 @@
 from itertools import groupby
 
-from prices import PriceRange
+from prices import MoneyRange, TaxedMoney, TaxedMoneyRange
 
 __all__ = ['ClassifyingPartitioner', 'InsufficientStock', 'Item',
            'ItemLine', 'ItemRange', 'ItemSet', 'Partitioner', 'StockedItem',
@@ -30,7 +30,18 @@ class ItemRange(object):
         if not prices:
             raise AttributeError(
                 'Calling get_price_range() on an empty item range')
-        return PriceRange(min(prices), max(prices))
+
+        lowest_price = min(prices)
+        highest_price = max(prices)
+
+        if type(lowest_price) != type(highest_price):
+            raise AttributeError(
+                'Cannot get_price_range() on an item range with different price types')
+
+        if isinstance(lowest_price, TaxedMoney):
+            return TaxedMoneyRange(lowest_price, highest_price)
+        else:
+            return MoneyRange(lowest_price, highest_price)
 
 
 class ItemSet(object):

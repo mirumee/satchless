@@ -70,7 +70,7 @@ class Cart(ItemSet):
     def __len__(self):
         return len(self._state)
 
-    def __nonzero__(self):
+    def __bool__(self):
         return bool(self._state)
 
     def __getitem__(self, key):

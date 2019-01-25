@@ -1,6 +1,6 @@
 [run]
 branch = 1
-omit = */tests.py
+omit = */test_*.py
 source = satchless
 
 [report]

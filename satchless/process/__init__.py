@@ -8,7 +8,7 @@ class InvalidData(Exception):
     pass
 
 
-class Step(object):
+class Step:
     """
     A single step in a multistep process
     """
@@ -19,7 +19,7 @@ class Step(object):
         raise NotImplementedError()  # pragma: no cover
 
 
-class ProcessManager(object):
+class ProcessManager:
     """
     A multistep process handler
     """

@@ -45,7 +45,7 @@ class ProcessManagerTest(TestCase):
     def test_iter(self):
         'ProcessManager.__iter__() returns the steps'
         process = CoconutDelivery()
-        steps = map(str, list(process))
+        steps = list(map(str, list(process)))
         self.assertEqual(steps, ['swallows-needed', 'coconuts-needed'])
 
     def test_get_next_step(self):

@@ -1,4 +1,4 @@
-Satchless: less is mo'
+Satchless: less is more'
 ======================
 
 [![Build Status](https://secure.travis-ci.org/mirumee/satchless.svg)](https://travis-ci.org/mirumee/satchless) [![Coverage](https://img.shields.io/codecov/c/github/mirumee/satchless/master.svg)](http://codecov.io/github/mirumee/satchless?branch=master)
@@ -7,7 +7,7 @@ Satchless: less is mo'
 
 **Warning:** Satchless is still undergoing architectural changes.
 
-For more information check:
+For more information please check:
 
 * [the homepage](http://satchless.com)
 * [the docs](http://docs.satchless.com)

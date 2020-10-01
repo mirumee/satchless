@@ -1,5 +1,5 @@
 Satchless: less is mo'
-======================
+=====================
 
 [![Build Status](https://secure.travis-ci.org/mirumee/satchless.svg)](https://travis-ci.org/mirumee/satchless) [![Coverage](https://img.shields.io/codecov/c/github/mirumee/satchless/master.svg)](http://codecov.io/github/mirumee/satchless?branch=master)
 
@@ -15,7 +15,7 @@ For more information check:
 
 
 Commercial support
-------------------
+--------------------
 
 Disclaimer: everything you see here is open and free to use as long as you comply with the [license](LICENSE). It is not a bait to force you to pay us later and we promise to do our bests to fix bugs and improve the code.
 

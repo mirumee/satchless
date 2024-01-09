@@ -24,7 +24,7 @@ setup(
     description='An e-commerce framework',
     license='BSD',
     version='1.2.0',
-    url='http://satchless.com/',
+    url='https://github.com/mirumee/satchless/',
     packages=find_packages(),
     classifiers=CLASSIFIERS,
     platforms=['any'],

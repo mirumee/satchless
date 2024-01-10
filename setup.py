@@ -15,7 +15,9 @@ CLASSIFIERS = [
     'Programming Language :: Python :: 3.8',
     'Programming Language :: Python :: 3.9',
     'Topic :: Software Development :: Libraries :: Application Frameworks',
-    'Topic :: Software Development :: Libraries :: Python Modules']
+    'Topic :: Software Development :: Libraries :: Python Modules',
+    'Development Status :: 7 - Inactive',
+]
 
 setup(
     name='satchless',
@@ -23,11 +25,12 @@ setup(
     author_email='hello@mirumee.com',
     description='An e-commerce framework',
     license='BSD',
-    version='1.2.0',
+    version='1.3',
     url='https://github.com/mirumee/satchless/',
     packages=find_packages(),
     classifiers=CLASSIFIERS,
     platforms=['any'],
     install_requires=['prices>=1.0,<1.1'],
     include_package_data=True,
-    zip_safe=True)
+    zip_safe=True,
+)
